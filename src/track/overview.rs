@@ -25,6 +25,8 @@ pub struct Overview<'a> {
 
 impl Widget for Overview<'_> {
     fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+        let area_end = i32::from(area.x + area.width);
+        
         let window = Window {
             time_signature: self.time_signature,
             overview_settings: self.settings,
@@ -41,6 +43,7 @@ impl Widget for Overview<'_> {
                 area.x,
                 area.y,
             );
+            let clip_area_end = clip_area.x + i32::from(clip_area.width);
 
             let [mut x, y] = clip.content.full_overview_viewport();
             let full_width = x[1] - x[0];
@@ -50,8 +53,11 @@ impl Widget for Overview<'_> {
                 let fraction = f64::from(clip_area.x).abs() / f64::from(clip_area.width);
                 x[0] += fraction * full_width;
             }
-            if clip_area.x + i32::from(clip_area.width) > i32::from(area.x + area.width) {
-                todo!("offset end x bound")
+            if clip_area_end > area_end {
+                let delta = clip_area_end - area_end;
+                // The fraction of the clip that is outside the window (on the right)
+                let fraction = f64::from(delta) / f64::from(clip_area.width);
+                x[1] -= fraction * full_width;
             }
 
             let selected = Some(index) == self.selected_clip;
