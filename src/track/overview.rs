@@ -1,0 +1,89 @@
+use crate::app::action::Action;
+use crate::app::overview_settings::OverviewSettings;
+use crate::app::window::Window;
+use crate::project::changing::Changing;
+use crate::time::instant::Instant;
+use crate::time::signature::TimeSignature;
+use crate::time::tempo::Tempo;
+use crate::track::Track;
+use crate::widget::Widget;
+use crossterm::event::MouseButton;
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Position, Rect};
+use ratatui::symbols::line::VERTICAL;
+use ratatui::text::Line;
+use ratatui::widgets::Paragraph;
+
+pub struct Overview<'a> {
+    pub track: &'a Track,
+    pub selected_clip: Option<usize>,
+    pub time_signature: &'a Changing<TimeSignature>,
+    pub tempo: &'a Changing<Tempo>,
+    pub settings: OverviewSettings,
+    pub cursor: Instant,
+}
+
+impl Widget for Overview<'_> {
+    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+        let window = Window {
+            time_signature: self.time_signature,
+            overview_settings: self.settings,
+            x: area.x,
+            width: area.width,
+        };
+
+        // TODO: alternate background colour for grid
+
+        // Render the clips
+        for (index, (start, clip)) in self.track.clips.iter().enumerate() {
+            let clip_area = window.period_to_unchecked_rect(
+                clip.period(*start, self.time_signature, self.tempo),
+                area.x,
+                area.y,
+            );
+
+            let [mut x, y] = clip.content.full_overview_viewport();
+            let full_width = x[1] - x[0];
+
+            if clip_area.x < 0 {
+                // The fraction of the clip that is outside the window (on the left)
+                let fraction = f64::from(clip_area.x).abs() / f64::from(clip_area.width);
+                x[0] += fraction * full_width;
+            }
+            if clip_area.x + i32::from(clip_area.width) > i32::from(area.x + area.width) {
+                todo!("offset end x bound")
+            }
+
+            let selected = Some(index) == self.selected_clip;
+
+            clip.overview_canvas(selected)
+                .x_bounds(x)
+                .y_bounds(y)
+                .render(
+                    Rect::intersection(clip_area.clamp(), area),
+                    buf,
+                    mouse_position,
+                );
+        }
+
+        // Render the cursor
+        if let Some(cursor_column) = window.instant_to_column(self.cursor) {
+            let area = Rect {
+                x: cursor_column,
+                y: area.y,
+                width: 1,
+                height: area.height,
+            };
+            Paragraph::new(vec![Line::raw(VERTICAL); area.height as usize]).render(
+                area,
+                buf,
+                mouse_position,
+            );
+        }
+    }
+
+    fn click(&self, _: Rect, _: MouseButton, _: Position, _: &mut Vec<Action>) {
+        // TODO: move, select or open clips
+        // TODO: move cursor
+    }
+}
