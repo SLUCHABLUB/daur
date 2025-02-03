@@ -26,7 +26,7 @@ pub struct Overview<'a> {
 impl Widget for Overview<'_> {
     fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
         let area_end = i32::from(area.x + area.width);
-        
+
         let window = Window {
             time_signature: self.time_signature,
             overview_settings: self.settings,

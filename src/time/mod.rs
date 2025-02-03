@@ -52,34 +52,33 @@ impl Ratio {
         }
     }
 
-    // TODO: in operations, we don't need to reduce both operands
-    fn force_reduced(self) -> Ratio {
-        let (mut numerator, mut denominator) = self.inner.into_raw();
-        numerator /= 2;
-        denominator /= 2;
-
-        if denominator == 0 {
-            denominator = 1;
-        }
-
-        let inner = rational::Ratio::new_raw(numerator, denominator);
-        Ratio { inner }
+    fn big_inner(self) -> rational::Ratio<u128> {
+        let (numerator, denominator) = self.inner.into_raw();
+        rational::Ratio::new_raw(u128::from(numerator), u128::from(denominator))
     }
 
-    fn force_reduced_non_zero(self) -> Ratio {
-        let (mut numerator, mut denominator) = self.inner.into_raw();
-        numerator /= 2;
-        denominator /= 2;
-
-        if numerator == 0 {
-            numerator = 1;
-        }
-        if denominator == 0 {
-            denominator = 1;
+    fn approximate_big(big: rational::Ratio<u128>) -> Ratio {
+        if big == rational::Ratio::ZERO {
+            return Ratio::ZERO;
         }
 
-        let inner = rational::Ratio::new_raw(numerator, denominator);
-        Ratio { inner }
+        let (numerator, denominator) = big.into_raw();
+        Ratio::approximate_u128(numerator, denominator)
+    }
+
+    fn approximate_u128(mut numerator: u128, mut denominator: u128) -> Ratio {
+        if let Ok(numerator) = u64::try_from(numerator) {
+            if let Ok(denominator) = u64::try_from(denominator) {
+                return Ratio {
+                    inner: rational::Ratio::new_raw(numerator, denominator),
+                };
+            }
+        }
+
+        numerator = u128::max(numerator / 2, 1);
+        denominator = u128::max(denominator / 2, 1);
+
+        Ratio::approximate_u128(numerator, denominator)
     }
 }
 
@@ -112,7 +111,7 @@ impl Add<Ratio> for Ratio {
         if let Some(inner) = self.inner.checked_add(&rhs.inner) {
             Ratio { inner }
         } else {
-            self.force_reduced() + rhs.force_reduced()
+            Ratio::approximate_big(self.big_inner() + rhs.big_inner())
         }
     }
 }
@@ -134,7 +133,7 @@ impl Sub for Ratio {
         if let Some(inner) = self.inner.checked_sub(&rhs.inner) {
             Ratio { inner }
         } else {
-            self.force_reduced() - rhs.force_reduced()
+            Ratio::approximate_big(self.big_inner() - rhs.big_inner())
         }
     }
 }
@@ -146,7 +145,7 @@ impl Mul for Ratio {
         if let Some(inner) = self.inner.checked_mul(&rhs.inner) {
             Ratio { inner }
         } else {
-            self.force_reduced() * rhs.force_reduced()
+            Ratio::approximate_big(self.big_inner() * rhs.big_inner())
         }
     }
 }
@@ -165,7 +164,7 @@ impl Div<Ratio> for Ratio {
         if let Some(inner) = self.inner.checked_div(&rhs.inner) {
             Ratio { inner }
         } else {
-            self.force_reduced() / rhs.force_reduced_non_zero()
+            Ratio::approximate_big(self.big_inner() / rhs.big_inner())
         }
     }
 }
