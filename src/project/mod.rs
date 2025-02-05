@@ -44,13 +44,13 @@ pub struct Project {
 }
 
 impl Project {
-    // TODO: metronome
-    // TODO: record
     // TODO: window controls (opening instrument rack, piano roll, et.c)
-    // TODO: loop
-    // TODO: master volume
+    // TODO: key, time sig., tempo
+    
+    // TODO: record, loop, metronome
     // TODO: cursor fine positioning
     // TODO: grid size
+    // TODO: master volume
     pub fn bar(&self, playing: bool) -> impl Widget + use<'_> {
         let playback_button = if playing { PAUSE } else { PLAY };
 
