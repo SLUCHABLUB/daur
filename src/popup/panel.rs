@@ -39,8 +39,7 @@ impl ButtonPanel {
         Size { width, height }
     }
 
-    pub fn to_widget(&self) -> impl Widget {
-        // TODO: implement Widget for &T where T: Widget to avoid clone
-        HomogenousStack::equidistant_vertical(self.buttons.clone())
+    pub fn to_widget(&self) -> impl Widget + use<'_> {
+        HomogenousStack::equidistant_vertical(&self.buttons)
     }
 }
