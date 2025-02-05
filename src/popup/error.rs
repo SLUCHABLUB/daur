@@ -13,12 +13,7 @@ use std::error::Error;
 const ACKNOWLEDGE: &str = "ok";
 const PADDING: u16 = 1;
 const ACKNOWLEDGE_BUTTON_HEIGHT: u16 = 3;
-const ACKNOWLEDGE_BUTTON: Button = Button {
-    action: Action::None,
-    label: ACKNOWLEDGE,
-    description: ACKNOWLEDGE,
-    bordered: true,
-};
+const ACKNOWLEDGE_BUTTON: Button = Button::new(ACKNOWLEDGE, Action::None).bordered();
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct ErrorPopup {

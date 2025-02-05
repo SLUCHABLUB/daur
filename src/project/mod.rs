@@ -24,18 +24,12 @@ use ratatui::symbols::border::THICK;
 use ratatui::widgets::{Block, Clear, Paragraph};
 use saturating_cast::SaturatingCast;
 
-const PLAY: Button = Button {
-    action: Action::Play,
-    label: "\u{25B6}",
-    description: "play",
-    bordered: true,
-};
-const PAUSE: Button = Button {
-    action: Action::Pause,
-    label: "\u{23F8}",
-    description: "pause",
-    bordered: true,
-};
+const PLAY: Button = Button::new("\u{25B6}", Action::Play)
+    .description("play")
+    .bordered();
+const PAUSE: Button = Button::new("\u{23F8}", Action::Pause)
+    .description("pause")
+    .bordered();
 
 #[derive(Clone, Debug, Default)]
 pub struct Project {
@@ -123,12 +117,9 @@ impl Project {
             )
         }));
 
-        let add_track_button = Button {
-            action: Action::AddTrack,
-            label: "+",
-            description: "add track",
-            bordered: true,
-        };
+        let add_track_button = Button::new("+", Action::AddTrack)
+            .description("add track")
+            .bordered();
 
         let add_track_row = TwoStack::horizontal((add_track_button, Clear), horizontal_constraints);
 

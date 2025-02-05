@@ -3,7 +3,6 @@ use crate::popup::info::PopupInfo;
 use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::Widget;
 use ratatui::layout::Size;
-use saturating_cast::SaturatingCast;
 
 #[derive(Clone, Debug)]
 pub struct ButtonPanel {
@@ -18,22 +17,10 @@ impl ButtonPanel {
         let mut height = 0;
 
         for button in &self.buttons {
-            let mut button_width = 0;
+            let size = button.button.size();
 
-            button_width += usize::max(
-                button.button.label.chars().count(),
-                button.button.description.chars().count(),
-            )
-            .saturating_cast::<u16>();
-
-            height += 1;
-
-            if button.button.bordered {
-                button_width += 2;
-                height += 2;
-            }
-
-            width = u16::max(width, button_width);
+            width = u16::max(width, size.width);
+            height += size.height;
         }
 
         Size { width, height }

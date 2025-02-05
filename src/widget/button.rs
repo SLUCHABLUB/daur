@@ -2,26 +2,46 @@ use crate::app::action::Action;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect};
+use ratatui::layout::{Position, Rect, Size};
 use ratatui::widgets::{Block, Borders, Padding, Paragraph};
+use saturating_cast::SaturatingCast;
 
 // TODO: remove pub from fields
 #[derive(Clone, Debug, Default)]
 pub struct Button {
-    pub action: Action,
-    pub label: &'static str,
-    pub description: &'static str,
-    pub bordered: bool,
+    action: Action,
+    label: &'static str,
+    description: &'static str,
+    bordered: bool,
 }
 
 impl Button {
-    pub fn new(label: &'static str, action: Action) -> Self {
+    pub const fn new(label: &'static str, action: Action) -> Self {
         Button {
             action,
             label,
             description: label,
             bordered: false,
         }
+    }
+
+    pub const fn description(mut self, description: &'static str) -> Self {
+        self.description = description;
+        self
+    }
+
+    pub const fn bordered(mut self) -> Self {
+        self.bordered = true;
+        self
+    }
+
+    pub fn size(&self) -> Size {
+        let border = if self.bordered { 2 } else { 0 };
+        let width = usize::max(self.label.chars().count(), self.description.chars().count())
+            .saturating_cast();
+        let height = 1 + border;
+
+        Size { width, height }
     }
 }
 

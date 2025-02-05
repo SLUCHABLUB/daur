@@ -15,12 +15,7 @@ const DEFAULT_SIZE: Size = Size::new(40, 10);
 const CANCEL: &str = "cancel";
 const CONFIRM: &str = "confirm";
 
-const CANCEL_BUTTON: Button = Button {
-    action: Action::None,
-    label: CANCEL,
-    description: CANCEL,
-    bordered: true,
-};
+const CANCEL_BUTTON: Button = Button::new(CANCEL, Action::None).bordered();
 
 #[derive(Clone, Educe)]
 #[educe(Debug)]
@@ -53,12 +48,7 @@ impl ExplorerPopup {
         let confirm_size = CONFIRM.chars().count().saturating_cast::<u16>() + 2;
 
         let confirm = TerminatingButton {
-            button: Button {
-                action,
-                label: CONFIRM,
-                description: CONFIRM,
-                bordered: true,
-            },
+            button: Button::new(CONFIRM, action).bordered(),
             id: self.info.id(),
         };
         let cancel = TerminatingButton {
