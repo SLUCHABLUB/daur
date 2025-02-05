@@ -23,7 +23,8 @@ pub fn spawn_events_thread(
             };
 
             match event {
-                Event::FocusGained | Event::FocusLost => (),
+                // We will implement pasting manually
+                Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
                 Event::Key(event) => {
                     if let Some(action) = app.read_lock().controls.get(&event) {
                         let _ = action_sender.send(action.clone());
@@ -58,9 +59,6 @@ pub fn spawn_events_thread(
                         | MouseEventKind::ScrollLeft
                         | MouseEventKind::ScrollRight => (),
                     }
-                }
-                Event::Paste(string) => {
-                    todo!("paste: {string}")
                 }
                 Event::Resize(width, height) => {
                     app.set_area(Rect {
