@@ -2,9 +2,11 @@ pub mod change;
 pub mod changing;
 
 use crate::app::action::Action;
-use crate::app::overview_settings::OverviewSettings;
 use crate::app::ruler::Ruler;
+use crate::app::settings::OverviewSettings;
+use crate::clip::Clip;
 use crate::columns::ScreenLength;
+use crate::id::Id;
 use crate::key::Key;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
@@ -16,22 +18,23 @@ use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::three_stack::ThreeStack;
 use crate::widget::two_stack::TwoStack;
 use crate::widget::Widget;
+use ratatui::layout::Flex;
 use ratatui::prelude::Constraint;
-use ratatui::symbols::border::{ROUNDED, THICK};
-use ratatui::widgets::{Block, Clear};
+use ratatui::symbols::border::THICK;
+use ratatui::widgets::{Block, Clear, Paragraph};
 use saturating_cast::SaturatingCast;
 
 const PLAY: Button = Button {
     action: Action::Play,
     label: "\u{25B6}",
     description: "play",
-    block: Block::bordered(),
+    bordered: true,
 };
 const PAUSE: Button = Button {
     action: Action::Pause,
     label: "\u{23F8}",
     description: "pause",
-    block: Block::bordered(),
+    bordered: true,
 };
 
 #[derive(Clone, Debug, Default)]
@@ -62,7 +65,11 @@ impl Project {
             .title(self.title.as_str());
 
         ThreeStack::horizontal(
-            (Clear, playback_button, Clear),
+            (
+                Paragraph::new("thing"),
+                playback_button,
+                Paragraph::new("'nother thing'"),
+            ),
             [
                 Constraint::Fill(1),
                 Constraint::Length(7),
@@ -70,14 +77,15 @@ impl Project {
             ],
         )
         .block(block)
+        .flex(Flex::Center)
     }
 
     pub fn workspace(
         &self,
         track_settings_size: ScreenLength,
         overview_settings: OverviewSettings,
-        selected_track: Option<usize>,
-        selected_clip: Option<usize>,
+        selected_track: Id<Track>,
+        selected_clip: Id<Clip>,
         cursor: Instant,
     ) -> impl Widget + use<'_> {
         let track_count = self.tracks.len().saturating_cast();
@@ -98,30 +106,28 @@ impl Project {
         };
         let ruler_row = TwoStack::horizontal((Clear, ruler), horizontal_constraints);
 
-        let tracks = HomogenousStack::equidistant_vertical(self.tracks.iter().enumerate().map(
-            move |(index, track)| {
-                let selected = Some(index) == selected_track;
-                TwoStack::horizontal(
-                    (
-                        track.settings(selected),
-                        track.overview(
-                            selected_clip,
-                            &self.time_signature,
-                            &self.tempo,
-                            overview_settings,
-                            cursor,
-                        ),
+        let tracks = HomogenousStack::equidistant_vertical(self.tracks.iter().map(move |track| {
+            let selected = track.id == selected_track;
+            TwoStack::horizontal(
+                (
+                    track.settings(selected),
+                    track.overview(
+                        selected_clip,
+                        &self.time_signature,
+                        &self.tempo,
+                        overview_settings,
+                        cursor,
                     ),
-                    horizontal_constraints,
-                )
-            },
-        ));
+                ),
+                horizontal_constraints,
+            )
+        }));
 
         let add_track_button = Button {
             action: Action::AddTrack,
             label: "+",
             description: "add track",
-            block: Block::bordered().border_set(ROUNDED),
+            bordered: true,
         };
 
         let add_track_row = TwoStack::horizontal((add_track_button, Clear), horizontal_constraints);

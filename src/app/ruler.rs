@@ -1,5 +1,5 @@
 use crate::app::action::Action;
-use crate::app::overview_settings::OverviewSettings;
+use crate::app::settings::OverviewSettings;
 use crate::app::window::Window;
 use crate::project::changing::Changing;
 use crate::time::signature::TimeSignature;

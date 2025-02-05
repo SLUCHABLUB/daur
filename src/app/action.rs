@@ -1,13 +1,50 @@
+use crate::app::error::{NoExtensionError, UnsupportedFormatError};
 use crate::app::reference::AppShare;
+use crate::clip::audio::Audio;
+use crate::clip::Clip;
+use crate::id::Id;
+use crate::popup::Popup;
 use crate::track::Track;
+use hound::WavReader;
+use std::borrow::Cow;
+use std::ffi::OsStr;
+use std::path::PathBuf;
 use std::time::SystemTime;
 
-#[derive(Copy, Clone, Debug)]
+macro_rules! error {
+    ($error:expr, $app:ident) => {{
+        let popup = Popup::from($error);
+        $app.popups.push(popup);
+        return;
+    }};
+}
+
+macro_rules! or_popup {
+    ($result:expr, $app:ident) => {
+        match $result {
+            Ok(ok) => ok,
+            Err(error) => error!(error, $app),
+        }
+    };
+}
+
+#[derive(Clone, Debug, Default)]
 pub enum Action {
+    /// Does nothing
+    #[default]
+    None,
     /// Add an empty track
     AddTrack,
+    /// Close the popup with the given uuid
+    ClosePopup(Id<Popup>),
     /// Save and exit the program
     Exit,
+    /// Imports an audio file into a track
+    ImportAudio {
+        file: PathBuf,
+        track: Id<Track>,
+    },
+    OpenPopup(Box<Popup>),
     /// Stop playing
     Pause,
     /// Start playing
@@ -21,12 +58,65 @@ impl Action {
     pub fn take(self, app: &AppShare) {
         // TODO: add to action tree
         match self {
+            Action::None => (),
             Action::AddTrack => {
                 let mut app = app.write_lock();
-                app.project.tracks.push(Track::default());
-                app.selected_track = Some(app.project.tracks.len() - 1);
+                let track = Track::new();
+                app.selected_track = track.id;
+                app.project.tracks.push(track);
+            }
+            Action::ClosePopup(id) => {
+                let mut app = app.write_lock();
+                if let Some(position) = app.popups.iter().position(|popup| popup.info().id() == id)
+                {
+                    app.popups.remove(position);
+                }
             }
             Action::Exit => app.set_exit(),
+            Action::ImportAudio {
+                file,
+                track: track_id,
+            } => {
+                let mut app = app.write_lock();
+
+                let Some(extension) = file.extension() else {
+                    error!(NoExtensionError { file }, app);
+                };
+
+                let audio = match extension.to_string_lossy().as_ref() {
+                    "wav" | "wave" => {
+                        let reader = or_popup!(WavReader::open(&file), app);
+                        or_popup!(Audio::try_from(reader), app)
+                    }
+                    _ => error!(
+                        UnsupportedFormatError {
+                            format: extension.to_owned()
+                        },
+                        app
+                    ),
+                };
+
+                let name = file
+                    .file_stem()
+                    .map(OsStr::to_string_lossy)
+                    .map(Cow::into_owned)
+                    .unwrap_or_default();
+
+                let instant = app.cursor;
+
+                if let Some(track) = app
+                    .project
+                    .tracks
+                    .iter_mut()
+                    .find(|track| track.id == track_id)
+                {
+                    track.clips.insert(instant, Clip::from_audio(name, audio));
+                }
+            }
+            Action::OpenPopup(popup) => {
+                let mut app = app.write_lock();
+                app.popups.push(*popup);
+            }
             Action::Pause => {
                 let mut app = app.write_lock();
                 app.cursor = app.playback_position();

@@ -26,7 +26,7 @@ pub fn spawn_events_thread(
                 Event::FocusGained | Event::FocusLost => (),
                 Event::Key(event) => {
                     if let Some(action) = app.read_lock().controls.get(&event) {
-                        let _ = action_sender.send(*action);
+                        let _ = action_sender.send(action.clone());
                     }
                 }
                 Event::Mouse(event) => {
@@ -36,7 +36,7 @@ pub fn spawn_events_thread(
                         MouseEventKind::Down(button) => {
                             let mut action_queue = Vec::new();
 
-                            app.read_lock().to_widget().click(
+                            app.read_lock().click(
                                 app.area(),
                                 button,
                                 app.mouse_position(),

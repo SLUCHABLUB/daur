@@ -2,26 +2,32 @@ pub mod action;
 mod atomic;
 pub mod control;
 mod draw;
+mod error;
 mod events;
-pub mod overview_settings;
 mod reference;
 pub mod ruler;
+pub mod settings;
 pub mod window;
 
 use crate::app::action::Action;
 use crate::app::control::DEFAULT_CONTROLS;
 use crate::app::draw::spawn_draw_thread;
 use crate::app::events::spawn_events_thread;
-use crate::app::overview_settings::OverviewSettings;
 use crate::app::reference::AppShare;
+use crate::app::settings::OverviewSettings;
+use crate::clip::Clip;
 use crate::columns::ScreenLength;
+use crate::id::Id;
+use crate::popup::Popup;
 use crate::project::Project;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
+use crate::track::Track;
 use crate::widget::two_stack::TwoStack;
 use crate::widget::Widget;
-use crossterm::event::KeyEvent;
-use ratatui::layout::Constraint;
+use crossterm::event::{KeyEvent, MouseButton};
+use ratatui::buffer::Buffer;
+use ratatui::layout::{Constraint, Position, Rect};
 use ratatui::DefaultTerminal;
 use std::collections::HashMap;
 use std::io;
@@ -38,12 +44,13 @@ pub struct App {
     /// `None` means that playback is paused.
     pub playback_start: Option<SystemTime>,
 
-    // TODO: popups
+    pub popups: Vec<Popup>,
+
     pub project_bar_size: ScreenLength,
     pub track_settings_size: ScreenLength,
 
-    pub selected_track: Option<usize>,
-    pub selected_clip: Option<usize>,
+    pub selected_track: Id<Track>,
+    pub selected_clip: Id<Clip>,
     pub cursor: Instant,
 
     pub overview_settings: OverviewSettings,
@@ -57,11 +64,13 @@ impl App {
 
             playback_start: None,
 
+            popups: Vec::new(),
+
             project_bar_size: ScreenLength(5),
             track_settings_size: ScreenLength(20),
 
-            selected_track: None,
-            selected_clip: None,
+            selected_track: Id::nil(),
+            selected_clip: Id::nil(),
             cursor: Instant::START,
 
             overview_settings: OverviewSettings::default(),
@@ -106,7 +115,8 @@ impl App {
         }
     }
 
-    fn to_widget(&self) -> impl Widget + use<'_> {
+    /// The app's main widget, behind any popups
+    fn background(&self) -> impl Widget + use<'_> {
         TwoStack::vertical(
             (
                 self.project.bar(self.playback_start.is_some()),
@@ -123,5 +133,37 @@ impl App {
                 Constraint::Fill(1),
             ],
         )
+    }
+}
+
+impl Widget for App {
+    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+        self.background().render(area, buf, mouse_position);
+
+        for popup in &self.popups {
+            let area = popup.area_in_window(area);
+            popup.render(area, buf, mouse_position);
+        }
+    }
+
+    fn click(
+        &self,
+        area: Rect,
+        button: MouseButton,
+        position: Position,
+        action_queue: &mut Vec<Action>,
+    ) {
+        for popup in &self.popups {
+            let area = popup.area_in_window(area);
+            if area.contains(position) {
+                popup.click(area, button, position, action_queue);
+                return;
+            } else if popup.unimportant() {
+                action_queue.push(Action::ClosePopup(popup.info().id()));
+            }
+        }
+
+        self.background()
+            .click(area, button, position, action_queue);
     }
 }

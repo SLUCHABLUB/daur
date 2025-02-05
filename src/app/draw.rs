@@ -16,13 +16,13 @@ pub fn spawn_draw_thread(
             }
 
             let result = terminal.draw(|frame| {
-                app.set_area(frame.area());
+                let area = frame.area();
+                let buf = frame.buffer_mut();
+                let mouse_position = app.mouse_position();
 
-                app.read_lock().to_widget().render(
-                    frame.area(),
-                    frame.buffer_mut(),
-                    app.mouse_position(),
-                );
+                app.set_area(area);
+
+                app.read_lock().render(area, buf, mouse_position);
             });
 
             if result.is_err() {

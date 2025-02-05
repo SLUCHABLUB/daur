@@ -3,16 +3,29 @@ use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Position, Rect};
-use ratatui::widgets::{Block, Padding, Paragraph};
+use ratatui::widgets::{Block, Borders, Padding, Paragraph};
 
-pub struct Button<'a> {
+// TODO: remove pub from fields
+#[derive(Clone, Debug, Default)]
+pub struct Button {
     pub action: Action,
     pub label: &'static str,
     pub description: &'static str,
-    pub block: Block<'a>,
+    pub bordered: bool,
 }
 
-impl Widget for Button<'_> {
+impl Button {
+    pub fn new(label: &'static str, action: Action) -> Self {
+        Button {
+            action,
+            label,
+            description: label,
+            bordered: false,
+        }
+    }
+}
+
+impl Widget for Button {
     fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
         let content = if area.contains(mouse_position) {
             self.description
@@ -23,10 +36,15 @@ impl Widget for Button<'_> {
         // - 2 for the border, - 1 to favour the top
         let padding = Padding::top(area.height.saturating_sub(3) / 2);
 
-        // TODO: fix the block situation
+        let mut block = Block::new().padding(padding);
+
+        if self.bordered {
+            block = block.borders(Borders::ALL);
+        }
+
         Paragraph::new(content)
             .centered()
-            .block(self.block.clone().padding(padding))
+            .block(block)
             .render(area, buf, mouse_position);
     }
 
@@ -35,6 +53,6 @@ impl Widget for Button<'_> {
             return;
         }
 
-        action_queue.push(self.action);
+        action_queue.push(self.action.clone());
     }
 }

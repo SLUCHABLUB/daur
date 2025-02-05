@@ -1,4 +1,4 @@
-use crate::app::overview_settings::OverviewSettings;
+use crate::app::settings::OverviewSettings;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;

@@ -1,6 +1,9 @@
 use crate::app::action::Action;
-use crate::app::overview_settings::OverviewSettings;
+use crate::app::settings::OverviewSettings;
 use crate::app::window::Window;
+use crate::clip::Clip;
+use crate::id::Id;
+use crate::popup::Popup;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::signature::TimeSignature;
@@ -13,10 +16,26 @@ use ratatui::layout::{Position, Rect};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
+use ratatui_explorer::File;
+
+const IMPORT_AUDIO: &str = "import audio";
+
+pub fn right_click_menu(track: Id<Track>) -> Popup {
+    // TODO
+    let action = move |file: &File| Action::ImportAudio {
+        file: file.path().clone(),
+        track,
+    };
+
+    Popup::unimportant_buttons([(
+        IMPORT_AUDIO,
+        Action::OpenPopup(Box::new(Popup::explorer(IMPORT_AUDIO.to_owned(), action))),
+    )])
+}
 
 pub struct Overview<'a> {
     pub track: &'a Track,
-    pub selected_clip: Option<usize>,
+    pub selected_clip: Id<Clip>,
     pub time_signature: &'a Changing<TimeSignature>,
     pub tempo: &'a Changing<Tempo>,
     pub settings: OverviewSettings,
@@ -37,7 +56,7 @@ impl Widget for Overview<'_> {
         // TODO: alternate background colour for grid
 
         // Render the clips
-        for (index, (start, clip)) in self.track.clips.iter().enumerate() {
+        for (start, clip) in &self.track.clips {
             let clip_area = window.period_to_unchecked_rect(
                 clip.period(*start, self.time_signature, self.tempo),
                 area.x,
@@ -60,7 +79,7 @@ impl Widget for Overview<'_> {
                 x[1] -= fraction * full_width;
             }
 
-            let selected = Some(index) == self.selected_clip;
+            let selected = clip.id == self.selected_clip;
 
             clip.overview_canvas(selected)
                 .x_bounds(x)
@@ -88,8 +107,21 @@ impl Widget for Overview<'_> {
         }
     }
 
-    fn click(&self, _: Rect, _: MouseButton, _: Position, _: &mut Vec<Action>) {
+    fn click(
+        &self,
+        _: Rect,
+        button: MouseButton,
+        position: Position,
+        action_queue: &mut Vec<Action>,
+    ) {
         // TODO: move, select or open clips
         // TODO: move cursor
+
+        // TODO: && clip not clicked
+        if button == MouseButton::Right {
+            action_queue.push(Action::OpenPopup(Box::new(
+                right_click_menu(self.track.id).at(position),
+            )));
+        }
     }
 }
