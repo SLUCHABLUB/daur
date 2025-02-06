@@ -4,6 +4,7 @@ use crate::clip::audio::Audio;
 use crate::clip::Clip;
 use crate::id::Id;
 use crate::popup::Popup;
+use crate::time::instant::Instant;
 use crate::track::Track;
 use hound::WavReader;
 use ratatui_explorer::Input;
@@ -45,6 +46,8 @@ pub enum Action {
         file: PathBuf,
         track: Id<Track>,
     },
+    /// Moves the (musical) cursor.
+    MoveCursor(Instant),
     OpenPopup(Box<Popup>),
     /// Stop playing
     Pause,
@@ -117,6 +120,17 @@ impl Action {
                     .find(|track| track.id == track_id)
                 {
                     track.clips.insert(instant, Clip::from_audio(name, audio));
+                }
+            }
+            Action::MoveCursor(instant) => {
+                let mut app = app.write_lock();
+
+                app.cursor = instant;
+
+                // Since the cursor only technically moves when playback stops,
+                // we need to reset it. Shouldn't be noticeable though.
+                if app.playback_start.is_some() {
+                    app.playback_start = Some(SystemTime::now());
                 }
             }
             Action::OpenPopup(popup) => {

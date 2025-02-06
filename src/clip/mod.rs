@@ -1,7 +1,6 @@
 pub mod audio;
 mod content;
 
-use ratatui::layout::Alignment;
 use crate::clip::audio::Audio;
 use crate::clip::content::Content;
 use crate::id::Id;
@@ -10,6 +9,7 @@ use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
+use ratatui::layout::Alignment;
 use ratatui::style::Color;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::canvas::{Canvas, Context};

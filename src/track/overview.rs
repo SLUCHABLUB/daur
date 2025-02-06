@@ -42,16 +42,22 @@ pub struct Overview<'a> {
     pub cursor: Instant,
 }
 
-impl Widget for Overview<'_> {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
-        let area_end = i32::from(area.x + area.width);
-
-        let window = Window {
+impl Overview<'_> {
+    fn window(&self, area: Rect) -> Window {
+        Window {
             time_signature: self.time_signature,
             overview_settings: self.settings,
             x: area.x,
             width: area.width,
-        };
+        }
+    }
+}
+
+impl Widget for Overview<'_> {
+    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+        let area_end = i32::from(area.x + area.width);
+
+        let window = self.window(area);
 
         // TODO: alternate background colour for grid
 
@@ -59,6 +65,7 @@ impl Widget for Overview<'_> {
         for (start, clip) in &self.track.clips {
             let clip_area = window.period_to_unchecked_rect(
                 clip.period(*start, self.time_signature, self.tempo),
+                area.x,
                 area.y,
                 area.height,
             );
@@ -109,13 +116,20 @@ impl Widget for Overview<'_> {
 
     fn click(
         &self,
-        _: Rect,
+        area: Rect,
         button: MouseButton,
         position: Position,
         action_queue: &mut Vec<Action>,
     ) {
         // TODO: move, select or open clips
-        // TODO: move cursor
+
+        let window = self.window(area);
+
+        let instant = window.column_to_instant_on_grid(position.x);
+
+        if button == MouseButton::Left {
+            action_queue.push(Action::MoveCursor(instant));
+        }
 
         // TODO: && clip not clicked
         if button == MouseButton::Right {

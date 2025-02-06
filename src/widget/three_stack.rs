@@ -81,13 +81,19 @@ impl<A: Widget, B: Widget, C: Widget> Widget for ThreeStack<'_, A, B, C> {
     ) {
         let areas = self.areas(area);
         if areas[0].contains(position) {
-            self.children.0.click(area, button, position, action_queue);
+            self.children
+                .0
+                .click(areas[0], button, position, action_queue);
         }
         if areas[1].contains(position) {
-            self.children.1.click(area, button, position, action_queue);
+            self.children
+                .1
+                .click(areas[1], button, position, action_queue);
         }
         if areas[2].contains(position) {
-            self.children.2.click(area, button, position, action_queue);
+            self.children
+                .2
+                .click(areas[2], button, position, action_queue);
         }
     }
 }

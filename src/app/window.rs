@@ -4,8 +4,8 @@ use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use crate::time::Ratio;
-use num::ToPrimitive;
 use ratatui::layout::Rect;
+use rounded_div::RoundedDiv;
 use saturating_cast::SaturatingCast;
 
 /// A window into
@@ -28,8 +28,8 @@ pub struct UncheckedRect {
 impl UncheckedRect {
     pub fn clamp(self) -> Rect {
         Rect {
-            x: self.x.to_u32().unwrap_or(0).to_u16().unwrap_or(u16::MAX),
-            y: self.y.to_u32().unwrap_or(0).to_u16().unwrap_or(u16::MAX),
+            x: self.x.saturating_cast(),
+            y: self.y.saturating_cast(),
             width: self.width,
             height: self.height,
         }
@@ -71,8 +71,25 @@ impl Window<'_> {
         }
     }
 
-    pub fn period_to_unchecked_rect(self, period: Period, y: u16, height: u16) -> UncheckedRect {
-        let x = self.instant_to_column_unchecked(period.start);
+    pub fn column_to_instant_on_grid(&self, column: u16) -> Instant {
+        let offset = self.overview_settings.offset + column - self.x;
+
+        let cell = offset.rounded_div(self.overview_settings.cell_width);
+        let duration = self.overview_settings.cell_duration * Ratio::from(cell);
+        Instant {
+            whole_notes: duration.whole_notes,
+        }
+    }
+
+    pub fn period_to_unchecked_rect(
+        self,
+        period: Period,
+        x: u16,
+        y: u16,
+        height: u16,
+    ) -> UncheckedRect {
+        let offset = i32::from(x);
+        let x = offset + self.instant_to_column_unchecked(period.start);
         // TODO: subtract one to not include column of next beat?
         let end = self.instant_to_column_unchecked(period.end());
         let width = (end - x).saturating_cast();
