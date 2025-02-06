@@ -42,7 +42,7 @@ pub struct App {
 
     /// When playback started.
     /// `None` means that playback is paused.
-    pub playback_start: Option<SystemTime>,
+    playback_start: Option<SystemTime>,
 
     pub popups: Vec<Popup>,
 
@@ -105,6 +105,19 @@ impl App {
         Ok(())
     }
 
+    fn is_playing(&self) -> bool {
+        self.playback_start.is_some()
+    }
+
+    pub fn start_playback(&mut self) {
+        self.playback_start = Some(SystemTime::now());
+    }
+
+    pub fn stop_playback(&mut self) {
+        self.cursor = self.playback_position();
+        self.playback_start = None;
+    }
+
     fn playback_position(&self) -> Instant {
         if let Some(playback_start) = self.playback_start {
             Period::from_real_time(
@@ -123,7 +136,7 @@ impl App {
     fn background(&self) -> impl Widget + use<'_> {
         TwoStack::vertical(
             (
-                self.project.bar(self.playback_start.is_some()),
+                self.project.bar(self.is_playing()),
                 self.project.workspace(
                     self.track_settings_size,
                     self.overview_settings,

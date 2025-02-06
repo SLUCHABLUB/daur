@@ -11,7 +11,6 @@ use ratatui_explorer::Input;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::PathBuf;
-use std::time::SystemTime;
 
 macro_rules! error {
     ($error:expr, $app:ident) => {{
@@ -127,32 +126,25 @@ impl Action {
 
                 app.cursor = instant;
 
-                // Since the cursor only technically moves when playback stops,
-                // we need to reset it. Shouldn't be noticeable though.
-                if app.playback_start.is_some() {
-                    app.playback_start = Some(SystemTime::now());
+                if app.is_playing() {
+                    app.start_playback();
                 }
             }
             Action::OpenPopup(popup) => {
-                let mut app = app.write_lock();
-                app.popups.push(*popup);
+                app.write_lock().popups.push(*popup);
             }
             Action::Pause => {
-                let mut app = app.write_lock();
-                app.cursor = app.playback_position();
-                app.playback_start = None;
+                app.write_lock().stop_playback();
             }
             Action::Play => {
-                let mut app = app.write_lock();
-                app.playback_start = Some(SystemTime::now());
+                app.write_lock().start_playback();
             }
             Action::PlayPause => {
                 let mut app = app.write_lock();
-                if app.playback_start.is_some() {
-                    app.cursor = app.playback_position();
-                    app.playback_start = None;
+                if app.is_playing() {
+                    app.stop_playback();
                 } else {
-                    app.playback_start = Some(SystemTime::now());
+                    app.start_playback();
                 }
             }
             Action::Select { popup: id, index } => {
