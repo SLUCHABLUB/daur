@@ -94,10 +94,14 @@ impl App {
             action.take(&app);
         }
 
-        draw_thread.join().expect("Drawing thread panicked")?;
-        events_thread
-            .join()
-            .expect("Event-handler thread panicked")?;
+        if draw_thread.is_finished() {
+            draw_thread.join().expect("Drawing thread panicked")?;
+        }
+        if events_thread.is_finished() {
+            events_thread
+                .join()
+                .expect("Event-handler thread panicked")?;
+        }
         Ok(())
     }
 
