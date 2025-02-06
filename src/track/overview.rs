@@ -79,7 +79,7 @@ impl Widget for Overview<'_> {
                 let fraction = f64::from(clip_area.x).abs() / f64::from(clip_area.width);
                 x[0] += fraction * full_width;
             }
-            if clip_area_end > area_end {
+            if area_end < clip_area_end {
                 let delta = clip_area_end - area_end;
                 // The fraction of the clip that is outside the window (on the right)
                 let fraction = f64::from(delta) / f64::from(clip_area.width);
