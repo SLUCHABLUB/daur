@@ -1,6 +1,7 @@
 pub mod audio;
 mod content;
 
+use ratatui::layout::Alignment;
 use crate::clip::audio::Audio;
 use crate::clip::content::Content;
 use crate::id::Id;
@@ -54,6 +55,7 @@ impl Clip {
             .block(
                 Block::bordered()
                     .borders(Borders::TOP)
+                    .title_alignment(Alignment::Center)
                     .border_set(set)
                     .title(self.name.as_str()),
             )
