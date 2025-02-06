@@ -59,8 +59,8 @@ impl Widget for Overview<'_> {
         for (start, clip) in &self.track.clips {
             let clip_area = window.period_to_unchecked_rect(
                 clip.period(*start, self.time_signature, self.tempo),
-                area.x,
                 area.y,
+                area.height,
             );
             let clip_area_end = clip_area.x + i32::from(clip_area.width);
 
