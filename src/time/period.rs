@@ -34,7 +34,7 @@ impl Period {
             }
 
             // The (remaining) duration of the bar.
-            // A period with constant time signature
+            // (A period with constant time signature)
             let period = Period {
                 start: current,
                 duration: Duration::min(bar.duration(), bar.period().end() - current),

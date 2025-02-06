@@ -91,7 +91,7 @@ impl Window<'_> {
         let offset = i32::from(x);
         let x = offset + self.instant_to_column_unchecked(period.start);
         // TODO: subtract one to not include column of next beat?
-        let end = self.instant_to_column_unchecked(period.end());
+        let end = offset + self.instant_to_column_unchecked(period.end());
         let width = (end - x).saturating_cast();
 
         UncheckedRect {
