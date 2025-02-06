@@ -68,7 +68,7 @@ impl Popup {
         match self {
             Popup::Buttons(buttons) => buttons.size(),
             Popup::Error(message) => message.size(),
-            Popup::Explorer(explorer) => explorer.size,
+            Popup::Explorer(explorer) => explorer.size(),
         }
     }
 
@@ -144,7 +144,7 @@ impl Widget for Popup {
         match self {
             Popup::Buttons(buttons) => buttons.to_widget().render(area, buf, mouse_position),
             Popup::Error(message) => message.to_widget().render(area, buf, mouse_position),
-            Popup::Explorer(explorer) => explorer.to_widget().render(area, buf, mouse_position),
+            Popup::Explorer(explorer) => explorer.render(area, buf, mouse_position),
         }
     }
 
@@ -155,7 +155,6 @@ impl Widget for Popup {
         position: Position,
         action_queue: &mut Vec<Action>,
     ) {
-        // TODO: scale popup
         let area = Block::bordered().inner(area);
 
         match self {
@@ -170,9 +169,7 @@ impl Widget for Popup {
                     .click(area, button, position, action_queue);
             }
             Popup::Explorer(explorer) => {
-                explorer
-                    .to_widget()
-                    .click(area, button, position, action_queue);
+                explorer.click(area, button, position, action_queue);
             }
         }
     }

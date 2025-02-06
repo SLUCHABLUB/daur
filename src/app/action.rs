@@ -6,6 +6,7 @@ use crate::id::Id;
 use crate::popup::Popup;
 use crate::track::Track;
 use hound::WavReader;
+use ratatui_explorer::Input;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::PathBuf;
@@ -51,6 +52,11 @@ pub enum Action {
     Play,
     /// `Play` or `Pause`
     PlayPause,
+    /// Select an option in a popup
+    Select {
+        popup: Id<Popup>,
+        index: usize,
+    },
     // TODO: add scripting
 }
 
@@ -133,6 +139,23 @@ impl Action {
                     app.playback_start = None;
                 } else {
                     app.playback_start = Some(SystemTime::now());
+                }
+            }
+            Action::Select { popup: id, index } => {
+                let mut app = app.write_lock();
+
+                if let Some(popup) = app.popups.iter_mut().find(|popup| popup.info().id() == id) {
+                    match popup {
+                        Popup::Explorer(ref mut popup) => {
+                            let explorer = &mut popup.explorer;
+                            if explorer.selected_idx() == index {
+                                or_popup!(explorer.handle(Input::Right), app);
+                            } else if index < explorer.files().len() {
+                                explorer.set_selected_idx(index);
+                            }
+                        }
+                        Popup::Buttons(_) | Popup::Error(_) => (),
+                    }
                 }
             }
         }

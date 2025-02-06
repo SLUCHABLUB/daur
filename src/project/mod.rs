@@ -46,7 +46,7 @@ pub struct Project {
 impl Project {
     // TODO: window controls (opening instrument rack, piano roll, et.c)
     // TODO: key, time sig., tempo
-    
+
     // TODO: record, loop, metronome
     // TODO: cursor fine positioning
     // TODO: grid size
