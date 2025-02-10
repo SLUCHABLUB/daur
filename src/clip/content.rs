@@ -1,4 +1,4 @@
-use crate::clip::audio::Audio;
+use crate::audio::Audio;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
@@ -33,7 +33,7 @@ impl Content {
         match self {
             Content::Audio(audio) => {
                 #[allow(clippy::cast_precision_loss)]
-                let viewport_end = audio.samples.len() as f64;
+                let viewport_end = audio.sample_count() as f64;
                 [[0.0, viewport_end], [-1.0, 1.0]]
             }
         }
@@ -44,10 +44,9 @@ impl Content {
             Content::Audio(audio) => {
                 #[allow(clippy::cast_precision_loss)]
                 let points: Vec<(f64, f64)> = audio
-                    .samples
-                    .iter()
+                    .mono_samples()
                     .enumerate()
-                    .map(|(n, sample)| (n as f64, *sample))
+                    .map(|(n, sample)| (n as f64, sample))
                     .collect();
 
                 context.draw(&Points {

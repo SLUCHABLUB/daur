@@ -2,7 +2,7 @@ use crate::id::Id;
 use crate::popup::Popup;
 use ratatui::layout::Position;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct PopupInfo {
     pub title: String,
     id: Id<Popup>,

@@ -8,7 +8,7 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::{Position, Rect};
 
 /// A simple button
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct TerminatingButton {
     pub button: Button,
     /// The id of the containing popup

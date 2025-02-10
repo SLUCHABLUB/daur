@@ -1,4 +1,5 @@
-mod overview;
+pub mod overview;
+pub mod source;
 
 use crate::app::settings::OverviewSettings;
 use crate::clip::Clip;
@@ -8,6 +9,7 @@ use crate::time::instant::Instant;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
 use crate::track::overview::Overview;
+use crate::track::source::TrackSource;
 use crate::widget::Widget;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::{Block, Paragraph};
@@ -57,5 +59,31 @@ impl Track {
             settings: overview_settings,
             cursor,
         }
+    }
+
+    pub fn to_source(
+        &self,
+        time_signature: &Changing<TimeSignature>,
+        tempo: &Changing<Tempo>,
+        sample_rate: u32,
+        offset: usize,
+    ) -> TrackSource {
+        TrackSource::new(
+            sample_rate,
+            self.clips
+                .iter()
+                .map(|(start, clip)| {
+                    let start = start.to_sample(time_signature, tempo, sample_rate);
+                    let mut clip_offset = 0;
+
+                    if start < offset {
+                        clip_offset = offset - start;
+                    }
+
+                    (start, clip.to_source(clip_offset))
+                })
+                .collect(),
+            offset,
+        )
     }
 }

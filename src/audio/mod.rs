@@ -1,3 +1,6 @@
+pub mod source;
+
+use crate::audio::source::AudioSource;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
@@ -5,23 +8,36 @@ use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
 use crate::time::Ratio;
 use hound::{Error, SampleFormat, WavReader};
-use itertools::Itertools;
+use itertools::{EitherOrBoth, Itertools};
 use std::io::Read;
 use std::num::FpCategory;
 use std::time::Duration;
 
 #[derive(Clone, Debug)]
 pub struct Audio {
-    pub sample_rate: u32,
+    sample_rate: u32,
     // On the interval [-1; 1]
-    pub samples: Vec<f64>,
+    channels: [Vec<f64>; 2],
 }
 
 impl Audio {
-    fn duration(&self) -> Duration {
+    pub fn sample_count(&self) -> usize {
+        usize::max(self.channels[0].len(), self.channels[1].len())
+    }
+
+    pub fn duration(&self) -> Duration {
         Duration::from_secs_f64(
-            Ratio::new(self.samples.len() as u64, u64::from(self.sample_rate)).to_float(),
+            Ratio::new(self.sample_count() as u64, u64::from(self.sample_rate)).to_float(),
         )
+    }
+
+    pub fn mono_samples(&self) -> impl Iterator<Item = f64> + use<'_> {
+        Itertools::zip_longest(self.channels[0].iter(), self.channels[1].iter()).map(|either| {
+            match either {
+                EitherOrBoth::Both(l, r) => (l + r) / 2.0,
+                EitherOrBoth::Left(sample) | EitherOrBoth::Right(sample) => *sample,
+            }
+        })
     }
 
     pub fn period(
@@ -31,6 +47,10 @@ impl Audio {
         tempo: &Changing<Tempo>,
     ) -> Period {
         Period::from_real_time(start, time_signature, tempo, self.duration())
+    }
+
+    pub fn to_source(&self, offset: usize) -> AudioSource {
+        AudioSource::new(self.clone(), offset)
     }
 }
 
@@ -44,7 +64,6 @@ fn clamp_float_sample(sample: f32) -> f64 {
     let sample = f64::from(sample);
     match sample.classify() {
         FpCategory::Nan => 0.0,
-        FpCategory::Infinite => 1_f64.copysign(sample),
         _ => sample.clamp(-1.0, 1.0),
     }
 }
@@ -54,7 +73,7 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
 
     fn try_from(mut reader: WavReader<R>) -> Result<Self, Self::Error> {
         let spec = reader.spec();
-        let samples = match spec.sample_format {
+        let samples: Vec<f64> = match spec.sample_format {
             SampleFormat::Float => reader
                 .samples::<f32>()
                 .map_ok(clamp_float_sample)
@@ -65,9 +84,19 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
                 .try_collect()?,
         };
 
+        let channels = match spec.channels {
+            1 => [samples.clone(), samples],
+            2 => samples
+                .chunks_exact(2)
+                .map(|chunk| (chunk[0], chunk[1]))
+                .unzip()
+                .into(),
+            _ => return Err(Error::Unsupported),
+        };
+
         Ok(Audio {
             sample_rate: spec.sample_rate,
-            samples,
+            channels,
         })
     }
 }

@@ -1,5 +1,6 @@
 pub mod change;
 pub mod changing;
+mod source;
 
 use crate::app::action::Action;
 use crate::app::ruler::Ruler;
@@ -9,6 +10,7 @@ use crate::columns::ScreenLength;
 use crate::id::Id;
 use crate::key::Key;
 use crate::project::changing::Changing;
+use crate::project::source::ProjectSource;
 use crate::time::instant::Instant;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
@@ -23,13 +25,13 @@ use ratatui::prelude::Constraint;
 use ratatui::symbols::border::THICK;
 use ratatui::widgets::{Block, Clear, Paragraph};
 use saturating_cast::SaturatingCast;
+use std::borrow::Cow;
 
-const PLAY: Button = Button::new("\u{25B6}", Action::Play)
-    .description("play")
-    .bordered();
-const PAUSE: Button = Button::new("\u{23F8}", Action::Pause)
-    .description("pause")
-    .bordered();
+const PLAY: &str = "\u{25B6}";
+const PAUSE: &str = "\u{23F8}";
+
+const PLAY_DESCRIPTION: &str = "play";
+const PAUSE_DESCRIPTION: &str = "pause";
 
 #[derive(Clone, Debug, Default)]
 pub struct Project {
@@ -52,7 +54,15 @@ impl Project {
     // TODO: grid size
     // TODO: master volume
     pub fn bar(&self, playing: bool) -> impl Widget + use<'_> {
-        let playback_button = if playing { PAUSE } else { PLAY };
+        let playback_button = if playing {
+            Button::new(PAUSE, Action::Pause)
+                .description(PAUSE_DESCRIPTION)
+                .bordered()
+        } else {
+            Button::new(PLAY, Action::Play)
+                .description(PLAY_DESCRIPTION)
+                .bordered()
+        };
 
         let block = Block::bordered()
             .border_set(THICK)
@@ -60,9 +70,9 @@ impl Project {
 
         ThreeStack::horizontal(
             (
-                Paragraph::new("thing"),
+                Paragraph::new("TODO").centered(),
                 playback_button,
-                Paragraph::new("'nother thing'"),
+                Paragraph::new("TODO").centered(),
             ),
             [
                 Constraint::Fill(1),
@@ -117,12 +127,26 @@ impl Project {
             )
         }));
 
-        let add_track_button = Button::new("+", Action::AddTrack)
-            .description("add track")
+        let add_track_button = Button::new(Cow::Borrowed("+"), Action::AddTrack)
+            .description(Cow::Borrowed("add track"))
             .bordered();
 
         let add_track_row = TwoStack::horizontal((add_track_button, Clear), horizontal_constraints);
 
         ThreeStack::vertical((ruler_row, tracks, add_track_row), vertical_constraints)
+    }
+
+    pub fn to_source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {
+        let offset = cursor.to_sample(&self.time_signature, &self.tempo, sample_rate);
+        ProjectSource {
+            sample_rate,
+            tracks: self
+                .tracks
+                .iter()
+                .map(|track| {
+                    track.to_source(&self.time_signature, &self.tempo, sample_rate, offset)
+                })
+                .collect(),
+        }
     }
 }

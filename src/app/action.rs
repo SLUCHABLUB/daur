@@ -1,6 +1,6 @@
 use crate::app::error::{NoExtensionError, UnsupportedFormatError};
-use crate::app::reference::AppShare;
-use crate::clip::audio::Audio;
+use crate::app::{or_popup, popup_error, App};
+use crate::audio::Audio;
 use crate::clip::Clip;
 use crate::id::Id;
 use crate::popup::Popup;
@@ -8,28 +8,12 @@ use crate::time::instant::Instant;
 use crate::track::Track;
 use hound::WavReader;
 use ratatui_explorer::Input;
+use rodio::Device;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::PathBuf;
 
-macro_rules! error {
-    ($error:expr, $app:ident) => {{
-        let popup = Popup::from($error);
-        $app.popups.push(popup);
-        return;
-    }};
-}
-
-macro_rules! or_popup {
-    ($result:expr, $app:ident) => {
-        match $result {
-            Ok(ok) => ok,
-            Err(error) => error!(error, $app),
-        }
-    };
-}
-
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub enum Action {
     /// Does nothing
     #[default]
@@ -40,10 +24,9 @@ pub enum Action {
     ClosePopup(Id<Popup>),
     /// Save and exit the program
     Exit,
-    /// Imports an audio file into a track
+    /// Imports an audio file into the selected track
     ImportAudio {
         file: PathBuf,
-        track: Id<Track>,
     },
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
@@ -59,44 +42,52 @@ pub enum Action {
         popup: Id<Popup>,
         index: usize,
     },
+    /// Sets the audio output device
+    SetDevice(Device),
     // TODO: add scripting
 }
 
 impl Action {
-    pub fn take(self, app: &AppShare) {
-        // TODO: add to action tree
+    pub fn take(self, app: &mut App) {
+        match self {
+            Action::AddTrack
+            | Action::ClosePopup(_)
+            | Action::ImportAudio { .. }
+            | Action::MoveCursor(_)
+            | Action::OpenPopup(_)
+            | Action::Pause
+            | Action::Play
+            | Action::PlayPause
+            | Action::Select { .. } => app.should_redraw = true,
+            Action::None | Action::Exit | Action::SetDevice(_) => (),
+        }
+
         match self {
             Action::None => (),
             Action::AddTrack => {
-                let mut app = app.write_lock();
                 let track = Track::new();
                 app.selected_track = track.id;
                 app.project.tracks.push(track);
             }
             Action::ClosePopup(id) => {
-                let mut app = app.write_lock();
                 if let Some(position) = app.popups.iter().position(|popup| popup.info().id() == id)
                 {
                     app.popups.remove(position);
                 }
             }
-            Action::Exit => app.set_exit(),
-            Action::ImportAudio {
-                file,
-                track: track_id,
-            } => {
-                let mut app = app.write_lock();
-
+            Action::Exit => app.should_exit = true,
+            Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {
-                    error!(NoExtensionError { file }, app);
+                    popup_error!(NoExtensionError { file }, app);
                 };
 
+                // TODO: look at the symphonia crate
                 let audio = match extension.to_string_lossy().as_ref() {
                     "wav" | "wave" => {
                         let reader = or_popup!(WavReader::open(&file), app);
                         or_popup!(Audio::try_from(reader), app)
                     }
-                    _ => error!(
+                    _ => popup_error!(
                         UnsupportedFormatError {
                             format: extension.to_owned()
                         },
@@ -116,14 +107,12 @@ impl Action {
                     .project
                     .tracks
                     .iter_mut()
-                    .find(|track| track.id == track_id)
+                    .find(|track| track.id == app.selected_track)
                 {
                     track.clips.insert(instant, Clip::from_audio(name, audio));
                 }
             }
             Action::MoveCursor(instant) => {
-                let mut app = app.write_lock();
-
                 app.cursor = instant;
 
                 if app.is_playing() {
@@ -131,16 +120,15 @@ impl Action {
                 }
             }
             Action::OpenPopup(popup) => {
-                app.write_lock().popups.push(*popup);
+                app.popups.push(*popup);
             }
             Action::Pause => {
-                app.write_lock().stop_playback();
+                app.stop_playback();
             }
             Action::Play => {
-                app.write_lock().start_playback();
+                app.start_playback();
             }
             Action::PlayPause => {
-                let mut app = app.write_lock();
                 if app.is_playing() {
                     app.stop_playback();
                 } else {
@@ -148,8 +136,6 @@ impl Action {
                 }
             }
             Action::Select { popup: id, index } => {
-                let mut app = app.write_lock();
-
                 if let Some(popup) = app.popups.iter_mut().find(|popup| popup.info().id() == id) {
                     match popup {
                         Popup::Explorer(ref mut popup) => {
@@ -164,6 +150,11 @@ impl Action {
                     }
                 }
             }
+            Action::SetDevice(device) => {
+                app.device = Some(device);
+            }
         }
+
+        // TODO: add to action tree
     }
 }

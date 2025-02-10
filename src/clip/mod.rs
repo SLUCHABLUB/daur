@@ -1,8 +1,9 @@
-pub mod audio;
 mod content;
+pub mod source;
 
-use crate::clip::audio::Audio;
+use crate::audio::Audio;
 use crate::clip::content::Content;
+use crate::clip::source::ClipSource;
 use crate::id::Id;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
@@ -59,5 +60,11 @@ impl Clip {
                     .border_set(set)
                     .title(self.name.as_str()),
             )
+    }
+
+    pub fn to_source(&self, offset: usize) -> ClipSource {
+        match &self.content {
+            Content::Audio(audio) => ClipSource::Audio(audio.to_source(offset)),
+        }
     }
 }

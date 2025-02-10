@@ -1,19 +1,14 @@
 pub mod action;
-mod atomic;
 pub mod control;
-mod draw;
 mod error;
 mod events;
-mod reference;
 pub mod ruler;
 pub mod settings;
 pub mod window;
 
 use crate::app::action::Action;
-use crate::app::control::DEFAULT_CONTROLS;
-use crate::app::draw::spawn_draw_thread;
+use crate::app::control::default;
 use crate::app::events::spawn_events_thread;
-use crate::app::reference::AppShare;
 use crate::app::settings::OverviewSettings;
 use crate::clip::Clip;
 use crate::columns::ScreenLength;
@@ -29,40 +24,81 @@ use crossterm::event::{KeyEvent, MouseButton};
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Position, Rect};
 use ratatui::DefaultTerminal;
+use rodio::cpal::traits::HostTrait;
+use rodio::cpal::{default_host, Host};
+use rodio::{Device, DeviceTrait, OutputStream, OutputStreamHandle, Sink};
 use std::collections::HashMap;
-use std::io;
+use std::panic::resume_unwind;
+use std::rc::Rc;
 use std::sync::mpsc::channel;
-use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
-#[derive(Debug)]
+macro_rules! popup_error {
+    ($error:expr, $app:ident) => {{
+        let popup = Popup::from($error);
+        $app.popups.push(popup);
+        return Default::default();
+    }};
+}
+
+macro_rules! or_popup {
+    ($result:expr, $app:ident) => {
+        match $result {
+            Ok(ok) => ok,
+            Err(error) => popup_error!(error, $app),
+        }
+    };
+}
+
+use {or_popup, popup_error};
+
+// TODO: make adjustable and read from device
+const PLAYBACK_SAMPLE_RATE: u32 = 44_100;
+
 pub struct App {
-    pub controls: HashMap<KeyEvent, Action>,
-    pub project: Project,
+    controls: HashMap<KeyEvent, Action>,
+    project: Project,
 
     /// When playback started.
     /// `None` means that playback is paused.
     playback_start: Option<SystemTime>,
+    // TODO: allow changing
+    host: Host,
+    device: Option<Device>,
+    output_stream: Option<(OutputStream, OutputStreamHandle)>,
+    sink: Option<Rc<Sink>>,
 
-    pub popups: Vec<Popup>,
+    popups: Vec<Popup>,
 
-    pub project_bar_size: ScreenLength,
-    pub track_settings_size: ScreenLength,
+    project_bar_size: ScreenLength,
+    track_settings_size: ScreenLength,
 
-    pub selected_track: Id<Track>,
-    pub selected_clip: Id<Clip>,
-    pub cursor: Instant,
+    selected_track: Id<Track>,
+    selected_clip: Id<Clip>,
+    cursor: Instant,
 
-    pub overview_settings: OverviewSettings,
+    overview_settings: OverviewSettings,
+
+    cached_mouse_position: Position,
+    cached_area: Rect,
+    should_redraw: bool,
+    should_exit: bool,
 }
 
 impl App {
     pub fn new() -> App {
+        let host = default_host();
+        let device = host.default_output_device();
+
         App {
-            controls: HashMap::from(DEFAULT_CONTROLS),
+            controls: default(),
             project: Project::default(),
 
             playback_start: None,
+            host,
+            device,
+            output_stream: None,
+            sink: None,
 
             popups: Vec::new(),
 
@@ -74,35 +110,48 @@ impl App {
             cursor: Instant::START,
 
             overview_settings: OverviewSettings::default(),
+
+            cached_mouse_position: Position::default(),
+            cached_area: Rect::default(),
+            should_redraw: true,
+            should_exit: false,
         }
     }
 
-    pub fn run(self, terminal: DefaultTerminal) -> io::Result<()> {
-        let app = AppShare::new(self);
+    pub fn run(&mut self, terminal: &mut DefaultTerminal) {
+        let (event_sender, events) = channel();
 
-        let (action_sender, actions) = channel();
+        let events_thread = spawn_events_thread(event_sender);
 
-        let draw_thread = spawn_draw_thread(Arc::clone(&app), terminal);
-        let events_thread = spawn_events_thread(Arc::clone(&app), action_sender);
-
-        // TODO: set redraw to false if not needed
-        while !app.should_exit() && !draw_thread.is_finished() && !events_thread.is_finished() {
-            let Ok(action) = actions.try_recv() else {
-                continue;
+        while !self.should_exit {
+            if let Ok(event) = events.try_recv() {
+                self.handle_event(&event);
             };
 
-            action.take(&app);
+            if self.should_redraw {
+                self.draw(terminal);
+                self.should_redraw = self.is_playing();
+            }
         }
 
-        if draw_thread.is_finished() {
-            draw_thread.join().expect("Drawing thread panicked")?;
-        }
         if events_thread.is_finished() {
-            events_thread
-                .join()
-                .expect("Event-handler thread panicked")?;
+            let Ok(()) = events_thread.join().map_err(resume_unwind);
         }
-        Ok(())
+    }
+
+    fn draw(&mut self, terminal: &mut DefaultTerminal) {
+        or_popup!(
+            terminal.draw(|frame| {
+                let area = frame.area();
+                let buf = frame.buffer_mut();
+                let mouse_position = self.cached_mouse_position;
+
+                self.cached_area = area;
+
+                self.render(area, buf, mouse_position);
+            }),
+            self
+        );
     }
 
     fn is_playing(&self) -> bool {
@@ -110,12 +159,46 @@ impl App {
     }
 
     pub fn start_playback(&mut self) {
+        let Some(sink) = self.sink() else {
+            return;
+        };
+        sink.clear();
+        sink.append(self.project.to_source(PLAYBACK_SAMPLE_RATE, self.cursor));
+        sink.play();
         self.playback_start = Some(SystemTime::now());
     }
 
     pub fn stop_playback(&mut self) {
         self.cursor = self.playback_position();
         self.playback_start = None;
+
+        if let Some(sink) = self.sink.as_ref() {
+            sink.clear();
+        }
+    }
+
+    fn sink(&mut self) -> Option<Rc<Sink>> {
+        if self.sink.is_some() {
+            return self.sink.as_ref().map(Rc::clone);
+        }
+        if let Some((_, handle)) = self.output_stream.as_ref() {
+            self.sink = Some(Rc::new(or_popup!(Sink::try_new(handle), self)));
+            return self.sink();
+        }
+        if let Some(device) = self.device.as_ref() {
+            self.output_stream = Some(or_popup!(OutputStream::try_from_device(device), self));
+            return self.sink();
+        }
+
+        let devices = or_popup!(self.host.output_devices(), self);
+        self.popups.push(Popup::buttons(devices.map(|device| {
+            (
+                device.name().unwrap_or_else(|error| error.to_string()),
+                Action::SetDevice(device),
+            )
+        })));
+
+        None
     }
 
     fn playback_position(&self) -> Instant {
@@ -175,7 +258,9 @@ impl Widget for App {
             if area.contains(position) {
                 popup.click(area, button, position, action_queue);
                 return;
-            } else if popup.unimportant() {
+            }
+
+            if popup.info().unimportant {
                 action_queue.push(Action::ClosePopup(popup.info().id()));
             }
         }

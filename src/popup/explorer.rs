@@ -5,7 +5,6 @@ use crate::widget::button::Button;
 use crate::widget::two_stack::TwoStack;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
-use educe::Educe;
 use min_max::max;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Flex, Layout, Position, Rect, Size};
@@ -15,12 +14,8 @@ use ratatui_explorer::{File, FileExplorer, Theme};
 use saturating_cast::SaturatingCast;
 use std::sync::Arc;
 
-const DEFAULT_SIZE: Size = Size::new(40, 10);
-
 const CANCEL: &str = "cancel";
 const CONFIRM: &str = "confirm";
-
-const CANCEL_BUTTON: Button = Button::new(CANCEL, Action::None).bordered();
 
 fn theme() -> Theme {
     Theme::new()
@@ -29,13 +24,10 @@ fn theme() -> Theme {
         .with_highlight_symbol("> ")
 }
 
-#[derive(Clone, Educe)]
-#[educe(Debug)]
+#[derive(Clone)]
 pub struct ExplorerPopup {
     pub info: PopupInfo,
     pub explorer: FileExplorer,
-    pub size: Size,
-    #[educe(Debug(ignore))]
     pub action: Arc<dyn Fn(&File) -> Action + Send + Sync>,
 }
 
@@ -49,7 +41,6 @@ impl ExplorerPopup {
         ExplorerPopup {
             info: PopupInfo::new(title),
             explorer,
-            size: DEFAULT_SIZE,
             action: Arc::new(action),
         }
     }
@@ -90,7 +81,7 @@ impl ExplorerPopup {
             id: self.info.id(),
         };
         let cancel = TerminatingButton {
-            button: CANCEL_BUTTON,
+            button: Button::new(CANCEL, Action::None).bordered(),
             id: self.info.id(),
         };
 

@@ -6,27 +6,26 @@ use ratatui::layout::{Position, Rect, Size};
 use ratatui::widgets::{Block, Borders, Padding, Paragraph};
 use saturating_cast::SaturatingCast;
 
-// TODO: remove pub from fields
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Default)]
 pub struct Button {
     action: Action,
-    label: &'static str,
-    description: &'static str,
+    label: String,
+    description: Option<String>,
     bordered: bool,
 }
 
 impl Button {
-    pub const fn new(label: &'static str, action: Action) -> Self {
+    pub fn new(label: impl Into<String>, action: Action) -> Self {
         Button {
             action,
-            label,
-            description: label,
+            label: label.into(),
+            description: None,
             bordered: false,
         }
     }
 
-    pub const fn description(mut self, description: &'static str) -> Self {
-        self.description = description;
+    pub fn description(mut self, description: impl Into<String>) -> Self {
+        self.description = Some(description.into());
         self
     }
 
@@ -37,8 +36,13 @@ impl Button {
 
     pub fn size(&self) -> Size {
         let border = if self.bordered { 2 } else { 0 };
-        let width = usize::max(self.label.chars().count(), self.description.chars().count())
-            .saturating_cast();
+        let width = usize::max(
+            self.label.chars().count(),
+            self.description
+                .as_ref()
+                .map_or(0, |description| description.chars().count()),
+        )
+        .saturating_cast();
         let height = 1 + border;
 
         Size { width, height }
@@ -48,9 +52,9 @@ impl Button {
 impl Widget for Button {
     fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
         let content = if area.contains(mouse_position) {
-            self.description
+            self.description.as_deref().unwrap_or(self.label.as_str())
         } else {
-            self.label
+            self.label.as_str()
         };
 
         // - 2 for the border, - 1 to favour the top

@@ -1,6 +1,7 @@
 #![deny(clippy::pedantic)]
 
 mod app;
+mod audio;
 mod chroma;
 mod clip;
 mod columns;
@@ -16,13 +17,12 @@ mod widget;
 use app::App;
 use crossterm::event::EnableMouseCapture;
 use crossterm::execute;
-use std::io::{stdout, Result};
+use std::io::stdout;
 
-fn main() -> Result<()> {
+fn main() {
     execute!(stdout(), EnableMouseCapture).ok();
 
-    let terminal = ratatui::init();
-    let app_result = App::new().run(terminal);
+    let mut terminal = ratatui::init();
+    App::new().run(&mut terminal);
     ratatui::restore();
-    app_result
 }

@@ -13,9 +13,8 @@ use std::error::Error;
 const ACKNOWLEDGE: &str = "ok";
 const PADDING: u16 = 1;
 const ACKNOWLEDGE_BUTTON_HEIGHT: u16 = 3;
-const ACKNOWLEDGE_BUTTON: Button = Button::new(ACKNOWLEDGE, Action::None).bordered();
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct ErrorPopup {
     pub info: PopupInfo,
     pub display: String,
@@ -44,7 +43,7 @@ impl ErrorPopup {
                 Paragraph::new(self.display.as_str()),
                 Paragraph::new(self.debug.as_str()),
                 TerminatingButton {
-                    button: ACKNOWLEDGE_BUTTON,
+                    button: Button::new(ACKNOWLEDGE, Action::None).bordered(),
                     id: self.info.id(),
                 },
             ),

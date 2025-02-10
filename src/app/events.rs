@@ -1,75 +1,72 @@
-use crate::app::action::Action;
-use crate::app::reference::AppShare;
+use crate::app::App;
 use crate::widget::Widget;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};
-use ratatui::layout::{Position, Rect};
-use std::io;
+use ratatui::layout::Position;
 use std::sync::mpsc::Sender;
-use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
 
-pub fn spawn_events_thread(
-    app: Arc<AppShare>,
-    action_sender: Sender<Action>,
-) -> JoinHandle<io::Result<()>> {
+pub fn spawn_events_thread(events: Sender<Event>) -> JoinHandle<()> {
     spawn(move || {
-        while !app.should_exit() {
-            let result = event::read();
-
-            let Ok(event) = result else {
-                app.set_exit();
-                return result.map(|_| ());
+        loop {
+            // TODO: show error
+            let Ok(event) = event::read() else { break };
+            let Ok(()) = events.send(event) else {
+                break;
             };
+        }
+    })
+}
 
-            match event {
-                // We will implement pasting manually
-                Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
-                Event::Key(event) => {
-                    if let Some(action) = app.read_lock().controls.get(&event) {
-                        let _ = action_sender.send(action.clone());
-                    }
-                }
-                Event::Mouse(event) => {
-                    app.set_mouse_position(Position::new(event.column, event.row));
-
-                    match event.kind {
-                        MouseEventKind::Down(button) => {
-                            let mut action_queue = Vec::new();
-
-                            app.read_lock().click(
-                                app.area(),
-                                button,
-                                app.mouse_position(),
-                                &mut action_queue,
-                            );
-
-                            for action in action_queue {
-                                let _ = action_sender.send(action);
-                            }
-                        }
-                        MouseEventKind::Up(_) => {
-                            // TODO: drop held item
-                            // TODO: stop selection
-                        }
-                        MouseEventKind::Moved
-                        | MouseEventKind::Drag(_)
-                        | MouseEventKind::ScrollDown
-                        | MouseEventKind::ScrollUp
-                        | MouseEventKind::ScrollLeft
-                        | MouseEventKind::ScrollRight => (),
-                    }
-                }
-                Event::Resize(width, height) => {
-                    app.set_area(Rect {
-                        x: 0,
-                        y: 0,
-                        width,
-                        height,
-                    });
+impl App {
+    pub fn handle_event(&mut self, event: &Event) {
+        match event {
+            // We will implement pasting manually
+            Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
+            Event::Key(event) => {
+                if let Some(action) = self.controls.get(event).cloned() {
+                    action.take(self);
                 }
             }
+            Event::Mouse(event) => {
+                let new_position = Position::new(event.column, event.row);
+                if new_position != self.cached_mouse_position {
+                    self.cached_mouse_position = new_position;
+                    // Some widgets change appearance when hovered
+                    self.should_redraw = true;
+                }
+
+                match event.kind {
+                    MouseEventKind::Down(button) => {
+                        let mut action_queue = Vec::new();
+
+                        self.click(
+                            self.cached_area,
+                            button,
+                            self.cached_mouse_position,
+                            &mut action_queue,
+                        );
+
+                        for action in action_queue {
+                            action.take(self);
+                        }
+                    }
+                    MouseEventKind::Up(_) => {
+                        // TODO: drop held item
+                        // TODO: stop selection
+                    }
+                    MouseEventKind::Moved
+                    | MouseEventKind::Drag(_)
+                    | MouseEventKind::ScrollDown
+                    | MouseEventKind::ScrollUp
+                    | MouseEventKind::ScrollLeft
+                    | MouseEventKind::ScrollRight => (),
+                }
+            }
+            Event::Resize(width, height) => {
+                self.cached_area.width = *width;
+                self.cached_area.height = *height;
+            }
         }
-        Ok(())
-    })
+    }
 }

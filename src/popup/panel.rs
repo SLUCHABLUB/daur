@@ -4,11 +4,10 @@ use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::Widget;
 use ratatui::layout::Size;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct ButtonPanel {
     pub info: PopupInfo,
     pub buttons: Vec<TerminatingButton>,
-    pub unimportant: bool,
 }
 
 impl ButtonPanel {

@@ -9,8 +9,9 @@ use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Position, Rect, Size};
-use ratatui::widgets::Block;
+use ratatui::widgets::{Block, Clear};
 use ratatui_explorer::{File, FileExplorer};
+use std::borrow::Cow;
 use std::error::Error;
 
 mod button;
@@ -19,7 +20,7 @@ mod explorer;
 mod info;
 mod panel;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Popup {
     Buttons(ButtonPanel),
     Error(ErrorPopup),
@@ -27,9 +28,12 @@ pub enum Popup {
 }
 
 impl Popup {
-    pub fn unimportant_buttons(buttons: impl IntoIterator<Item = (&'static str, Action)>) -> Popup {
-        let mut info = PopupInfo::new(String::new());
-        info.unimportant = true;
+    pub fn buttons<B, S>(buttons: B) -> Popup
+    where
+        B: IntoIterator<Item = (S, Action)>,
+        S: Into<Cow<'static, str>>,
+    {
+        let info = PopupInfo::new(String::new());
         let uuid = info.id();
 
         Popup::Buttons(ButtonPanel {
@@ -37,12 +41,21 @@ impl Popup {
             buttons: buttons
                 .into_iter()
                 .map(|(name, action)| TerminatingButton {
-                    button: Button::new(name, action),
+                    button: Button::new(name.into().as_ref(), action),
                     id: uuid,
                 })
                 .collect(),
-            unimportant: true,
         })
+    }
+
+    pub fn unimportant_buttons<B, S>(buttons: B) -> Popup
+    where
+        B: IntoIterator<Item = (S, Action)>,
+        S: Into<Cow<'static, str>>,
+    {
+        let mut buttons = Popup::buttons(buttons);
+        buttons.info_mut().unimportant = true;
+        buttons
     }
 
     pub fn explorer(
@@ -93,13 +106,6 @@ impl Popup {
         self
     }
 
-    pub fn unimportant(&self) -> bool {
-        match self {
-            Popup::Buttons(buttons) => buttons.unimportant,
-            Popup::Error(_) | Popup::Explorer(_) => false,
-        }
-    }
-
     pub fn area_in_window(&self, area: Rect) -> Rect {
         let size = self.preferred_size();
 
@@ -136,6 +142,7 @@ impl<E: Error> From<E> for Popup {
 
 impl Widget for Popup {
     fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+        Clear.render(area, buf, mouse_position);
         let block = Block::bordered().title(self.info().title.as_str());
         block.render(area, buf, mouse_position);
 

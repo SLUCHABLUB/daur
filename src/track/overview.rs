@@ -20,17 +20,16 @@ use ratatui_explorer::File;
 
 const IMPORT_AUDIO: &str = "import audio";
 
-pub fn right_click_menu(track: Id<Track>) -> Popup {
-    // TODO
+pub fn open_import_audio_popup() -> Action {
     let action = move |file: &File| Action::ImportAudio {
         file: file.path().clone(),
-        track,
     };
 
-    Popup::unimportant_buttons([(
-        IMPORT_AUDIO,
-        Action::OpenPopup(Box::new(Popup::explorer(IMPORT_AUDIO.to_owned(), action))),
-    )])
+    Action::OpenPopup(Box::new(Popup::explorer(IMPORT_AUDIO.to_owned(), action)))
+}
+
+fn right_click_menu() -> Popup {
+    Popup::unimportant_buttons([(IMPORT_AUDIO, open_import_audio_popup())])
 }
 
 pub struct Overview<'a> {
@@ -133,9 +132,7 @@ impl Widget for Overview<'_> {
 
         // TODO: && clip not clicked
         if button == MouseButton::Right {
-            action_queue.push(Action::OpenPopup(Box::new(
-                right_click_menu(self.track.id).at(position),
-            )));
+            action_queue.push(Action::OpenPopup(Box::new(right_click_menu().at(position))));
         }
     }
 }
