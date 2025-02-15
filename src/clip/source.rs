@@ -1,4 +1,4 @@
-use crate::audio::source::AudioSource;
+use crate::audio::AudioSource;
 use rodio::Source;
 use std::time::Duration;
 

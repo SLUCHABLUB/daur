@@ -1,15 +1,16 @@
 pub mod overview;
-pub mod source;
+mod source;
 
-use crate::app::settings::OverviewSettings;
+pub use source::TrackSource;
+
+use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::locked_tree::LockedTree;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
-use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
+use crate::time::TimeSignature;
 use crate::track::overview::Overview;
-use crate::track::source::TrackSource;
 use crate::widget::Widget;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::{Block, Paragraph};

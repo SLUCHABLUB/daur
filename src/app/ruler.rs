@@ -2,7 +2,7 @@ use crate::app::action::Action;
 use crate::app::settings::OverviewSettings;
 use crate::app::window::Window;
 use crate::project::changing::Changing;
-use crate::time::signature::TimeSignature;
+use crate::time::TimeSignature;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;

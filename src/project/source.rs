@@ -1,4 +1,4 @@
-use crate::track::source::TrackSource;
+use crate::track::TrackSource;
 use rodio::Source;
 use std::time::Duration;
 

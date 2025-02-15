@@ -1,15 +1,17 @@
+pub mod bar;
+pub mod duration;
+pub mod instant;
+pub mod period;
+mod signature;
+pub mod tempo;
+
+pub use signature::TimeSignature;
+
 use num::{rational, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, FromPrimitive, ToPrimitive};
 use saturating_cast::{SaturatingCast, SaturatingElement};
 use std::fmt::{Display, Formatter};
 use std::num::NonZeroU8;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub};
-
-pub mod bar;
-pub mod duration;
-pub mod instant;
-pub mod period;
-pub mod signature;
-pub mod tempo;
 
 /// A rational number.
 /// When operations would result in a non-representable value, the result is an approximation.

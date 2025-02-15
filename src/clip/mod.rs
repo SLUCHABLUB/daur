@@ -1,14 +1,15 @@
 mod content;
-pub mod source;
+mod source;
+
+pub use source::ClipSource;
 
 use crate::audio::Audio;
 use crate::clip::content::Content;
-use crate::clip::source::ClipSource;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
-use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
+use crate::time::TimeSignature;
 use ratatui::layout::Alignment;
 use ratatui::style::Color;
 use ratatui::symbols::border::{PLAIN, THICK};

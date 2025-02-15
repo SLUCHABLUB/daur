@@ -6,8 +6,10 @@ mod error;
 mod events;
 mod macros;
 pub mod ruler;
-pub mod settings;
+mod settings;
 pub mod window;
+
+pub use settings::OverviewSettings;
 
 use crate::app::action::Action;
 use crate::app::audio::spawn_audio_thread;
@@ -15,7 +17,6 @@ use crate::app::control::default;
 use crate::app::draw::spawn_draw_thread;
 use crate::app::events::spawn_events_thread;
 use crate::app::macros::{or_popup, popup_error};
-use crate::app::settings::OverviewSettings;
 use crate::cell::Cell;
 use crate::clip::Clip;
 use crate::locked_vec::LockedVec;

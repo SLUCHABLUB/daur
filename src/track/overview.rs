@@ -1,12 +1,12 @@
 use crate::app::action::Action;
-use crate::app::settings::OverviewSettings;
 use crate::app::window::Window;
+use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::popup::Popup;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
-use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
+use crate::time::TimeSignature;
 use crate::track::Track;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;

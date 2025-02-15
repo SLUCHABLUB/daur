@@ -1,5 +1,5 @@
 #![deny(clippy::pedantic)]
-// TODO #![deny(clippy::module_name_repetitions)]
+#![deny(clippy::module_name_repetitions)]
 
 mod app;
 mod audio;

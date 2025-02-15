@@ -2,8 +2,8 @@ use crate::audio::Audio;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
-use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
+use crate::time::TimeSignature;
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Points};
 

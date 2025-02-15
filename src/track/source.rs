@@ -1,4 +1,4 @@
-use crate::clip::source::ClipSource;
+use crate::clip::ClipSource;
 use rodio::Source;
 use std::collections::VecDeque;
 use std::time::Duration;

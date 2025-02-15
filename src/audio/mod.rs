@@ -1,11 +1,12 @@
-pub mod source;
+mod source;
 
-use crate::audio::source::AudioSource;
+pub use source::AudioSource;
+
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
-use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
+use crate::time::TimeSignature;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use std::io::Read;
