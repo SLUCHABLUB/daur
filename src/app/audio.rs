@@ -15,9 +15,13 @@ pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<()> {
     spawn(move || {
         loop {
             // TODO: render the audio instead of just spinning
-            while !app.is_playing() {
+            let start = loop {
+                if let Some(start) = app.playback_start.get() {
+                    break Some(start);
+                }
+
                 spin_loop();
-            }
+            };
 
             let Some((sink, _output_stream)) = app.sink() else {
                 app.stop_playback();
@@ -28,7 +32,7 @@ pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<()> {
             sink.append(app.project.to_source(SAMPLE_RATE, app.cursor.get()));
             sink.play();
 
-            while app.is_playing() {
+            while app.playback_start.get() == start {
                 spin_loop();
             }
         }

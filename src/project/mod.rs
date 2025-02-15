@@ -1,15 +1,16 @@
 mod bar;
 pub mod change;
 pub mod changing;
+mod ruler;
 mod source;
 
 use crate::app::action::Action;
-use crate::app::ruler::Ruler;
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::locked_vec::LockedVec;
 use crate::project::changing::Changing;
+use crate::project::ruler::Ruler;
 use crate::project::source::ProjectSource;
 use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;

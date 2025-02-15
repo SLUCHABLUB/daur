@@ -1,6 +1,6 @@
 use crate::app::action::Action;
-use crate::app::settings::OverviewSettings;
 use crate::app::window::Window;
+use crate::app::OverviewSettings;
 use crate::project::changing::Changing;
 use crate::time::TimeSignature;
 use crate::widget::Widget;

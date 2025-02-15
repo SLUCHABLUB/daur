@@ -5,7 +5,6 @@ mod draw;
 mod error;
 mod events;
 mod macros;
-pub mod ruler;
 mod settings;
 pub mod window;
 
