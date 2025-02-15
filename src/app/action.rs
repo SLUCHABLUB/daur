@@ -53,7 +53,7 @@ impl Action {
         match self {
             Action::None => (),
             Action::AddTrack => {
-                let index = app.project.tracks.push(Arc::new(Track::new()));
+                let index = app.project.tracks.push(Track::new());
 
                 app.selected_track_index.set(index);
             }

@@ -24,11 +24,11 @@ pub struct Track {
 }
 
 impl Track {
-    pub fn new() -> Track {
-        Track {
+    pub fn new() -> Arc<Track> {
+        Arc::new(Track {
             name: PLACEHOLDER_TITLE.to_string(),
             clips: LockedTree::new(),
-        }
+        })
     }
 
     fn block(&self, selected: bool) -> Block<'static> {
@@ -43,7 +43,7 @@ impl Track {
 
     pub fn overview<'a>(
         self: &Arc<Self>,
-        selected_clip: Weak<Clip>,
+        selected_clip: &Weak<Clip>,
         time_signature: &'a Changing<TimeSignature>,
         tempo: &'a Changing<Tempo>,
         overview_settings: OverviewSettings,
@@ -51,7 +51,7 @@ impl Track {
     ) -> Overview<'a> {
         Overview {
             track: Arc::clone(self),
-            selected_clip,
+            selected_clip: Weak::clone(selected_clip),
             time_signature,
             tempo,
             settings: overview_settings,

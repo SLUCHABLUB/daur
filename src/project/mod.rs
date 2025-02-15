@@ -16,7 +16,7 @@ use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
 use crate::track::Track;
 use crate::widget::button::Button;
-use crate::widget::heterogeneous_stack::{ThreeStack, TwoStack};
+use crate::widget::heterogeneous_stack::TwoStack;
 use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::Widget;
 use ratatui::prelude::Constraint;
@@ -49,17 +49,13 @@ impl Project {
         track_settings_size: u16,
         overview_settings: OverviewSettings,
         selected_track_index: usize,
-        selected_clip: Weak<Clip>,
+        selected_clip: &Weak<Clip>,
         cursor: Instant,
     ) -> impl Widget + use<'_> {
         let track_count = self.tracks.len().saturating_cast();
 
         let horizontal_constraints = [Constraint::Length(track_settings_size), Constraint::Fill(1)];
-        let vertical_constraints = [
-            Constraint::Max(2),
-            Constraint::Fill(track_count),
-            Constraint::Fill(1),
-        ];
+        let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
 
         let ruler = Ruler {
             time_signature: &self.time_signature,
@@ -67,32 +63,47 @@ impl Project {
         };
         let ruler_row = TwoStack::horizontal((Clear, ruler), horizontal_constraints);
 
-        let tracks = HomogenousStack::equidistant_vertical(self.tracks.map_enumerated(
-            move |index, track| {
-                let selected = index == selected_track_index;
-                TwoStack::horizontal(
-                    (
-                        track.settings(selected),
-                        track.overview(
-                            Weak::clone(&selected_clip),
-                            &self.time_signature,
-                            &self.tempo,
-                            overview_settings,
-                            cursor,
-                        ),
-                    ),
-                    horizontal_constraints,
-                )
-            },
+        let mut track_settings = Vec::new();
+        let mut track_overviews = Vec::new();
+
+        self.tracks.map_enumerated(|index, track| {
+            let selected = index == selected_track_index;
+            track_settings.push(track.settings(selected));
+            track_overviews.push(track.overview(
+                selected_clip,
+                &self.time_signature,
+                &self.tempo,
+                overview_settings,
+                cursor,
+            ));
+        });
+
+        // A "dummy-track" for the row with the add track button
+        track_overviews.push(Track::new().overview(
+            selected_clip,
+            &self.time_signature,
+            &self.tempo,
+            overview_settings,
+            cursor,
         ));
 
         let add_track_button = Button::new(Cow::Borrowed("+"), Action::AddTrack)
             .description(Cow::Borrowed("add track"))
             .bordered();
 
-        let add_track_row = TwoStack::horizontal((add_track_button, Clear), horizontal_constraints);
+        let settings_column = TwoStack::vertical(
+            (
+                HomogenousStack::equidistant_vertical(track_settings),
+                add_track_button,
+            ),
+            [Constraint::Fill(track_count), Constraint::Fill(1)],
+        );
+        let overview_column = HomogenousStack::equidistant_vertical(track_overviews);
 
-        ThreeStack::vertical((ruler_row, tracks, add_track_row), vertical_constraints)
+        let track_area =
+            TwoStack::horizontal((settings_column, overview_column), horizontal_constraints);
+
+        TwoStack::vertical((ruler_row, track_area), ruler_constraints)
     }
 
     pub fn to_source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {

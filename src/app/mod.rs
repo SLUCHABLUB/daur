@@ -159,7 +159,7 @@ impl App {
                     self.track_settings_size,
                     self.overview_settings,
                     self.selected_track_index.get(),
-                    Weak::clone(&self.selected_clip),
+                    &self.selected_clip,
                     self.playback_position(),
                 ),
             ),
