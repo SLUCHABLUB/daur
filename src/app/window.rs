@@ -9,7 +9,7 @@ use rounded_div::RoundedDiv;
 use saturating_cast::SaturatingCast;
 
 /// A window into
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone)]
 pub struct Window<'a> {
     pub time_signature: &'a Changing<TimeSignature>,
     pub overview_settings: OverviewSettings,

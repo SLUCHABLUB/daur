@@ -24,7 +24,7 @@ impl Bar {
     }
 
     /// Return the number of grid cells that fit in the bar, rounded up
-    pub fn grid_cell_count(&self, overview_settings: OverviewSettings) -> u64 {
+    pub fn grid_cell_count(&self, overview_settings: OverviewSettings) -> u32 {
         let exact = self.time_signature.bar_duration() / overview_settings.cell_duration;
         exact.ceil()
     }

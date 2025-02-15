@@ -2,7 +2,7 @@ use crate::project::changing::Changing;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use ordered_float::NotNan;
-use std::ops::Bound;
+use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -36,32 +36,35 @@ impl Default for Tempo {
     }
 }
 
+impl Display for Tempo {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:.1}", self.bpm)
+    }
+}
+
 impl Changing<Tempo> {
     /// Subdivides the period into periods with constant tempo
     pub fn tempo_constant_periods(&self, period: Period) -> Vec<(Period, Tempo)> {
-        let tempo = self[period.start];
+        let tempo = self.get(period.start);
         let mut periods = vec![(period, tempo)];
 
-        for (instant, tempo) in self
-            .changes
-            .range((Bound::Excluded(period.start), Bound::Unbounded))
-        {
-            if period.end() <= *instant {
+        for (instant, tempo) in self.changes.iter_gt(period.start) {
+            if period.end() <= instant {
                 break;
             }
 
             let (last, _) = periods.last_mut().unwrap();
 
-            last.duration = *instant - last.start;
+            last.duration = instant - last.start;
 
-            let duration = period.end() - *instant;
+            let duration = period.end() - instant;
 
             periods.push((
                 Period {
-                    start: *instant,
+                    start: instant,
                     duration,
                 },
-                *tempo,
+                tempo,
             ));
         }
 

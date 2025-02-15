@@ -3,6 +3,7 @@ use crate::time::bar::Bar;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use crate::time::Ratio;
+use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
 use std::num::NonZeroU8;
 
@@ -36,6 +37,12 @@ impl Default for TimeSignature {
     }
 }
 
+impl Display for TimeSignature {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}/{}", self.beats_per_bar, self.beat_size)
+    }
+}
+
 impl Changing<TimeSignature> {
     pub fn bars(&self) -> impl Iterator<Item = Bar> + use<'_> {
         let mut start = Instant::START;
@@ -43,7 +50,7 @@ impl Changing<TimeSignature> {
         from_fn(move || {
             let bar = Bar {
                 start,
-                time_signature: self[start],
+                time_signature: self.get(start),
             };
 
             start += bar.duration();

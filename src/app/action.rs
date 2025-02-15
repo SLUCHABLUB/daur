@@ -1,19 +1,24 @@
+// educe generates names with underscores in their implementations
+#![allow(clippy::used_underscore_binding)]
+
 use crate::app::error::{NoExtensionError, UnsupportedFormatError};
 use crate::app::{or_popup, popup_error, App};
 use crate::audio::Audio;
 use crate::clip::Clip;
-use crate::id::Id;
+use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::instant::Instant;
 use crate::track::Track;
+use educe::Educe;
 use hound::WavReader;
-use ratatui_explorer::Input;
 use rodio::Device;
 use std::borrow::Cow;
 use std::ffi::OsStr;
 use std::path::PathBuf;
+use std::sync::{Arc, Weak};
 
-#[derive(Clone, Default)]
+#[derive(Clone, Default, Educe)]
+#[educe(Eq, PartialEq)]
 pub enum Action {
     /// Does nothing
     #[default]
@@ -21,7 +26,7 @@ pub enum Action {
     /// Add an empty track
     AddTrack,
     /// Close the popup with the given uuid
-    ClosePopup(Id<Popup>),
+    ClosePopup(#[educe(Eq(ignore))] Weak<Popup>),
     /// Save and exit the program
     Exit,
     /// Imports an audio file into the selected track
@@ -30,52 +35,32 @@ pub enum Action {
     },
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
-    OpenPopup(Box<Popup>),
+    OpenPopup(Arc<Popup>),
     /// Stop playing
     Pause,
     /// Start playing
     Play,
     /// `Play` or `Pause`
     PlayPause,
-    /// Select an option in a popup
-    Select {
-        popup: Id<Popup>,
-        index: usize,
-    },
     /// Sets the audio output device
-    SetDevice(Device),
+    SetDevice(#[educe(Eq(ignore))] Device),
+    SetKey(Instant, Key),
     // TODO: add scripting
 }
 
 impl Action {
-    pub fn take(self, app: &mut App) {
-        match self {
-            Action::AddTrack
-            | Action::ClosePopup(_)
-            | Action::ImportAudio { .. }
-            | Action::MoveCursor(_)
-            | Action::OpenPopup(_)
-            | Action::Pause
-            | Action::Play
-            | Action::PlayPause
-            | Action::Select { .. } => app.should_redraw = true,
-            Action::None | Action::Exit | Action::SetDevice(_) => (),
-        }
-
+    pub fn take(self, app: &App) {
         match self {
             Action::None => (),
             Action::AddTrack => {
-                let track = Track::new();
-                app.selected_track = track.id;
-                app.project.tracks.push(track);
+                let index = app.project.tracks.push(Arc::new(Track::new()));
+
+                app.selected_track_index.set(index);
             }
-            Action::ClosePopup(id) => {
-                if let Some(position) = app.popups.iter().position(|popup| popup.info().id() == id)
-                {
-                    app.popups.remove(position);
-                }
+            Action::ClosePopup(popup) => {
+                app.popups.remove(&popup);
             }
-            Action::Exit => app.should_exit = true,
+            Action::Exit => app.should_exit.set(true),
             Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {
                     popup_error!(NoExtensionError { file }, app);
@@ -101,26 +86,25 @@ impl Action {
                     .map(Cow::into_owned)
                     .unwrap_or_default();
 
-                let instant = app.cursor;
+                let instant = app.cursor.get();
 
-                if let Some(track) = app
-                    .project
+                app.project
                     .tracks
-                    .iter_mut()
-                    .find(|track| track.id == app.selected_track)
-                {
-                    track.clips.insert(instant, Clip::from_audio(name, audio));
-                }
+                    .update(app.selected_track_index.get(), |track| {
+                        track
+                            .clips
+                            .insert(instant, Arc::new(Clip::from_audio(name, audio)));
+                    });
             }
             Action::MoveCursor(instant) => {
-                app.cursor = instant;
+                app.cursor.set(instant);
 
                 if app.is_playing() {
                     app.start_playback();
                 }
             }
             Action::OpenPopup(popup) => {
-                app.popups.push(*popup);
+                app.popups.push(popup);
             }
             Action::Pause => {
                 app.stop_playback();
@@ -135,23 +119,15 @@ impl Action {
                     app.start_playback();
                 }
             }
-            Action::Select { popup: id, index } => {
-                if let Some(popup) = app.popups.iter_mut().find(|popup| popup.info().id() == id) {
-                    match popup {
-                        Popup::Explorer(ref mut popup) => {
-                            let explorer = &mut popup.explorer;
-                            if explorer.selected_idx() == index {
-                                or_popup!(explorer.handle(Input::Right), app);
-                            } else if index < explorer.files().len() {
-                                explorer.set_selected_idx(index);
-                            }
-                        }
-                        Popup::Buttons(_) | Popup::Error(_) => (),
-                    }
-                }
-            }
             Action::SetDevice(device) => {
-                app.device = Some(device);
+                app.device.set(Some(device));
+            }
+            Action::SetKey(instant, key) => {
+                if instant == Instant::START {
+                    app.project.key.start.set(key);
+                } else {
+                    app.project.key.changes.insert(instant, key);
+                }
             }
         }
 

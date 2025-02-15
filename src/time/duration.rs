@@ -12,7 +12,7 @@ impl Duration {
     };
 
     pub const QUARTER: Duration = Duration {
-        whole_notes: Ratio::new_raw(1, 4),
+        whole_notes: Ratio::QUARTER,
     };
 }
 

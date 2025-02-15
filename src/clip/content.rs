@@ -7,7 +7,7 @@ use crate::time::tempo::Tempo;
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Points};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum Content {
     Audio(Audio),
     // TODO: linked audio file

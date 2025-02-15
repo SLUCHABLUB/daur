@@ -1,24 +1,29 @@
 pub mod action;
+mod audio;
 pub mod control;
+mod draw;
 mod error;
 mod events;
+mod macros;
 pub mod ruler;
 pub mod settings;
 pub mod window;
 
 use crate::app::action::Action;
+use crate::app::audio::spawn_audio_thread;
 use crate::app::control::default;
+use crate::app::draw::spawn_draw_thread;
 use crate::app::events::spawn_events_thread;
+use crate::app::macros::{or_popup, popup_error};
 use crate::app::settings::OverviewSettings;
+use crate::cell::Cell;
 use crate::clip::Clip;
-use crate::columns::ScreenLength;
-use crate::id::Id;
+use crate::locked_vec::LockedVec;
 use crate::popup::Popup;
 use crate::project::Project;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
-use crate::track::Track;
-use crate::widget::two_stack::TwoStack;
+use crate::widget::heterogeneous_stack::TwoStack;
 use crate::widget::Widget;
 use crossterm::event::{KeyEvent, MouseButton};
 use ratatui::buffer::Buffer;
@@ -26,34 +31,12 @@ use ratatui::layout::{Constraint, Position, Rect};
 use ratatui::DefaultTerminal;
 use rodio::cpal::traits::HostTrait;
 use rodio::cpal::{default_host, Host};
-use rodio::{Device, DeviceTrait, OutputStream, OutputStreamHandle, Sink};
+use rodio::Device;
 use std::collections::HashMap;
+use std::hint::spin_loop;
 use std::panic::resume_unwind;
-use std::rc::Rc;
-use std::sync::mpsc::channel;
+use std::sync::{Arc, Weak};
 use std::time::{Duration, SystemTime};
-
-macro_rules! popup_error {
-    ($error:expr, $app:ident) => {{
-        let popup = Popup::from($error);
-        $app.popups.push(popup);
-        return Default::default();
-    }};
-}
-
-macro_rules! or_popup {
-    ($result:expr, $app:ident) => {
-        match $result {
-            Ok(ok) => ok,
-            Err(error) => popup_error!(error, $app),
-        }
-    };
-}
-
-use {or_popup, popup_error};
-
-// TODO: make adjustable and read from device
-const PLAYBACK_SAMPLE_RATE: u32 = 44_100;
 
 pub struct App {
     controls: HashMap<KeyEvent, Action>,
@@ -61,77 +44,78 @@ pub struct App {
 
     /// When playback started.
     /// `None` means that playback is paused.
-    playback_start: Option<SystemTime>,
+    playback_start: Cell<Option<SystemTime>>,
     // TODO: allow changing
     host: Host,
-    device: Option<Device>,
-    output_stream: Option<(OutputStream, OutputStreamHandle)>,
-    sink: Option<Rc<Sink>>,
+    device: Cell<Option<Device>>,
 
-    popups: Vec<Popup>,
+    popups: LockedVec<Arc<Popup>>,
 
-    project_bar_size: ScreenLength,
-    track_settings_size: ScreenLength,
+    // TODO: add a sematic type for these and implement project-wide
+    project_bar_size: u16,
+    track_settings_size: u16,
 
-    selected_track: Id<Track>,
-    selected_clip: Id<Clip>,
-    cursor: Instant,
+    // Note that this may not actually index a valid track
+    selected_track_index: Cell<usize>,
+    selected_clip: Weak<Clip>,
+    cursor: Cell<Instant>,
 
     overview_settings: OverviewSettings,
 
-    cached_mouse_position: Position,
-    cached_area: Rect,
-    should_redraw: bool,
-    should_exit: bool,
+    cached_mouse_position: Cell<Position>,
+    cached_area: Cell<Rect>,
+    should_redraw: Cell<bool>,
+    should_exit: Cell<bool>,
 }
 
 impl App {
-    pub fn new() -> App {
+    pub fn new() -> Arc<App> {
         let host = default_host();
-        let device = host.default_output_device();
+        let device = Cell::new(host.default_output_device());
 
-        App {
+        Arc::new(App {
             controls: default(),
             project: Project::default(),
 
-            playback_start: None,
+            playback_start: Cell::new(None),
             host,
             device,
-            output_stream: None,
-            sink: None,
 
-            popups: Vec::new(),
+            popups: LockedVec::new(),
 
-            project_bar_size: ScreenLength(5),
-            track_settings_size: ScreenLength(20),
+            project_bar_size: 5,
+            track_settings_size: 20,
 
-            selected_track: Id::nil(),
-            selected_clip: Id::nil(),
-            cursor: Instant::START,
+            selected_track_index: Cell::new(0),
+            selected_clip: Weak::new(),
+            cursor: Cell::new(Instant::START),
 
             overview_settings: OverviewSettings::default(),
 
-            cached_mouse_position: Position::default(),
-            cached_area: Rect::default(),
-            should_redraw: true,
-            should_exit: false,
-        }
+            cached_mouse_position: Cell::default(),
+            cached_area: Cell::default(),
+            should_redraw: Cell::new(true),
+            should_exit: Cell::new(false),
+        })
     }
 
-    pub fn run(&mut self, terminal: &mut DefaultTerminal) {
-        let (event_sender, events) = channel();
+    pub fn run(self: Arc<Self>, terminal: DefaultTerminal) {
+        let audio_thread = spawn_audio_thread(Arc::clone(&self));
+        let draw_thread = spawn_draw_thread(Arc::clone(&self), terminal);
+        let events_thread = spawn_events_thread(Arc::clone(&self));
 
-        let events_thread = spawn_events_thread(event_sender);
+        while !self.should_exit.get() {
+            spin_loop();
+        }
 
-        while !self.should_exit {
-            if let Ok(event) = events.try_recv() {
-                self.handle_event(&event);
-            };
+        // TODO: save
 
-            if self.should_redraw {
-                self.draw(terminal);
-                self.should_redraw = self.is_playing();
-            }
+        if audio_thread.is_finished() {
+            let Ok(()) = audio_thread.join().map_err(resume_unwind);
+        }
+
+        if draw_thread.is_finished() {
+            let Ok(()) = draw_thread.join().map_err(resume_unwind);
         }
 
         if events_thread.is_finished() {
@@ -139,79 +123,30 @@ impl App {
         }
     }
 
-    fn draw(&mut self, terminal: &mut DefaultTerminal) {
-        or_popup!(
-            terminal.draw(|frame| {
-                let area = frame.area();
-                let buf = frame.buffer_mut();
-                let mouse_position = self.cached_mouse_position;
-
-                self.cached_area = area;
-
-                self.render(area, buf, mouse_position);
-            }),
-            self
-        );
-    }
-
     fn is_playing(&self) -> bool {
-        self.playback_start.is_some()
+        self.playback_start.get().is_some()
     }
 
-    pub fn start_playback(&mut self) {
-        let Some(sink) = self.sink() else {
-            return;
-        };
-        sink.clear();
-        sink.append(self.project.to_source(PLAYBACK_SAMPLE_RATE, self.cursor));
-        sink.play();
-        self.playback_start = Some(SystemTime::now());
+    pub fn start_playback(&self) {
+        self.playback_start.set(Some(SystemTime::now()));
     }
 
-    pub fn stop_playback(&mut self) {
-        self.cursor = self.playback_position();
-        self.playback_start = None;
-
-        if let Some(sink) = self.sink.as_ref() {
-            sink.clear();
-        }
-    }
-
-    fn sink(&mut self) -> Option<Rc<Sink>> {
-        if self.sink.is_some() {
-            return self.sink.as_ref().map(Rc::clone);
-        }
-        if let Some((_, handle)) = self.output_stream.as_ref() {
-            self.sink = Some(Rc::new(or_popup!(Sink::try_new(handle), self)));
-            return self.sink();
-        }
-        if let Some(device) = self.device.as_ref() {
-            self.output_stream = Some(or_popup!(OutputStream::try_from_device(device), self));
-            return self.sink();
-        }
-
-        let devices = or_popup!(self.host.output_devices(), self);
-        self.popups.push(Popup::buttons(devices.map(|device| {
-            (
-                device.name().unwrap_or_else(|error| error.to_string()),
-                Action::SetDevice(device),
-            )
-        })));
-
-        None
+    pub fn stop_playback(&self) {
+        self.cursor.set(self.playback_position());
+        self.playback_start.set(None);
     }
 
     fn playback_position(&self) -> Instant {
-        if let Some(playback_start) = self.playback_start {
+        if let Some(playback_start) = self.playback_start.get() {
             Period::from_real_time(
-                self.cursor,
+                self.cursor.get(),
                 &self.project.time_signature,
                 &self.project.tempo,
                 playback_start.elapsed().unwrap_or(Duration::ZERO),
             )
             .end()
         } else {
-            self.cursor
+            self.cursor.get()
         }
     }
 
@@ -223,13 +158,13 @@ impl App {
                 self.project.workspace(
                     self.track_settings_size,
                     self.overview_settings,
-                    self.selected_track,
-                    self.selected_clip,
+                    self.selected_track_index.get(),
+                    Weak::clone(&self.selected_clip),
                     self.playback_position(),
                 ),
             ),
             [
-                Constraint::Length(self.project_bar_size.get()),
+                Constraint::Length(self.project_bar_size),
                 Constraint::Fill(1),
             ],
         )
@@ -240,7 +175,7 @@ impl Widget for App {
     fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
         self.background().render(area, buf, mouse_position);
 
-        for popup in &self.popups {
+        for popup in self.popups.iter() {
             let area = popup.area_in_window(area);
             popup.render(area, buf, mouse_position);
         }
@@ -253,7 +188,7 @@ impl Widget for App {
         position: Position,
         action_queue: &mut Vec<Action>,
     ) {
-        for popup in &self.popups {
+        for popup in self.popups.iter() {
             let area = popup.area_in_window(area);
             if area.contains(position) {
                 popup.click(area, button, position, action_queue);
@@ -261,7 +196,7 @@ impl Widget for App {
             }
 
             if popup.info().unimportant {
-                action_queue.push(Action::ClosePopup(popup.info().id()));
+                action_queue.push(Action::ClosePopup(popup.info().this()));
             }
         }
 

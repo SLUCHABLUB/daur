@@ -1,10 +1,11 @@
 use crate::popup::button::TerminatingButton;
 use crate::popup::info::PopupInfo;
 use crate::widget::homogenous_stack::HomogenousStack;
+use crate::widget::sized::Sized;
 use crate::widget::Widget;
 use ratatui::layout::Size;
 
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct ButtonPanel {
     pub info: PopupInfo,
     pub buttons: Vec<TerminatingButton>,

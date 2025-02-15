@@ -4,7 +4,6 @@ pub mod source;
 use crate::audio::Audio;
 use crate::clip::content::Content;
 use crate::clip::source::ClipSource;
-use crate::id::Id;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
@@ -18,10 +17,9 @@ use ratatui::widgets::{Block, Borders};
 
 const DEFAULT_AUDIO_COLOUR: Color = Color::Green;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Clip {
     pub name: String,
-    pub id: Id<Clip>,
     pub colour: Color,
     pub content: Content,
 }
@@ -30,7 +28,6 @@ impl Clip {
     pub fn from_audio(name: String, audio: Audio) -> Clip {
         Clip {
             name,
-            id: Id::new(),
             colour: DEFAULT_AUDIO_COLOUR,
             content: Content::Audio(audio),
         }

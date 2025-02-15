@@ -2,7 +2,6 @@ use crate::app::action::Action;
 use crate::app::settings::OverviewSettings;
 use crate::app::window::Window;
 use crate::clip::Clip;
-use crate::id::Id;
 use crate::popup::Popup;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
@@ -17,6 +16,7 @@ use ratatui::symbols::line::VERTICAL;
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
 use ratatui_explorer::File;
+use std::sync::{Arc, Weak};
 
 const IMPORT_AUDIO: &str = "import audio";
 
@@ -25,16 +25,16 @@ pub fn open_import_audio_popup() -> Action {
         file: file.path().clone(),
     };
 
-    Action::OpenPopup(Box::new(Popup::explorer(IMPORT_AUDIO.to_owned(), action)))
+    Action::OpenPopup(Popup::explorer(IMPORT_AUDIO.to_owned(), action))
 }
 
-fn right_click_menu() -> Popup {
+fn right_click_menu() -> Arc<Popup> {
     Popup::unimportant_buttons([(IMPORT_AUDIO, open_import_audio_popup())])
 }
 
 pub struct Overview<'a> {
-    pub track: &'a Track,
-    pub selected_clip: Id<Clip>,
+    pub track: Arc<Track>,
+    pub selected_clip: Weak<Clip>,
     pub time_signature: &'a Changing<TimeSignature>,
     pub tempo: &'a Changing<Tempo>,
     pub settings: OverviewSettings,
@@ -61,7 +61,7 @@ impl Widget for Overview<'_> {
         // TODO: alternate background colour for grid
 
         // Render the clips
-        for (start, clip) in &self.track.clips {
+        self.track.clips.map(|start, clip| {
             let clip_area = window.period_to_unchecked_rect(
                 clip.period(*start, self.time_signature, self.tempo),
                 area.x,
@@ -85,7 +85,10 @@ impl Widget for Overview<'_> {
                 x[1] -= fraction * full_width;
             }
 
-            let selected = clip.id == self.selected_clip;
+            let selected = self
+                .selected_clip
+                .upgrade()
+                .is_some_and(|upgrade| upgrade == *clip);
 
             clip.overview_canvas(selected)
                 .x_bounds(x)
@@ -95,7 +98,7 @@ impl Widget for Overview<'_> {
                     buf,
                     mouse_position,
                 );
-        }
+        });
 
         // Render the cursor
         if let Some(cursor_column) = window.instant_to_column(self.cursor) {
@@ -132,7 +135,7 @@ impl Widget for Overview<'_> {
 
         // TODO: && clip not clicked
         if button == MouseButton::Right {
-            action_queue.push(Action::OpenPopup(Box::new(right_click_menu().at(position))));
+            action_queue.push(Action::OpenPopup(right_click_menu().at(position)));
         }
     }
 }

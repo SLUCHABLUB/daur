@@ -35,31 +35,33 @@ impl Display for Key {
     }
 }
 
+/// Intervals less than an octave and greater than a perfect unison
+#[allow(non_camel_case_types)]
 #[derive(Flags)]
 #[repr(u16)]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum KeyInterval {
-    Minor2 = 1 << 0,
-    Major2 = 1 << 1,
-    Minor3 = 1 << 2,
-    Major3 = 1 << 3,
-    Perfect4 = 1 << 4,
-    Tritone = 1 << 5,
-    Perfect5 = 1 << 6,
-    Minor6 = 1 << 7,
-    Major6 = 1 << 8,
-    Minor7 = 1 << 9,
-    Major7 = 1 << 10,
+    m2 = 1 << 0,
+    M2 = 1 << 1,
+    m3 = 1 << 2,
+    M3 = 1 << 3,
+    P4 = 1 << 4,
+    TT = 1 << 5,
+    P5 = 1 << 6,
+    m6 = 1 << 7,
+    M6 = 1 << 8,
+    m7 = 1 << 9,
+    M7 = 1 << 10,
 }
 
 impl KeyInterval {
     pub const MINOR: BitBag<KeyInterval> = BitBag::new_unchecked(
-        KeyInterval::Major2 as u16
-            | KeyInterval::Minor3 as u16
-            | KeyInterval::Perfect4 as u16
-            | KeyInterval::Perfect5 as u16
-            | KeyInterval::Minor6 as u16
-            | KeyInterval::Minor7 as u16,
+        KeyInterval::M2 as u16
+            | KeyInterval::m3 as u16
+            | KeyInterval::P4 as u16
+            | KeyInterval::P5 as u16
+            | KeyInterval::m6 as u16
+            | KeyInterval::m7 as u16,
     );
 
     pub fn name(intervals: BitBag<KeyInterval>) -> &'static str {
@@ -68,5 +70,11 @@ impl KeyInterval {
         } else {
             "custom"
         }
+    }
+}
+
+impl Display for KeyInterval {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
     }
 }

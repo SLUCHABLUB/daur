@@ -11,11 +11,11 @@ pub mod period;
 pub mod signature;
 pub mod tempo;
 
-/// A ratio between two `u64`s.
+/// A rational number.
 /// When operations would result in a non-representable value, the result is an approximation.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Ratio {
-    inner: rational::Ratio<u64>,
+    inner: rational::Ratio<u32>,
 }
 
 impl Ratio {
@@ -23,40 +23,41 @@ impl Ratio {
         inner: rational::Ratio::ZERO,
     };
 
-    pub fn new(numerator: u64, denominator: u64) -> Ratio {
+    pub const QUARTER: Ratio = Ratio {
+        inner: rational::Ratio::new_raw(1, 4),
+    };
+
+    pub fn new(numerator: u32, denominator: u32) -> Self {
         Ratio {
             inner: rational::Ratio::new(numerator, denominator),
         }
     }
 
-    pub const fn new_raw(numerator: u64, denominator: u64) -> Ratio {
-        Ratio {
-            inner: rational::Ratio::new_raw(numerator, denominator),
-        }
-    }
-
-    pub fn ceil(self) -> u64 {
+    pub fn ceil(self) -> u32 {
         self.inner.ceil().to_integer()
     }
 
     pub fn to_float(self) -> f64 {
-        #![allow(clippy::cast_precision_loss)]
         self.inner
             .to_f64()
-            .unwrap_or_else(|| *self.inner.numer() as f64 / *self.inner.denom() as f64)
+            .unwrap_or_else(|| f64::from(*self.inner.numer()) / f64::from(*self.inner.denom()))
     }
 
     pub fn approximate(float: f64) -> Ratio {
         Ratio {
-            inner: rational::Ratio::<u64>::from_f64(float).unwrap_or_default(),
+            inner: rational::Ratio::from_f64(float).unwrap_or_default(),
         }
     }
 
+    // Due to using lcm (multiplication) in addition to addition in addition (in reduction),
+    // we need to use u128 as opposed to u64
     fn big_inner(self) -> rational::Ratio<u128> {
         let (numerator, denominator) = self.inner.into_raw();
         rational::Ratio::new_raw(u128::from(numerator), u128::from(denominator))
     }
+}
 
+impl Ratio {
     fn approximate_big(big: rational::Ratio<u128>) -> Ratio {
         if big == rational::Ratio::ZERO {
             return Ratio::ZERO;
@@ -67,8 +68,8 @@ impl Ratio {
     }
 
     fn approximate_u128(mut numerator: u128, mut denominator: u128) -> Ratio {
-        if let Ok(numerator) = u64::try_from(numerator) {
-            if let Ok(denominator) = u64::try_from(denominator) {
+        if let Ok(numerator) = u32::try_from(numerator) {
+            if let Ok(denominator) = u32::try_from(denominator) {
                 return Ratio {
                     inner: rational::Ratio::new_raw(numerator, denominator),
                 };
@@ -91,7 +92,7 @@ impl Display for Ratio {
 impl From<NonZeroU8> for Ratio {
     fn from(value: NonZeroU8) -> Self {
         Ratio {
-            inner: rational::Ratio::from(u64::from(value.get())),
+            inner: rational::Ratio::from(u32::from(value.get())),
         }
     }
 }
@@ -99,7 +100,7 @@ impl From<NonZeroU8> for Ratio {
 impl From<u16> for Ratio {
     fn from(value: u16) -> Self {
         Ratio {
-            inner: rational::Ratio::from(u64::from(value)),
+            inner: rational::Ratio::from(u32::from(value)),
         }
     }
 }
@@ -169,15 +170,15 @@ impl Div<Ratio> for Ratio {
     }
 }
 
-impl SaturatingElement<u64> for Ratio {
-    fn as_element(self) -> u64 {
+impl SaturatingElement<u32> for Ratio {
+    fn as_element(self) -> u32 {
         self.inner.round().to_integer()
     }
 }
 
 impl SaturatingElement<i32> for Ratio {
     fn as_element(self) -> i32 {
-        self.saturating_cast::<u64>().saturating_cast()
+        self.saturating_cast::<u32>().saturating_cast()
     }
 }
 

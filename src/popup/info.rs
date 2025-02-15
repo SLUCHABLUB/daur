@@ -1,27 +1,51 @@
-use crate::id::Id;
+use crate::cell::Cell;
 use crate::popup::Popup;
 use ratatui::layout::Position;
+use std::sync::Weak;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone)]
 pub struct PopupInfo {
     pub title: String,
-    id: Id<Popup>,
-    pub position: Option<Position>,
+    pub position: Cell<Option<Position>>,
     /// Whether the popup may close when unfocused
     pub unimportant: bool,
+    this: Weak<Popup>,
 }
 
 impl PopupInfo {
-    pub fn new(title: String) -> PopupInfo {
+    pub fn new(title: String, this: Weak<Popup>) -> PopupInfo {
         PopupInfo {
             title,
-            id: Id::new(),
-            position: None,
+            position: Cell::new(None),
             unimportant: false,
+            this,
         }
     }
 
-    pub fn id(&self) -> Id<Popup> {
-        self.id
+    pub fn this(&self) -> Weak<Popup> {
+        Weak::clone(&self.this)
     }
 }
+
+impl PartialEq for PopupInfo {
+    fn eq(&self, other: &Self) -> bool {
+        let PopupInfo {
+            title: self_title,
+            position: self_position,
+            unimportant: self_unimportant,
+            this: _,
+        } = self;
+        let PopupInfo {
+            title: other_title,
+            position: other_position,
+            unimportant: other_unimportant,
+            this: _,
+        } = other;
+
+        self_title == other_title
+            && self_position == other_position
+            && self_unimportant == other_unimportant
+    }
+}
+
+impl Eq for PopupInfo {}

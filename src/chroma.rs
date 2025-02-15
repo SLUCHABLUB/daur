@@ -1,8 +1,9 @@
 use crate::sign::{Sign, FLAT, SHARP};
 use const_str::concat;
 use std::fmt::{Display, Formatter};
+use strum::VariantArray;
 
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, VariantArray)]
 pub enum Chroma {
     A,
     Bb,

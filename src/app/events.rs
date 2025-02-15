@@ -1,39 +1,35 @@
-use crate::app::App;
+use crate::app::{or_popup, App};
 use crate::widget::Widget;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};
-use ratatui::layout::Position;
-use std::sync::mpsc::Sender;
+use ratatui::layout::{Position, Rect};
+use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
 
-pub fn spawn_events_thread(events: Sender<Event>) -> JoinHandle<()> {
-    spawn(move || {
-        loop {
-            // TODO: show error
-            let Ok(event) = event::read() else { break };
-            let Ok(()) = events.send(event) else {
-                break;
-            };
-        }
+pub fn spawn_events_thread(app: Arc<App>) -> JoinHandle<()> {
+    spawn(move || loop {
+        app.handle_event();
     })
 }
 
 impl App {
-    pub fn handle_event(&mut self, event: &Event) {
-        match event {
+    fn handle_event(&self) {
+        match or_popup!(event::read(), self) {
             // We will implement pasting manually
             Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
             Event::Key(event) => {
-                if let Some(action) = self.controls.get(event).cloned() {
+                self.should_redraw.set(true);
+
+                if let Some(action) = self.controls.get(&event).cloned() {
                     action.take(self);
                 }
             }
             Event::Mouse(event) => {
+                self.should_redraw.set(true);
+
                 let new_position = Position::new(event.column, event.row);
-                if new_position != self.cached_mouse_position {
-                    self.cached_mouse_position = new_position;
-                    // Some widgets change appearance when hovered
-                    self.should_redraw = true;
+                if new_position != self.cached_mouse_position.get() {
+                    self.cached_mouse_position.set(new_position);
                 }
 
                 match event.kind {
@@ -41,9 +37,9 @@ impl App {
                         let mut action_queue = Vec::new();
 
                         self.click(
-                            self.cached_area,
+                            self.cached_area.get(),
                             button,
-                            self.cached_mouse_position,
+                            self.cached_mouse_position.get(),
                             &mut action_queue,
                         );
 
@@ -64,8 +60,14 @@ impl App {
                 }
             }
             Event::Resize(width, height) => {
-                self.cached_area.width = *width;
-                self.cached_area.height = *height;
+                self.should_redraw.set(true);
+
+                self.cached_area.set(Rect {
+                    x: 0,
+                    y: 0,
+                    width,
+                    height,
+                });
             }
         }
     }

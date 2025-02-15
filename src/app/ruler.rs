@@ -10,7 +10,7 @@ use ratatui::layout::{Position, Rect};
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
 
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone)]
 pub struct Ruler<'a> {
     pub time_signature: &'a Changing<TimeSignature>,
     pub overview_settings: OverviewSettings,

@@ -1,29 +1,24 @@
+use crate::cell::Cell;
+use crate::locked_tree::LockedTree;
 use crate::time::instant::Instant;
-use std::collections::BTreeMap;
-use std::ops::Index;
 
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
-pub struct Changing<T> {
-    pub start: T,
-    pub changes: BTreeMap<Instant, T>,
+#[derive(Clone, Default)]
+pub struct Changing<T: Copy> {
+    pub start: Cell<T>,
+    pub changes: LockedTree<Instant, T>,
 }
 
-impl<T> Index<Instant> for Changing<T> {
-    type Output = T;
-
-    fn index(&self, instant: Instant) -> &Self::Output {
-        self.changes
-            .range(..instant)
-            .next_back()
-            .map_or(&self.start, |(_, value)| value)
+impl<T: Copy> Changing<T> {
+    pub fn get(&self, instant: Instant) -> T {
+        self.changes.get_lte(instant).unwrap_or(self.start.get())
     }
 }
 
-impl<T> From<T> for Changing<T> {
+impl<T: Copy> From<T> for Changing<T> {
     fn from(start: T) -> Self {
         Changing {
-            start,
-            changes: BTreeMap::new(),
+            start: Cell::new(start),
+            changes: LockedTree::new(),
         }
     }
 }

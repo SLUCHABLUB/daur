@@ -1,4 +1,5 @@
 use crate::app::action::Action;
+use crate::widget::sized::Sized;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -6,7 +7,7 @@ use ratatui::layout::{Position, Rect, Size};
 use ratatui::widgets::{Block, Borders, Padding, Paragraph};
 use saturating_cast::SaturatingCast;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Eq, PartialEq, Default)]
 pub struct Button {
     action: Action,
     label: String,
@@ -32,20 +33,6 @@ impl Button {
     pub const fn bordered(mut self) -> Self {
         self.bordered = true;
         self
-    }
-
-    pub fn size(&self) -> Size {
-        let border = if self.bordered { 2 } else { 0 };
-        let width = usize::max(
-            self.label.chars().count(),
-            self.description
-                .as_ref()
-                .map_or(0, |description| description.chars().count()),
-        )
-        .saturating_cast();
-        let height = 1 + border;
-
-        Size { width, height }
     }
 }
 
@@ -78,5 +65,22 @@ impl Widget for Button {
         }
 
         action_queue.push(self.action.clone());
+    }
+}
+
+impl Sized for Button {
+    fn size(&self) -> Size {
+        let border = if self.bordered { 2 } else { 0 };
+        let width = usize::max(
+            self.label.chars().count(),
+            self.description
+                .as_ref()
+                .map_or(0, |description| description.chars().count()),
+        )
+        .saturating_cast::<u16>()
+            + border;
+        let height = 1 + border;
+
+        Size { width, height }
     }
 }

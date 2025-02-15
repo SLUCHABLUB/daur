@@ -1,12 +1,15 @@
 #![deny(clippy::pedantic)]
+// TODO #![deny(clippy::module_name_repetitions)]
 
 mod app;
 mod audio;
+mod cell;
 mod chroma;
 mod clip;
-mod columns;
-mod id;
 mod key;
+mod lock;
+mod locked_tree;
+mod locked_vec;
 mod popup;
 mod project;
 mod sign;
@@ -22,7 +25,7 @@ use std::io::stdout;
 fn main() {
     execute!(stdout(), EnableMouseCapture).ok();
 
-    let mut terminal = ratatui::init();
-    App::new().run(&mut terminal);
+    let terminal = ratatui::init();
+    App::new().run(terminal);
     ratatui::restore();
 }

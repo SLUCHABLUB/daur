@@ -1,14 +1,16 @@
 use crate::app::action::Action;
 use crate::popup::button::TerminatingButton;
 use crate::popup::info::PopupInfo;
+use crate::popup::Popup;
 use crate::widget::button::Button;
-use crate::widget::three_stack::ThreeStack;
+use crate::widget::heterogeneous_stack::ThreeStack;
 use crate::widget::Widget;
 use min_max::max;
 use ratatui::layout::{Constraint, Flex, Size};
 use ratatui::widgets::Paragraph;
 use saturating_cast::SaturatingCast;
 use std::error::Error;
+use std::sync::Weak;
 
 const ACKNOWLEDGE: &str = "ok";
 const PADDING: u16 = 1;
@@ -22,6 +24,14 @@ pub struct ErrorPopup {
 }
 
 impl ErrorPopup {
+    pub fn from_error(error: impl Error, this: Weak<Popup>) -> Self {
+        ErrorPopup {
+            info: PopupInfo::new(String::from("error"), this),
+            display: format!("{error}"),
+            debug: format!("{error:?}"),
+        }
+    }
+
     pub fn size(&self) -> Size {
         Size {
             width: max!(
@@ -44,7 +54,7 @@ impl ErrorPopup {
                 Paragraph::new(self.debug.as_str()),
                 TerminatingButton {
                     button: Button::new(ACKNOWLEDGE, Action::None).bordered(),
-                    id: self.info.id(),
+                    popup: self.info.this(),
                 },
             ),
             [
@@ -55,15 +65,5 @@ impl ErrorPopup {
         )
         .flex(Flex::SpaceBetween)
         .spacing(PADDING)
-    }
-}
-
-impl<E: Error> From<E> for ErrorPopup {
-    fn from(value: E) -> Self {
-        ErrorPopup {
-            info: PopupInfo::new(String::from("error")),
-            display: format!("{value}"),
-            debug: format!("{value:?}"),
-        }
     }
 }

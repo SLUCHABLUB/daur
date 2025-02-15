@@ -6,17 +6,17 @@ use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
-use crate::time::Ratio;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use std::io::Read;
 use std::num::FpCategory;
 use std::time::Duration;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct Audio {
     sample_rate: u32,
     // On the interval [-1; 1]
+    // TODO: use non nan type and derive Eq
     channels: [Vec<f64>; 2],
 }
 
@@ -26,9 +26,18 @@ impl Audio {
     }
 
     pub fn duration(&self) -> Duration {
-        Duration::from_secs_f64(
-            Ratio::new(self.sample_count() as u64, u64::from(self.sample_rate)).to_float(),
-        )
+        const NANOS_PER_SEC: u32 = 1_000_000_000;
+
+        let sample_count = self.sample_count() as u64;
+        let sample_rate = u64::from(self.sample_rate);
+
+        let seconds = sample_count / sample_rate;
+        #[allow(clippy::cast_possible_truncation)]
+        let remainder = (sample_count % sample_rate) as u32;
+
+        let nanos = (remainder * NANOS_PER_SEC) / self.sample_rate;
+
+        Duration::new(seconds, nanos)
     }
 
     pub fn mono_samples(&self) -> impl Iterator<Item = f64> + use<'_> {
@@ -53,6 +62,8 @@ impl Audio {
         AudioSource::new(self.clone(), offset)
     }
 }
+
+impl Eq for Audio {}
 
 // TODO: test
 /// Losslessly convert an i32 sample to a f64 sample
