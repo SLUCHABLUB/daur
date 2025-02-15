@@ -4,7 +4,6 @@ pub mod heterogeneous_stack;
 pub mod homogenous_stack;
 pub mod macros;
 pub mod multi_selector;
-pub mod placeholder;
 pub mod single_selector;
 pub mod sized;
 pub mod to_widget;
