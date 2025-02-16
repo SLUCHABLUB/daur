@@ -39,6 +39,7 @@ pub struct Overview<'a> {
     pub tempo: &'a Changing<Tempo>,
     pub settings: OverviewSettings,
     pub cursor: Instant,
+    pub index: usize,
 }
 
 impl Overview<'_> {
@@ -131,6 +132,7 @@ impl Widget for Overview<'_> {
 
         if button == MouseButton::Left {
             action_queue.push(Action::MoveCursor(instant));
+            action_queue.push(Action::SelectTrack(self.index));
         }
 
         // TODO: && clip not clicked

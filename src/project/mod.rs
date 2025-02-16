@@ -69,13 +69,14 @@ impl Project {
 
         self.tracks.map_enumerated(|index, track| {
             let selected = index == selected_track_index;
-            track_settings.push(track.settings(selected));
+            track_settings.push(track.settings(selected, index));
             track_overviews.push(track.overview(
                 selected_clip,
                 &self.time_signature,
                 &self.tempo,
                 overview_settings,
                 cursor,
+                index,
             ));
         });
 
@@ -86,6 +87,7 @@ impl Project {
             &self.tempo,
             overview_settings,
             cursor,
+            usize::MAX,
         ));
 
         let add_track_button = Button::new(Cow::Borrowed("+"), Action::AddTrack)

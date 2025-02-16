@@ -1,4 +1,5 @@
 pub mod overview;
+mod settings;
 mod source;
 
 pub use source::TrackSource;
@@ -11,9 +12,7 @@ use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
 use crate::track::overview::Overview;
-use crate::widget::Widget;
-use ratatui::symbols::border::{PLAIN, THICK};
-use ratatui::widgets::{Block, Paragraph};
+use crate::track::settings::Settings;
 use std::sync::{Arc, Weak};
 
 const PLACEHOLDER_TITLE: &str = "a track";
@@ -32,14 +31,12 @@ impl Track {
         })
     }
 
-    fn block(&self, selected: bool) -> Block<'static> {
-        let set = if selected { THICK } else { PLAIN };
-
-        Block::bordered().title(self.name.clone()).border_set(set)
-    }
-
-    pub fn settings(&self, selected: bool) -> impl Widget {
-        Paragraph::default().block(self.block(selected))
+    pub fn settings(self: &Arc<Self>, selected: bool, index: usize) -> Settings {
+        Settings {
+            track: Arc::clone(self),
+            selected,
+            index,
+        }
     }
 
     pub fn overview<'a>(
@@ -49,6 +46,7 @@ impl Track {
         tempo: &'a Changing<Tempo>,
         overview_settings: OverviewSettings,
         cursor: Instant,
+        index: usize,
     ) -> Overview<'a> {
         Overview {
             track: Arc::clone(self),
@@ -57,6 +55,7 @@ impl Track {
             tempo,
             settings: overview_settings,
             cursor,
+            index,
         }
     }
 

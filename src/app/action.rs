@@ -42,6 +42,7 @@ pub enum Action {
     Play,
     /// `Play` or `Pause`
     PlayPause,
+    SelectTrack(usize),
     /// Sets the audio output device
     SetDevice(#[educe(Eq(ignore))] Device),
     SetKey(Instant, Key),
@@ -118,6 +119,9 @@ impl Action {
                 } else {
                     app.start_playback();
                 }
+            }
+            Action::SelectTrack(index) => {
+                app.selected_track_index.set(index);
             }
             Action::SetDevice(device) => {
                 app.device.set(Some(device));
