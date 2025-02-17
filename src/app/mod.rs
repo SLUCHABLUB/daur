@@ -26,7 +26,7 @@ use crate::popup::Popup;
 use crate::project::Project;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
-use crate::widget::heterogeneous_stack::TwoStack;
+use crate::widget::heterogeneous::TwoStack;
 use crate::widget::Widget;
 use crossterm::event::{KeyEvent, MouseButton};
 use ratatui::buffer::Buffer;

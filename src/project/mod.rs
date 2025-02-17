@@ -18,8 +18,8 @@ use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
 use crate::track::Track;
 use crate::widget::button::Button;
-use crate::widget::heterogeneous_stack::TwoStack;
-use crate::widget::homogenous_stack::HomogenousStack;
+use crate::widget::heterogeneous::TwoStack;
+use crate::widget::homogenous::Stack;
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use ratatui::prelude::Constraint;
@@ -91,12 +91,12 @@ impl Project {
 
         let settings_column = TwoStack::vertical(
             (
-                HomogenousStack::equidistant_vertical(track_settings),
+                Stack::equidistant_vertical(track_settings),
                 add_track_button,
             ),
             [Constraint::Fill(track_count), Constraint::Fill(1)],
         );
-        let overview_column = HomogenousStack::equidistant_vertical(track_overviews);
+        let overview_column = Stack::equidistant_vertical(track_overviews);
 
         let track_area =
             TwoStack::horizontal((settings_column, overview_column), horizontal_constraints);

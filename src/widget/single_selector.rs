@@ -3,18 +3,18 @@ use crate::cell::Cell;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::widget::bordered::Bordered;
-use crate::widget::homogenous_stack::HomogenousStack;
+use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;
 use crate::widget::text::Text;
 use crossterm::event::MouseButton;
 use strum::VariantArray;
 
-pub type SingleSelector<'cell, T> = HomogenousStack<Option<'cell, T>>;
+pub type SingleSelector<'cell, T> = Stack<Option<'cell, T>>;
 
 pub fn single_selector<T: Copy + PartialEq + ToString + VariantArray>(
     cell: &Cell<T>,
 ) -> SingleSelector<T> {
-    HomogenousStack::horizontal_sized(T::VARIANTS.iter().map(|variant| {
+    Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| {
         let name = variant.to_string();
 
         Option {

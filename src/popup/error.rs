@@ -5,7 +5,7 @@ use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
-use crate::widget::heterogeneous_stack::ThreeStack;
+use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::sized::Sized as _;
 use crate::widget::text::Text;
 use crate::widget::to_widget::ToWidget;

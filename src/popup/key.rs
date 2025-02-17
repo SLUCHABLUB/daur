@@ -9,7 +9,7 @@ use crate::sign::Sign;
 use crate::time::instant::Instant;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
-use crate::widget::heterogeneous_stack::{FourStack, TwoStack};
+use crate::widget::heterogeneous::{FourStack, TwoStack};
 use crate::widget::multi_selector::{multi_selector, MultiSelector};
 use crate::widget::single_selector::{single_selector, SingleSelector};
 use crate::widget::to_widget::ToWidget;

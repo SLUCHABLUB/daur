@@ -13,16 +13,16 @@ use saturating_cast::SaturatingCast as _;
 use std::iter::zip;
 
 // TODO: should we default to `Flex::default()`?
-pub struct HomogenousStack<T> {
+pub struct Stack<T> {
     direction: Direction,
     children: Vec<(T, Constraint)>,
     spacing: Spacing,
     flex: Flex,
 }
 
-impl<T> HomogenousStack<T> {
+impl<T> Stack<T> {
     pub fn horizontal<Children: IntoIterator<Item = (T, Constraint)>>(children: Children) -> Self {
-        HomogenousStack {
+        Stack {
             direction: Direction::Horizontal,
             children: children.into_iter().collect(),
             spacing: Spacing::default(),
@@ -31,7 +31,7 @@ impl<T> HomogenousStack<T> {
     }
 
     pub fn vertical<Children: IntoIterator<Item = (T, Constraint)>>(children: Children) -> Self {
-        HomogenousStack {
+        Stack {
             direction: Direction::Vertical,
             children: children.into_iter().collect(),
             spacing: Spacing::default(),
@@ -43,7 +43,7 @@ impl<T> HomogenousStack<T> {
     where
         T: Sized,
     {
-        HomogenousStack::horizontal(children.into_iter().map(|child| {
+        Stack::horizontal(children.into_iter().map(|child| {
             let constraint = child.size().width.constraint();
             (child, constraint)
         }))
@@ -57,7 +57,7 @@ impl<T> HomogenousStack<T> {
         let children = children.into_iter();
         let length = children.len().saturating_cast();
         // Using a ratio of 1 / length is faster than using a fill of 1
-        HomogenousStack::vertical(children.map(|child| (child, Constraint::Ratio(1, length))))
+        Stack::vertical(children.map(|child| (child, Constraint::Ratio(1, length))))
     }
 
     pub fn spacing<S: Into<Spacing>>(mut self, spacing: S) -> Self {
@@ -81,7 +81,7 @@ impl<T> HomogenousStack<T> {
     }
 }
 
-impl<T: Widget> Widget for HomogenousStack<T> {
+impl<T: Widget> Widget for Stack<T> {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let (children, constraints) = self.unzip_children();
         let areas = self.areas(area, constraints);
@@ -109,7 +109,7 @@ impl<T: Widget> Widget for HomogenousStack<T> {
     }
 }
 
-impl<T: Sized> Sized for HomogenousStack<T> {
+impl<T: Sized> Sized for Stack<T> {
     fn size(&self) -> Size {
         let mut dominant = Length::ZERO;
         let mut non_dominant = Length::ZERO;

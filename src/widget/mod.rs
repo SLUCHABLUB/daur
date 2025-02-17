@@ -1,7 +1,7 @@
 pub mod bordered;
 pub mod button;
-pub mod heterogeneous_stack;
-pub mod homogenous_stack;
+pub mod heterogeneous;
+pub mod homogenous;
 mod injective;
 pub mod macros;
 pub mod multi_selector;

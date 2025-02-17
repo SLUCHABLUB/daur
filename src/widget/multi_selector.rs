@@ -3,16 +3,16 @@ use crate::cell::Cell;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::widget::bordered::Bordered;
-use crate::widget::homogenous_stack::HomogenousStack;
+use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;
 use crate::widget::text::Text;
 use bitbag::{BitBag, Flags};
 use crossterm::event::MouseButton;
 
-pub type MultiSelector<'cell, T> = HomogenousStack<Option<'cell, T>>;
+pub type MultiSelector<'cell, T> = Stack<Option<'cell, T>>;
 
 pub fn multi_selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> MultiSelector<T> {
-    HomogenousStack::horizontal_sized(T::VARIANTS.iter().map(|(_, variant, _)| {
+    Stack::horizontal_sized(T::VARIANTS.iter().map(|(_, variant, _)| {
         let name = variant.to_string();
 
         Option {
