@@ -3,10 +3,12 @@ use crate::time::bar::Bar;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use crate::time::Ratio;
+use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
 use std::num::NonZeroU8;
 
+#[expect(clippy::unwrap_used, reason = "4 is not 0")]
 const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -38,7 +40,7 @@ impl Default for TimeSignature {
 }
 
 impl Display for TimeSignature {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}", self.beats_per_bar, self.beat_size)
     }
 }

@@ -1,86 +1,95 @@
 use crate::app::action::Action;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::size::Size;
+use crate::length::Length;
+use crate::widget::block::Bordered;
 use crate::widget::sized::Sized;
+use crate::widget::text::Text;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect, Size};
-use ratatui::widgets::{Block, Borders, Padding, Paragraph};
-use saturating_cast::SaturatingCast;
 
 #[derive(Clone, Eq, PartialEq, Default)]
 pub struct Button {
     action: Action,
-    label: String,
-    description: Option<String>,
+    label: Text,
+    description: Option<Text>,
     bordered: bool,
 }
 
 impl Button {
-    pub fn new(label: impl Into<String>, action: Action) -> Self {
+    pub fn simple<S: Into<String>>(label: S, action: Action) -> Self {
         Button {
             action,
-            label: label.into(),
+            label: Text::left_aligned(label),
             description: None,
             bordered: false,
         }
     }
 
-    pub fn description(mut self, description: impl Into<String>) -> Self {
-        self.description = Some(description.into());
-        self
+    pub fn standard<S: Into<String>>(label: S, action: Action) -> Bordered<Self> {
+        Bordered::plain(
+            "",
+            Button {
+                action,
+                label: Text::centered(label),
+                description: None,
+                bordered: true,
+            },
+        )
     }
 
-    pub const fn bordered(mut self) -> Self {
-        self.bordered = true;
-        self
+    pub fn described<L: Into<String>, D: Into<String>>(
+        label: L,
+        description: D,
+        action: Action,
+    ) -> Bordered<Self> {
+        Bordered::plain(
+            "",
+            Button {
+                action,
+                label: Text::centered(label),
+                description: Some(Text::centered(description)),
+                bordered: true,
+            },
+        )
+    }
+
+    fn description(&self) -> &Text {
+        self.description.as_ref().unwrap_or(&self.label)
     }
 }
 
+// TODO: use injective
 impl Widget for Button {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
-        let content = if area.contains(mouse_position) {
-            self.description.as_deref().unwrap_or(self.label.as_str())
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+        let text = if area.contains(mouse_position) {
+            self.description()
         } else {
-            self.label.as_str()
+            &self.label
         };
 
-        // - 2 for the border, - 1 to favour the top
-        let padding = Padding::top(area.height.saturating_sub(3) / 2);
-
-        let mut block = Block::new().padding(padding);
-
-        if self.bordered {
-            block = block.borders(Borders::ALL);
-        }
-
-        Paragraph::new(content)
-            .centered()
-            .block(block)
-            .render(area, buf, mouse_position);
+        text.render(area, buf, mouse_position);
     }
 
-    fn click(&self, _: Rect, button: MouseButton, _: Position, action_queue: &mut Vec<Action>) {
+    fn click(&self, _: Rectangle, button: MouseButton, _: Point, actions: &mut Vec<Action>) {
         if button != MouseButton::Left {
             return;
         }
 
-        action_queue.push(self.action.clone());
+        actions.push(self.action.clone());
     }
 }
 
 impl Sized for Button {
     fn size(&self) -> Size {
-        let border = if self.bordered { 2 } else { 0 };
-        let width = usize::max(
-            self.label.chars().count(),
-            self.description
-                .as_ref()
-                .map_or(0, |description| description.chars().count()),
-        )
-        .saturating_cast::<u16>()
-            + border;
-        let height = 1 + border;
+        let label = self.label.size();
+        let description = self.description().size();
 
-        Size { width, height }
+        Size {
+            width: Length::max(label.width, description.width),
+            height: Length::max(label.height, description.height),
+        }
     }
 }

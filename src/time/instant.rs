@@ -4,6 +4,8 @@ use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
 use crate::time::Ratio;
+use num::Integer as _;
+use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Sub};
 use std::time;
 
@@ -37,15 +39,29 @@ impl Instant {
         tempo: &Changing<Tempo>,
         sample_rate: u32,
     ) -> usize {
-        #![allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+        const NANOS_PER_SECOND: u128 = 1_000_000_000;
+        const HALF: u128 = 500_000_000;
 
-        let sample_rate = f64::from(sample_rate);
-        let seconds = self
-            .real_time_duration_since_start(time_signature, tempo)
-            .as_secs_f64();
+        let sample_rate = u128::from(sample_rate);
+        let duration = self.real_time_duration_since_start(time_signature, tempo);
+
+        // < 2^64 * 10^9 < 2^94
+        let nanos = duration.as_nanos();
 
         // * 2 since we are always in stereo
-        (seconds * sample_rate).round() as usize * 2
+        #[expect(
+            clippy::arithmetic_side_effects,
+            reason = "nanos < 2^94, sample_rate < 2^32 => nano_sample < 2^(94 + 32 + 1) < 2^128"
+        )]
+        let nano_sample = nanos * sample_rate * 2;
+
+        let (mut sample, remainder) = nano_sample.div_rem(&NANOS_PER_SECOND);
+
+        if remainder > HALF {
+            sample = sample.saturating_add(1);
+        }
+
+        sample.saturating_cast()
     }
 }
 

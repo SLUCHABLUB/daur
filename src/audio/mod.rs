@@ -9,6 +9,7 @@ use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
+use num::{rational, Integer as _};
 use std::io::Read;
 use std::num::FpCategory;
 use std::time::Duration;
@@ -27,16 +28,25 @@ impl Audio {
     }
 
     pub fn duration(&self) -> Duration {
-        const NANOS_PER_SEC: u32 = 1_000_000_000;
+        const NANOS_PER_SEC: u64 = 1_000_000_000;
 
         let sample_count = self.sample_count() as u64;
         let sample_rate = u64::from(self.sample_rate);
+        let nano_sample_rate = rational::Ratio::new(sample_rate, NANOS_PER_SEC);
 
-        let seconds = sample_count / sample_rate;
-        #[allow(clippy::cast_possible_truncation)]
-        let remainder = (sample_count % sample_rate) as u32;
+        let (seconds, remainder) = sample_count.div_rem(&sample_rate);
 
-        let nanos = (remainder * NANOS_PER_SEC) / self.sample_rate;
+        #[expect(
+            clippy::arithmetic_side_effects,
+            reason = "remainder and NANOS_PER_SEC fit in u32 => product fits in u64"
+        )]
+        let nanos = rational::Ratio::from(remainder) / nano_sample_rate;
+        let nanos = nanos.round().to_integer();
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "remainder / sample_rate < 1 => it * NANOS_PER_SEC < NANOS_PER_SEC"
+        )]
+        let nanos = nanos as u32;
 
         Duration::new(seconds, nanos)
     }
@@ -44,7 +54,7 @@ impl Audio {
     pub fn mono_samples(&self) -> impl Iterator<Item = f64> + use<'_> {
         Itertools::zip_longest(self.channels[0].iter(), self.channels[1].iter()).map(|either| {
             match either {
-                EitherOrBoth::Both(l, r) => (l + r) / 2.0,
+                EitherOrBoth::Both(left, right) => (left + right) / 2.0,
                 EitherOrBoth::Left(sample) | EitherOrBoth::Right(sample) => *sample,
             }
         })
@@ -76,7 +86,9 @@ fn clamp_float_sample(sample: f32) -> f64 {
     let sample = f64::from(sample);
     match sample.classify() {
         FpCategory::Nan => 0.0,
-        _ => sample.clamp(-1.0, 1.0),
+        FpCategory::Infinite | FpCategory::Zero | FpCategory::Subnormal | FpCategory::Normal => {
+            sample.clamp(-1.0, 1.0)
+        }
     }
 }
 
@@ -96,6 +108,11 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
                 .try_collect()?,
         };
 
+        #[expect(
+            clippy::indexing_slicing,
+            clippy::missing_asserts_for_indexing,
+            reason = "chunks_exact is exact"
+        )]
         let channels = match spec.channels {
             1 => [samples.clone(), samples],
             2 => samples

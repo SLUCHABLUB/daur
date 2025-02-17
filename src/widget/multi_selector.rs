@@ -1,17 +1,15 @@
 use crate::app::action::Action;
 use crate::cell::Cell;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::widget::block::Bordered;
 use crate::widget::homogenous_stack::HomogenousStack;
-use crate::widget::sized::Sized;
-use crate::widget::Widget;
+use crate::widget::injective::Injective;
+use crate::widget::text::Text;
 use bitbag::{BitBag, Flags};
 use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect, Size};
-use ratatui::symbols::border::{PLAIN, THICK};
-use ratatui::widgets::{Block, Paragraph};
-use saturating_cast::SaturatingCast;
 
-pub type MultiSelector<'a, T> = HomogenousStack<Option<'a, T>>;
+pub type MultiSelector<'cell, T> = HomogenousStack<Option<'cell, T>>;
 
 pub fn multi_selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> MultiSelector<T> {
     HomogenousStack::horizontal_sized(T::VARIANTS.iter().map(|(_, variant, _)| {
@@ -26,27 +24,22 @@ pub fn multi_selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> Mul
     .spacing(1)
 }
 
-pub struct Option<'a, T: Flags> {
+pub struct Option<'cell, T: Flags> {
     name: String,
     value: T,
-    cell: &'a Cell<BitBag<T>>,
+    cell: &'cell Cell<BitBag<T>>,
 }
 
-impl<T: Copy + Flags> Widget for Option<'_, T> {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
-        let set = if self.cell.get().is_set(self.value) {
-            THICK
-        } else {
-            PLAIN
-        };
+impl<T: Copy + Flags> Injective for Option<'_, T> {
+    type Visual = Bordered<Text>;
 
-        Paragraph::new(self.name.as_str())
-            .block(Block::bordered().border_set(set))
-            .centered()
-            .render(area, buf, mouse_position);
+    fn visual(&self) -> Self::Visual {
+        let is_set = self.cell.get().is_set(self.value);
+
+        Bordered::new("", Text::centered(&self.name), is_set)
     }
 
-    fn click(&self, _: Rect, button: MouseButton, _: Position, _: &mut Vec<Action>) {
+    fn inject(&self, _: Rectangle, button: MouseButton, _: Point, _: &mut Vec<Action>) {
         if button != MouseButton::Left {
             return;
         }
@@ -60,14 +53,5 @@ impl<T: Copy + Flags> Widget for Option<'_, T> {
         }
 
         self.cell.set(bag);
-    }
-}
-
-impl<T: Copy + Flags> Sized for Option<'_, T> {
-    fn size(&self) -> Size {
-        Size {
-            width: self.name.chars().count().saturating_cast::<u16>() + 2,
-            height: self.name.lines().count().saturating_cast::<u16>() + 2,
-        }
     }
 }

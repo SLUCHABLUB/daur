@@ -12,13 +12,13 @@ impl Iterator for ProjectSource {
 
     fn next(&mut self) -> Option<Self::Item> {
         let mut sum = 0.0;
-        let mut none_count = 0;
+        let mut none_count: usize = 0;
 
         for track in &mut self.tracks {
             if let Some(sample) = track.next() {
                 sum += sample;
             } else {
-                none_count += 1;
+                none_count = none_count.saturating_add(1);
             }
         }
 

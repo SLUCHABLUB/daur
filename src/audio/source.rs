@@ -4,7 +4,7 @@ use std::time::Duration;
 
 pub struct AudioSource {
     audio: Audio,
-    channel: bool,
+    right: bool,
     /// The current sample that the iterator is on, from the beginning
     sample: usize,
 }
@@ -13,7 +13,7 @@ impl AudioSource {
     pub fn new(audio: Audio, sample: usize) -> AudioSource {
         AudioSource {
             audio,
-            channel: false,
+            right: false,
             sample,
         }
     }
@@ -23,14 +23,22 @@ impl Iterator for AudioSource {
     type Item = f32;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let sample = *self.audio.channels[usize::from(self.channel)].get(self.sample)?;
+        let channel = if self.right {
+            &self.audio.channels[0]
+        } else {
+            &self.audio.channels[1]
+        };
+        let sample = *channel.get(self.sample)?;
 
-        if self.channel {
-            self.sample += 1;
+        if self.right {
+            self.sample = self.sample.saturating_add(1);
         }
-        self.channel = !self.channel;
+        self.right = !self.right;
 
-        #[allow(clippy::cast_possible_truncation)]
+        #[expect(
+            clippy::cast_possible_truncation,
+            reason = "playback audio doesn't support f64 precision"
+        )]
         Some(sample as f32)
     }
 }

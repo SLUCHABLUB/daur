@@ -18,6 +18,8 @@ use crate::app::events::spawn_events_thread;
 use crate::app::macros::{or_popup, popup_error};
 use crate::cell::Cell;
 use crate::clip::Clip;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
 use crate::locked_vec::LockedVec;
 use crate::popup::Popup;
 use crate::project::Project;
@@ -27,9 +29,9 @@ use crate::widget::heterogeneous_stack::TwoStack;
 use crate::widget::Widget;
 use crossterm::event::{KeyEvent, MouseButton};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Position, Rect};
+use ratatui::layout::Constraint;
 use ratatui::DefaultTerminal;
-use rodio::cpal::traits::HostTrait;
+use rodio::cpal::traits::HostTrait as _;
 use rodio::cpal::{default_host, Host};
 use rodio::Device;
 use std::collections::HashMap;
@@ -62,8 +64,8 @@ pub struct App {
 
     overview_settings: OverviewSettings,
 
-    cached_mouse_position: Cell<Position>,
-    cached_area: Cell<Rect>,
+    cached_mouse_position: Cell<Point>,
+    cached_area: Cell<Rectangle>,
     should_redraw: Cell<bool>,
     should_exit: Cell<bool>,
 }
@@ -111,15 +113,18 @@ impl App {
         // TODO: save
 
         if audio_thread.is_finished() {
-            let Ok(()) = audio_thread.join().map_err(resume_unwind);
+            let Err(error) = audio_thread.join();
+            resume_unwind(error)
         }
 
         if draw_thread.is_finished() {
-            let Ok(()) = draw_thread.join().map_err(resume_unwind);
+            let Err(error) = draw_thread.join();
+            resume_unwind(error)
         }
 
         if events_thread.is_finished() {
-            let Ok(()) = events_thread.join().map_err(resume_unwind);
+            let Err(error) = events_thread.join();
+            resume_unwind(error)
         }
     }
 
@@ -172,7 +177,7 @@ impl App {
 }
 
 impl Widget for App {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         self.background().render(area, buf, mouse_position);
 
         for popup in self.popups.iter() {
@@ -183,24 +188,23 @@ impl Widget for App {
 
     fn click(
         &self,
-        area: Rect,
+        area: Rectangle,
         button: MouseButton,
-        position: Position,
-        action_queue: &mut Vec<Action>,
+        position: Point,
+        actions: &mut Vec<Action>,
     ) {
         for popup in self.popups.iter() {
             let area = popup.area_in_window(area);
             if area.contains(position) {
-                popup.click(area, button, position, action_queue);
+                popup.click(area, button, position, actions);
                 return;
             }
 
             if popup.info().unimportant {
-                action_queue.push(Action::ClosePopup(popup.info().this()));
+                actions.push(Action::ClosePopup(popup.info().this()));
             }
         }
 
-        self.background()
-            .click(area, button, position, action_queue);
+        self.background().click(area, button, position, actions);
     }
 }

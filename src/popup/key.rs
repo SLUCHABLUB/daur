@@ -2,14 +2,14 @@ use crate::app::action::Action;
 use crate::cell::Cell;
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
-use crate::popup::button::TerminatingButton;
+use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
 use crate::sign::Sign;
 use crate::time::instant::Instant;
+use crate::widget::block::Bordered;
 use crate::widget::button::Button;
-use crate::widget::heterogeneous_stack::FourStack;
-use crate::widget::homogenous_stack::HomogenousStack;
+use crate::widget::heterogeneous_stack::{FourStack, TwoStack};
 use crate::widget::multi_selector::{multi_selector, MultiSelector};
 use crate::widget::single_selector::{single_selector, SingleSelector};
 use crate::widget::to_widget::ToWidget;
@@ -23,7 +23,7 @@ const TITLE: &str = "select key";
 #[derive(Clone, Educe)]
 #[educe(Eq, PartialEq)]
 pub struct KeySelector {
-    pub(super) info: PopupInfo,
+    pub info: PopupInfo,
 
     #[educe(Eq(ignore))]
     tonic: Cell<Chroma>,
@@ -53,25 +53,24 @@ impl KeySelector {
 }
 
 impl ToWidget for KeySelector {
-    type Widget<'a> = FourStack<
-        SingleSelector<'a, Chroma>,
-        SingleSelector<'a, Sign>,
-        MultiSelector<'a, KeyInterval>,
-        HomogenousStack<TerminatingButton>,
+    type Widget<'cell> = FourStack<
+        SingleSelector<'cell, Chroma>,
+        SingleSelector<'cell, Sign>,
+        MultiSelector<'cell, KeyInterval>,
+        TwoStack<Terminating<Bordered<Button>>, Terminating<Bordered<Button>>>,
     >;
 
     fn to_widget(&self) -> Self::Widget<'_> {
-        let buttons = HomogenousStack::horizontal_sized([
-            TerminatingButton {
-                button: Button::new("cancel", Action::None).bordered(),
+        let buttons = TwoStack::horizontal_sized((
+            Terminating {
+                child: Button::standard("cancel", Action::None),
                 popup: self.info.this(),
             },
-            TerminatingButton {
-                button: Button::new("confirm", Action::SetKey(Instant::START, self.key()))
-                    .bordered(),
+            Terminating {
+                child: Button::standard("confirm", Action::SetKey(Instant::START, self.key())),
                 popup: self.info.this(),
             },
-        ])
+        ))
         .flex(Flex::SpaceBetween);
 
         FourStack::vertical(

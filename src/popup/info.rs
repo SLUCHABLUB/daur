@@ -1,12 +1,12 @@
 use crate::cell::Cell;
+use crate::length::point::Point;
 use crate::popup::Popup;
-use ratatui::layout::Position;
 use std::sync::Weak;
 
 #[derive(Clone)]
 pub struct PopupInfo {
     pub title: String,
-    pub position: Cell<Option<Position>>,
+    pub position: Cell<Option<Point>>,
     /// Whether the popup may close when unfocused
     pub unimportant: bool,
     this: Weak<Popup>,

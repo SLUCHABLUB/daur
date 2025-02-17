@@ -1,35 +1,34 @@
 use crate::app::settings::OverviewSettings;
+use crate::length::offset::Offset;
+use crate::length::rectangle::Rectangle;
+use crate::length::Length;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
-use crate::time::Ratio;
 use crate::time::TimeSignature;
-use ratatui::layout::Rect;
-use rounded_div::RoundedDiv;
-use saturating_cast::SaturatingCast;
 
 /// A window into
 #[derive(Copy, Clone)]
-pub struct Window<'a> {
-    pub time_signature: &'a Changing<TimeSignature>,
+pub struct Window<'project> {
+    pub time_signature: &'project Changing<TimeSignature>,
     pub overview_settings: OverviewSettings,
-    pub x: u16,
-    pub width: u16,
+    pub x: Length,
+    pub width: Length,
 }
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct UncheckedRect {
-    pub x: i32,
-    pub y: i32,
-    pub width: u16,
-    pub height: u16,
+    pub x: Offset,
+    pub y: Offset,
+    pub width: Length,
+    pub height: Length,
 }
 
 impl UncheckedRect {
-    pub fn clamp(self) -> Rect {
-        Rect {
-            x: self.x.saturating_cast(),
-            y: self.y.saturating_cast(),
+    pub fn clamp(self) -> Rectangle {
+        Rectangle {
+            x: self.x.saturate(),
+            y: self.y.saturate(),
             width: self.width,
             height: self.height,
         }
@@ -37,32 +36,19 @@ impl UncheckedRect {
 }
 
 impl Window<'_> {
-    fn instant_to_column_unchecked(self, instant: Instant) -> i32 {
-        let mut column = 0;
+    pub fn column_to_instant_on_grid(&self, column: Length) -> Instant {
+        let offset = self.overview_settings.offset + column - self.x;
 
-        for bar in self.time_signature.bars() {
-            if !bar.period().contains(instant) {
-                let width = bar.column_width(self.overview_settings);
-                column += i32::from(width);
-                continue;
-            }
-
-            let offset = instant - bar.start;
-
-            let cell_offset = offset / self.overview_settings.cell_duration;
-
-            column += (cell_offset * Ratio::from(self.overview_settings.cell_width))
-                .saturating_cast::<i32>();
-
-            break;
+        let cell = (offset / self.overview_settings.cell_width).rounded();
+        let duration = self.overview_settings.cell_duration * cell;
+        Instant {
+            whole_notes: duration.whole_notes,
         }
-
-        column - i32::from(self.overview_settings.offset)
     }
 
-    pub fn instant_to_column(self, instant: Instant) -> Option<u16> {
+    pub fn instant_to_column(self, instant: Instant) -> Option<Length> {
         let column_unchecked = self.instant_to_column_unchecked(instant);
-        let column = u16::try_from(column_unchecked).ok()?;
+        let column = column_unchecked.to_length()?;
 
         if column < self.width {
             Some(column + self.x)
@@ -71,32 +57,43 @@ impl Window<'_> {
         }
     }
 
-    pub fn column_to_instant_on_grid(&self, column: u16) -> Instant {
-        let offset = self.overview_settings.offset + column - self.x;
+    fn instant_to_column_unchecked(self, instant: Instant) -> Offset {
+        let mut column = Offset::ZERO;
 
-        let cell = offset.rounded_div(self.overview_settings.cell_width);
-        let duration = self.overview_settings.cell_duration * Ratio::from(cell);
-        Instant {
-            whole_notes: duration.whole_notes,
+        for bar in self.time_signature.bars() {
+            if !bar.period().contains(instant) {
+                let width = bar.column_width(self.overview_settings);
+                column += width;
+                continue;
+            }
+
+            let offset = instant - bar.start;
+
+            let cell_offset = offset / self.overview_settings.cell_duration;
+
+            column += self.overview_settings.cell_width * cell_offset;
+
+            break;
         }
+
+        column - self.overview_settings.offset
     }
 
     pub fn period_to_unchecked_rect(
         self,
         period: Period,
-        x: u16,
-        y: u16,
-        height: u16,
+        x: Length,
+        y: Length,
+        height: Length,
     ) -> UncheckedRect {
-        let offset = i32::from(x);
-        let x = offset + self.instant_to_column_unchecked(period.start);
+        let start = self.instant_to_column_unchecked(period.start) + x;
         // TODO: subtract one to not include column of next beat?
-        let end = offset + self.instant_to_column_unchecked(period.end());
-        let width = (end - x).saturating_cast();
+        let end = self.instant_to_column_unchecked(period.end()) + x;
+        let width = (end - start).saturate();
 
         UncheckedRect {
-            x,
-            y: i32::from(y),
+            x: start,
+            y: Offset::from(y),
             width,
             height,
         }

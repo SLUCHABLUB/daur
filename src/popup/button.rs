@@ -1,59 +1,69 @@
 use crate::app::action::Action;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::size::Size;
 use crate::popup::Popup;
-use crate::widget::button::Button;
 use crate::widget::sized::Sized;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
+use educe::Educe;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect, Size};
 use std::sync::Weak;
 
 /// A simple button
-#[derive(Clone)]
-pub struct TerminatingButton {
-    pub button: Button,
+#[derive(Clone, Educe)]
+#[educe(Eq, PartialEq)]
+pub struct Terminating<Child: Widget> {
+    pub child: Child,
     /// The id of the containing popup
+    #[educe(Eq(ignore))]
     pub popup: Weak<Popup>,
 }
 
-impl Widget for TerminatingButton {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
-        self.button.render(area, buf, mouse_position);
+// TODO: use injective
+impl<Child: Widget> Widget for Terminating<Child> {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+        self.child.render(area, buf, mouse_position);
     }
 
     fn click(
         &self,
-        area: Rect,
+        area: Rectangle,
         button: MouseButton,
-        position: Position,
-        action_queue: &mut Vec<Action>,
+        position: Point,
+        actions: &mut Vec<Action>,
     ) {
-        self.button.click(area, button, position, action_queue);
+        self.child.click(area, button, position, actions);
         if button == MouseButton::Left {
-            action_queue.push(Action::ClosePopup(Weak::clone(&self.popup)));
+            actions.push(Action::ClosePopup(Weak::clone(&self.popup)));
         }
     }
 }
 
-impl PartialEq for TerminatingButton {
-    fn eq(&self, other: &Self) -> bool {
-        let TerminatingButton {
-            button: self_button,
-            popup: _,
-        } = self;
-        let TerminatingButton {
-            button: other_button,
-            popup: _,
-        } = other;
+impl<Child: Widget> Widget for &Terminating<Child> {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+        (*self).render(area, buf, mouse_position);
+    }
 
-        self_button == other_button
+    fn click(
+        &self,
+        area: Rectangle,
+        button: MouseButton,
+        position: Point,
+        actions: &mut Vec<Action>,
+    ) {
+        (*self).click(area, button, position, actions);
     }
 }
 
-impl Eq for TerminatingButton {}
-
-impl Sized for TerminatingButton {
+impl<Child: Sized> Sized for Terminating<Child> {
     fn size(&self) -> Size {
-        self.button.size()
+        self.child.size()
+    }
+}
+
+impl<Child: Sized> Sized for &Terminating<Child> {
+    fn size(&self) -> Size {
+        (*self).size()
     }
 }

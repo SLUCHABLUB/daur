@@ -1,23 +1,26 @@
 use crate::app::action::Action;
 use crate::app::window::Window;
 use crate::app::OverviewSettings;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::Length;
 use crate::project::changing::Changing;
 use crate::time::TimeSignature;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect};
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
+use saturating_cast::SaturatingCast as _;
 
 #[derive(Copy, Clone)]
-pub struct Ruler<'a> {
-    pub time_signature: &'a Changing<TimeSignature>,
+pub struct Ruler<'project> {
+    pub time_signature: &'project Changing<TimeSignature>,
     pub overview_settings: OverviewSettings,
 }
 
 impl Widget for Ruler<'_> {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let window = Window {
             time_signature: self.time_signature,
             overview_settings: self.overview_settings,
@@ -38,36 +41,44 @@ impl Widget for Ruler<'_> {
                 .column_width(self.overview_settings)
                 .min(area.x + area.width - x);
 
-            let area = Rect {
+            let area = Rectangle {
                 x,
                 y: area.y,
                 width,
                 height: area.height,
             };
 
-            segment(
-                index,
-                self.overview_settings.cell_width as usize,
-                width as usize,
-            )
-            .render(area, buf, mouse_position);
+            segment(index, self.overview_settings.cell_width, width).render(
+                area,
+                buf,
+                mouse_position,
+            );
         }
     }
 
-    fn click(&self, _: Rect, _: MouseButton, _: Position, _: &mut Vec<Action>) {
+    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
         // TODO: move or scale overview
     }
 }
 
-fn segment(index: usize, cell_width: usize, bar_width: usize) -> impl Widget {
-    let cell_count = bar_width.div_ceil(cell_width);
-    let mut cell = vec![b' '; cell_width];
-    cell[0] = b'.';
+// TODO: implement this with a stack rather than a paragraph
+fn segment(index: usize, cell_width: Length, bar_width: Length) -> impl Widget {
+    let cell_count = (bar_width / cell_width).ceil() as usize;
+    let spaces_per_cell = cell_width / Length::CHAR_WIDTH;
+    let spaces_per_cell = spaces_per_cell.round().saturating_cast();
+
+    let mut cell = vec![b' '; spaces_per_cell];
+    if let Some(first) = cell.first_mut() {
+        *first = b'.';
+    }
     let mut cells = cell.repeat(cell_count);
-    cells[0] = b'|';
+    if let Some(first) = cells.first_mut() {
+        *first = b'|';
+    }
 
     Paragraph::new(vec![
         Line::raw(index.to_string()),
+        #[expect(clippy::unwrap_used, reason = "`cells` is just ascii chars")]
         Line::raw(String::from_utf8(cells).unwrap()),
     ])
 }

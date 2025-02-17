@@ -1,14 +1,14 @@
 use crate::app::action::Action;
-use crate::popup::button::TerminatingButton;
+use crate::length::Length;
+use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
+use crate::widget::block::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::ThreeStack;
-use crate::widget::Widget;
-use min_max::max;
-use ratatui::layout::{Constraint, Flex, Size};
-use ratatui::widgets::Paragraph;
-use saturating_cast::SaturatingCast;
+use crate::widget::text::Text;
+use crate::widget::to_widget::ToWidget;
+use ratatui::layout::{Constraint, Flex};
 use std::error::Error;
 use std::sync::Weak;
 
@@ -24,41 +24,30 @@ pub struct ErrorPopup {
 }
 
 impl ErrorPopup {
-    pub fn from_error(error: impl Error, this: Weak<Popup>) -> Self {
+    pub fn from_error<E: Error>(error: E, this: Weak<Popup>) -> Self {
         ErrorPopup {
             info: PopupInfo::new(String::from("error"), this),
             display: format!("{error}"),
             debug: format!("{error:?}"),
         }
     }
+}
 
-    pub fn size(&self) -> Size {
-        Size {
-            width: max!(
-                self.display.chars().count(),
-                self.debug.chars().count(),
-                ACKNOWLEDGE.chars().count() + 2
-            )
-            .saturating_cast(),
-            height: (self.display.lines().count() + self.debug.lines().count())
-                .saturating_cast::<u16>()
-                + 2 * PADDING
-                + ACKNOWLEDGE_BUTTON_HEIGHT,
-        }
-    }
+impl ToWidget for ErrorPopup {
+    type Widget<'ignore> = ThreeStack<Text, Text, Terminating<Bordered<Button>>>;
 
-    pub fn to_widget(&self) -> impl Widget + use<'_> {
+    fn to_widget(&self) -> Self::Widget<'_> {
         ThreeStack::vertical(
             (
-                Paragraph::new(self.display.as_str()),
-                Paragraph::new(self.debug.as_str()),
-                TerminatingButton {
-                    button: Button::new(ACKNOWLEDGE, Action::None).bordered(),
+                Text::left_aligned(self.display.as_str()),
+                Text::left_aligned(self.debug.as_str()),
+                Terminating {
+                    child: Button::standard(ACKNOWLEDGE, Action::None),
                     popup: self.info.this(),
                 },
             ),
             [
-                Constraint::Max(self.display.lines().count().saturating_cast()),
+                Length::string_height(&self.display).constraint_max(),
                 Constraint::Fill(1),
                 Constraint::Length(ACKNOWLEDGE_BUTTON_HEIGHT),
             ],

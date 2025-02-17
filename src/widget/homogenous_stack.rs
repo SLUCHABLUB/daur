@@ -1,12 +1,16 @@
 use crate::app::action::Action;
+use crate::length::offset::Offset;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::size::Size;
+use crate::length::Length;
 use crate::widget::sized::{join, split, Sized};
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Flex, Layout, Position, Rect, Size, Spacing};
-use saturating_cast::SaturatingCast;
+use ratatui::layout::{Constraint, Direction, Flex, Spacing};
+use saturating_cast::SaturatingCast as _;
 use std::iter::zip;
-use std::rc::Rc;
 
 // TODO: should we default to `Flex::default()`?
 pub struct HomogenousStack<T> {
@@ -40,7 +44,7 @@ impl<T> HomogenousStack<T> {
         T: Sized,
     {
         HomogenousStack::horizontal(children.into_iter().map(|child| {
-            let constraint = Constraint::Length(child.size().width);
+            let constraint = child.size().width.constraint();
             (child, constraint)
         }))
     }
@@ -56,21 +60,17 @@ impl<T> HomogenousStack<T> {
         HomogenousStack::vertical(children.map(|child| (child, Constraint::Ratio(1, length))))
     }
 
-    pub fn flex(mut self, flex: Flex) -> Self {
-        self.flex = flex;
-        self
-    }
-
-    pub fn spacing(mut self, spacing: impl Into<Spacing>) -> Self {
+    pub fn spacing<S: Into<Spacing>>(mut self, spacing: S) -> Self {
         self.spacing = spacing.into();
         self
     }
 
-    fn areas(&self, area: Rect, constraints: Vec<Constraint>) -> Rc<[Rect]> {
-        Layout::new(self.direction, constraints)
-            .spacing(self.spacing.clone())
-            .flex(self.flex)
-            .split(area)
+    fn areas(
+        &self,
+        area: Rectangle,
+        constraints: Vec<Constraint>,
+    ) -> impl Iterator<Item = Rectangle> {
+        area.split(constraints, self.direction, self.flex, &self.spacing)
     }
 
     fn unzip_children(&self) -> (Vec<&T>, Vec<Constraint>) {
@@ -82,28 +82,28 @@ impl<T> HomogenousStack<T> {
 }
 
 impl<T: Widget> Widget for HomogenousStack<T> {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let (children, constraints) = self.unzip_children();
         let areas = self.areas(area, constraints);
 
-        for (child, area) in zip(children, areas.iter()) {
-            child.render(*area, buf, mouse_position);
+        for (child, area) in zip(children, areas) {
+            child.render(area, buf, mouse_position);
         }
     }
 
     fn click(
         &self,
-        area: Rect,
+        area: Rectangle,
         button: MouseButton,
-        position: Position,
-        action_queue: &mut Vec<Action>,
+        position: Point,
+        actions: &mut Vec<Action>,
     ) {
         let (children, constraints) = self.unzip_children();
         let areas = self.areas(area, constraints);
 
-        for (child, area) in zip(children, areas.iter()) {
+        for (child, area) in zip(children, areas) {
             if area.contains(position) {
-                child.click(*area, button, position, action_queue);
+                child.click(area, button, position, actions);
             }
         }
     }
@@ -111,20 +111,17 @@ impl<T: Widget> Widget for HomogenousStack<T> {
 
 impl<T: Sized> Sized for HomogenousStack<T> {
     fn size(&self) -> Size {
-        let mut dominant = 0;
-        let mut non_dominant = 0;
+        let mut dominant = Length::ZERO;
+        let mut non_dominant = Length::ZERO;
 
         for (child, _) in &self.children {
             let [dom, non] = split(child.size(), self.direction);
             dominant += dom;
-            non_dominant = u16::max(non_dominant, non);
+            non_dominant = Length::max(non_dominant, non);
         }
 
-        let space_count: u16 = self.children.len().saturating_sub(1).saturating_cast();
-        match self.spacing {
-            Spacing::Space(space) => dominant += space * space_count,
-            Spacing::Overlap(space) => dominant = dominant.saturating_sub(space * space_count),
-        }
+        let space_count = self.children.len().saturating_sub(1);
+        dominant += Offset::from(&self.spacing) * space_count;
 
         join(dominant, non_dominant, self.direction)
     }

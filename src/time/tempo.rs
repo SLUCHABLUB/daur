@@ -2,6 +2,7 @@ use crate::project::changing::Changing;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use ordered_float::NotNan;
+use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
@@ -31,13 +32,14 @@ impl Tempo {
 impl Default for Tempo {
     fn default() -> Self {
         Tempo {
+            #[expect(clippy::unwrap_used, reason = "180.0 is not NaN")]
             bpm: NotNan::new(180.0).unwrap(),
         }
     }
 }
 
 impl Display for Tempo {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{:.1}", self.bpm)
     }
 }
@@ -53,6 +55,7 @@ impl Changing<Tempo> {
                 break;
             }
 
+            #[expect(clippy::unwrap_used, reason = "`periods` is not empty")]
             let (last, _) = periods.last_mut().unwrap();
 
             last.duration = instant - last.start;

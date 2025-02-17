@@ -2,6 +2,10 @@ use crate::app::action::Action;
 use crate::app::window::Window;
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
+use crate::length::offset::Offset;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::Length;
 use crate::popup::Popup;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
@@ -11,11 +15,11 @@ use crate::track::Track;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
 use ratatui_explorer::File;
+use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
 
 const IMPORT_AUDIO: &str = "import audio";
@@ -32,18 +36,18 @@ fn right_click_menu() -> Arc<Popup> {
     Popup::unimportant_buttons([(IMPORT_AUDIO, open_import_audio_popup())])
 }
 
-pub struct Overview<'a> {
+pub struct Overview<'project> {
     pub track: Arc<Track>,
     pub selected_clip: Weak<Clip>,
-    pub time_signature: &'a Changing<TimeSignature>,
-    pub tempo: &'a Changing<Tempo>,
+    pub time_signature: &'project Changing<TimeSignature>,
+    pub tempo: &'project Changing<Tempo>,
     pub settings: OverviewSettings,
     pub cursor: Instant,
     pub index: usize,
 }
 
 impl Overview<'_> {
-    fn window(&self, area: Rect) -> Window {
+    fn window(&self, area: Rectangle) -> Window {
         Window {
             time_signature: self.time_signature,
             overview_settings: self.settings,
@@ -54,8 +58,8 @@ impl Overview<'_> {
 }
 
 impl Widget for Overview<'_> {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
-        let area_end = i32::from(area.x + area.width);
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+        let area_end = Offset::from(area.x + area.width);
 
         let window = self.window(area);
 
@@ -69,20 +73,20 @@ impl Widget for Overview<'_> {
                 area.y,
                 area.height,
             );
-            let clip_area_end = clip_area.x + i32::from(clip_area.width);
+            let clip_area_end = clip_area.x + clip_area.width;
 
             let [mut x, y] = clip.content.full_overview_viewport();
             let full_width = x[1] - x[0];
 
-            if clip_area.x < 0 {
+            if clip_area.x < Offset::ZERO {
                 // The fraction of the clip that is outside the window (on the left)
-                let fraction = f64::from(clip_area.x).abs() / f64::from(clip_area.width);
+                let fraction = (clip_area.x.abs() / clip_area.width).to_float();
                 x[0] += fraction * full_width;
             }
             if area_end < clip_area_end {
-                let delta = clip_area_end - area_end;
+                let delta = (clip_area_end - area_end).saturate();
                 // The fraction of the clip that is outside the window (on the right)
-                let fraction = f64::from(delta) / f64::from(clip_area.width);
+                let fraction = (delta / clip_area.width).to_float();
                 x[1] -= fraction * full_width;
             }
 
@@ -95,7 +99,7 @@ impl Widget for Overview<'_> {
                 .x_bounds(x)
                 .y_bounds(y)
                 .render(
-                    Rect::intersection(clip_area.clamp(), area),
+                    Rectangle::intersection(clip_area.clamp(), area),
                     buf,
                     mouse_position,
                 );
@@ -103,26 +107,26 @@ impl Widget for Overview<'_> {
 
         // Render the cursor
         if let Some(cursor_column) = window.instant_to_column(self.cursor) {
-            let area = Rect {
+            let area = Rectangle {
                 x: cursor_column,
                 y: area.y,
-                width: 1,
+                width: Length::CURSOR_WIDTH,
                 height: area.height,
             };
-            Paragraph::new(vec![Line::raw(VERTICAL); area.height as usize]).render(
-                area,
-                buf,
-                mouse_position,
-            );
+
+            let rows = area.height / Length::CHAR_HEIGHT;
+            let rows = rows.round().saturating_cast();
+
+            Paragraph::new(vec![Line::raw(VERTICAL); rows]).render(area, buf, mouse_position);
         }
     }
 
     fn click(
         &self,
-        area: Rect,
+        area: Rectangle,
         button: MouseButton,
-        position: Position,
-        action_queue: &mut Vec<Action>,
+        position: Point,
+        actions: &mut Vec<Action>,
     ) {
         // TODO: move, select or open clips
 
@@ -131,13 +135,13 @@ impl Widget for Overview<'_> {
         let instant = window.column_to_instant_on_grid(position.x);
 
         if button == MouseButton::Left {
-            action_queue.push(Action::MoveCursor(instant));
-            action_queue.push(Action::SelectTrack(self.index));
+            actions.push(Action::MoveCursor(instant));
+            actions.push(Action::SelectTrack(self.index));
         }
 
         // TODO: && clip not clicked
         if button == MouseButton::Right {
-            action_queue.push(Action::OpenPopup(right_click_menu().at(position)));
+            actions.push(Action::OpenPopup(right_click_menu().at(position)));
         }
     }
 }

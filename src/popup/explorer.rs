@@ -1,8 +1,9 @@
 use crate::app::action::Action;
 use crate::lock::Lock;
-use crate::popup::button::TerminatingButton;
+use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
+use crate::widget::block::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::TwoStack;
 use crate::widget::to_widget::ToWidget;
@@ -10,7 +11,6 @@ use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
 use ratatui::widgets::Block;
 use ratatui_explorer::{File, FileExplorer, Theme};
-use saturating_cast::SaturatingCast;
 use std::sync::{Arc, Weak};
 
 const CANCEL: &str = "cancel";
@@ -34,11 +34,11 @@ pub struct ExplorerPopup {
 }
 
 impl ExplorerPopup {
-    pub fn new(
+    pub fn new<A: Fn(&File) -> Action + Send + Sync + 'static>(
         title: String,
         this: Weak<Popup>,
         mut explorer: FileExplorer,
-        action: impl Fn(&File) -> Action + Send + Sync + 'static,
+        action: A,
     ) -> ExplorerPopup {
         explorer.set_theme(theme());
         ExplorerPopup {
@@ -54,29 +54,24 @@ impl ExplorerPopup {
 }
 
 impl ToWidget for ExplorerPopup {
-    type Widget<'a> =
-        TwoStack<&'a Lock<FileExplorer>, TwoStack<TerminatingButton, TerminatingButton>>;
+    type Widget<'lock> = TwoStack<
+        &'lock Lock<FileExplorer>,
+        TwoStack<Terminating<Bordered<Button>>, Terminating<Bordered<Button>>>,
+    >;
 
     fn to_widget(&self) -> Self::Widget<'_> {
         let action = (self.action)(self.explorer.read().current());
 
-        let cancel_size = CANCEL.chars().count().saturating_cast::<u16>() + 2;
-        let confirm_size = CONFIRM.chars().count().saturating_cast::<u16>() + 2;
-
-        let confirm = TerminatingButton {
-            button: Button::new(CONFIRM, action).bordered(),
+        let confirm = Terminating {
+            child: Button::standard(CONFIRM, action),
             popup: self.info.this(),
         };
-        let cancel = TerminatingButton {
-            button: Button::new(CANCEL, Action::None).bordered(),
+        let cancel = Terminating {
+            child: Button::standard(CANCEL, Action::None),
             popup: self.info.this(),
         };
 
-        let buttons = TwoStack::horizontal(
-            (cancel, confirm),
-            [Constraint::Max(cancel_size), Constraint::Max(confirm_size)],
-        )
-        .flex(Flex::SpaceBetween);
+        let buttons = TwoStack::horizontal_sized((cancel, confirm)).flex(Flex::SpaceBetween);
 
         TwoStack::vertical((&self.explorer, buttons), Self::vertical_constraints())
     }

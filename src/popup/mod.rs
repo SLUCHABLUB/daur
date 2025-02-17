@@ -1,19 +1,23 @@
 use crate::app::action::Action;
 use crate::key::Key;
-use crate::popup::button::TerminatingButton;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::size::Size;
+use crate::length::Length;
+use crate::popup::button::Terminating;
 use crate::popup::error::ErrorPopup;
 use crate::popup::explorer::ExplorerPopup;
 use crate::popup::info::PopupInfo;
 use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
+use crate::widget::block::Bordered;
 use crate::widget::button::Button;
-use crate::widget::sized::Sized;
-use crate::widget::to_widget::ToWidget;
+use crate::widget::sized::Sized as _;
+use crate::widget::to_widget::ToWidget as _;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect, Size};
-use ratatui::widgets::{Block, Clear};
+use ratatui::widgets::Clear;
 use ratatui_explorer::{File, FileExplorer};
 use std::borrow::Cow;
 use std::error::Error;
@@ -66,8 +70,8 @@ impl Popup {
             Popup::Buttons(ButtonPanel {
                 buttons: buttons
                     .into_iter()
-                    .map(|(name, action)| TerminatingButton {
-                        button: Button::new(name.into().as_ref(), action),
+                    .map(|(name, action)| Terminating {
+                        child: Button::simple(name.into().as_ref(), action),
                         popup: info.this(),
                     })
                     .collect(),
@@ -76,9 +80,9 @@ impl Popup {
         })
     }
 
-    pub fn explorer(
+    pub fn explorer<A: Fn(&File) -> Action + Send + Sync + 'static>(
         title: String,
-        action: impl Fn(&File) -> Action + Send + Sync + 'static,
+        action: A,
     ) -> Arc<Popup> {
         Arc::new_cyclic(|this| {
             let this = Weak::clone(this);
@@ -97,15 +101,15 @@ impl Popup {
         let inner = self.preferred_inner_size();
 
         Size {
-            width: inner.width + 2,
-            height: inner.height + 2,
+            width: inner.width + Length::DOUBLE_BORDER,
+            height: inner.height + Length::DOUBLE_BORDER,
         }
     }
 
     fn preferred_inner_size(&self) -> Size {
         match self {
-            Popup::Buttons(buttons) => buttons.size(),
-            Popup::Error(message) => message.size(),
+            Popup::Buttons(buttons) => buttons.to_widget().size(),
+            Popup::Error(message) => message.to_widget().size(),
             Popup::Explorer(explorer) => explorer.to_widget().size(),
             Popup::KeySelector(selector) => selector.to_widget().size(),
         }
@@ -120,35 +124,35 @@ impl Popup {
         }
     }
 
-    pub fn from_error(error: impl Error) -> Arc<Popup> {
+    pub fn from_error<E: Error>(error: E) -> Arc<Popup> {
         Arc::new_cyclic(|this| Popup::Error(ErrorPopup::from_error(error, Weak::clone(this))))
     }
 
-    pub fn at(self: Arc<Self>, position: Position) -> Arc<Self> {
+    pub fn at(self: Arc<Self>, position: Point) -> Arc<Self> {
         self.info().position.set(Some(position));
         self
     }
 
-    pub fn area_in_window(&self, area: Rect) -> Rect {
+    pub fn area_in_window(&self, area: Rectangle) -> Rectangle {
         let size = self.preferred_size();
 
         let position = if let Some(position) = self.info().position.get() {
             if area.contains(position) {
                 position
             } else {
-                Position {
-                    x: (area.x + area.width).saturating_sub(size.width + 1),
-                    y: (area.y + area.height).saturating_sub(size.height + 1),
+                Point {
+                    x: area.x + area.width - size.width,
+                    y: area.y + area.height - size.height,
                 }
             }
         } else {
-            Position {
-                x: area.x + (area.width / 2).saturating_sub(size.width / 2),
-                y: area.y + (area.height / 2).saturating_sub(size.height / 2),
+            Point {
+                x: area.x + area.width / 2 - size.width / 2,
+                y: area.y + area.height / 2 - size.height / 2,
             }
         };
 
-        area.intersection(Rect {
+        area.intersection(Rectangle {
             x: position.x,
             y: position.y,
             width: size.width,
@@ -158,50 +162,48 @@ impl Popup {
 }
 
 impl Widget for Popup {
-    fn render(&self, area: Rect, buf: &mut Buffer, mouse_position: Position) {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         Clear.render(area, buf, mouse_position);
-        let block = Block::bordered().title(self.info().title.as_str());
-        block.render(area, buf, mouse_position);
-
-        let area = block.inner(area);
+        let title = self.info().title.clone();
 
         match self {
-            Popup::Buttons(buttons) => buttons.to_widget().render(area, buf, mouse_position),
-            Popup::Error(message) => message.to_widget().render(area, buf, mouse_position),
-            Popup::Explorer(explorer) => explorer.to_widget().render(area, buf, mouse_position),
-            Popup::KeySelector(selector) => selector.to_widget().render(area, buf, mouse_position),
+            Popup::Buttons(buttons) => {
+                Bordered::plain(title, buttons.to_widget()).render(area, buf, mouse_position);
+            }
+            Popup::Error(message) => {
+                Bordered::plain(title, message.to_widget()).render(area, buf, mouse_position);
+            }
+            Popup::Explorer(explorer) => {
+                Bordered::plain(title, explorer.to_widget()).render(area, buf, mouse_position);
+            }
+            Popup::KeySelector(selector) => {
+                Bordered::plain(title, selector.to_widget()).render(area, buf, mouse_position);
+            }
         }
     }
 
     fn click(
         &self,
-        area: Rect,
+        area: Rectangle,
         button: MouseButton,
-        position: Position,
-        action_queue: &mut Vec<Action>,
+        position: Point,
+        actions: &mut Vec<Action>,
     ) {
-        let area = Block::bordered().inner(area);
+        // Unimportant for clicking
+        let title = "";
 
         match self {
             Popup::Buttons(buttons) => {
-                buttons
-                    .to_widget()
-                    .click(area, button, position, action_queue);
+                Bordered::plain(title, buttons.to_widget()).click(area, button, position, actions);
             }
             Popup::Error(message) => {
-                message
-                    .to_widget()
-                    .click(area, button, position, action_queue);
+                Bordered::plain(title, message.to_widget()).click(area, button, position, actions);
             }
             Popup::Explorer(explorer) => {
-                explorer
-                    .to_widget()
-                    .click(area, button, position, action_queue);
+                Bordered::plain(title, explorer.to_widget()).click(area, button, position, actions);
             }
             Popup::KeySelector(selector) => {
-                selector
-                    .to_widget()
-                    .click(area, button, position, action_queue);
+                Bordered::plain(title, selector.to_widget()).click(area, button, position, actions);
             }
         }
     }

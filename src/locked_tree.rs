@@ -1,5 +1,5 @@
 use crate::lock::Lock;
-use itertools::Itertools;
+use itertools::Itertools as _;
 use std::collections::BTreeMap;
 use std::ops::Bound;
 use std::vec::IntoIter;
@@ -16,7 +16,7 @@ impl<K, V> LockedTree<K, V> {
         }
     }
 
-    pub fn map<R>(&self, mut f: impl FnMut(&K, &V) -> R) -> IntoIter<R> {
+    pub fn map<R, F: FnMut(&K, &V) -> R>(&self, mut f: F) -> IntoIter<R> {
         let map = self.inner.read();
         let mut result = Vec::new();
 
@@ -36,7 +36,11 @@ impl<K: Ord, V> LockedTree<K, V> {
 
 impl<K: Copy + Ord, V: Copy> LockedTree<K, V> {
     pub fn get_lte(&self, key: K) -> Option<V> {
-        self.inner.read().range(..key).next_back().map(|(_, v)| *v)
+        self.inner
+            .read()
+            .range(..key)
+            .next_back()
+            .map(|(_, value)| *value)
     }
 
     pub fn iter_gt(&self, start: K) -> IntoIter<(K, V)> {
@@ -44,7 +48,7 @@ impl<K: Copy + Ord, V: Copy> LockedTree<K, V> {
         self.inner
             .read()
             .range(range)
-            .map(|(k, v)| (*k, *v))
+            .map(|(key, value)| (*key, *value))
             .collect_vec()
             .into_iter()
     }

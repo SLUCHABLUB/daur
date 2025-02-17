@@ -1,6 +1,7 @@
 use crate::chroma::Chroma;
 use crate::sign::Sign;
 use bitbag::{BitBag, Flags};
+use std::fmt;
 use std::fmt::{Display, Formatter};
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -25,7 +26,7 @@ impl Default for Key {
 }
 
 impl Display for Key {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "{} {}",
@@ -36,7 +37,10 @@ impl Display for Key {
 }
 
 /// Intervals less than an octave and greater than a perfect unison
-#[allow(non_camel_case_types)]
+#[expect(
+    non_camel_case_types,
+    reason = "the (standardised?) short names for intervals reqire case for distinction"
+)]
 #[derive(Flags)]
 #[repr(u16)]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -74,7 +78,8 @@ impl KeyInterval {
 }
 
 impl Display for KeyInterval {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        #![expect(clippy::use_debug, reason = "Display = Debug here")]
         write!(f, "{self:?}")
     }
 }

@@ -38,7 +38,7 @@ impl Iterator for TrackSource {
 
         let started = *start <= self.sample;
 
-        self.sample += 1;
+        self.sample = self.sample.wrapping_add(1);
 
         Some(if started {
             clip.next().unwrap_or(0.0)

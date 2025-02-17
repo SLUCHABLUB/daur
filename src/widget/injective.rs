@@ -1,31 +1,27 @@
 use crate::app::action::Action;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
-use crate::track::Track;
-use crate::widget::block::Bordered;
+use crate::length::size::Size;
+use crate::widget::sized::Sized;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::widgets::Paragraph;
-use std::sync::Arc;
 
-pub struct Settings {
-    pub track: Arc<Track>,
-    pub selected: bool,
-    pub index: usize,
+pub trait Injective {
+    type Visual: Widget;
+
+    fn visual(&self) -> Self::Visual;
+
+    fn inject(
+        &self,
+        area: Rectangle,
+        button: MouseButton,
+        position: Point,
+        actions: &mut Vec<Action>,
+    );
 }
 
-impl Settings {
-    fn visual(&self) -> impl Widget {
-        Bordered::new(
-            self.track.name.clone(),
-            Paragraph::new("TODO"),
-            self.selected,
-        )
-    }
-}
-
-impl Widget for Settings {
+impl<T: Injective> Widget for T {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         self.visual().render(area, buf, mouse_position);
     }
@@ -37,7 +33,16 @@ impl Widget for Settings {
         position: Point,
         actions: &mut Vec<Action>,
     ) {
-        actions.push(Action::SelectTrack(self.index));
+        self.inject(area, button, position, actions);
         self.visual().click(area, button, position, actions);
+    }
+}
+
+impl<T: Injective> Sized for T
+where
+    T::Visual: Sized,
+{
+    fn size(&self) -> Size {
+        self.visual().size()
     }
 }

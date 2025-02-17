@@ -32,7 +32,7 @@ impl Content {
     pub fn full_overview_viewport(&self) -> [[f64; 2]; 2] {
         match self {
             Content::Audio(audio) => {
-                #[allow(clippy::cast_precision_loss)]
+                #[expect(clippy::cast_precision_loss, reason = "We are just drawing")]
                 let viewport_end = audio.sample_count() as f64;
                 [[0.0, viewport_end], [-1.0, 1.0]]
             }
@@ -42,11 +42,11 @@ impl Content {
     pub fn paint_overview(&self, context: &mut Context) {
         match self {
             Content::Audio(audio) => {
-                #[allow(clippy::cast_precision_loss)]
+                #[expect(clippy::cast_precision_loss, reason = "We are just drawing")]
                 let points: Vec<(f64, f64)> = audio
                     .mono_samples()
                     .enumerate()
-                    .map(|(n, sample)| (n as f64, sample))
+                    .map(|(index, sample)| (index as f64, sample))
                     .collect();
 
                 context.draw(&Points {

@@ -1,9 +1,9 @@
 use crate::widget::Widget;
 
 pub trait ToWidget {
-    type Widget<'a>: Widget
+    type Widget<'widget>: Widget
     where
-        Self: 'a;
+        Self: 'widget;
 
     fn to_widget(&self) -> Self::Widget<'_>;
 }

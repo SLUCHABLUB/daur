@@ -44,6 +44,7 @@ impl Period {
                 let real_time_duration =
                     tempo.period_to_real_time_duration(period, bar.time_signature);
 
+                #[expect(clippy::arithmetic_side_effects, reason = "checked in if statement")]
                 if real_time_duration <= remaining {
                     duration += period.duration;
                     remaining -= real_time_duration;
@@ -86,7 +87,9 @@ impl Period {
             };
 
             for (period, tempo) in tempo.tempo_constant_periods(period) {
-                duration += tempo.period_to_real_time_duration(period, bar.time_signature);
+                let period_duration =
+                    tempo.period_to_real_time_duration(period, bar.time_signature);
+                duration = duration.saturating_add(period_duration);
             }
 
             if self.end() <= bar.period().end() {

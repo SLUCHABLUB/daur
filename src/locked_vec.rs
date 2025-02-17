@@ -24,11 +24,11 @@ impl<T> LockedVec<T> {
         index
     }
 
-    pub fn update<R>(&self, index: usize, f: impl FnOnce(&mut T) -> R) -> Option<R> {
+    pub fn update<R, F: FnOnce(&mut T) -> R>(&self, index: usize, f: F) -> Option<R> {
         self.inner.write().get_mut(index).map(f)
     }
 
-    pub fn map<R>(&self, mut f: impl FnMut(&T) -> R) -> IntoIter<R> {
+    pub fn map<R, F: FnMut(&T) -> R>(&self, mut f: F) -> IntoIter<R> {
         let vec = self.inner.read();
 
         let mut result = Vec::with_capacity(vec.len());
@@ -40,11 +40,11 @@ impl<T> LockedVec<T> {
         result.into_iter()
     }
 
-    pub fn map_enumerated<R>(&self, mut f: impl FnMut(usize, &T) -> R) -> IntoIter<R> {
+    pub fn map_enumerated<R, F: FnMut(usize, &T) -> R>(&self, mut f: F) -> IntoIter<R> {
         let mut index = 0;
         self.map(|element| {
             let element = f(index, element);
-            index += 1;
+            index = index.wrapping_add(1);
             element
         })
     }

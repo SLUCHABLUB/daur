@@ -1,13 +1,23 @@
 use crate::app::action::Action;
 use crate::key::Key;
 use crate::popup::Popup;
-use crate::project::{Project, PAUSE, PAUSE_DESCRIPTION, PLAY, PLAY_DESCRIPTION};
-use crate::widget::block::Block;
+use crate::project::Project;
+use crate::widget::block::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::{ThreeStack, TwoStack};
 use crate::widget::Widget;
 use ratatui::layout::{Constraint, Flex};
 use ratatui::widgets::Paragraph;
+
+const PLAY: &str = "\u{25B6}";
+const PAUSE: &str = "\u{23F8}";
+
+const PLAY_DESCRIPTION: &str = "play";
+const PAUSE_DESCRIPTION: &str = "pause";
+
+const KEY_DESCRIPTION: &str = "key";
+const TIME_SIGNATURE_DESCRIPTION: &str = "time sig.";
+const TEMPO_DESCRIPTION: &str = "tempo";
 
 pub fn select_key(key: Key) -> Action {
     Action::OpenPopup(Popup::key_selector(key))
@@ -21,27 +31,29 @@ impl Project {
     // TODO: grid size
     // TODO: master volume
     pub fn bar(&self, playing: bool) -> impl Widget + use<'_> {
-        let block = Block::thick(self.title.clone());
-
         let playback_button = if playing {
-            Button::new(PAUSE, Action::Pause)
-                .description(PAUSE_DESCRIPTION)
-                .bordered()
+            Button::described(PAUSE, PAUSE_DESCRIPTION, Action::Pause)
         } else {
-            Button::new(PLAY, Action::Play)
-                .description(PLAY_DESCRIPTION)
-                .bordered()
+            Button::described(PLAY, PLAY_DESCRIPTION, Action::Play)
         };
 
         let fallbacks = ThreeStack::horizontal(
             (
-                Button::new(
+                Button::described(
                     self.key.start.get().to_string(),
+                    KEY_DESCRIPTION,
                     select_key(self.key.start.get()),
-                )
-                .bordered(),
-                Button::new(self.time_signature.start.get().to_string(), Action::None).bordered(),
-                Button::new(self.tempo.start.get().to_string(), Action::None).bordered(),
+                ),
+                Button::described(
+                    self.time_signature.start.get().to_string(),
+                    TIME_SIGNATURE_DESCRIPTION,
+                    Action::None,
+                ),
+                Button::described(
+                    self.tempo.start.get().to_string(),
+                    TEMPO_DESCRIPTION,
+                    Action::None,
+                ),
             ),
             [Constraint::Fill(1); 3],
         );
@@ -52,19 +64,21 @@ impl Project {
         )
         .flex(Flex::SpaceBetween);
 
-        ThreeStack::horizontal(
-            (
-                left_side,
-                playback_button,
-                Paragraph::new("TODO").centered(),
-            ),
-            [
-                Constraint::Fill(1),
-                Constraint::Length(7),
-                Constraint::Fill(1),
-            ],
+        Bordered::thick(
+            self.title.clone(),
+            ThreeStack::horizontal(
+                (
+                    left_side,
+                    playback_button,
+                    Paragraph::new("TODO").centered(),
+                ),
+                [
+                    Constraint::Fill(1),
+                    Constraint::Length(7),
+                    Constraint::Fill(1),
+                ],
+            )
+            .flex(Flex::Center),
         )
-        .block(block)
-        .flex(Flex::Center)
     }
 }

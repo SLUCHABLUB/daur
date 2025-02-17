@@ -1,12 +1,15 @@
 use crate::app::{or_popup, App};
-use crate::widget::Widget;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::widget::Widget as _;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};
+use never::Never;
 use ratatui::layout::{Position, Rect};
 use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
 
-pub fn spawn_events_thread(app: Arc<App>) -> JoinHandle<()> {
+pub fn spawn_events_thread(app: Arc<App>) -> JoinHandle<Never> {
     spawn(move || loop {
         app.handle_event();
     })
@@ -27,7 +30,7 @@ impl App {
             Event::Mouse(event) => {
                 self.should_redraw.set(true);
 
-                let new_position = Position::new(event.column, event.row);
+                let new_position = Point::from_position(Position::new(event.column, event.row));
                 if new_position != self.cached_mouse_position.get() {
                     self.cached_mouse_position.set(new_position);
                 }
@@ -62,12 +65,8 @@ impl App {
             Event::Resize(width, height) => {
                 self.should_redraw.set(true);
 
-                self.cached_area.set(Rect {
-                    x: 0,
-                    y: 0,
-                    width,
-                    height,
-                });
+                self.cached_area
+                    .set(Rectangle::from_rect(Rect::new(0, 0, width, height)));
             }
         }
     }

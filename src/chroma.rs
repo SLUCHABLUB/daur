@@ -1,8 +1,10 @@
 use crate::sign::{Sign, FLAT, SHARP};
 use const_str::concat;
+use std::fmt;
 use std::fmt::{Display, Formatter};
 use strum::VariantArray;
 
+#[expect(clippy::min_ident_chars, reason = "Chromas are named after letters")]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, VariantArray)]
 pub enum Chroma {
     A,
@@ -63,7 +65,7 @@ impl Chroma {
 }
 
 impl Display for Chroma {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}", self.sharp_name(), self.flat_name())
     }
 }

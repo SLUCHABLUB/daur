@@ -6,9 +6,9 @@ pub struct Lock<T> {
     inner: RwLock<T>,
 }
 
-pub enum ReadGuard<'a, T> {
-    Guard(RwLockReadGuard<'a, T>),
-    Poison(PoisonError<RwLockReadGuard<'a, T>>),
+pub enum ReadGuard<'lock, T> {
+    Guard(RwLockReadGuard<'lock, T>),
+    Poison(PoisonError<RwLockReadGuard<'lock, T>>),
 }
 
 impl<T> Deref for ReadGuard<'_, T> {
@@ -22,9 +22,9 @@ impl<T> Deref for ReadGuard<'_, T> {
     }
 }
 
-pub enum WriteGuard<'a, T> {
-    Guard(RwLockWriteGuard<'a, T>),
-    Poison(PoisonError<RwLockWriteGuard<'a, T>>),
+pub enum WriteGuard<'lock, T> {
+    Guard(RwLockWriteGuard<'lock, T>),
+    Poison(PoisonError<RwLockWriteGuard<'lock, T>>),
 }
 
 impl<T> Deref for WriteGuard<'_, T> {

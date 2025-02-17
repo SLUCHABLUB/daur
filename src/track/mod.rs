@@ -26,7 +26,7 @@ pub struct Track {
 impl Track {
     pub fn new() -> Arc<Track> {
         Arc::new(Track {
-            name: PLACEHOLDER_TITLE.to_string(),
+            name: PLACEHOLDER_TITLE.to_owned(),
             clips: LockedTree::new(),
         })
     }
@@ -39,15 +39,15 @@ impl Track {
         }
     }
 
-    pub fn overview<'a>(
+    pub fn overview<'project>(
         self: &Arc<Self>,
         selected_clip: &Weak<Clip>,
-        time_signature: &'a Changing<TimeSignature>,
-        tempo: &'a Changing<Tempo>,
+        time_signature: &'project Changing<TimeSignature>,
+        tempo: &'project Changing<Tempo>,
         overview_settings: OverviewSettings,
         cursor: Instant,
         index: usize,
-    ) -> Overview<'a> {
+    ) -> Overview<'project> {
         Overview {
             track: Arc::clone(self),
             selected_clip: Weak::clone(selected_clip),
@@ -74,7 +74,7 @@ impl Track {
                     let mut clip_offset = 0;
 
                     if start < offset {
-                        clip_offset = offset - start;
+                        clip_offset = offset.saturating_sub(start);
                     }
 
                     (start, clip.to_source(clip_offset))

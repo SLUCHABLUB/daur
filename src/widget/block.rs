@@ -1,38 +1,80 @@
-use crate::widget::to_widget::ToWidget;
+use crate::app::action::Action;
+use crate::length::point::Point;
+use crate::length::rectangle::Rectangle;
+use crate::length::size::Size;
+use crate::length::Length;
+use crate::widget::sized::Sized;
+use crate::widget::Widget;
+use crossterm::event::MouseButton;
+use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
 use ratatui::symbols::border::{PLAIN, THICK};
-use ratatui::widgets;
+use ratatui::widgets::Block;
 use std::borrow::Cow;
 
 /// A simpler version of [`Block`](widgets::Block)
-pub struct Block {
+pub struct Bordered<Child> {
     // TODO: maybe use arc_str to avoid cloning?
     title: Cow<'static, str>,
     title_alignment: Alignment,
     thick: bool,
+    child: Child,
 }
 
-impl Block {
-    pub fn new(title: impl Into<Cow<'static, str>>, thick: bool) -> Self {
-        Block {
+impl<Child> Bordered<Child> {
+    pub fn new<S: Into<Cow<'static, str>>>(title: S, child: Child, thick: bool) -> Self {
+        Bordered {
             title: title.into(),
             title_alignment: Alignment::Center,
             thick,
+            child,
         }
     }
 
-    pub fn thick(title: impl Into<Cow<'static, str>>) -> Self {
-        Block::new(title, true)
+    pub fn plain<S: Into<Cow<'static, str>>>(title: S, child: Child) -> Self {
+        Bordered::new(title, child, false)
+    }
+
+    pub fn thick<S: Into<Cow<'static, str>>>(title: S, child: Child) -> Self {
+        Bordered::new(title, child, true)
+    }
+
+    fn to_block(&self) -> Block {
+        Block::bordered()
+            .title(&*self.title)
+            .title_alignment(self.title_alignment)
+            .border_set(if self.thick { THICK } else { PLAIN })
+    }
+
+    fn inner(&self, area: Rectangle) -> Rectangle {
+        Rectangle::from_rect(self.to_block().inner(area.to_rect()))
     }
 }
 
-impl ToWidget for Block {
-    type Widget<'a> = widgets::Block<'static>;
+impl<Child: Widget> Widget for Bordered<Child> {
+    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+        let block = self.to_block();
+        block.render(area, buf, mouse_position);
+        self.child.render(self.inner(area), buf, mouse_position);
+    }
 
-    fn to_widget(&self) -> Self::Widget<'_> {
-        widgets::Block::bordered()
-            .title(self.title.clone())
-            .title_alignment(self.title_alignment)
-            .border_set(if self.thick { THICK } else { PLAIN })
+    fn click(
+        &self,
+        area: Rectangle,
+        button: MouseButton,
+        position: Point,
+        actions: &mut Vec<Action>,
+    ) {
+        self.child
+            .click(self.inner(area), button, position, actions);
+    }
+}
+
+impl<Child: Sized> Sized for Bordered<Child> {
+    fn size(&self) -> Size {
+        let mut size = self.child.size();
+        size.height += Length::DOUBLE_BORDER;
+        size.width += Length::DOUBLE_BORDER;
+        size
     }
 }

@@ -2,8 +2,9 @@ use crate::app::action::Action;
 use crate::app::macros::or_popup;
 use crate::app::App;
 use crate::popup::Popup;
-use rodio::cpal::traits::HostTrait;
-use rodio::{DeviceTrait, OutputStream, Sink};
+use never::Never;
+use rodio::cpal::traits::HostTrait as _;
+use rodio::{DeviceTrait as _, OutputStream, Sink};
 use std::hint::spin_loop;
 use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
@@ -11,7 +12,7 @@ use std::thread::{spawn, JoinHandle};
 // TODO: base upon the device
 const SAMPLE_RATE: u32 = 44_100;
 
-pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<()> {
+pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<Never> {
     spawn(move || {
         loop {
             // TODO: render the audio instead of just spinning

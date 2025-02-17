@@ -1,5 +1,7 @@
-// educe generates names with underscores in their implementations
-#![allow(clippy::used_underscore_binding)]
+#![allow(
+    clippy::used_underscore_binding,
+    reason = "educe generates names with underscores in their implementations"
+)]
 
 use crate::app::error::{NoExtensionError, UnsupportedFormatError};
 use crate::app::{or_popup, popup_error, App};

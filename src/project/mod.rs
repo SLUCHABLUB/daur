@@ -22,15 +22,8 @@ use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::Widget;
 use ratatui::prelude::Constraint;
 use ratatui::widgets::Clear;
-use saturating_cast::SaturatingCast;
-use std::borrow::Cow;
+use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
-
-const PLAY: &str = "\u{25B6}";
-const PAUSE: &str = "\u{23F8}";
-
-const PLAY_DESCRIPTION: &str = "play";
-const PAUSE_DESCRIPTION: &str = "pause";
 
 #[derive(Clone, Default)]
 pub struct Project {
@@ -90,9 +83,7 @@ impl Project {
             usize::MAX,
         ));
 
-        let add_track_button = Button::new(Cow::Borrowed("+"), Action::AddTrack)
-            .description(Cow::Borrowed("add track"))
-            .bordered();
+        let add_track_button = Button::described("+", "add track", Action::AddTrack);
 
         let settings_column = TwoStack::vertical(
             (
