@@ -20,11 +20,11 @@ use crate::track::Track;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::TwoStack;
 use crate::widget::homogenous_stack::HomogenousStack;
+use crate::widget::text::Text;
 use crate::widget::Widget;
 use ratatui::prelude::Constraint;
 use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
-use crate::widget::text::Text;
 
 #[derive(Clone, Default)]
 pub struct Project {
@@ -51,10 +51,10 @@ impl Project {
 
         let horizontal_constraints = [track_settings_size.constraint(), Constraint::Fill(1)];
         let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
-    
+
         // TODO: put something here?
         let empty_space = Text::left_aligned("");
-        
+
         let ruler = Ruler {
             time_signature: &self.time_signature,
             overview_settings,
