@@ -10,9 +10,13 @@ pub struct Offset {
 }
 
 impl Offset {
-    pub const ZERO: Offset = Offset {
-        inner: Saturating(0),
-    };
+    const fn new(value: i32) -> Offset {
+        Offset {
+            inner: Saturating(value),
+        }
+    }
+
+    pub const ZERO: Offset = Offset::new(0);
 
     pub fn abs(self) -> Length {
         if self.inner.is_negative() {
@@ -24,35 +28,25 @@ impl Offset {
     }
 
     pub fn saturate(self) -> Length {
-        Length {
-            inner: Saturating(self.inner.0.saturating_cast()),
-        }
+        Length::new(self.inner.0.saturating_cast())
     }
 
     pub fn to_length(self) -> Option<Length> {
-        Some(Length {
-            inner: Saturating(u16::try_from(self.inner.0).ok()?),
-        })
+        Some(Length::new(u16::try_from(self.inner.0).ok()?))
     }
 }
 
 impl From<Length> for Offset {
     fn from(length: Length) -> Self {
-        Offset {
-            inner: Saturating(i32::from(length.inner.0)),
-        }
+        Offset::new(i32::from(length.inner.0))
     }
 }
 
 impl From<&Spacing> for Offset {
     fn from(spacing: &Spacing) -> Self {
         match spacing {
-            Spacing::Space(space) => Offset {
-                inner: Saturating(i32::from(*space)),
-            },
-            Spacing::Overlap(overlap) => Offset {
-                inner: -Saturating(i32::from(*overlap)),
-            },
+            Spacing::Space(space) => Offset::new(i32::from(*space)),
+            Spacing::Overlap(overlap) => -Offset::new(i32::from(*overlap)),
         }
     }
 }

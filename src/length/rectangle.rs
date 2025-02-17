@@ -1,7 +1,6 @@
 use crate::length::point::Point;
 use crate::length::Length;
 use ratatui::layout::{Constraint, Direction, Flex, Layout, Rect, Spacing};
-use std::num::Saturating;
 
 #[derive(Copy, Clone, Default)]
 pub struct Rectangle {
@@ -22,18 +21,10 @@ impl Rectangle {
 
     pub fn from_rect(rect: Rect) -> Self {
         Rectangle {
-            x: Length {
-                inner: Saturating(rect.x),
-            },
-            y: Length {
-                inner: Saturating(rect.y),
-            },
-            width: Length {
-                inner: Saturating(rect.width),
-            },
-            height: Length {
-                inner: Saturating(rect.height),
-            },
+            x: Length::new(rect.x),
+            y: Length::new(rect.y),
+            width: Length::new(rect.width),
+            height: Length::new(rect.height),
         }
     }
 

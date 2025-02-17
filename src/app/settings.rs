@@ -15,7 +15,7 @@ impl Default for OverviewSettings {
     fn default() -> Self {
         OverviewSettings {
             cell_duration: Duration::QUARTER,
-            cell_width: Length::CELL,
+            cell_width: Length::DEFAULT_CELL_WIDTH,
             offset: Length::ZERO,
         }
     }

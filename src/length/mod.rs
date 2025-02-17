@@ -16,50 +16,40 @@ pub struct Length {
 }
 
 impl Length {
-    pub const ZERO: Length = Length {
-        inner: Saturating(0),
-    };
+    const fn new(value: u16) -> Length {
+        Length {
+            inner: Saturating(value),
+        }
+    }
 
-    pub const DOUBLE_BORDER: Length = Length {
-        inner: Saturating(2),
-    };
+    pub const ZERO: Length = Length::new(0);
+
+    pub const DOUBLE_BORDER: Length = Length::new(2);
 
     pub const CURSOR_WIDTH: Length = Length::CHAR_WIDTH;
 
-    pub const CELL: Length = Length {
-        inner: Saturating(4),
-    };
+    pub const DEFAULT_CELL_WIDTH: Length = Length::new(4);
 
-    pub const CHAR_WIDTH: Length = Length {
-        inner: Saturating(1),
-    };
+    pub const CHAR_WIDTH: Length = Length::new(1);
 
-    pub const CHAR_HEIGHT: Length = Length::CHAR_WIDTH;
+    pub const CHAR_HEIGHT: Length = Length::new(1);
 
-    pub const PROJECT_BAR_MINIMUM: Length = Length {
-        inner: Saturating(5),
-    };
+    pub const PROJECT_BAR_MINIMUM: Length = Length::new(5);
 
-    pub const TRACK_SETTINGS_DEFAULT: Length = Length {
-        inner: Saturating(20),
-    };
+    pub const TRACK_SETTINGS_DEFAULT: Length = Length::new(20);
 
     pub fn string_height(string: &str) -> Self {
         // TODO: use graphemes
         let length = string.lines().count();
         let length = length.saturating_cast();
-        Length {
-            inner: Saturating(length),
-        }
+        Length::new(length)
     }
 
     pub fn string_width(string: &str) -> Self {
         // TODO: use graphemes
         let length = string.chars().count();
         let length = length.saturating_cast();
-        Length {
-            inner: Saturating(length),
-        }
+        Length::new(length)
     }
 
     pub fn constraint(self) -> Constraint {
@@ -109,9 +99,7 @@ impl Mul<Ratio> for Length {
     fn mul(self, rhs: Ratio) -> Self::Output {
         let length = (Ratio::new(self.inner.0.into(), 1) * rhs).round();
         let length = length.saturating_cast();
-        Length {
-            inner: Saturating(length),
-        }
+        Length::new(length)
     }
 }
 
