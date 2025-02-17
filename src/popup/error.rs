@@ -6,6 +6,7 @@ use crate::popup::Popup;
 use crate::widget::block::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::ThreeStack;
+use crate::widget::sized::Sized as _;
 use crate::widget::text::Text;
 use crate::widget::to_widget::ToWidget;
 use ratatui::layout::{Constraint, Flex};
@@ -13,8 +14,7 @@ use std::error::Error;
 use std::sync::Weak;
 
 const ACKNOWLEDGE: &str = "ok";
-const PADDING: u16 = 1;
-const ACKNOWLEDGE_BUTTON_HEIGHT: u16 = 3;
+const PADDING: Length = Length::CHAR_HEIGHT;
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct ErrorPopup {
@@ -37,20 +37,23 @@ impl ToWidget for ErrorPopup {
     type Widget<'ignore> = ThreeStack<Text, Text, Terminating<Bordered<Button>>>;
 
     fn to_widget(&self) -> Self::Widget<'_> {
+        let acknowledge_button = Button::standard(ACKNOWLEDGE, Action::None);
+        let constraints = [
+            Length::string_height(&self.display).constraint_max(),
+            Constraint::Fill(1),
+            acknowledge_button.size().height.constraint(),
+        ];
+
         ThreeStack::vertical(
             (
                 Text::left_aligned(self.display.as_str()),
                 Text::left_aligned(self.debug.as_str()),
                 Terminating {
-                    child: Button::standard(ACKNOWLEDGE, Action::None),
+                    child: acknowledge_button,
                     popup: self.info.this(),
                 },
             ),
-            [
-                Length::string_height(&self.display).constraint_max(),
-                Constraint::Fill(1),
-                Constraint::Length(ACKNOWLEDGE_BUTTON_HEIGHT),
-            ],
+            constraints,
         )
         .flex(Flex::SpaceBetween)
         .spacing(PADDING)

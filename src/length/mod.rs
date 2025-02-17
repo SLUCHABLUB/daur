@@ -4,7 +4,7 @@ pub mod rectangle;
 pub mod size;
 
 use crate::time::Ratio;
-use ratatui::layout::Constraint;
+use ratatui::layout::{Constraint, Spacing};
 use saturating_cast::SaturatingCast as _;
 use std::num::Saturating;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
@@ -36,6 +36,14 @@ impl Length {
 
     pub const CHAR_HEIGHT: Length = Length::CHAR_WIDTH;
 
+    pub const PROJECT_BAR_MINIMUM: Length = Length {
+        inner: Saturating(5),
+    };
+
+    pub const TRACK_SETTINGS_DEFAULT: Length = Length {
+        inner: Saturating(20),
+    };
+
     pub fn string_height(string: &str) -> Self {
         // TODO: use graphemes
         let length = string.lines().count();
@@ -60,6 +68,12 @@ impl Length {
 
     pub fn constraint_max(self) -> Constraint {
         Constraint::Max(self.inner.0)
+    }
+}
+
+impl From<Length> for Spacing {
+    fn from(length: Length) -> Self {
+        Spacing::Space(length.inner.0)
     }
 }
 

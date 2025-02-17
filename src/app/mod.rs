@@ -20,6 +20,7 @@ use crate::cell::Cell;
 use crate::clip::Clip;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
+use crate::length::Length;
 use crate::locked_vec::LockedVec;
 use crate::popup::Popup;
 use crate::project::Project;
@@ -53,9 +54,8 @@ pub struct App {
 
     popups: LockedVec<Arc<Popup>>,
 
-    // TODO: add a sematic type for these and implement project-wide
-    project_bar_size: u16,
-    track_settings_size: u16,
+    project_bar_size: Length,
+    track_settings_size: Length,
 
     // Note that this may not actually index a valid track
     selected_track_index: Cell<usize>,
@@ -85,8 +85,8 @@ impl App {
 
             popups: LockedVec::new(),
 
-            project_bar_size: 5,
-            track_settings_size: 20,
+            project_bar_size: Length::PROJECT_BAR_MINIMUM,
+            track_settings_size: Length::TRACK_SETTINGS_DEFAULT,
 
             selected_track_index: Cell::new(0),
             selected_clip: Weak::new(),
@@ -168,10 +168,7 @@ impl App {
                     self.playback_position(),
                 ),
             ),
-            [
-                Constraint::Length(self.project_bar_size),
-                Constraint::Fill(1),
-            ],
+            [self.project_bar_size.constraint(), Constraint::Fill(1)],
         )
     }
 }

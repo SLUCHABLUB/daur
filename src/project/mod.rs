@@ -8,6 +8,7 @@ use crate::app::action::Action;
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::key::Key;
+use crate::length::Length;
 use crate::locked_vec::LockedVec;
 use crate::project::changing::Changing;
 use crate::project::ruler::Ruler;
@@ -40,7 +41,7 @@ pub struct Project {
 impl Project {
     pub fn workspace(
         &self,
-        track_settings_size: u16,
+        track_settings_size: Length,
         overview_settings: OverviewSettings,
         selected_track_index: usize,
         selected_clip: &Weak<Clip>,
@@ -48,7 +49,7 @@ impl Project {
     ) -> impl Widget + use<'_> {
         let track_count = self.tracks.len().saturating_cast();
 
-        let horizontal_constraints = [Constraint::Length(track_settings_size), Constraint::Fill(1)];
+        let horizontal_constraints = [track_settings_size.constraint(), Constraint::Fill(1)];
         let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
 
         let ruler = Ruler {
