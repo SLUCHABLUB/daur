@@ -66,6 +66,10 @@ impl Chroma {
 
 impl Display for Chroma {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}/{}", self.sharp_name(), self.flat_name())
+        if self.sharp_name() == self.flat_name() {
+            write!(f, "{}", self.sharp_name())
+        } else {
+            write!(f, "{}/{}", self.sharp_name(), self.flat_name())
+        }
     }
 }
