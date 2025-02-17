@@ -10,7 +10,7 @@ use crate::popup::explorer::ExplorerPopup;
 use crate::popup::info::PopupInfo;
 use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::sized::Sized as _;
 use crate::widget::to_widget::ToWidget as _;

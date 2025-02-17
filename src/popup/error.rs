@@ -3,7 +3,7 @@ use crate::length::Length;
 use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::ThreeStack;
 use crate::widget::sized::Sized as _;

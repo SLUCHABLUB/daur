@@ -7,7 +7,7 @@ use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
 use crate::sign::Sign;
 use crate::time::instant::Instant;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::{FourStack, TwoStack};
 use crate::widget::multi_selector::{multi_selector, MultiSelector};

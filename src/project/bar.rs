@@ -2,7 +2,7 @@ use crate::app::action::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::project::Project;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::{ThreeStack, TwoStack};
 use crate::widget::text::Text;

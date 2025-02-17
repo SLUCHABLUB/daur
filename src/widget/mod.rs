@@ -1,4 +1,4 @@
-pub mod block;
+pub mod bordered;
 pub mod button;
 pub mod heterogeneous_stack;
 pub mod homogenous_stack;

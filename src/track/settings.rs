@@ -2,7 +2,7 @@ use crate::app::action::Action;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::track::Track;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;

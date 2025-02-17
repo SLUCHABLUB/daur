@@ -3,7 +3,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::sized::Sized;
 use crate::widget::text::Text;
 use crate::widget::Widget;

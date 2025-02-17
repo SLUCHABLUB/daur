@@ -2,7 +2,7 @@ use crate::app::action::Action;
 use crate::cell::Cell;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
-use crate::widget::block::Bordered;
+use crate::widget::bordered::Bordered;
 use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::injective::Injective;
 use crate::widget::text::Text;
