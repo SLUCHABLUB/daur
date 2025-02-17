@@ -6,11 +6,10 @@ use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::project::changing::Changing;
 use crate::time::TimeSignature;
+use crate::widget::text::Text;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::text::Line;
-use ratatui::widgets::Paragraph;
 use saturating_cast::SaturatingCast as _;
 
 #[derive(Copy, Clone)]
@@ -76,9 +75,5 @@ fn segment(index: usize, cell_width: Length, bar_width: Length) -> impl Widget {
         *first = b'|';
     }
 
-    Paragraph::new(vec![
-        Line::raw(index.to_string()),
-        #[expect(clippy::unwrap_used, reason = "`cells` is just ascii chars")]
-        Line::raw(String::from_utf8(cells).unwrap()),
-    ])
+    Text::left_aligned(index.to_string() + &*String::from_utf8_lossy(&cells))
 }

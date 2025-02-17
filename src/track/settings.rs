@@ -3,10 +3,10 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::track::Track;
 use crate::widget::block::Bordered;
+use crate::widget::text::Text;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::widgets::Paragraph;
 use std::sync::Arc;
 
 pub struct Settings {
@@ -19,7 +19,7 @@ impl Settings {
     fn visual(&self) -> impl Widget {
         Bordered::new(
             self.track.name.clone(),
-            Paragraph::new("TODO"),
+            Text::centered("TODO"),
             self.selected,
         )
     }

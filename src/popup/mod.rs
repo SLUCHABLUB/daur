@@ -17,7 +17,7 @@ use crate::widget::to_widget::ToWidget as _;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::widgets::Clear;
+use ratatui::widgets::{Clear, WidgetRef as _};
 use ratatui_explorer::{File, FileExplorer};
 use std::borrow::Cow;
 use std::error::Error;
@@ -163,7 +163,7 @@ impl Popup {
 
 impl Widget for Popup {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        Clear.render(area, buf, mouse_position);
+        Clear.render_ref(area.to_rect(), buf);
         let title = self.info().title.clone();
 
         match self {

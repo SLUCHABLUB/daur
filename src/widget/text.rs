@@ -8,7 +8,7 @@ use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
-use ratatui::widgets::Paragraph;
+use ratatui::widgets::{Paragraph, WidgetRef as _};
 use std::cmp::max;
 
 #[derive(Clone, Eq, PartialEq, Default)]
@@ -43,19 +43,11 @@ impl Text {
 }
 
 impl Widget for Text {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        self.paragraph().render(area, buf, mouse_position);
+    fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
+        self.paragraph().render_ref(area.to_rect(), buf);
     }
 
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        self.paragraph().click(area, button, position, actions);
-    }
+    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
 }
 
 impl Sized for Text {

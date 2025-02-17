@@ -5,9 +5,9 @@ use crate::project::Project;
 use crate::widget::block::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous_stack::{ThreeStack, TwoStack};
+use crate::widget::text::Text;
 use crate::widget::Widget;
 use ratatui::layout::{Constraint, Flex};
-use ratatui::widgets::Paragraph;
 
 const PLAY: &str = "\u{25B6}";
 const PAUSE: &str = "\u{23F8}";
@@ -59,7 +59,7 @@ impl Project {
         );
 
         let left_side = TwoStack::horizontal(
-            (Paragraph::new("TODO"), fallbacks),
+            (Text::centered("TODO"), fallbacks),
             [Constraint::Fill(1); 2],
         )
         .flex(Flex::SpaceBetween);
@@ -67,11 +67,7 @@ impl Project {
         Bordered::thick(
             self.title.clone(),
             ThreeStack::horizontal(
-                (
-                    left_side,
-                    playback_button,
-                    Paragraph::new("TODO").centered(),
-                ),
+                (left_side, playback_button, Text::centered("TODO")),
                 [
                     Constraint::Fill(1),
                     Constraint::Length(7),

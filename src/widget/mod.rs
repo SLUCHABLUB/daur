@@ -18,7 +18,7 @@ use crate::widget::macros::or_popup;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::widgets::canvas::{Canvas, Context};
-use ratatui::widgets::{Block, Clear, Paragraph, WidgetRef as _};
+use ratatui::widgets::{Block, WidgetRef as _};
 use ratatui_explorer::{FileExplorer, Input};
 
 /// Like [`Widget`](ratatui::widgets::Widget) but with mouse info.
@@ -34,22 +34,6 @@ pub trait Widget {
         actions: &mut Vec<Action>,
     );
 }
-
-macro_rules! impl_widget_ref {
-    ($widget:ty) => {
-        impl Widget for $widget {
-            fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
-                self.render_ref(area.to_rect(), buf)
-            }
-
-            fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
-        }
-    };
-}
-
-impl_widget_ref!(Block<'_>);
-impl_widget_ref!(Clear);
-impl_widget_ref!(Paragraph<'_>);
 
 impl<F: Fn(&mut Context)> Widget for Canvas<'_, F> {
     fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {

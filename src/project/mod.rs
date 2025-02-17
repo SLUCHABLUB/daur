@@ -22,9 +22,9 @@ use crate::widget::heterogeneous_stack::TwoStack;
 use crate::widget::homogenous_stack::HomogenousStack;
 use crate::widget::Widget;
 use ratatui::prelude::Constraint;
-use ratatui::widgets::Clear;
 use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
+use crate::widget::text::Text;
 
 #[derive(Clone, Default)]
 pub struct Project {
@@ -51,12 +51,15 @@ impl Project {
 
         let horizontal_constraints = [track_settings_size.constraint(), Constraint::Fill(1)];
         let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
-
+    
+        // TODO: put something here?
+        let empty_space = Text::left_aligned("");
+        
         let ruler = Ruler {
             time_signature: &self.time_signature,
             overview_settings,
         };
-        let ruler_row = TwoStack::horizontal((Clear, ruler), horizontal_constraints);
+        let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
 
         let mut track_settings = Vec::new();
         let mut track_overviews = Vec::new();

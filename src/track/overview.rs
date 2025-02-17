@@ -12,12 +12,11 @@ use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
 use crate::track::Track;
+use crate::widget::text::Text;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::symbols::line::VERTICAL;
-use ratatui::text::Line;
-use ratatui::widgets::Paragraph;
 use ratatui_explorer::File;
 use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
@@ -117,7 +116,7 @@ impl Widget for Overview<'_> {
             let rows = area.height / Length::CHAR_HEIGHT;
             let rows = rows.round().saturating_cast();
 
-            Paragraph::new(vec![Line::raw(VERTICAL); rows]).render(area, buf, mouse_position);
+            Text::left_aligned(vec![VERTICAL; rows].join("\n")).render(area, buf, mouse_position);
         }
     }
 
