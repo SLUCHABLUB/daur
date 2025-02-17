@@ -21,6 +21,11 @@ pub struct Text {
 }
 
 impl Text {
+    pub const EMPTY: Text = Text {
+        string: String::new(),
+        centered: false,
+    };
+
     pub fn left_aligned<S: Into<String>>(string: S) -> Text {
         Text {
             string: string.into(),

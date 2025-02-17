@@ -53,7 +53,7 @@ impl Project {
         let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
 
         // TODO: put something here?
-        let empty_space = Text::left_aligned("");
+        let empty_space = Text::EMPTY;
 
         let ruler = Ruler {
             time_signature: &self.time_signature,
