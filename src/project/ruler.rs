@@ -75,5 +75,5 @@ fn segment(index: usize, cell_width: Length, bar_width: Length) -> impl Widget {
         *first = b'|';
     }
 
-    Text::left_aligned(index.to_string() + &*String::from_utf8_lossy(&cells))
+    Text::left_aligned(index.to_string() + "\n" + &*String::from_utf8_lossy(&cells))
 }
