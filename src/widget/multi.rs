@@ -9,9 +9,9 @@ use crate::widget::text::Text;
 use bitbag::{BitBag, Flags};
 use crossterm::event::MouseButton;
 
-pub type MultiSelector<'cell, T> = Stack<Option<'cell, T>>;
+pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
-pub fn multi_selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> MultiSelector<T> {
+pub fn selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> Selector<T> {
     Stack::horizontal_sized(T::VARIANTS.iter().map(|(_, variant, _)| {
         let name = variant.to_string();
 

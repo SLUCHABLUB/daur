@@ -10,9 +10,8 @@ use crate::time::instant::Instant;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous::{FourStack, TwoStack};
-use crate::widget::multi_selector::{multi_selector, MultiSelector};
-use crate::widget::single_selector::{single_selector, SingleSelector};
 use crate::widget::to_widget::ToWidget;
+use crate::widget::{multi, single};
 use bitbag::BitBag;
 use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
@@ -54,9 +53,9 @@ impl KeySelector {
 
 impl ToWidget for KeySelector {
     type Widget<'cell> = FourStack<
-        SingleSelector<'cell, Chroma>,
-        SingleSelector<'cell, Sign>,
-        MultiSelector<'cell, KeyInterval>,
+        single::Selector<'cell, Chroma>,
+        single::Selector<'cell, Sign>,
+        multi::Selector<'cell, KeyInterval>,
         TwoStack<Terminating<Bordered<Button>>, Terminating<Bordered<Button>>>,
     >;
 
@@ -75,9 +74,9 @@ impl ToWidget for KeySelector {
 
         FourStack::vertical(
             (
-                single_selector(&self.tonic),
-                single_selector(&self.sign),
-                multi_selector(&self.intervals),
+                single::selector(&self.tonic),
+                single::selector(&self.sign),
+                multi::selector(&self.intervals),
                 buttons,
             ),
             [Constraint::Length(3); 4],

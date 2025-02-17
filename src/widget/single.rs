@@ -9,11 +9,9 @@ use crate::widget::text::Text;
 use crossterm::event::MouseButton;
 use strum::VariantArray;
 
-pub type SingleSelector<'cell, T> = Stack<Option<'cell, T>>;
+pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
-pub fn single_selector<T: Copy + PartialEq + ToString + VariantArray>(
-    cell: &Cell<T>,
-) -> SingleSelector<T> {
+pub fn selector<T: Copy + PartialEq + ToString + VariantArray>(cell: &Cell<T>) -> Selector<T> {
     Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| {
         let name = variant.to_string();
 
