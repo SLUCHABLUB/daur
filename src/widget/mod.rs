@@ -35,6 +35,7 @@ pub trait Widget {
     );
 }
 
+// TODO: remove and add a custom clip-overview widget
 impl<F: Fn(&mut Context)> Widget for Canvas<'_, F> {
     fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
         self.render_ref(area.to_rect(), buf);
