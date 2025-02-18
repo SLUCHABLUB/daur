@@ -80,6 +80,10 @@ impl Popup {
         })
     }
 
+    pub fn error<E: Error>(error: E) -> Arc<Popup> {
+        Arc::new_cyclic(|this| Popup::Error(ErrorPopup::from_error(error, Weak::clone(this))))
+    }
+
     pub fn explorer<A: Fn(&File) -> Action + Send + Sync + 'static>(
         title: String,
         action: A,
@@ -97,22 +101,9 @@ impl Popup {
         Arc::new_cyclic(|this| Popup::KeySelector(KeySelector::new(key, Weak::clone(this))))
     }
 
-    fn preferred_size(&self) -> Size {
-        let inner = self.preferred_inner_size();
-
-        Size {
-            width: inner.width + Length::DOUBLE_BORDER,
-            height: inner.height + Length::DOUBLE_BORDER,
-        }
-    }
-
-    fn preferred_inner_size(&self) -> Size {
-        match self {
-            Popup::Buttons(buttons) => buttons.to_widget().size(),
-            Popup::Error(message) => message.to_widget().size(),
-            Popup::Explorer(explorer) => explorer.to_widget().size(),
-            Popup::KeySelector(selector) => selector.to_widget().size(),
-        }
+    pub fn at(self: Arc<Self>, position: Point) -> Arc<Self> {
+        self.info().position.set(Some(position));
+        self
     }
 
     pub fn info(&self) -> &PopupInfo {
@@ -122,15 +113,6 @@ impl Popup {
             Popup::Buttons(buttons) => &buttons.info,
             Popup::KeySelector(selector) => &selector.info,
         }
-    }
-
-    pub fn from_error<E: Error>(error: E) -> Arc<Popup> {
-        Arc::new_cyclic(|this| Popup::Error(ErrorPopup::from_error(error, Weak::clone(this))))
-    }
-
-    pub fn at(self: Arc<Self>, position: Point) -> Arc<Self> {
-        self.info().position.set(Some(position));
-        self
     }
 
     pub fn area_in_window(&self, area: Rectangle) -> Rectangle {
@@ -158,6 +140,24 @@ impl Popup {
             width: size.width,
             height: size.height,
         })
+    }
+
+    fn preferred_size(&self) -> Size {
+        let inner = self.preferred_inner_size();
+
+        Size {
+            width: inner.width + Length::DOUBLE_BORDER,
+            height: inner.height + Length::DOUBLE_BORDER,
+        }
+    }
+
+    fn preferred_inner_size(&self) -> Size {
+        match self {
+            Popup::Buttons(buttons) => buttons.to_widget().size(),
+            Popup::Error(message) => message.to_widget().size(),
+            Popup::Explorer(explorer) => explorer.to_widget().size(),
+            Popup::KeySelector(selector) => selector.to_widget().size(),
+        }
     }
 }
 
