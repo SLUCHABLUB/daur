@@ -39,7 +39,6 @@ impl Length {
     pub const TRACK_SETTINGS_DEFAULT: Length = Length::new(20);
 
     pub fn string_height(string: &str) -> Self {
-        // TODO: use graphemes
         let length = string.lines().count();
         let length = length.saturating_cast();
         Length::new(length)
