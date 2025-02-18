@@ -4,7 +4,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::sized::{join, split, Sized};
+use crate::widget::has_size::{join, split, HasSize};
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -41,7 +41,7 @@ impl<T> Stack<T> {
 
     pub fn horizontal_sized<Children: IntoIterator<Item = T>>(children: Children) -> Self
     where
-        T: Sized,
+        T: HasSize,
     {
         Stack::horizontal(children.into_iter().map(|child| {
             let constraint = child.size().width.constraint();
@@ -109,7 +109,7 @@ impl<T: Widget> Widget for Stack<T> {
     }
 }
 
-impl<T: Sized> Sized for Stack<T> {
+impl<T: HasSize> HasSize for Stack<T> {
     fn size(&self) -> Size {
         let mut dominant = Length::ZERO;
         let mut non_dominant = Length::ZERO;

@@ -5,7 +5,7 @@ use crate::widget::Widget;
 use ratatui::layout::Direction;
 use ratatui_explorer::FileExplorer;
 
-pub trait Sized: Widget {
+pub trait HasSize: Widget {
     fn size(&self) -> Size;
 }
 
@@ -33,7 +33,7 @@ pub(super) fn join(dominant: Length, non_dominant: Length, direction: Direction)
 
 // This implementation breaks with ome non-default themes
 // but it sufficient for out purposes at the moment
-impl Sized for &Lock<FileExplorer> {
+impl HasSize for &Lock<FileExplorer> {
     fn size(&self) -> Size {
         let explorer = self.read();
 

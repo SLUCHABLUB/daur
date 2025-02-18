@@ -12,7 +12,7 @@ use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
-use crate::widget::sized::Sized as _;
+use crate::widget::has_size::HasSize as _;
 use crate::widget::to_widget::ToWidget as _;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;

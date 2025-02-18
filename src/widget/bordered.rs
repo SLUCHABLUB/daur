@@ -3,7 +3,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::sized::Sized;
+use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -70,7 +70,7 @@ impl<Child: Widget> Widget for Bordered<Child> {
     }
 }
 
-impl<Child: Sized> Sized for Bordered<Child> {
+impl<Child: HasSize> HasSize for Bordered<Child> {
     fn size(&self) -> Size {
         let mut size = self.child.size();
         size.height += Length::DOUBLE_BORDER;

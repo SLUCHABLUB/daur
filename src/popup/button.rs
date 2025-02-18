@@ -3,7 +3,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::popup::Popup;
-use crate::widget::sized::Sized;
+use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use educe::Educe;
@@ -56,13 +56,13 @@ impl<Child: Widget> Widget for &Terminating<Child> {
     }
 }
 
-impl<Child: Sized> Sized for Terminating<Child> {
+impl<Child: HasSize> HasSize for Terminating<Child> {
     fn size(&self) -> Size {
         self.child.size()
     }
 }
 
-impl<Child: Sized> Sized for &Terminating<Child> {
+impl<Child: HasSize> HasSize for &Terminating<Child> {
     fn size(&self) -> Size {
         (*self).size()
     }

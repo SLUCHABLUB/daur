@@ -3,7 +3,7 @@ use crate::length::offset::Offset;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::sized::{join, split, Sized};
+use crate::widget::has_size::{join, split, HasSize};
 use crate::widget::Point;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
@@ -83,7 +83,7 @@ macro_rules! impl_hetero {
                 children: ($($generic),*)
             ) -> Self
                 where
-                    $($generic: Sized),*
+                    $($generic: HasSize),*
             {
                 let constraints = [$(
                     children.$index.size().parallel_to(direction).constraint(),
@@ -94,7 +94,7 @@ macro_rules! impl_hetero {
 
             pub fn horizontal_sized(children: ($($generic),*)) -> Self
                 where
-                    $($generic: Sized),*
+                    $($generic: HasSize),*
             {
                 Self::new_sized(
                     Direction::Horizontal,
@@ -127,7 +127,7 @@ macro_rules! impl_hetero {
             }
         }
 
-        impl<$($generic: Sized),*> Sized for Stack<$len, ($($generic),*)> {
+        impl<$($generic: HasSize),*> HasSize for Stack<$len, ($($generic),*)> {
             fn size(&self) -> Size {
                 let mut dominant = Length::ZERO;
                 let mut non_dominant = Length::ZERO;

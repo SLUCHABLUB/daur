@@ -2,7 +2,7 @@ use crate::app::action::Action;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
-use crate::widget::sized::Sized;
+use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -38,9 +38,9 @@ impl<T: Injective> Widget for T {
     }
 }
 
-impl<T: Injective> Sized for T
+impl<T: Injective> HasSize for T
 where
-    T::Visual: Sized,
+    T::Visual: HasSize,
 {
     fn size(&self) -> Size {
         self.visual().size()

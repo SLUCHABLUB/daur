@@ -3,7 +3,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::sized::Sized;
+use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -70,7 +70,7 @@ impl Widget for Text {
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
 }
 
-impl Sized for Text {
+impl HasSize for Text {
     fn size(&self) -> Size {
         let mut size = Size::ZERO;
 

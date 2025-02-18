@@ -4,7 +4,7 @@ use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
 use crate::widget::bordered::Bordered;
-use crate::widget::sized::Sized;
+use crate::widget::has_size::HasSize;
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
@@ -82,7 +82,7 @@ impl Widget for Button {
     }
 }
 
-impl Sized for Button {
+impl HasSize for Button {
     fn size(&self) -> Size {
         let label = self.label.size();
         let description = self.description().size();
