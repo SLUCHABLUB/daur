@@ -4,7 +4,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::has_size::{join, split, HasSize};
+use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -111,18 +111,18 @@ impl<T: Widget> Widget for Stack<T> {
 
 impl<T: HasSize> HasSize for Stack<T> {
     fn size(&self) -> Size {
-        let mut dominant = Length::ZERO;
-        let mut non_dominant = Length::ZERO;
+        let mut parallel = Length::ZERO;
+        let mut orthogonal = Length::ZERO;
 
         for (child, _) in &self.children {
-            let [dom, non] = split(child.size(), self.direction);
-            dominant += dom;
-            non_dominant = Length::max(non_dominant, non);
+            let child = child.size();
+            parallel += child.parallel_to(self.direction);
+            orthogonal = Length::max(orthogonal, child.orthogonal_to(self.direction));
         }
 
         let space_count = self.children.len().saturating_sub(1);
-        dominant += Offset::from(&self.spacing) * space_count;
+        parallel += Offset::from(&self.spacing) * space_count;
 
-        join(dominant, non_dominant, self.direction)
+        Size::from_parallel_orthogonal(parallel, orthogonal, self.direction)
     }
 }

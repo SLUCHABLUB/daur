@@ -2,33 +2,10 @@ use crate::length::size::Size;
 use crate::length::Length;
 use crate::lock::Lock;
 use crate::widget::Widget;
-use ratatui::layout::Direction;
 use ratatui_explorer::FileExplorer;
 
 pub trait HasSize: Widget {
     fn size(&self) -> Size;
-}
-
-/// Splits a `size` into a dominant and subdominant coordinate based on a direction
-pub(super) fn split(size: Size, direction: Direction) -> [Length; 2] {
-    match direction {
-        Direction::Horizontal => [size.width, size.height],
-        Direction::Vertical => [size.height, size.width],
-    }
-}
-
-/// Un`split` a `Size`
-pub(super) fn join(dominant: Length, non_dominant: Length, direction: Direction) -> Size {
-    match direction {
-        Direction::Horizontal => Size {
-            width: dominant,
-            height: non_dominant,
-        },
-        Direction::Vertical => Size {
-            width: non_dominant,
-            height: dominant,
-        },
-    }
 }
 
 // This implementation breaks with ome non-default themes

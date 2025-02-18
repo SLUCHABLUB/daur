@@ -19,4 +19,28 @@ impl Size {
             Direction::Vertical => self.height,
         }
     }
+
+    pub fn orthogonal_to(self, direction: Direction) -> Length {
+        match direction {
+            Direction::Horizontal => self.height,
+            Direction::Vertical => self.width,
+        }
+    }
+
+    pub fn from_parallel_orthogonal(
+        parallel: Length,
+        orthogonal: Length,
+        direction: Direction,
+    ) -> Size {
+        match direction {
+            Direction::Horizontal => Size {
+                width: parallel,
+                height: orthogonal,
+            },
+            Direction::Vertical => Size {
+                width: orthogonal,
+                height: parallel,
+            },
+        }
+    }
 }

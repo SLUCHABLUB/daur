@@ -3,7 +3,7 @@ use crate::length::offset::Offset;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::widget::has_size::{join, split, HasSize};
+use crate::widget::has_size::HasSize;
 use crate::widget::Point;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
@@ -129,19 +129,19 @@ macro_rules! impl_hetero {
 
         impl<$($generic: HasSize),*> HasSize for Stack<$len, ($($generic),*)> {
             fn size(&self) -> Size {
-                let mut dominant = Length::ZERO;
-                let mut non_dominant = Length::ZERO;
+                let mut parallel = Length::ZERO;
+                let mut orthogonal = Length::ZERO;
 
                 $(
-                    let [dom, non] = split(self.children.$index.size(), self.direction);
-                    dominant += dom;
-                    non_dominant = Length::max(non_dominant, non);
+                    let child = self.children.$index.size();
+                    parallel += child.parallel_to(self.direction);
+                    orthogonal = Length::max(orthogonal, child.orthogonal_to(self.direction));
                 )*
 
                 let space_count = $len - 1;
-                dominant += Offset::from(&self.spacing) * space_count;
+                parallel += Offset::from(&self.spacing) * space_count;
 
-                join(dominant, non_dominant, self.direction)
+                Size::from_parallel_orthogonal(parallel, orthogonal, self.direction)
             }
         }
     }

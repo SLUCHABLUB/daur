@@ -1,12 +1,12 @@
 pub mod bordered;
 pub mod button;
+pub mod has_size;
 pub mod heterogeneous;
 pub mod homogenous;
 mod injective;
 pub mod macros;
 pub mod multi;
 pub mod single;
-pub mod has_size;
 pub mod text;
 pub mod to_widget;
 
