@@ -1,4 +1,5 @@
 use crate::app::action::Action;
+use crate::keyboard::Key;
 use crate::lock::Lock;
 use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
@@ -6,11 +7,13 @@ use crate::popup::Popup;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous::TwoStack;
+use crate::widget::macros::or_popup;
 use crate::widget::to_widget::ToWidget;
+use crossterm::event::KeyCode;
 use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
 use ratatui::widgets::Block;
-use ratatui_explorer::{File, FileExplorer, Theme};
+use ratatui_explorer::{File, FileExplorer, Input, Theme};
 use std::sync::{Arc, Weak};
 
 const CANCEL: &str = "cancel";
@@ -45,6 +48,20 @@ impl ExplorerPopup {
             info: PopupInfo::new(title, this),
             explorer: Lock::new(explorer),
             action: Arc::new(action),
+        }
+    }
+
+    pub fn handle_key(&self, key: Key, actions: &mut Vec<Action>) -> bool {
+        if key.code == KeyCode::Enter {
+            let action = (self.action)(self.explorer.read().current());
+            actions.push(action);
+            true
+        } else {
+            let input = Input::from(&key.to_event());
+
+            or_popup!(self.explorer.write().handle(input), actions);
+
+            input != Input::None
         }
     }
 

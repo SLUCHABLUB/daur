@@ -12,7 +12,7 @@ use ratatui::buffer::Buffer;
 
 #[derive(Clone, Eq, PartialEq, Default)]
 pub struct Button {
-    action: Action,
+    pub action: Action,
     label: Text,
     description: Option<Text>,
     bordered: bool,

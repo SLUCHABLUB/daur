@@ -1,4 +1,5 @@
 use crate::app::{or_popup, App};
+use crate::keyboard::Key;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::widget::Widget as _;
@@ -23,8 +24,26 @@ impl App {
             Event::Key(event) => {
                 self.should_redraw.set(true);
 
-                if let Some(action) = self.controls.get(&event).cloned() {
-                    action.take(self);
+                let Some(key) = Key::from_event(event) else {
+                    return;
+                };
+
+                let mut event_captured = false;
+
+                if let Some(popup) = self.popups.last() {
+                    let mut actions = Vec::new();
+
+                    event_captured = popup.handle_key(key, &mut actions);
+
+                    for action in actions {
+                        action.take(self);
+                    }
+                }
+
+                if !event_captured {
+                    if let Some(action) = self.controls.get(&key).cloned() {
+                        action.take(self);
+                    }
                 }
             }
             Event::Mouse(event) => {

@@ -1,5 +1,7 @@
 use crate::app::action::Action;
+use crate::cell::Cell;
 use crate::key::Key;
+use crate::keyboard;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
@@ -76,6 +78,7 @@ impl Popup {
                     })
                     .collect(),
                 info,
+                selected: Cell::new(None),
             })
         })
     }
@@ -157,6 +160,16 @@ impl Popup {
             Popup::Error(message) => message.to_widget().size(),
             Popup::Explorer(explorer) => explorer.to_widget().size(),
             Popup::KeySelector(selector) => selector.to_widget().size(),
+        }
+    }
+
+    #[must_use]
+    pub fn handle_key(&self, key: keyboard::Key, actions: &mut Vec<Action>) -> bool {
+        match self {
+            Popup::Buttons(panel) => panel.handle_key(key, actions),
+            Popup::Error(error) => error.handle_key(key, actions),
+            Popup::Explorer(explorer) => explorer.handle_key(key, actions),
+            Popup::KeySelector(selector) => selector.handle_key(key, actions),
         }
     }
 }

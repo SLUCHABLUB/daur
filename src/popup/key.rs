@@ -2,6 +2,7 @@ use crate::app::action::Action;
 use crate::cell::Cell;
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
+use crate::keyboard;
 use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
@@ -13,6 +14,7 @@ use crate::widget::heterogeneous::{FourStack, TwoStack};
 use crate::widget::to_widget::ToWidget;
 use crate::widget::{multi, single};
 use bitbag::BitBag;
+use crossterm::event::{KeyCode, KeyModifiers};
 use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
 use std::sync::Weak;
@@ -39,6 +41,80 @@ impl KeySelector {
             tonic: Cell::new(key.tonic),
             sign: Cell::new(key.sign),
             intervals: Cell::new(key.intervals),
+        }
+    }
+
+    pub fn handle_key(&self, key: keyboard::Key, actions: &mut Vec<Action>) -> bool {
+        #[expect(clippy::wildcard_enum_match_arm, reason = "we only care about these")]
+        match key.code {
+            KeyCode::Enter => {
+                actions.push(Action::ClosePopup(self.info.this()));
+                actions.push(Action::SetKey(Instant::START, self.key()));
+                true
+            }
+            KeyCode::Tab | KeyCode::BackTab => {
+                self.sign.set(!self.sign.get());
+                true
+            }
+            KeyCode::Char(char) => {
+                let set_tonic = |chroma| {
+                    self.tonic.set(chroma);
+                    true
+                };
+
+                let invert_interval = |interval| {
+                    let mut bag = self.intervals.get();
+                    if bag.is_set(interval) {
+                        bag.unset(interval);
+                    } else {
+                        bag.set(interval);
+                    }
+                    self.intervals.set(bag);
+                    true
+                };
+
+                // TODO: make the controls changeable in the settings
+
+                if !matches!(key.modifiers, KeyModifiers::SHIFT | KeyModifiers::NONE) {
+                    return false;
+                }
+
+                match char {
+                    '"' => invert_interval(KeyInterval::M2),
+                    '#' => invert_interval(KeyInterval::M3),
+                    '&' => invert_interval(KeyInterval::M6),
+                    '/' => invert_interval(KeyInterval::M7),
+
+                    '2' => invert_interval(KeyInterval::m2),
+                    '3' => invert_interval(KeyInterval::m3),
+                    '6' => invert_interval(KeyInterval::m6),
+                    '7' => invert_interval(KeyInterval::m7),
+
+                    '4' => invert_interval(KeyInterval::P4),
+                    '5' => invert_interval(KeyInterval::P5),
+
+                    't' => invert_interval(KeyInterval::TT),
+
+                    'A' => set_tonic(Chroma::A.with_sign(self.sign.get())),
+                    'B' => set_tonic(Chroma::B.with_sign(self.sign.get())),
+                    'C' => set_tonic(Chroma::C.with_sign(self.sign.get())),
+                    'D' => set_tonic(Chroma::D.with_sign(self.sign.get())),
+                    'E' => set_tonic(Chroma::E.with_sign(self.sign.get())),
+                    'F' => set_tonic(Chroma::F.with_sign(self.sign.get())),
+                    'G' => set_tonic(Chroma::G.with_sign(self.sign.get())),
+
+                    'a' => set_tonic(Chroma::A),
+                    'b' => set_tonic(Chroma::B),
+                    'c' => set_tonic(Chroma::C),
+                    'd' => set_tonic(Chroma::D),
+                    'e' => set_tonic(Chroma::E),
+                    'f' => set_tonic(Chroma::F),
+                    'g' => set_tonic(Chroma::G),
+
+                    _ => false,
+                }
+            }
+            _ => false,
         }
     }
 

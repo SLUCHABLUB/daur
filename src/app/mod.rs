@@ -18,6 +18,7 @@ use crate::app::events::spawn_events_thread;
 use crate::app::macros::{or_popup, popup_error};
 use crate::cell::Cell;
 use crate::clip::Clip;
+use crate::keyboard::Key;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;
@@ -28,7 +29,7 @@ use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::Widget;
-use crossterm::event::{KeyEvent, MouseButton};
+use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 use ratatui::DefaultTerminal;
@@ -42,7 +43,7 @@ use std::sync::{Arc, Weak};
 use std::time::{Duration, SystemTime};
 
 pub struct App {
-    controls: HashMap<KeyEvent, Action>,
+    controls: HashMap<Key, Action>,
     project: Project,
 
     /// When playback started.

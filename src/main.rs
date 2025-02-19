@@ -6,6 +6,7 @@ mod cell;
 mod chroma;
 mod clip;
 mod key;
+mod keyboard;
 mod length;
 mod lock;
 mod locked_tree;

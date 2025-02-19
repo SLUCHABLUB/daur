@@ -39,6 +39,11 @@ impl<Child> Bordered<Child> {
         Bordered::new(title, child, true)
     }
 
+    pub fn thickness(mut self, thick: bool) -> Self {
+        self.thick = thick;
+        self
+    }
+
     fn to_block(&self) -> Block {
         Block::bordered()
             .title(&*self.title)

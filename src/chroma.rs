@@ -29,6 +29,31 @@ impl Chroma {
         }
     }
 
+    pub fn with_sign(self, sign: Sign) -> Chroma {
+        #![expect(
+            clippy::wildcard_enum_match_arm,
+            reason = "no new chromas will be added"
+        )]
+        match sign {
+            Sign::Sharp => match self {
+                Chroma::A => Chroma::Bb,
+                Chroma::C => Chroma::Db,
+                Chroma::D => Chroma::Eb,
+                Chroma::F => Chroma::Gb,
+                Chroma::G => Chroma::Ab,
+                _ => self,
+            },
+            Sign::Flat => match self {
+                Chroma::A => Chroma::Ab,
+                Chroma::B => Chroma::Bb,
+                Chroma::D => Chroma::Db,
+                Chroma::E => Chroma::Eb,
+                Chroma::G => Chroma::Gb,
+                _ => self,
+            },
+        }
+    }
+
     fn sharp_name(self) -> &'static str {
         match self {
             Chroma::A => "A",

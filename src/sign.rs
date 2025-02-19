@@ -1,5 +1,6 @@
 use std::fmt;
 use std::fmt::{Display, Formatter, Write as _};
+use std::ops::Not;
 use strum::VariantArray;
 
 pub const SHARP: char = '\u{266F}';
@@ -17,6 +18,17 @@ impl Display for Sign {
         match self {
             Sign::Sharp => f.write_char(SHARP),
             Sign::Flat => f.write_char(FLAT),
+        }
+    }
+}
+
+impl Not for Sign {
+    type Output = Sign;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Sign::Sharp => Sign::Flat,
+            Sign::Flat => Sign::Sharp,
         }
     }
 }

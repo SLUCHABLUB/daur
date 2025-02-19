@@ -71,6 +71,10 @@ impl<T> LockedVec<Arc<T>> {
     pub fn iter(&self) -> IntoIter<Arc<T>> {
         self.map(Arc::clone)
     }
+
+    pub fn last(&self) -> Option<Arc<T>> {
+        self.inner.read().last().map(Arc::clone)
+    }
 }
 
 impl<T: Clone> Clone for LockedVec<T> {
