@@ -59,7 +59,7 @@ macro_rules! impl_hetero {
                     direction,
                     children,
                     constraints,
-                    flex: Flex::default(),
+                    flex: Flex::SpaceBetween,
                     spacing: Spacing::default(),
                 }
             }

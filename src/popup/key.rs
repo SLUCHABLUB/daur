@@ -151,7 +151,7 @@ impl ToWidget for KeySelector {
         FourStack::vertical(
             (
                 single::selector(&self.tonic),
-                single::selector(&self.sign),
+                single::selector(&self.sign).flex(Flex::Center),
                 multi::selector(&self.intervals),
                 buttons,
             ),

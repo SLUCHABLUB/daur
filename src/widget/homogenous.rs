@@ -12,7 +12,6 @@ use ratatui::layout::{Constraint, Direction, Flex, Spacing};
 use saturating_cast::SaturatingCast as _;
 use std::iter::zip;
 
-// TODO: should we default to `Flex::default()`?
 pub struct Stack<T> {
     direction: Direction,
     children: Vec<(T, Constraint)>,
@@ -26,7 +25,7 @@ impl<T> Stack<T> {
             direction: Direction::Horizontal,
             children: children.into_iter().collect(),
             spacing: Spacing::default(),
-            flex: Flex::default(),
+            flex: Flex::SpaceBetween,
         }
     }
 
@@ -35,7 +34,7 @@ impl<T> Stack<T> {
             direction: Direction::Vertical,
             children: children.into_iter().collect(),
             spacing: Spacing::default(),
-            flex: Flex::default(),
+            flex: Flex::SpaceBetween,
         }
     }
 
@@ -58,6 +57,11 @@ impl<T> Stack<T> {
         let length = children.len().saturating_cast();
         // Using a ratio of 1 / length is faster than using a fill of 1
         Stack::vertical(children.map(|child| (child, Constraint::Ratio(1, length))))
+    }
+
+    pub fn flex(mut self, flex: Flex) -> Self {
+        self.flex = flex;
+        self
     }
 
     pub fn spacing<S: Into<Spacing>>(mut self, spacing: S) -> Self {
