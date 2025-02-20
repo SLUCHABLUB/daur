@@ -11,6 +11,7 @@ use ratatui::widgets::canvas::{Context, Points};
 pub enum Content {
     Audio(Audio),
     // TODO: linked audio file
+    // TODO: linked clip
     // TODO: midi
     // TODO: drums
 }
