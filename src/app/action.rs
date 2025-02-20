@@ -23,6 +23,8 @@ use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::sync::{Arc, Weak};
 
+const DEFAULT_NOTES_COLOUR: Color = Color::Magenta;
+
 #[derive(Clone, Default, Educe)]
 #[educe(Eq, PartialEq)]
 pub enum Action {
@@ -73,7 +75,7 @@ impl Action {
             Action::AddNotes => {
                 let clip = Clip {
                     name: String::new(),
-                    colour: Color::default(),
+                    colour: DEFAULT_NOTES_COLOUR,
                     content: Content::Notes(Notes::empty(Duration::WHOLE)),
                 };
                 Action::AddClip(clip).take(app);

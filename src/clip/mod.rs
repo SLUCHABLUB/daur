@@ -11,7 +11,7 @@ use crate::time::period::Period;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
 use ratatui::layout::Alignment;
-use ratatui::style::Color;
+use ratatui::style::{Color, Style};
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::canvas::{Canvas, Context};
 use ratatui::widgets::{Block, Borders};
@@ -56,7 +56,8 @@ impl Clip {
                     .borders(Borders::TOP)
                     .title_alignment(Alignment::Center)
                     .border_set(set)
-                    .title(self.name.as_str()),
+                    .title(self.name.as_str())
+                    .style(Style::new().bg(self.colour)),
             )
     }
 
