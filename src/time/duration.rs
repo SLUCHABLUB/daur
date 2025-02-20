@@ -14,6 +14,10 @@ impl Duration {
     pub const QUARTER: Duration = Duration {
         whole_notes: Ratio::QUARTER,
     };
+
+    pub const WHOLE: Duration = Duration {
+        whole_notes: Ratio::ONE,
+    };
 }
 
 impl Add<Duration> for Duration {

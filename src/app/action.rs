@@ -6,13 +6,17 @@
 use crate::app::error::{NoExtensionError, UnsupportedFormatError};
 use crate::app::{or_popup, popup_error, App};
 use crate::audio::Audio;
+use crate::clip::content::Content;
 use crate::clip::Clip;
 use crate::key::Key;
+use crate::notes::Notes;
 use crate::popup::Popup;
+use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use crate::track::Track;
 use educe::Educe;
 use hound::WavReader;
+use ratatui::style::Color;
 use rodio::Device;
 use std::borrow::Cow;
 use std::ffi::OsStr;
@@ -25,7 +29,11 @@ pub enum Action {
     /// Does nothing
     #[default]
     None,
-    /// Add an empty track
+    /// Inserts the clip into the selected track at the cursor
+    AddClip(Clip),
+    /// Inserts an empty `Notes` clip into the selected track at the cursor
+    AddNotes,
+    /// Adds an empty track
     AddTrack,
     /// Close the popup with the given uuid
     ClosePopup(#[educe(Eq(ignore))] Weak<Popup>),
@@ -55,6 +63,21 @@ impl Action {
     pub fn take(self, app: &App) {
         match self {
             Action::None => (),
+            Action::AddClip(clip) => {
+                app.project
+                    .tracks
+                    .update(app.selected_track_index.get(), |track| {
+                        track.clips.insert(app.cursor.get(), Arc::new(clip));
+                    });
+            }
+            Action::AddNotes => {
+                let clip = Clip {
+                    name: String::new(),
+                    colour: Color::default(),
+                    content: Content::Notes(Notes::empty(Duration::WHOLE)),
+                };
+                Action::AddClip(clip).take(app);
+            }
             Action::AddTrack => {
                 let index = app.project.tracks.push(Track::new());
 

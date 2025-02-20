@@ -1,6 +1,7 @@
 arithmetic-side-effects-allowed = [
     "length::Length",
     "length::offset::Offset",
+    "pitch::Pitch",
     "time::duration::Duration",
     "time::instant::Instant",
     "time::Ratio",

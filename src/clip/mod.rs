@@ -1,4 +1,4 @@
-mod content;
+pub mod content;
 mod source;
 
 pub use source::ClipSource;
@@ -18,7 +18,7 @@ use ratatui::widgets::{Block, Borders};
 
 const DEFAULT_AUDIO_COLOUR: Color = Color::Green;
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Clip {
     pub name: String,
     pub colour: Color,
@@ -63,6 +63,7 @@ impl Clip {
     pub fn to_source(&self, offset: usize) -> ClipSource {
         match &self.content {
             Content::Audio(audio) => ClipSource::Audio(audio.to_source(offset)),
+            Content::Notes(_) => ClipSource::Notes,
         }
     }
 }

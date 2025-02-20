@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::ops::Bound;
 use std::vec::IntoIter;
 
-#[derive(Default)]
+#[derive(Clone)]
 pub struct LockedTree<K, V> {
     inner: Lock<BTreeMap<K, V>>,
 }
@@ -16,13 +16,20 @@ impl<K, V> LockedTree<K, V> {
         }
     }
 
-    pub fn map<R, F: FnMut(&K, &V) -> R>(&self, mut f: F) -> IntoIter<R> {
+    pub fn for_each<F: FnMut(&K, &V)>(&self, mut f: F) {
         let map = self.inner.read();
-        let mut result = Vec::new();
 
         for (key, value) in map.iter() {
-            result.push(f(key, value));
+            f(key, value);
         }
+    }
+
+    pub fn map<R, F: FnMut(&K, &V) -> R>(&self, mut f: F) -> IntoIter<R> {
+        let mut result = Vec::new();
+
+        self.for_each(|key, value| {
+            result.push(f(key, value));
+        });
 
         result.into_iter()
     }
@@ -54,10 +61,16 @@ impl<K: Copy + Ord, V: Copy> LockedTree<K, V> {
     }
 }
 
-impl<K: Clone, V: Clone> Clone for LockedTree<K, V> {
-    fn clone(&self) -> Self {
-        LockedTree {
-            inner: self.inner.clone(),
-        }
+impl<K: PartialEq, V: PartialEq> PartialEq for LockedTree<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        *self.inner.read() == *other.inner.read()
+    }
+}
+
+impl<K: Eq, V: Eq> Eq for LockedTree<K, V> {}
+
+impl<K, V> Default for LockedTree<K, V> {
+    fn default() -> Self {
+        LockedTree::new()
     }
 }

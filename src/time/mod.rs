@@ -33,6 +33,10 @@ impl Ratio {
         inner: rational::Ratio::new_raw(1, 4),
     };
 
+    pub const ONE: Ratio = Ratio {
+        inner: rational::Ratio::ONE,
+    };
+
     pub fn new(numerator: u32, denominator: u32) -> Self {
         Ratio {
             inner: rational::Ratio::new(numerator, denominator),

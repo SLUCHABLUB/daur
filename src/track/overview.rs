@@ -22,6 +22,7 @@ use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
 
 const IMPORT_AUDIO: &str = "import audio";
+const ADD_NOTES: &str = "add notes";
 
 pub fn open_import_audio_popup() -> Action {
     let action = move |file: &File| Action::ImportAudio {
@@ -32,7 +33,10 @@ pub fn open_import_audio_popup() -> Action {
 }
 
 fn right_click_menu() -> Arc<Popup> {
-    Popup::unimportant_buttons([(IMPORT_AUDIO, open_import_audio_popup())])
+    Popup::unimportant_buttons([
+        (IMPORT_AUDIO, open_import_audio_popup()),
+        (ADD_NOTES, Action::AddNotes),
+    ])
 }
 
 pub struct Overview<'project> {

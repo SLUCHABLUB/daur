@@ -1,4 +1,6 @@
 use crate::audio::Audio;
+use crate::notes::Notes;
+use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
@@ -7,12 +9,12 @@ use crate::time::TimeSignature;
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Points};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq)]
 pub enum Content {
     Audio(Audio),
     // TODO: linked audio file
     // TODO: linked clip
-    // TODO: midi
+    Notes(Notes),
     // TODO: drums
 }
 
@@ -25,6 +27,10 @@ impl Content {
     ) -> Period {
         match self {
             Content::Audio(audio) => audio.period(start, time_signature, tempo),
+            Content::Notes(notes) => Period {
+                start,
+                duration: notes.duration(),
+            },
         }
     }
 
@@ -36,6 +42,15 @@ impl Content {
                 #[expect(clippy::cast_precision_loss, reason = "We are just drawing")]
                 let viewport_end = audio.sample_count() as f64;
                 [[0.0, viewport_end], [-1.0, 1.0]]
+            }
+            Content::Notes(notes) => {
+                if let Some(range) = notes.pitch_range() {
+                    let low = (*range.start() - Pitch::A440).semitones() as f64;
+                    let high = (*range.start() - Pitch::A440).semitones() as f64;
+                    [[0.0, notes.duration().whole_notes.to_float()], [low, high]]
+                } else {
+                    [[0.0; 2]; 2]
+                }
             }
         }
     }
@@ -55,6 +70,7 @@ impl Content {
                     color: Color::Reset,
                 });
             }
+            Content::Notes(notes) => notes.draw_overview(context),
         }
     }
 }
