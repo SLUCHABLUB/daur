@@ -45,8 +45,8 @@ impl Content {
             }
             Content::Notes(notes) => {
                 if let Some(range) = notes.pitch_range() {
-                    let low = (*range.start() - Pitch::A440).semitones() as f64;
-                    let high = (*range.start() - Pitch::A440).semitones() as f64;
+                    let low = f64::from((*range.start() - Pitch::A440).semitones());
+                    let high = f64::from((*range.start() - Pitch::A440).semitones());
                     [[0.0, notes.duration().whole_notes.to_float()], [low, high]]
                 } else {
                     [[0.0; 2]; 2]
