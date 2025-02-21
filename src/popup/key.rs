@@ -23,7 +23,7 @@ const TITLE: ArcStr = literal!("select key");
 const CANCEL: ArcStr = literal!("cancel");
 const CONFIRM: ArcStr = literal!("confirm");
 
-#[derive(Clone, Educe)]
+#[derive(Clone, Debug, Educe)]
 #[educe(Eq, PartialEq)]
 pub struct KeySelector {
     pub info: PopupInfo,

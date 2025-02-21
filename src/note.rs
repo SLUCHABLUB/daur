@@ -2,7 +2,7 @@ use crate::pitch::Pitch;
 use crate::time::duration::Duration;
 
 // TODO: pitch-bends?
-#[derive(Copy, Clone, Eq, PartialEq)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Note {
     pub pitch: Pitch,
     pub duration: Duration,

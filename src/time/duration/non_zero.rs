@@ -2,7 +2,7 @@ use crate::ratio::NonZeroRatio;
 use crate::time::duration::Duration;
 use std::ops::{Div, DivAssign};
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct NonZeroDuration {
     pub whole_notes: NonZeroRatio,
 }

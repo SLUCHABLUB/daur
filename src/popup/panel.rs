@@ -11,7 +11,7 @@ use crate::widget::to_widget::ToWidget;
 use crate::widget::Widget as _;
 use crossterm::event::{KeyCode, MouseButton};
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct ButtonPanel {
     pub info: PopupInfo,
     pub buttons: Vec<Terminating<Button>>,

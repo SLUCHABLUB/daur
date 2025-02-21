@@ -1,7 +1,7 @@
 use crate::key::Key;
 use std::path::PathBuf;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum Action {
     /// Inserts an empty `Notes` clip into the selected track at the cursor
     AddNotes,

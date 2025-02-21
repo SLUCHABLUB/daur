@@ -2,6 +2,7 @@ use crate::track::TrackSource;
 use rodio::Source;
 use std::time::Duration;
 
+#[derive(Debug)]
 pub struct ProjectSource {
     pub sample_rate: u32,
     pub tracks: Vec<TrackSource>,

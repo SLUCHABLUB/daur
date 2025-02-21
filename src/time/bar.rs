@@ -6,7 +6,7 @@ use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 
-#[derive(Clone, Eq, PartialEq, Hash, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Bar {
     pub start: Instant,
     pub time_signature: TimeSignature,

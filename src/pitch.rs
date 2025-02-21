@@ -3,7 +3,7 @@ use std::cmp::Ordering;
 use std::ops::Sub;
 
 // TODO: microtonality?
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Pitch {
     from_a440: Interval,
 }

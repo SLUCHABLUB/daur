@@ -29,6 +29,7 @@ use crate::time::period::Period;
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
+use educe::Educe;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 use ratatui::DefaultTerminal;
@@ -41,6 +42,9 @@ use std::panic::resume_unwind;
 use std::sync::{Arc, Weak};
 use std::time::{Duration, SystemTime};
 
+/// A running instance of the DAW
+#[derive(Educe)]
+#[educe(Debug)]
 pub struct App {
     controls: HashMap<Key, Action>,
     project: Manager,
@@ -49,7 +53,9 @@ pub struct App {
     /// `None` means that playback is paused.
     playback_start: Cell<Option<SystemTime>>,
     // TODO: allow changing
+    #[educe(Debug(ignore))]
     host: Host,
+    #[educe(Debug(ignore))]
     device: Cell<Option<Device>>,
 
     popups: Popups,
@@ -71,11 +77,13 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Arc<App> {
+    /// Creates a new instance
+    #[must_use]
+    pub fn new() -> App {
         let host = default_host();
         let device = Cell::new(host.default_output_device());
 
-        Arc::new(App {
+        App {
             controls: default(),
             project: Manager::new(Project::default()),
 
@@ -98,15 +106,18 @@ impl App {
             cached_area: Cell::default(),
             should_redraw: Cell::new(true),
             should_exit: Cell::new(false),
-        })
+        }
     }
 
-    pub fn run(self: Arc<Self>, terminal: DefaultTerminal) {
-        let audio_thread = spawn_audio_thread(Arc::clone(&self));
-        let draw_thread = spawn_draw_thread(Arc::clone(&self), terminal);
-        let events_thread = spawn_events_thread(Arc::clone(&self));
+    /// Runs the app
+    pub fn run(self, terminal: DefaultTerminal) {
+        let app = Arc::new(self);
 
-        while !self.should_exit.get() {
+        let audio_thread = spawn_audio_thread(Arc::clone(&app));
+        let draw_thread = spawn_draw_thread(Arc::clone(&app), terminal);
+        let events_thread = spawn_events_thread(Arc::clone(&app));
+
+        while !app.should_exit.get() {
             spin_loop();
         }
 
@@ -132,10 +143,12 @@ impl App {
         self.playback_start.get().is_some()
     }
 
+    /// Starts playing the audio
     pub fn start_playback(&self) {
         self.playback_start.set(Some(SystemTime::now()));
     }
 
+    /// Stops playing the audio
     pub fn stop_playback(&self) {
         self.cursor.set(self.playback_position());
         self.playback_start.set(None);
@@ -170,6 +183,12 @@ impl App {
             ),
             [self.project_bar_size.constraint(), Constraint::Fill(1)],
         )
+    }
+}
+
+impl Default for App {
+    fn default() -> Self {
+        App::new()
     }
 }
 

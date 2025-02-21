@@ -1,4 +1,6 @@
 use crossbeam::atomic::AtomicCell;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
 
 #[derive(Default)]
 pub struct Cell<T> {
@@ -42,3 +44,9 @@ impl<T: Copy + PartialEq> PartialEq for Cell<T> {
 }
 
 impl<T: Copy + Eq> Eq for Cell<T> {}
+
+impl<T: Copy + Debug> Debug for Cell<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.get().fmt(f)
+    }
+}

@@ -2,7 +2,7 @@ use crate::length::point::Point;
 use crate::length::Length;
 use ratatui::layout::{Constraint, Direction, Flex, Layout, Rect, Spacing};
 
-#[derive(Copy, Clone, Default)]
+#[derive(Copy, Clone, Default, Debug)]
 pub struct Rectangle {
     pub x: Length,
     pub y: Length,

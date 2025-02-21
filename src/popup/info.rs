@@ -4,7 +4,7 @@ use crate::popup::Popup;
 use arcstr::ArcStr;
 use std::sync::Weak;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct PopupInfo {
     pub title: ArcStr,
     pub position: Cell<Option<Point>>,

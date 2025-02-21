@@ -35,7 +35,7 @@ use ratatui_explorer::{File, FileExplorer};
 use std::error::Error;
 use std::sync::{Arc, Weak};
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum Popup {
     Buttons(ButtonPanel),
     Error(ErrorPopup),

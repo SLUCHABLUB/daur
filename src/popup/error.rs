@@ -20,7 +20,7 @@ use std::sync::Weak;
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 const PADDING: Length = Length::CHAR_HEIGHT;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct ErrorPopup {
     pub info: PopupInfo,
     pub display: ArcStr,

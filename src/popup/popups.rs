@@ -2,11 +2,13 @@ use crate::lock::Lock;
 use crate::popup::Popup;
 use std::sync::{Arc, Weak};
 
+#[derive(Debug)]
 pub struct Popups {
     list: Lock<Vec<Arc<Popup>>>,
 }
 
 impl Popups {
+    #[must_use]
     pub fn new() -> Popups {
         Popups {
             list: Lock::new(Vec::new()),
@@ -37,5 +39,11 @@ impl Popups {
 
     pub fn to_stack(&self) -> Vec<Arc<Popup>> {
         self.list.read().clone()
+    }
+}
+
+impl Default for Popups {
+    fn default() -> Self {
+        Self::new()
     }
 }

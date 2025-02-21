@@ -3,7 +3,7 @@
 /// Note: No `Eq` or `PartialEq` implementation is provided.
 /// This is due to "equality"/"equivalence" is not semantically ubiquitous.
 /// To compare intervals, the `semitones` and `kind` methods may be used.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Interval {
     semitones: i16,
 }

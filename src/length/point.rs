@@ -1,7 +1,7 @@
 use crate::length::Length;
 use ratatui::layout::Position;
 
-#[derive(Copy, Clone, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct Point {
     pub x: Length,
     pub y: Length,

@@ -19,6 +19,7 @@ use thiserror::Error;
 #[error("No track is selected")]
 struct NoTrackSelected;
 
+#[derive(Debug)]
 pub struct Manager {
     project: Lock<Project>,
     // TODO: allow undoing

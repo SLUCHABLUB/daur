@@ -1,29 +1,12 @@
+#![allow(
+    unused_crate_dependencies,
+    reason = "they are used adn caught by the library"
+)]
 #![doc = include_str!("../README.md")]
 
-mod app;
-mod audio;
-mod cell;
-mod chroma;
-mod clip;
-mod interval;
-mod key;
-mod keyboard;
-mod length;
-mod lock;
-mod note;
-mod notes;
-mod pitch;
-mod popup;
-mod project;
-mod ratio;
-mod sign;
-mod time;
-mod track;
-mod widget;
-
-use app::App;
 use crossterm::event::EnableMouseCapture;
 use crossterm::execute;
+use daur::App;
 use std::io::{stdout, Result};
 
 fn main() -> Result<()> {

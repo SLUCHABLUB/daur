@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -6,6 +8,7 @@ pub struct Lock<T> {
     inner: RwLock<T>,
 }
 
+#[derive(Debug)]
 pub enum ReadGuard<'lock, T> {
     Guard(RwLockReadGuard<'lock, T>),
     Poison(PoisonError<RwLockReadGuard<'lock, T>>),
@@ -22,6 +25,7 @@ impl<T> Deref for ReadGuard<'_, T> {
     }
 }
 
+#[derive(Debug)]
 pub enum WriteGuard<'lock, T> {
     Guard(RwLockWriteGuard<'lock, T>),
     Poison(PoisonError<RwLockWriteGuard<'lock, T>>),
@@ -72,5 +76,11 @@ impl<T> Lock<T> {
 impl<T: Clone> Clone for Lock<T> {
     fn clone(&self) -> Self {
         Lock::new(self.read().clone())
+    }
+}
+
+impl<T: Debug> Debug for Lock<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.read().fmt(f)
     }
 }

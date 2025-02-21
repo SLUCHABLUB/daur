@@ -16,7 +16,7 @@ use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::canvas::{Canvas, Context};
 use ratatui::widgets::{Block, Borders};
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Clip {
     pub name: ArcStr,
     pub colour: Color,

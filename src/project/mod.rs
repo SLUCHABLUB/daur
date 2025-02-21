@@ -35,7 +35,7 @@ use std::sync::{Arc, Weak};
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Project {
     pub title: ArcStr,
 

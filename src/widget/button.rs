@@ -11,7 +11,7 @@ use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 
-#[derive(Clone, Eq, PartialEq, Default)]
+#[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub struct Button {
     pub action: Action,
     label: Text,

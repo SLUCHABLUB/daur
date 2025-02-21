@@ -3,6 +3,7 @@ use rodio::Source;
 use std::collections::VecDeque;
 use std::time::Duration;
 
+#[derive(Debug)]
 pub struct TrackSource {
     sample_rate: u32,
     sample: usize,

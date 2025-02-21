@@ -1,7 +1,7 @@
 use crate::time::instant::Instant;
 use std::collections::BTreeMap;
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Changing<T> {
     pub start: T,
     // TODO: change key to be non-zero

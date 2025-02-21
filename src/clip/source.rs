@@ -2,6 +2,7 @@ use crate::audio::AudioSource;
 use rodio::Source;
 use std::time::Duration;
 
+#[derive(Debug)]
 pub enum ClipSource {
     Audio(AudioSource),
     // TODO: add plugins that can render the notes

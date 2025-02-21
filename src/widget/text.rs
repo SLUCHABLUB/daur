@@ -14,7 +14,7 @@ use ratatui::widgets::{Paragraph, WidgetRef as _};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 
-#[derive(Clone, Eq, PartialEq, Default)]
+#[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub struct Text {
     pub string: ArcStr,
     pub centered: bool,

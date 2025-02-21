@@ -28,12 +28,12 @@ fn theme() -> Theme {
 }
 
 #[derive(Clone, Educe)]
-#[educe(Eq, PartialEq)]
+#[educe(Eq, PartialEq, Debug)]
 pub struct ExplorerPopup {
     pub info: PopupInfo,
     #[educe(Eq(ignore))]
     pub explorer: Lock<FileExplorer>,
-    #[educe(Eq(ignore))]
+    #[educe(Eq(ignore), Debug(ignore))]
     pub action: Arc<dyn Fn(&File) -> Action + Send + Sync>,
 }
 

@@ -14,7 +14,7 @@ use std::sync::{Arc, Weak};
 
 /// An action to take on the app
 #[derive(Clone, Default, Educe)]
-#[educe(Eq, PartialEq)]
+#[educe(Eq, PartialEq, Debug)]
 pub enum Action {
     /// Does nothing
     #[default]
@@ -40,7 +40,7 @@ pub enum Action {
     Project(project::Action),
 
     /// Sets the audio output device
-    SetDevice(#[educe(Eq(ignore))] Device),
+    SetDevice(#[educe(Eq(ignore), Debug(ignore))] Device),
 
     /// Saves and exits the program
     Exit,

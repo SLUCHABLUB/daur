@@ -16,7 +16,7 @@ use std::sync::Arc;
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Track {
     pub name: ArcStr,
     pub clips: BTreeMap<Instant, Arc<Clip>>,
@@ -62,5 +62,11 @@ impl Track {
                 .collect(),
             offset,
         )
+    }
+}
+
+impl Default for Track {
+    fn default() -> Self {
+        Self::new()
     }
 }

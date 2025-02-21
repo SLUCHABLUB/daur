@@ -39,7 +39,7 @@ pub struct NoExtensionError {
 
 // IMPORTANT: don't use any reference counters in here
 //            the history will contain clones of each edit
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Edit {
     /// Inserts the clip into the selected track at the cursor
     AddClip {

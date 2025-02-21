@@ -1,7 +1,7 @@
 use crate::length::Length;
 use crate::time::duration::NonZeroDuration;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct OverviewSettings {
     /// The duration of a grid unit
     pub cell_duration: NonZeroDuration,

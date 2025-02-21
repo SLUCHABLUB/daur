@@ -9,7 +9,7 @@ use std::ops::RangeInclusive;
 
 /// A sequence of musical events.
 /// Basically Midi.
-#[derive(Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Notes {
     // INVARIANT: all notes are within `full_duration`
     /// The notes in this clip, the instants are relative to the clip

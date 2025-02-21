@@ -10,6 +10,7 @@ use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct Settings {
     pub track: Arc<Track>,
     pub selected: bool,

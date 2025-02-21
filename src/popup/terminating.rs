@@ -11,7 +11,7 @@ use ratatui::buffer::Buffer;
 use std::sync::Weak;
 
 /// A simple button
-#[derive(Clone, Educe)]
+#[derive(Clone, Debug, Educe)]
 #[educe(Eq, PartialEq)]
 pub struct Terminating<Child> {
     pub child: Child,

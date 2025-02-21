@@ -2,6 +2,7 @@ use crate::audio::Audio;
 use rodio::Source;
 use std::time::Duration;
 
+#[derive(Debug)]
 pub struct AudioSource {
     audio: Audio,
     right: bool,
