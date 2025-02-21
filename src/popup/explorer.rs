@@ -1,8 +1,8 @@
 use crate::app::Action;
 use crate::keyboard::Key;
 use crate::lock::Lock;
-use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
+use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;

@@ -1,10 +1,10 @@
-mod button;
 mod error;
 mod explorer;
 mod info;
 mod key;
 mod panel;
 mod popups;
+mod terminating;
 
 pub use popups::Popups;
 
@@ -16,12 +16,12 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
 use crate::length::Length;
-use crate::popup::button::Terminating;
 use crate::popup::error::ErrorPopup;
 use crate::popup::explorer::ExplorerPopup;
 use crate::popup::info::PopupInfo;
 use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
+use crate::popup::terminating::Terminating;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::has_size::HasSize as _;
