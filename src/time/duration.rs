@@ -16,7 +16,7 @@ impl Duration {
     };
 }
 
-impl Add<Duration> for Duration {
+impl Add for Duration {
     type Output = Duration;
 
     fn add(mut self, rhs: Duration) -> Duration {
@@ -25,7 +25,7 @@ impl Add<Duration> for Duration {
     }
 }
 
-impl AddAssign<Duration> for Duration {
+impl AddAssign for Duration {
     fn add_assign(&mut self, rhs: Duration) {
         self.whole_notes += rhs.whole_notes;
     }
@@ -61,7 +61,7 @@ impl MulAssign<Ratio> for Duration {
     }
 }
 
-impl Div<Duration> for Duration {
+impl Div for Duration {
     type Output = Ratio;
 
     fn div(self, rhs: Duration) -> Ratio {

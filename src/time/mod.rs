@@ -131,7 +131,7 @@ impl From<NonZeroU8> for Ratio {
     }
 }
 
-impl Add<Ratio> for Ratio {
+impl Add for Ratio {
     type Output = Ratio;
 
     fn add(self, rhs: Ratio) -> Ratio {
@@ -193,7 +193,7 @@ impl MulAssign for Ratio {
 }
 
 // TODO: non-zero type
-impl Div<Ratio> for Ratio {
+impl Div for Ratio {
     type Output = Ratio;
 
     fn div(self, rhs: Ratio) -> Ratio {

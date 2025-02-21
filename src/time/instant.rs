@@ -77,7 +77,7 @@ impl AddAssign<Duration> for Instant {
     }
 }
 
-impl Sub<Instant> for Instant {
+impl Sub for Instant {
     type Output = Duration;
 
     fn sub(self, rhs: Instant) -> Duration {
