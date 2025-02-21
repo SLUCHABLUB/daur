@@ -10,7 +10,7 @@ pub mod single;
 pub mod text;
 pub mod to_widget;
 
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::lock::Lock;

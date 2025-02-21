@@ -1,10 +1,10 @@
-use crate::locked_tree::LockedTree;
 use crate::note::Note;
 use crate::pitch::Pitch;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Rectangle};
+use std::collections::BTreeMap;
 use std::ops::RangeInclusive;
 
 /// A sequence of musical events.
@@ -13,14 +13,14 @@ use std::ops::RangeInclusive;
 pub struct Notes {
     // INVARIANT: all notes are within `full_duration`
     /// The notes in this clip, the instants are relative to the clip
-    notes: LockedTree<Instant, Note>,
+    notes: BTreeMap<Instant, Note>,
     full_duration: Duration,
 }
 
 impl Notes {
     pub fn empty(duration: Duration) -> Notes {
         Notes {
-            notes: LockedTree::default(),
+            notes: BTreeMap::new(),
             full_duration: duration,
         }
     }
@@ -33,14 +33,14 @@ impl Notes {
         let mut lowest = None;
         let mut highest = None;
 
-        self.notes.for_each(|_, note| {
+        for note in self.notes.values() {
             if lowest.is_none_or(|lowest| note.pitch < lowest) {
                 lowest = Some(note.pitch);
             }
             if highest.is_none_or(|highest| highest < note.pitch) {
                 highest = Some(note.pitch);
             }
-        });
+        }
 
         let lowest = lowest?;
         let highest = highest?;
@@ -49,7 +49,7 @@ impl Notes {
     }
 
     pub fn draw_overview(&self, context: &mut Context) {
-        self.notes.for_each(|start, note| {
+        for (start, note) in &self.notes {
             let x = start.whole_notes.to_float();
             let width = note.duration.whole_notes.to_float();
 
@@ -63,6 +63,6 @@ impl Notes {
                 height: 1.0,
                 color: Color::Reset,
             });
-        });
+        }
     }
 }

@@ -50,24 +50,24 @@ impl Changing<Tempo> {
         let tempo = self.get(period.start);
         let mut periods = vec![(period, tempo)];
 
-        for (instant, tempo) in self.changes.iter_gt(period.start) {
-            if period.end() <= instant {
+        for (instant, tempo) in self.changes.range(period.start..) {
+            if period.end() <= *instant {
                 break;
             }
 
             #[expect(clippy::unwrap_used, reason = "`periods` is not empty")]
             let (last, _) = periods.last_mut().unwrap();
 
-            last.duration = instant - last.start;
+            last.duration = *instant - last.start;
 
-            let duration = period.end() - instant;
+            let duration = period.end() - *instant;
 
             periods.push((
                 Period {
-                    start: instant,
+                    start: *instant,
                     duration,
                 },
-                tempo,
+                *tempo,
             ));
         }
 

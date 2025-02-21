@@ -13,19 +13,11 @@ impl<T> LockedVec<T> {
         }
     }
 
-    pub fn len(&self) -> usize {
-        self.inner.read().len()
-    }
-
     pub fn push(&self, element: T) -> usize {
         let mut vec = self.inner.write();
         let index = vec.len();
         vec.push(element);
         index
-    }
-
-    pub fn update<R, F: FnOnce(&mut T) -> R>(&self, index: usize, f: F) -> Option<R> {
-        self.inner.write().get_mut(index).map(f)
     }
 
     pub fn map<R, F: FnMut(&T) -> R>(&self, mut f: F) -> IntoIter<R> {
@@ -38,15 +30,6 @@ impl<T> LockedVec<T> {
         }
 
         result.into_iter()
-    }
-
-    pub fn map_enumerated<R, F: FnMut(usize, &T) -> R>(&self, mut f: F) -> IntoIter<R> {
-        let mut index = 0;
-        self.map(|element| {
-            let element = f(index, element);
-            index = index.wrapping_add(1);
-            element
-        })
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::cell::Cell;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;

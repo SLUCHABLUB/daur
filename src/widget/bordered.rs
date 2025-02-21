@@ -1,4 +1,4 @@
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
@@ -10,19 +10,19 @@ use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::{Block, WidgetRef as _};
-use std::borrow::Cow;
+use std::sync::Arc;
 
 /// A simpler version of [`Block`](widgets::Block)
 pub struct Bordered<Child> {
-    // TODO: maybe use arc_str to avoid cloning?
-    title: Cow<'static, str>,
+    // TODO: use arc_str to avoid allocating
+    title: Arc<str>,
     title_alignment: Alignment,
     thick: bool,
     child: Child,
 }
 
 impl<Child> Bordered<Child> {
-    pub fn new<S: Into<Cow<'static, str>>>(title: S, child: Child, thick: bool) -> Self {
+    pub fn new<S: Into<Arc<str>>>(title: S, child: Child, thick: bool) -> Self {
         Bordered {
             title: title.into(),
             title_alignment: Alignment::Center,
@@ -31,11 +31,11 @@ impl<Child> Bordered<Child> {
         }
     }
 
-    pub fn plain<S: Into<Cow<'static, str>>>(title: S, child: Child) -> Self {
+    pub fn plain<S: Into<Arc<str>>>(title: S, child: Child) -> Self {
         Bordered::new(title, child, false)
     }
 
-    pub fn thick<S: Into<Cow<'static, str>>>(title: S, child: Child) -> Self {
+    pub fn thick<S: Into<Arc<str>>>(title: S, child: Child) -> Self {
         Bordered::new(title, child, true)
     }
 

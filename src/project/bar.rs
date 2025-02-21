@@ -1,4 +1,4 @@
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::project::Project;
@@ -8,6 +8,7 @@ use crate::widget::heterogeneous::{ThreeStack, TwoStack};
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use ratatui::layout::{Constraint, Flex};
+use std::sync::Arc;
 
 const PLAY: &str = "\u{25B6}";
 const PAUSE: &str = "\u{23F8}";
@@ -30,7 +31,7 @@ impl Project {
     // TODO: cursor fine positioning
     // TODO: grid size
     // TODO: master volume
-    pub fn bar(&self, playing: bool) -> impl Widget + use<'_> {
+    pub fn bar(&self, playing: bool) -> impl Widget {
         let playback_button = if playing {
             Button::described(PAUSE, PAUSE_DESCRIPTION, Action::Pause)
         } else {
@@ -40,17 +41,17 @@ impl Project {
         let fallbacks = ThreeStack::horizontal(
             (
                 Button::described(
-                    self.key.start.get().to_string(),
+                    self.key.start.to_string(),
                     KEY_DESCRIPTION,
-                    select_key(self.key.start.get()),
+                    select_key(self.key.start),
                 ),
                 Button::described(
-                    self.time_signature.start.get().to_string(),
+                    self.time_signature.start.to_string(),
                     TIME_SIGNATURE_DESCRIPTION,
                     Action::None,
                 ),
                 Button::described(
-                    self.tempo.start.get().to_string(),
+                    self.tempo.start.to_string(),
                     TEMPO_DESCRIPTION,
                     Action::None,
                 ),
@@ -65,7 +66,7 @@ impl Project {
         .flex(Flex::SpaceBetween);
 
         Bordered::thick(
-            self.title.clone(),
+            Arc::clone(&self.title),
             ThreeStack::horizontal(
                 (left_side, playback_button, Text::centered("TODO")),
                 [

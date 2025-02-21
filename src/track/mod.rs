@@ -3,58 +3,36 @@ mod settings;
 mod source;
 
 pub use source::TrackSource;
+use std::collections::BTreeMap;
 
-use crate::app::OverviewSettings;
 use crate::clip::Clip;
-use crate::locked_tree::LockedTree;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
-use crate::track::overview::Overview;
 use crate::track::settings::Settings;
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
 const PLACEHOLDER_TITLE: &str = "a track";
 
 #[derive(Clone)]
 pub struct Track {
-    pub name: String,
-    pub clips: LockedTree<Instant, Arc<Clip>>,
+    pub name: Arc<str>,
+    pub clips: BTreeMap<Instant, Arc<Clip>>,
 }
 
 impl Track {
-    pub fn new() -> Arc<Track> {
-        Arc::new(Track {
-            name: PLACEHOLDER_TITLE.to_owned(),
-            clips: LockedTree::new(),
-        })
+    pub fn new() -> Track {
+        Track {
+            name: Arc::from(PLACEHOLDER_TITLE),
+            clips: BTreeMap::new(),
+        }
     }
 
     pub fn settings(self: &Arc<Self>, selected: bool, index: usize) -> Settings {
         Settings {
             track: Arc::clone(self),
             selected,
-            index,
-        }
-    }
-
-    pub fn overview<'project>(
-        self: &Arc<Self>,
-        selected_clip: &Weak<Clip>,
-        time_signature: &'project Changing<TimeSignature>,
-        tempo: &'project Changing<Tempo>,
-        overview_settings: OverviewSettings,
-        cursor: Instant,
-        index: usize,
-    ) -> Overview<'project> {
-        Overview {
-            track: Arc::clone(self),
-            selected_clip: Weak::clone(selected_clip),
-            time_signature,
-            tempo,
-            settings: overview_settings,
-            cursor,
             index,
         }
     }
@@ -69,7 +47,8 @@ impl Track {
         TrackSource::new(
             sample_rate,
             self.clips
-                .map(|start, clip| {
+                .iter()
+                .map(|(start, clip)| {
                     let start = start.to_sample(time_signature, tempo, sample_rate);
                     let mut clip_offset = 0;
 

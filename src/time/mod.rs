@@ -25,21 +25,23 @@ pub struct Ratio {
 }
 
 impl Ratio {
-    pub const ZERO: Ratio = Ratio {
-        inner: rational::Ratio::ZERO,
-    };
+    pub const ZERO: Ratio = Ratio::int(0);
 
     pub const QUARTER: Ratio = Ratio {
         inner: rational::Ratio::new_raw(1, 4),
     };
 
-    pub const ONE: Ratio = Ratio {
-        inner: rational::Ratio::ONE,
-    };
+    pub const ONE: Ratio = Ratio::int(1);
 
     pub fn new(numerator: u32, denominator: u32) -> Self {
         Ratio {
             inner: rational::Ratio::new(numerator, denominator),
+        }
+    }
+
+    pub const fn int(int: u32) -> Ratio {
+        Ratio {
+            inner: rational::Ratio::new_raw(int, 1),
         }
     }
 

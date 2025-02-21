@@ -6,11 +6,12 @@ use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::TimeSignature;
+use std::sync::Arc;
 
 /// A window into
-#[derive(Copy, Clone)]
-pub struct Window<'project> {
-    pub time_signature: &'project Changing<TimeSignature>,
+#[derive(Clone)]
+pub struct Window {
+    pub time_signature: Arc<Changing<TimeSignature>>,
     pub overview_settings: OverviewSettings,
     pub x: Length,
     pub width: Length,
@@ -35,7 +36,7 @@ impl UncheckedRect {
     }
 }
 
-impl Window<'_> {
+impl Window {
     pub fn column_to_instant_on_grid(&self, column: Length) -> Instant {
         let offset = self.overview_settings.offset + column - self.x;
 
@@ -46,7 +47,7 @@ impl Window<'_> {
         }
     }
 
-    pub fn instant_to_column(self, instant: Instant) -> Option<Length> {
+    pub fn instant_to_column(&self, instant: Instant) -> Option<Length> {
         let column_unchecked = self.instant_to_column_unchecked(instant);
         let column = column_unchecked.to_length()?;
 
@@ -57,7 +58,7 @@ impl Window<'_> {
         }
     }
 
-    fn instant_to_column_unchecked(self, instant: Instant) -> Offset {
+    fn instant_to_column_unchecked(&self, instant: Instant) -> Offset {
         let mut column = Offset::ZERO;
 
         for bar in self.time_signature.bars() {
@@ -80,7 +81,7 @@ impl Window<'_> {
     }
 
     pub fn period_to_unchecked_rect(
-        self,
+        &self,
         period: Period,
         x: Length,
         y: Length,

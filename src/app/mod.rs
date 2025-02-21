@@ -1,21 +1,20 @@
-pub mod action;
+mod action;
 mod audio;
 pub mod control;
 mod draw;
-mod error;
 mod events;
 mod macros;
 mod settings;
 pub mod window;
 
+pub use action::Action;
 pub use settings::OverviewSettings;
 
-use crate::app::action::Action;
 use crate::app::audio::spawn_audio_thread;
 use crate::app::control::default;
 use crate::app::draw::spawn_draw_thread;
 use crate::app::events::spawn_events_thread;
-use crate::app::macros::{or_popup, popup_error};
+use crate::app::macros::or_popup;
 use crate::cell::Cell;
 use crate::clip::Clip;
 use crate::keyboard::Key;
@@ -24,6 +23,7 @@ use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::locked_vec::LockedVec;
 use crate::popup::Popup;
+use crate::project::manager::Manager;
 use crate::project::Project;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
@@ -44,7 +44,7 @@ use std::time::{Duration, SystemTime};
 
 pub struct App {
     controls: HashMap<Key, Action>,
-    project: Project,
+    project: Manager,
 
     /// When playback started.
     /// `None` means that playback is paused.
@@ -78,7 +78,7 @@ impl App {
 
         Arc::new(App {
             controls: default(),
-            project: Project::default(),
+            project: Manager::new(Project::default()),
 
             playback_start: Cell::new(None),
             host,
@@ -146,8 +146,8 @@ impl App {
         if let Some(playback_start) = self.playback_start.get() {
             Period::from_real_time(
                 self.cursor.get(),
-                &self.project.time_signature,
-                &self.project.tempo,
+                &self.project.time_signature(),
+                &self.project.tempo(),
                 playback_start.elapsed().unwrap_or(Duration::ZERO),
             )
             .end()

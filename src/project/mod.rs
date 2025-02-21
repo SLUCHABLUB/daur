@@ -1,21 +1,26 @@
+mod action;
 mod bar;
 pub mod change;
 pub mod changing;
+mod edit;
+pub mod manager;
 mod ruler;
 mod source;
 
-use crate::app::action::Action;
+pub use action::Action;
+
+use crate::app;
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::length::Length;
-use crate::locked_vec::LockedVec;
 use crate::project::changing::Changing;
 use crate::project::ruler::Ruler;
 use crate::project::source::ProjectSource;
 use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
+use crate::track::overview::Overview;
 use crate::track::Track;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous::TwoStack;
@@ -28,14 +33,14 @@ use std::sync::{Arc, Weak};
 
 #[derive(Clone, Default)]
 pub struct Project {
-    pub title: String,
+    pub title: Arc<str>,
 
-    pub key: Changing<Key>,
-    pub time_signature: Changing<TimeSignature>,
+    pub key: Arc<Changing<Key>>,
+    pub time_signature: Arc<Changing<TimeSignature>>,
     // TODO: continuous change
-    pub tempo: Changing<Tempo>,
+    pub tempo: Arc<Changing<Tempo>>,
 
-    pub tracks: LockedVec<Arc<Track>>,
+    pub tracks: Vec<Arc<Track>>,
 }
 
 impl Project {
@@ -46,7 +51,7 @@ impl Project {
         selected_track_index: usize,
         selected_clip: &Weak<Clip>,
         cursor: Instant,
-    ) -> impl Widget + use<'_> {
+    ) -> impl Widget {
         let track_count = self.tracks.len().saturating_cast();
 
         let horizontal_constraints = [track_settings_size.constraint(), Constraint::Fill(1)];
@@ -56,7 +61,7 @@ impl Project {
         let empty_space = Text::EMPTY;
 
         let ruler = Ruler {
-            time_signature: &self.time_signature,
+            time_signature: Arc::clone(&self.time_signature),
             overview_settings,
         };
         let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
@@ -64,30 +69,33 @@ impl Project {
         let mut track_settings = Vec::new();
         let mut track_overviews = Vec::new();
 
-        self.tracks.map_enumerated(|index, track| {
+        for (index, track) in self.tracks.iter().enumerate() {
             let selected = index == selected_track_index;
             track_settings.push(track.settings(selected, index));
-            track_overviews.push(track.overview(
-                selected_clip,
-                &self.time_signature,
-                &self.tempo,
-                overview_settings,
+            track_overviews.push(Overview {
+                track: Arc::clone(track),
+                selected_clip: Weak::clone(selected_clip),
+                time_signature: Arc::clone(&self.time_signature),
+                tempo: Arc::clone(&self.tempo),
+                settings: overview_settings,
                 cursor,
                 index,
-            ));
-        });
+            });
+        }
 
         // A "dummy-track" for the row with the add track button
-        track_overviews.push(Track::new().overview(
-            selected_clip,
-            &self.time_signature,
-            &self.tempo,
-            overview_settings,
+        track_overviews.push(Overview {
+            track: Arc::new(Track::new()),
+            selected_clip: Weak::clone(selected_clip),
+            time_signature: Arc::clone(&self.time_signature),
+            tempo: Arc::clone(&self.tempo),
+            settings: overview_settings,
             cursor,
-            usize::MAX,
-        ));
+            index: usize::MAX,
+        });
 
-        let add_track_button = Button::described("+", "add track", Action::AddTrack);
+        let add_track_button =
+            Button::described("+", "add track", app::Action::Project(Action::AddTrack));
 
         let settings_column = TwoStack::vertical(
             (
@@ -110,6 +118,7 @@ impl Project {
             sample_rate,
             tracks: self
                 .tracks
+                .iter()
                 .map(|track| {
                     track.to_source(&self.time_signature, &self.tempo, sample_rate, offset)
                 })

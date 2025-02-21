@@ -1,18 +1,17 @@
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::cell::Cell;
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
-use crate::keyboard;
 use crate::popup::button::Terminating;
 use crate::popup::info::PopupInfo;
 use crate::popup::Popup;
 use crate::sign::Sign;
-use crate::time::instant::Instant;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::heterogeneous::{FourStack, TwoStack};
 use crate::widget::to_widget::ToWidget;
 use crate::widget::{multi, single};
+use crate::{keyboard, project};
 use bitbag::BitBag;
 use crossterm::event::{KeyCode, KeyModifiers};
 use educe::Educe;
@@ -49,7 +48,7 @@ impl KeySelector {
         match key.code {
             KeyCode::Enter => {
                 actions.push(Action::ClosePopup(self.info.this()));
-                actions.push(Action::SetKey(Instant::START, self.key()));
+                actions.push(Action::Project(project::Action::SetDefaultKey(self.key())));
                 true
             }
             KeyCode::Tab | KeyCode::BackTab => {
@@ -142,7 +141,10 @@ impl ToWidget for KeySelector {
                 popup: self.info.this(),
             },
             Terminating {
-                child: Button::standard("confirm", Action::SetKey(Instant::START, self.key())),
+                child: Button::standard(
+                    "confirm",
+                    Action::Project(project::Action::SetDefaultKey(self.key())),
+                ),
                 popup: self.info.this(),
             },
         ))

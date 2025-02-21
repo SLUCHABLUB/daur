@@ -1,5 +1,5 @@
-use crate::app::action::Action;
 use crate::app::window::Window;
+use crate::app::Action;
 use crate::app::OverviewSettings;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
@@ -11,17 +11,18 @@ use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use saturating_cast::SaturatingCast as _;
+use std::sync::Arc;
 
-#[derive(Copy, Clone)]
-pub struct Ruler<'project> {
-    pub time_signature: &'project Changing<TimeSignature>,
+#[derive(Clone)]
+pub struct Ruler {
+    pub time_signature: Arc<Changing<TimeSignature>>,
     pub overview_settings: OverviewSettings,
 }
 
-impl Widget for Ruler<'_> {
+impl Widget for Ruler {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let window = Window {
-            time_signature: self.time_signature,
+            time_signature: Arc::clone(&self.time_signature),
             overview_settings: self.overview_settings,
             x: area.x,
             width: area.width,

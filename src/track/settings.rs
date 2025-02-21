@@ -1,4 +1,4 @@
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::track::Track;
@@ -18,7 +18,7 @@ pub struct Settings {
 impl Settings {
     fn visual(&self) -> impl Widget {
         Bordered::new(
-            self.track.name.clone(),
+            Arc::clone(&self.track.name),
             Text::centered("TODO"),
             self.selected,
         )

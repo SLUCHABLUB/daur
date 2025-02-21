@@ -1,4 +1,4 @@
-use crate::app::action::Action;
+use crate::app::Action;
 use crate::keyboard::Key;
 use crate::lock::Lock;
 use crate::popup::button::Terminating;

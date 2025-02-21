@@ -1,5 +1,5 @@
-use crate::app::action::Action;
 use crate::app::window::Window;
+use crate::app::Action;
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::length::offset::Offset;
@@ -7,6 +7,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::popup::Popup;
+use crate::project;
 use crate::project::changing::Changing;
 use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
@@ -25,9 +26,7 @@ const IMPORT_AUDIO: &str = "import audio";
 const ADD_NOTES: &str = "add notes";
 
 pub fn open_import_audio_popup() -> Action {
-    let action = move |file: &File| Action::ImportAudio {
-        file: file.path().clone(),
-    };
+    let action = move |file: &File| Action::import_audio(file.path());
 
     Action::OpenPopup(Popup::explorer(IMPORT_AUDIO.to_owned(), action))
 }
@@ -35,24 +34,24 @@ pub fn open_import_audio_popup() -> Action {
 fn right_click_menu() -> Arc<Popup> {
     Popup::unimportant_buttons([
         (IMPORT_AUDIO, open_import_audio_popup()),
-        (ADD_NOTES, Action::AddNotes),
+        (ADD_NOTES, Action::Project(project::Action::AddNotes)),
     ])
 }
 
-pub struct Overview<'project> {
+pub struct Overview {
     pub track: Arc<Track>,
     pub selected_clip: Weak<Clip>,
-    pub time_signature: &'project Changing<TimeSignature>,
-    pub tempo: &'project Changing<Tempo>,
+    pub time_signature: Arc<Changing<TimeSignature>>,
+    pub tempo: Arc<Changing<Tempo>>,
     pub settings: OverviewSettings,
     pub cursor: Instant,
     pub index: usize,
 }
 
-impl Overview<'_> {
+impl Overview {
     fn window(&self, area: Rectangle) -> Window {
         Window {
-            time_signature: self.time_signature,
+            time_signature: Arc::clone(&self.time_signature),
             overview_settings: self.settings,
             x: area.x,
             width: area.width,
@@ -60,7 +59,7 @@ impl Overview<'_> {
     }
 }
 
-impl Widget for Overview<'_> {
+impl Widget for Overview {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let area_end = Offset::from(area.x + area.width);
 
@@ -69,9 +68,9 @@ impl Widget for Overview<'_> {
         // TODO: alternate background colour for grid
 
         // Render the clips
-        self.track.clips.map(|start, clip| {
+        for (start, clip) in &self.track.clips {
             let clip_area = window.period_to_unchecked_rect(
-                clip.period(*start, self.time_signature, self.tempo),
+                clip.period(*start, &self.time_signature, &self.tempo),
                 area.x,
                 area.y,
                 area.height,
@@ -106,7 +105,7 @@ impl Widget for Overview<'_> {
                     buf,
                     mouse_position,
                 );
-        });
+        }
 
         // Render the cursor
         if let Some(cursor_column) = window.instant_to_column(self.cursor) {

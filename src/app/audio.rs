@@ -30,7 +30,7 @@ pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<Never> {
             };
 
             sink.clear();
-            sink.append(app.project.to_source(SAMPLE_RATE, app.cursor.get()));
+            sink.append(app.project.source(SAMPLE_RATE, app.cursor.get()));
             sink.play();
 
             while app.playback_start.get() == start {
