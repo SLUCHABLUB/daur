@@ -50,7 +50,7 @@ impl Notes {
 
     pub fn draw_overview(&self, context: &mut Context) {
         for (start, note) in &self.notes {
-            let x = start.whole_notes.to_float();
+            let x = start.since_start.whole_notes.to_float();
             let width = note.duration.whole_notes.to_float();
 
             // - 0.5 so we can give rectangle some thickness

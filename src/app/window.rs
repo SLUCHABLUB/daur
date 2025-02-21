@@ -43,7 +43,7 @@ impl Window {
         let cell = (offset / self.overview_settings.cell_width).rounded();
         let duration = self.overview_settings.cell_duration * cell;
         Instant {
-            whole_notes: duration.whole_notes,
+            since_start: duration,
         }
     }
 

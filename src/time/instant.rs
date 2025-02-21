@@ -3,7 +3,6 @@ use crate::time::duration::Duration;
 use crate::time::period::Period;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
-use crate::time::Ratio;
 use num::Integer as _;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Sub};
@@ -11,12 +10,12 @@ use std::time;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Instant {
-    pub whole_notes: Ratio,
+    pub since_start: Duration,
 }
 
 impl Instant {
     pub const START: Instant = Instant {
-        whole_notes: Ratio::ZERO,
+        since_start: Duration::ZERO,
     };
 
     fn real_time_duration_since_start(
@@ -26,9 +25,7 @@ impl Instant {
     ) -> time::Duration {
         let period = Period {
             start: Instant::START,
-            duration: Duration {
-                whole_notes: self.whole_notes,
-            },
+            duration: self.since_start,
         };
         period.real_time_duration(time_signature, tempo)
     }
@@ -76,7 +73,7 @@ impl Add<Duration> for Instant {
 
 impl AddAssign<Duration> for Instant {
     fn add_assign(&mut self, rhs: Duration) {
-        self.whole_notes += rhs.whole_notes;
+        self.since_start += rhs;
     }
 }
 
@@ -84,8 +81,6 @@ impl Sub<Instant> for Instant {
     type Output = Duration;
 
     fn sub(self, rhs: Instant) -> Duration {
-        Duration {
-            whole_notes: self.whole_notes - rhs.whole_notes,
-        }
+        self.since_start - rhs.since_start
     }
 }

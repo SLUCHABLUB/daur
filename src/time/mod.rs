@@ -14,7 +14,7 @@ use num::{
 };
 use std::fmt::{Display, Formatter};
 use std::num::NonZeroU8;
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub};
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 // TODO: non-zero version
 /// A rational number.
@@ -144,7 +144,7 @@ impl Add<Ratio> for Ratio {
     }
 }
 
-impl AddAssign<Ratio> for Ratio {
+impl AddAssign for Ratio {
     fn add_assign(&mut self, rhs: Ratio) {
         *self = *self + rhs;
     }
@@ -164,6 +164,12 @@ impl Sub for Ratio {
             #[expect(clippy::arithmetic_side_effects, reason = "see `Ratio::big_inner`")]
             Ratio::approximate_big(self.big_inner() - rhs.big_inner())
         }
+    }
+}
+
+impl SubAssign for Ratio {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = *self - rhs;
     }
 }
 

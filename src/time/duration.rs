@@ -1,5 +1,5 @@
 use crate::time::Ratio;
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign};
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Duration {
@@ -28,6 +28,21 @@ impl Add<Duration> for Duration {
 impl AddAssign<Duration> for Duration {
     fn add_assign(&mut self, rhs: Duration) {
         self.whole_notes += rhs.whole_notes;
+    }
+}
+
+impl Sub for Duration {
+    type Output = Duration;
+
+    fn sub(mut self, rhs: Self) -> Self::Output {
+        self -= rhs;
+        self
+    }
+}
+
+impl SubAssign for Duration {
+    fn sub_assign(&mut self, rhs: Duration) {
+        self.whole_notes -= rhs.whole_notes;
     }
 }
 
