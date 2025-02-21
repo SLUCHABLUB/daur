@@ -1,6 +1,7 @@
 pub mod content;
 mod source;
 
+use arcstr::ArcStr;
 pub use source::ClipSource;
 
 use crate::clip::content::Content;
@@ -17,7 +18,7 @@ use ratatui::widgets::{Block, Borders};
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct Clip {
-    pub name: String,
+    pub name: ArcStr,
     pub colour: Color,
     pub content: Content,
 }

@@ -6,14 +6,16 @@ use crate::widget::bordered::Bordered;
 use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;
 use crate::widget::text::Text;
+use arcstr::{format, ArcStr};
 use crossterm::event::MouseButton;
+use std::fmt::Display;
 use strum::VariantArray;
 
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
-pub fn selector<T: Copy + PartialEq + ToString + VariantArray>(cell: &Cell<T>) -> Selector<T> {
+pub fn selector<T: Copy + PartialEq + Display + VariantArray>(cell: &Cell<T>) -> Selector<T> {
     Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| {
-        let name = variant.to_string();
+        let name = format!("{variant}");
 
         Option {
             name,
@@ -25,7 +27,7 @@ pub fn selector<T: Copy + PartialEq + ToString + VariantArray>(cell: &Cell<T>) -
 }
 
 pub struct Option<'cell, T> {
-    name: String,
+    name: ArcStr,
     value: T,
     cell: &'cell Cell<T>,
 }
@@ -35,7 +37,11 @@ impl<T: Copy + PartialEq> Injective for Option<'_, T> {
 
     fn visual(&self) -> Self::Visual {
         let is_set = self.cell.get() == self.value;
-        Bordered::new("", Text::centered(&self.name), is_set)
+        Bordered::new(
+            ArcStr::new(),
+            Text::centered(ArcStr::clone(&self.name)),
+            is_set,
+        )
     }
 
     fn inject(&self, _: Rectangle, button: MouseButton, _: Point, _: &mut Vec<Action>) {

@@ -11,26 +11,27 @@ use crate::widget::has_size::HasSize as _;
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::text::Text;
 use crate::widget::to_widget::ToWidget;
+use arcstr::{format, literal, ArcStr};
 use crossterm::event::KeyCode;
 use ratatui::layout::{Constraint, Flex};
 use std::error::Error;
 use std::sync::Weak;
 
-const ACKNOWLEDGE: &str = "ok";
+const ACKNOWLEDGE: ArcStr = literal!("ok");
 const PADDING: Length = Length::CHAR_HEIGHT;
 
 #[derive(Clone, Eq, PartialEq)]
 pub struct ErrorPopup {
     pub info: PopupInfo,
-    pub display: String,
-    pub debug: String,
+    pub display: ArcStr,
+    pub debug: ArcStr,
     pub selected: Cell<bool>,
 }
 
 impl ErrorPopup {
     pub fn from_error<E: Error>(error: E, this: Weak<Popup>) -> Self {
         ErrorPopup {
-            info: PopupInfo::new(String::from("error"), this),
+            info: PopupInfo::new(literal!("error"), this),
             display: format!("{error}"),
             debug: format!("{error:?}"),
             selected: Cell::new(false),
@@ -67,8 +68,8 @@ impl ToWidget for ErrorPopup {
 
         ThreeStack::vertical(
             (
-                Text::left_aligned(self.display.as_str()),
-                Text::left_aligned(self.debug.as_str()),
+                Text::left_aligned(ArcStr::clone(&self.display)),
+                Text::left_aligned(ArcStr::clone(&self.debug)),
                 Terminating {
                     child: acknowledge_button,
                     popup: self.info.this(),

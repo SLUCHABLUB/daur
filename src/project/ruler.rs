@@ -8,6 +8,7 @@ use crate::project::changing::Changing;
 use crate::time::TimeSignature;
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use saturating_cast::SaturatingCast as _;
@@ -76,5 +77,7 @@ fn segment(index: usize, cell_width: Length, bar_width: Length) -> impl Widget {
         *first = b'|';
     }
 
-    Text::left_aligned(index.to_string() + "\n" + &*String::from_utf8_lossy(&cells))
+    let string = index.to_string() + "\n" + &*String::from_utf8_lossy(&cells);
+
+    Text::left_aligned(ArcStr::from(string))
 }

@@ -5,6 +5,7 @@ use crate::track::Track;
 use crate::widget::bordered::Bordered;
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use std::sync::Arc;
@@ -18,8 +19,8 @@ pub struct Settings {
 impl Settings {
     fn visual(&self) -> impl Widget {
         Bordered::new(
-            Arc::clone(&self.track.name),
-            Text::centered("TODO"),
+            ArcStr::clone(&self.track.name),
+            Text::centered(literal!("TODO")),
             self.selected,
         )
     }

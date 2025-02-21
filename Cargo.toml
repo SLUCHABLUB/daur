@@ -9,6 +9,7 @@ repository = "https://github.com/SLUCHABLUB/daur"
 license = "Apache-2.0"
 
 [dependencies]
+arcstr = "1.2.0"
 bitbag = "0.3.0"
 const-str = "0.6.1"
 crossbeam = "0.8.4"

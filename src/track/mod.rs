@@ -11,20 +11,21 @@ use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
 use crate::track::settings::Settings;
+use arcstr::{literal, ArcStr};
 use std::sync::Arc;
 
-const PLACEHOLDER_TITLE: &str = "a track";
+const DEFAULT_TITLE: ArcStr = literal!("a track");
 
 #[derive(Clone)]
 pub struct Track {
-    pub name: Arc<str>,
+    pub name: ArcStr,
     pub clips: BTreeMap<Instant, Arc<Clip>>,
 }
 
 impl Track {
     pub fn new() -> Track {
         Track {
-            name: Arc::from(PLACEHOLDER_TITLE),
+            name: DEFAULT_TITLE,
             clips: BTreeMap::new(),
         }
     }

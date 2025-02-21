@@ -27,13 +27,17 @@ use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use arcstr::{literal, ArcStr};
 use ratatui::prelude::Constraint;
 use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
 
+const ADD_TRACK_LABEL: ArcStr = literal!("+");
+const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
+
 #[derive(Clone, Default)]
 pub struct Project {
-    pub title: Arc<str>,
+    pub title: ArcStr,
 
     pub key: Arc<Changing<Key>>,
     pub time_signature: Arc<Changing<TimeSignature>>,
@@ -94,8 +98,11 @@ impl Project {
             index: usize::MAX,
         });
 
-        let add_track_button =
-            Button::described("+", "add track", app::Action::Project(Action::AddTrack));
+        let add_track_button = Button::described(
+            ADD_TRACK_LABEL,
+            ADD_TRACK_DESCRIPTION,
+            app::Action::Project(Action::AddTrack),
+        );
 
         let settings_column = TwoStack::vertical(
             (

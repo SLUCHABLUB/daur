@@ -2,6 +2,7 @@ use crate::app::action::Action;
 use crate::app::macros::or_popup;
 use crate::app::App;
 use crate::popup::Popup;
+use arcstr::ArcStr;
 use never::Never;
 use rodio::cpal::traits::HostTrait as _;
 use rodio::{DeviceTrait as _, OutputStream, Sink};
@@ -55,7 +56,7 @@ impl App {
         let devices = or_popup!(self.host.output_devices(), self);
         self.popups.push(Popup::buttons(devices.map(|device| {
             (
-                device.name().unwrap_or_else(|error| error.to_string()),
+                ArcStr::from(device.name().unwrap_or_else(|error| error.to_string())),
                 Action::SetDevice(device),
             )
         })));

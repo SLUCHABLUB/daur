@@ -15,6 +15,7 @@ use crate::time::TimeSignature;
 use crate::track::Track;
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::symbols::line::VERTICAL;
@@ -22,13 +23,13 @@ use ratatui_explorer::File;
 use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
 
-const IMPORT_AUDIO: &str = "import audio";
-const ADD_NOTES: &str = "add notes";
+const IMPORT_AUDIO: ArcStr = literal!("import audio");
+const ADD_NOTES: ArcStr = literal!("add notes");
 
 pub fn open_import_audio_popup() -> Action {
     let action = move |file: &File| Action::import_audio(file.path());
 
-    Action::OpenPopup(Popup::explorer(IMPORT_AUDIO.to_owned(), action))
+    Action::OpenPopup(Popup::explorer(IMPORT_AUDIO, action))
 }
 
 fn right_click_menu() -> Arc<Popup> {
@@ -119,7 +120,11 @@ impl Widget for Overview {
             let rows = area.height / Length::CHAR_HEIGHT;
             let rows = rows.round().saturating_cast();
 
-            Text::left_aligned(vec![VERTICAL; rows].join("\n")).render(area, buf, mouse_position);
+            Text::left_aligned(vec![VERTICAL; rows].join("\n").into()).render(
+                area,
+                buf,
+                mouse_position,
+            );
         }
     }
 

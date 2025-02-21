@@ -1,11 +1,12 @@
 use crate::cell::Cell;
 use crate::length::point::Point;
 use crate::popup::Popup;
+use arcstr::ArcStr;
 use std::sync::Weak;
 
 #[derive(Clone)]
 pub struct PopupInfo {
-    pub title: String,
+    pub title: ArcStr,
     pub position: Cell<Option<Point>>,
     /// Whether the popup may close when unfocused
     pub unimportant: bool,
@@ -13,7 +14,7 @@ pub struct PopupInfo {
 }
 
 impl PopupInfo {
-    pub fn new(title: String, this: Weak<Popup>) -> PopupInfo {
+    pub fn new(title: ArcStr, this: Weak<Popup>) -> PopupInfo {
         PopupInfo {
             title,
             position: Cell::new(None),

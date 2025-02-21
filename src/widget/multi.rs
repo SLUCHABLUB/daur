@@ -6,14 +6,16 @@ use crate::widget::bordered::Bordered;
 use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;
 use crate::widget::text::Text;
+use arcstr::{format, ArcStr};
 use bitbag::{BitBag, Flags};
 use crossterm::event::MouseButton;
+use std::fmt::Display;
 
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
-pub fn selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> Selector<T> {
+pub fn selector<T: Copy + Flags + Display>(cell: &Cell<BitBag<T>>) -> Selector<T> {
     Stack::horizontal_sized(T::VARIANTS.iter().map(|(_, variant, _)| {
-        let name = variant.to_string();
+        let name = format!("{variant}");
 
         Option {
             name,
@@ -25,7 +27,7 @@ pub fn selector<T: Copy + Flags + ToString>(cell: &Cell<BitBag<T>>) -> Selector<
 }
 
 pub struct Option<'cell, T: Flags> {
-    name: String,
+    name: ArcStr,
     value: T,
     cell: &'cell Cell<BitBag<T>>,
 }
@@ -36,7 +38,11 @@ impl<T: Copy + Flags> Injective for Option<'_, T> {
     fn visual(&self) -> Self::Visual {
         let is_set = self.cell.get().is_set(self.value);
 
-        Bordered::new("", Text::centered(&self.name), is_set)
+        Bordered::new(
+            ArcStr::new(),
+            Text::centered(ArcStr::clone(&self.name)),
+            is_set,
+        )
     }
 
     fn inject(&self, _: Rectangle, button: MouseButton, _: Point, _: &mut Vec<Action>) {

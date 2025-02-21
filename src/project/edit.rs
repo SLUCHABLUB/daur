@@ -9,15 +9,15 @@ use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use crate::time::Ratio;
 use crate::track::Track;
+use arcstr::{literal, ArcStr};
 use hound::WavReader;
 use ratatui::prelude::Color;
-use std::borrow::Cow;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
 
-const DEFAULT_NOTES_NAME: &str = "some notes";
+const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
 const DEFAULT_NOTES_COLOUR: Color = Color::Magenta;
 const DEFAULT_NOTES_DURATION: Duration = Duration {
     whole_notes: Ratio::int(4),
@@ -62,7 +62,7 @@ impl Edit {
                 track: selected_track,
                 position: cursor,
                 clip: Clip {
-                    name: DEFAULT_NOTES_NAME.to_owned(),
+                    name: DEFAULT_NOTES_NAME,
                     colour: DEFAULT_NOTES_COLOUR,
                     content: Content::Notes(Notes::empty(DEFAULT_NOTES_DURATION)),
                 },
@@ -89,7 +89,7 @@ impl Edit {
                 let name = file
                     .file_stem()
                     .map(OsStr::to_string_lossy)
-                    .map(Cow::into_owned)
+                    .map(ArcStr::from)
                     .unwrap_or_default();
 
                 Edit::AddClip {

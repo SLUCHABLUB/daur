@@ -7,6 +7,7 @@ use crate::widget::bordered::Bordered;
 use crate::widget::has_size::HasSize;
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 
@@ -19,7 +20,7 @@ pub struct Button {
 }
 
 impl Button {
-    pub fn simple<S: Into<String>>(label: S, action: Action) -> Self {
+    pub fn simple(label: ArcStr, action: Action) -> Self {
         Button {
             action,
             label: Text::left_aligned(label),
@@ -28,9 +29,9 @@ impl Button {
         }
     }
 
-    pub fn standard<S: Into<String>>(label: S, action: Action) -> Bordered<Self> {
+    pub fn standard(label: ArcStr, action: Action) -> Bordered<Self> {
         Bordered::plain(
-            "",
+            ArcStr::new(),
             Button {
                 action,
                 label: Text::centered(label),
@@ -40,13 +41,9 @@ impl Button {
         )
     }
 
-    pub fn described<L: Into<String>, D: Into<String>>(
-        label: L,
-        description: D,
-        action: Action,
-    ) -> Bordered<Self> {
+    pub fn described(label: ArcStr, description: ArcStr, action: Action) -> Bordered<Self> {
         Bordered::plain(
-            "",
+            ArcStr::new(),
             Button {
                 action,
                 label: Text::centered(label),

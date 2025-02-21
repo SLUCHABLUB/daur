@@ -7,18 +7,18 @@ use crate::widget::button::Button;
 use crate::widget::heterogeneous::{ThreeStack, TwoStack};
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use arcstr::{format, literal, ArcStr};
 use ratatui::layout::{Constraint, Flex};
-use std::sync::Arc;
 
-const PLAY: &str = "\u{25B6}";
-const PAUSE: &str = "\u{23F8}";
+const PLAY: ArcStr = literal!("\u{25B6}");
+const PAUSE: ArcStr = literal!("\u{23F8}");
 
-const PLAY_DESCRIPTION: &str = "play";
-const PAUSE_DESCRIPTION: &str = "pause";
+const PLAY_DESCRIPTION: ArcStr = literal!("play");
+const PAUSE_DESCRIPTION: ArcStr = literal!("pause");
 
-const KEY_DESCRIPTION: &str = "key";
-const TIME_SIGNATURE_DESCRIPTION: &str = "time sig.";
-const TEMPO_DESCRIPTION: &str = "tempo";
+const KEY_DESCRIPTION: ArcStr = literal!("key");
+const TIME_SIGNATURE_DESCRIPTION: ArcStr = literal!("time sig.");
+const TEMPO_DESCRIPTION: ArcStr = literal!("tempo");
 
 pub fn select_key(key: Key) -> Action {
     Action::OpenPopup(Popup::key_selector(key))
@@ -41,17 +41,17 @@ impl Project {
         let fallbacks = ThreeStack::horizontal(
             (
                 Button::described(
-                    self.key.start.to_string(),
+                    format!("{}", self.key.start),
                     KEY_DESCRIPTION,
                     select_key(self.key.start),
                 ),
                 Button::described(
-                    self.time_signature.start.to_string(),
+                    format!("{}", self.time_signature.start),
                     TIME_SIGNATURE_DESCRIPTION,
                     Action::None,
                 ),
                 Button::described(
-                    self.tempo.start.to_string(),
+                    format!("{}", self.tempo.start),
                     TEMPO_DESCRIPTION,
                     Action::None,
                 ),
@@ -60,15 +60,15 @@ impl Project {
         );
 
         let left_side = TwoStack::horizontal(
-            (Text::centered("TODO"), fallbacks),
+            (Text::centered(literal!("TODO")), fallbacks),
             [Constraint::Fill(1); 2],
         )
         .flex(Flex::SpaceBetween);
 
         Bordered::thick(
-            Arc::clone(&self.title),
+            ArcStr::clone(&self.title),
             ThreeStack::horizontal(
-                (left_side, playback_button, Text::centered("TODO")),
+                (left_side, playback_button, Text::centered(literal!("TODO"))),
                 [
                     Constraint::Fill(1),
                     Constraint::Length(7),

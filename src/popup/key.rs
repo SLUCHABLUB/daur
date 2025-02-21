@@ -12,13 +12,16 @@ use crate::widget::heterogeneous::{FourStack, TwoStack};
 use crate::widget::to_widget::ToWidget;
 use crate::widget::{multi, single};
 use crate::{keyboard, project};
+use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
 use crossterm::event::{KeyCode, KeyModifiers};
 use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
 use std::sync::Weak;
 
-const TITLE: &str = "select key";
+const TITLE: ArcStr = literal!("select key");
+const CANCEL: ArcStr = literal!("cancel");
+const CONFIRM: ArcStr = literal!("confirm");
 
 #[derive(Clone, Educe)]
 #[educe(Eq, PartialEq)]
@@ -36,7 +39,7 @@ pub struct KeySelector {
 impl KeySelector {
     pub fn new(key: Key, this: Weak<Popup>) -> KeySelector {
         KeySelector {
-            info: PopupInfo::new(TITLE.to_owned(), this),
+            info: PopupInfo::new(TITLE, this),
             tonic: Cell::new(key.tonic),
             sign: Cell::new(key.sign),
             intervals: Cell::new(key.intervals),
@@ -137,12 +140,12 @@ impl ToWidget for KeySelector {
     fn to_widget(&self) -> Self::Widget<'_> {
         let buttons = TwoStack::horizontal_sized((
             Terminating {
-                child: Button::standard("cancel", Action::None),
+                child: Button::standard(CANCEL, Action::None),
                 popup: self.info.this(),
             },
             Terminating {
                 child: Button::standard(
-                    "confirm",
+                    CONFIRM,
                     Action::Project(project::Action::SetDefaultKey(self.key())),
                 ),
                 popup: self.info.this(),

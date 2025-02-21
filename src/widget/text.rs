@@ -5,6 +5,7 @@ use crate::length::size::Size;
 use crate::length::Length;
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
@@ -15,27 +16,26 @@ use std::cmp::max;
 
 #[derive(Clone, Eq, PartialEq, Default)]
 pub struct Text {
-    // TODO: use cow or arc
-    pub string: String,
+    pub string: ArcStr,
     pub centered: bool,
 }
 
 impl Text {
     pub const EMPTY: Text = Text {
-        string: String::new(),
+        string: ArcStr::new(),
         centered: false,
     };
 
-    pub fn left_aligned<S: Into<String>>(string: S) -> Text {
+    pub fn left_aligned(string: ArcStr) -> Text {
         Text {
-            string: string.into(),
+            string,
             centered: false,
         }
     }
 
-    pub fn centered<S: Into<String>>(string: S) -> Text {
+    pub fn centered(string: ArcStr) -> Text {
         Text {
-            string: string.into(),
+            string,
             centered: true,
         }
     }

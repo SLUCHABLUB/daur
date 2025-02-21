@@ -9,6 +9,7 @@ use crate::widget::button::Button;
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::macros::or_popup;
 use crate::widget::to_widget::ToWidget;
+use arcstr::{literal, ArcStr};
 use crossterm::event::KeyCode;
 use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
@@ -16,8 +17,8 @@ use ratatui::widgets::Block;
 use ratatui_explorer::{File, FileExplorer, Input, Theme};
 use std::sync::{Arc, Weak};
 
-const CANCEL: &str = "cancel";
-const CONFIRM: &str = "confirm";
+const CANCEL: ArcStr = literal!("cancel");
+const CONFIRM: ArcStr = literal!("confirm");
 
 fn theme() -> Theme {
     Theme::new()
@@ -38,7 +39,7 @@ pub struct ExplorerPopup {
 
 impl ExplorerPopup {
     pub fn new<A: Fn(&File) -> Action + Send + Sync + 'static>(
-        title: String,
+        title: ArcStr,
         this: Weak<Popup>,
         mut explorer: FileExplorer,
         action: A,

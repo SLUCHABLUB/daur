@@ -5,37 +5,37 @@ use crate::length::size::Size;
 use crate::length::Length;
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::{Block, WidgetRef as _};
-use std::sync::Arc;
 
 /// A simpler version of [`Block`](widgets::Block)
 pub struct Bordered<Child> {
     // TODO: use arc_str to avoid allocating
-    title: Arc<str>,
+    title: ArcStr,
     title_alignment: Alignment,
     thick: bool,
     child: Child,
 }
 
 impl<Child> Bordered<Child> {
-    pub fn new<S: Into<Arc<str>>>(title: S, child: Child, thick: bool) -> Self {
+    pub fn new(title: ArcStr, child: Child, thick: bool) -> Self {
         Bordered {
-            title: title.into(),
+            title,
             title_alignment: Alignment::Center,
             thick,
             child,
         }
     }
 
-    pub fn plain<S: Into<Arc<str>>>(title: S, child: Child) -> Self {
+    pub fn plain(title: ArcStr, child: Child) -> Self {
         Bordered::new(title, child, false)
     }
 
-    pub fn thick<S: Into<Arc<str>>>(title: S, child: Child) -> Self {
+    pub fn thick(title: ArcStr, child: Child) -> Self {
         Bordered::new(title, child, true)
     }
 

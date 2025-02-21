@@ -17,11 +17,11 @@ use crate::widget::button::Button;
 use crate::widget::has_size::HasSize as _;
 use crate::widget::to_widget::ToWidget as _;
 use crate::widget::Widget;
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::widgets::{Clear, WidgetRef as _};
 use ratatui_explorer::{File, FileExplorer};
-use std::borrow::Cow;
 use std::error::Error;
 use std::sync::{Arc, Weak};
 
@@ -41,30 +41,27 @@ pub enum Popup {
 }
 
 impl Popup {
-    pub fn buttons<B, S>(buttons: B) -> Arc<Popup>
+    pub fn buttons<B>(buttons: B) -> Arc<Popup>
     where
-        B: IntoIterator<Item = (S, Action)>,
-        S: Into<Cow<'static, str>>,
+        B: IntoIterator<Item = (ArcStr, Action)>,
     {
-        Self::_buttons(buttons, |this| PopupInfo::new(String::new(), this))
+        Self::_buttons(buttons, |this| PopupInfo::new(ArcStr::new(), this))
     }
 
-    pub fn unimportant_buttons<B, S>(buttons: B) -> Arc<Popup>
+    pub fn unimportant_buttons<B>(buttons: B) -> Arc<Popup>
     where
-        B: IntoIterator<Item = (S, Action)>,
-        S: Into<Cow<'static, str>>,
+        B: IntoIterator<Item = (ArcStr, Action)>,
     {
         Self::_buttons(buttons, |this| {
-            let mut info = PopupInfo::new(String::new(), this);
+            let mut info = PopupInfo::new(ArcStr::new(), this);
             info.unimportant = true;
             info
         })
     }
 
-    fn _buttons<B, S>(buttons: B, info: impl FnOnce(Weak<Popup>) -> PopupInfo) -> Arc<Popup>
+    fn _buttons<B>(buttons: B, info: impl FnOnce(Weak<Popup>) -> PopupInfo) -> Arc<Popup>
     where
-        B: IntoIterator<Item = (S, Action)>,
-        S: Into<Cow<'static, str>>,
+        B: IntoIterator<Item = (ArcStr, Action)>,
     {
         Arc::new_cyclic(|this| {
             let info = info(Weak::clone(this));
@@ -73,7 +70,7 @@ impl Popup {
                 buttons: buttons
                     .into_iter()
                     .map(|(name, action)| Terminating {
-                        child: Button::simple(name.into().as_ref(), action),
+                        child: Button::simple(name, action),
                         popup: info.this(),
                     })
                     .collect(),
@@ -88,7 +85,7 @@ impl Popup {
     }
 
     pub fn explorer<A: Fn(&File) -> Action + Send + Sync + 'static>(
-        title: String,
+        title: ArcStr,
         action: A,
     ) -> Arc<Popup> {
         Arc::new_cyclic(|this| {
@@ -203,7 +200,7 @@ impl Widget for Popup {
         actions: &mut Vec<Action>,
     ) {
         // Unimportant for clicking
-        let title = "";
+        let title = ArcStr::new();
 
         match self {
             Popup::Buttons(buttons) => {
