@@ -3,7 +3,7 @@ pub mod point;
 pub mod rectangle;
 pub mod size;
 
-use crate::time::Ratio;
+use crate::ratio::Ratio;
 use ratatui::layout::{Constraint, Spacing};
 use saturating_cast::SaturatingCast as _;
 use std::num::Saturating;

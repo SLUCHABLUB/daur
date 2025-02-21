@@ -2,9 +2,9 @@ arithmetic-side-effects-allowed = [
     "length::Length",
     "length::offset::Offset",
     "pitch::Pitch",
+    "ratio::Ratio",
     "time::duration::Duration",
     "time::instant::Instant",
-    "time::Ratio",
 ]
 # `f` is used in Display::fmt 
 allowed-idents-below-min-chars = ["f", "x", "y"]

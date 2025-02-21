@@ -1,4 +1,4 @@
-use crate::time::Ratio;
+use crate::ratio::Ratio;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

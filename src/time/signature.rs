@@ -1,8 +1,8 @@
 use crate::project::changing::Changing;
+use crate::ratio::Ratio;
 use crate::time::bar::Bar;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
-use crate::time::Ratio;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;

@@ -15,6 +15,7 @@ mod notes;
 mod pitch;
 mod popup;
 mod project;
+mod ratio;
 mod sign;
 mod time;
 mod track;

@@ -1,9 +1,9 @@
 use crate::project::changing::Changing;
+use crate::ratio::Ratio;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use crate::time::signature::TimeSignature;
 use crate::time::tempo::Tempo;
-use crate::time::Ratio;
 use std::ops::Range;
 use std::time;
 
