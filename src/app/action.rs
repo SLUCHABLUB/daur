@@ -18,23 +18,31 @@ pub enum Action {
     /// Does nothing
     #[default]
     None,
-    /// Close the popup with the given uuid
+
+    /// Opens the popup
+    OpenPopup(Arc<Popup>),
+    /// Closes the popup
     ClosePopup(#[educe(Eq(ignore))] Weak<Popup>),
-    /// Save and exit the program
-    Exit,
+
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
-    OpenPopup(Arc<Popup>),
+    /// Selects the given track
+    SelectTrack(usize),
+
     /// Stop playing
     Pause,
     /// Start playing
     Play,
     /// `Play` or `Pause`
     PlayPause,
+
     Project(project::Action),
-    SelectTrack(usize),
+
     /// Sets the audio output device
     SetDevice(#[educe(Eq(ignore))] Device),
+
+    /// Saves and exits the program
+    Exit,
     // TODO: add scripting
 }
 
