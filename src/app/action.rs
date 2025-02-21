@@ -98,7 +98,5 @@ impl Action {
                 app.device.set(Some(device));
             }
         }
-
-        // TODO: add to action tree
     }
 }

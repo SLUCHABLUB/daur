@@ -37,6 +37,8 @@ pub struct NoExtensionError {
     pub file: PathBuf,
 }
 
+// IMPORTANT: don't use any reference counters in here
+//            the history will contain clones of each edit
 #[derive(Clone)]
 pub enum Edit {
     /// Inserts the clip into the selected track at the cursor
