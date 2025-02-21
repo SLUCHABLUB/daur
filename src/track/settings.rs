@@ -18,11 +18,9 @@ pub struct Settings {
 
 impl Settings {
     fn visual(&self) -> impl Widget {
-        Bordered::new(
-            ArcStr::clone(&self.track.name),
-            Text::centered(literal!("TODO")),
-            self.selected,
-        )
+        let title = ArcStr::clone(&self.track.name);
+
+        Bordered::new(title, Text::centered(literal!("TODO")), self.selected)
     }
 }
 

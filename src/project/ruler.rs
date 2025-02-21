@@ -22,8 +22,10 @@ pub struct Ruler {
 
 impl Widget for Ruler {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+        let time_signature = Arc::clone(&self.time_signature);
+
         let window = Window {
-            time_signature: Arc::clone(&self.time_signature),
+            time_signature,
             overview_settings: self.overview_settings,
             x: area.x,
             width: area.width,

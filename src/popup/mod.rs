@@ -81,7 +81,10 @@ impl Popup {
     }
 
     pub fn error<E: Error>(error: E) -> Arc<Popup> {
-        Arc::new_cyclic(|this| Popup::Error(ErrorPopup::from_error(error, Weak::clone(this))))
+        Arc::new_cyclic(|this| {
+            let this = Weak::clone(this);
+            Popup::Error(ErrorPopup::from_error(error, this))
+        })
     }
 
     pub fn explorer<A: Fn(&File) -> Action + Send + Sync + 'static>(
@@ -98,7 +101,10 @@ impl Popup {
     }
 
     pub fn key_selector(key: Key) -> Arc<Popup> {
-        Arc::new_cyclic(|this| Popup::KeySelector(KeySelector::new(key, Weak::clone(this))))
+        Arc::new_cyclic(|this| {
+            let this = Weak::clone(this);
+            Popup::KeySelector(KeySelector::new(key, this))
+        })
     }
 
     pub fn at(self: Arc<Self>, position: Point) -> Arc<Self> {

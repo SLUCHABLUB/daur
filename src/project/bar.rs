@@ -25,6 +25,10 @@ pub fn select_key(key: Key) -> Action {
 }
 
 impl Project {
+    pub fn title(&self) -> ArcStr {
+        ArcStr::clone(&self.title)
+    }
+
     // TODO: window controls (opening instrument rack, piano roll, et.c)
 
     // TODO: record, loop, metronome
@@ -66,7 +70,7 @@ impl Project {
         .flex(Flex::SpaceBetween);
 
         Bordered::thick(
-            ArcStr::clone(&self.title),
+            self.title(),
             ThreeStack::horizontal(
                 (left_side, playback_button, Text::centered(literal!("TODO"))),
                 [

@@ -48,6 +48,14 @@ pub struct Project {
 }
 
 impl Project {
+    pub fn time_signature(&self) -> Arc<Changing<TimeSignature>> {
+        Arc::clone(&self.time_signature)
+    }
+
+    pub fn tempo(&self) -> Arc<Changing<Tempo>> {
+        Arc::clone(&self.tempo)
+    }
+
     pub fn workspace(
         &self,
         track_settings_size: Length,
@@ -65,7 +73,7 @@ impl Project {
         let empty_space = Text::EMPTY;
 
         let ruler = Ruler {
-            time_signature: Arc::clone(&self.time_signature),
+            time_signature: self.time_signature(),
             overview_settings,
         };
         let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
@@ -73,14 +81,14 @@ impl Project {
         let mut track_settings = Vec::new();
         let mut track_overviews = Vec::new();
 
-        for (index, track) in self.tracks.iter().enumerate() {
+        for (index, track) in self.tracks.iter().map(Arc::clone).enumerate() {
             let selected = index == selected_track_index;
             track_settings.push(track.settings(selected, index));
             track_overviews.push(Overview {
-                track: Arc::clone(track),
+                track,
                 selected_clip: Weak::clone(selected_clip),
-                time_signature: Arc::clone(&self.time_signature),
-                tempo: Arc::clone(&self.tempo),
+                time_signature: self.time_signature(),
+                tempo: self.tempo(),
                 settings: overview_settings,
                 cursor,
                 index,
@@ -91,8 +99,8 @@ impl Project {
         track_overviews.push(Overview {
             track: Arc::new(Track::new()),
             selected_clip: Weak::clone(selected_clip),
-            time_signature: Arc::clone(&self.time_signature),
-            tempo: Arc::clone(&self.tempo),
+            time_signature: self.time_signature(),
+            tempo: self.tempo(),
             settings: overview_settings,
             cursor,
             index: usize::MAX,

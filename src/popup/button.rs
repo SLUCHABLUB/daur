@@ -13,11 +13,17 @@ use std::sync::Weak;
 /// A simple button
 #[derive(Clone, Educe)]
 #[educe(Eq, PartialEq)]
-pub struct Terminating<Child: Widget> {
+pub struct Terminating<Child> {
     pub child: Child,
     /// The id of the containing popup
     #[educe(Eq(ignore))]
     pub popup: Weak<Popup>,
+}
+
+impl<Child> Terminating<Child> {
+    pub fn popup(&self) -> Weak<Popup> {
+        Weak::clone(&self.popup)
+    }
 }
 
 // TODO: use injective
@@ -35,7 +41,7 @@ impl<Child: Widget> Widget for Terminating<Child> {
     ) {
         self.child.click(area, button, position, actions);
         if button == MouseButton::Left {
-            actions.push(Action::ClosePopup(Weak::clone(&self.popup)));
+            actions.push(Action::ClosePopup(self.popup()));
         }
     }
 }

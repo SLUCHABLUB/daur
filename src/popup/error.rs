@@ -38,6 +38,14 @@ impl ErrorPopup {
         }
     }
 
+    pub fn display(&self) -> ArcStr {
+        ArcStr::clone(&self.display)
+    }
+
+    pub fn debug(&self) -> ArcStr {
+        ArcStr::clone(&self.debug)
+    }
+
     pub fn handle_key(&self, key: Key, actions: &mut Vec<Action>) -> bool {
         #[expect(clippy::wildcard_enum_match_arm, reason = "we only care about these")]
         match key.code {
@@ -68,8 +76,8 @@ impl ToWidget for ErrorPopup {
 
         ThreeStack::vertical(
             (
-                Text::left_aligned(ArcStr::clone(&self.display)),
-                Text::left_aligned(ArcStr::clone(&self.debug)),
+                Text::left_aligned(self.display()),
+                Text::left_aligned(self.debug()),
                 Terminating {
                     child: acknowledge_button,
                     popup: self.info.this(),

@@ -51,8 +51,10 @@ pub struct Overview {
 
 impl Overview {
     fn window(&self, area: Rectangle) -> Window {
+        let time_signature = Arc::clone(&self.time_signature);
+
         Window {
-            time_signature: Arc::clone(&self.time_signature),
+            time_signature,
             overview_settings: self.settings,
             x: area.x,
             width: area.width,
