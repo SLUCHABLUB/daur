@@ -1,8 +1,4 @@
-#![allow(
-    unused_crate_dependencies,
-    reason = "they are used adn caught by the library"
-)]
-#![doc = include_str!("../README.md")]
+//! A simple terminal ui implementation of `daur`
 
 use crossterm::event::EnableMouseCapture;
 use crossterm::execute;
