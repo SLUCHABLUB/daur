@@ -1,3 +1,13 @@
+mod button;
+mod error;
+mod explorer;
+mod info;
+mod key;
+mod panel;
+mod popups;
+
+pub use popups::Popups;
+
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::key::Key;
@@ -24,13 +34,6 @@ use ratatui::widgets::{Clear, WidgetRef as _};
 use ratatui_explorer::{File, FileExplorer};
 use std::error::Error;
 use std::sync::{Arc, Weak};
-
-mod button;
-mod error;
-mod explorer;
-mod info;
-mod key;
-mod panel;
 
 #[derive(Clone, Eq, PartialEq)]
 pub enum Popup {

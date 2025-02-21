@@ -54,7 +54,7 @@ impl App {
         }
 
         let devices = or_popup!(self.host.output_devices(), self);
-        self.popups.push(Popup::buttons(devices.map(|device| {
+        self.popups.open(Popup::buttons(devices.map(|device| {
             (
                 ArcStr::from(device.name().unwrap_or_else(|error| error.to_string())),
                 Action::SetDevice(device),

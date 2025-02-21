@@ -1,7 +1,7 @@
 macro_rules! popup_error {
     ($error:expr, $app:ident) => {{
         let popup = $crate::popup::Popup::error($error);
-        $app.popups.push(popup);
+        $app.popups.open(popup);
         return Default::default();
     }};
 }

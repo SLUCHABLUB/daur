@@ -21,8 +21,7 @@ use crate::keyboard::Key;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;
-use crate::locked_vec::LockedVec;
-use crate::popup::Popup;
+use crate::popup::Popups;
 use crate::project::manager::Manager;
 use crate::project::Project;
 use crate::time::instant::Instant;
@@ -53,7 +52,7 @@ pub struct App {
     host: Host,
     device: Cell<Option<Device>>,
 
-    popups: LockedVec<Arc<Popup>>,
+    popups: Popups,
 
     project_bar_size: Length,
     track_settings_size: Length,
@@ -84,7 +83,7 @@ impl App {
             host,
             device,
 
-            popups: LockedVec::new(),
+            popups: Popups::new(),
 
             project_bar_size: Length::PROJECT_BAR_MINIMUM,
             track_settings_size: Length::TRACK_SETTINGS_DEFAULT,
@@ -178,7 +177,7 @@ impl Widget for App {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         self.background().render(area, buf, mouse_position);
 
-        for popup in self.popups.iter() {
+        for popup in self.popups.to_stack() {
             let area = popup.area_in_window(area);
             popup.render(area, buf, mouse_position);
         }
@@ -191,7 +190,7 @@ impl Widget for App {
         position: Point,
         actions: &mut Vec<Action>,
     ) {
-        for popup in self.popups.iter() {
+        for popup in self.popups.to_stack() {
             let area = popup.area_in_window(area);
             if area.contains(position) {
                 popup.click(area, button, position, actions);

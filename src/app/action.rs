@@ -47,7 +47,7 @@ impl Action {
         match self {
             Action::None => (),
             Action::ClosePopup(popup) => {
-                app.popups.remove(&popup);
+                app.popups.close(&popup);
             }
             Action::Exit => app.should_exit.set(true),
             Action::MoveCursor(instant) => {
@@ -58,7 +58,7 @@ impl Action {
                 }
             }
             Action::OpenPopup(popup) => {
-                app.popups.push(popup);
+                app.popups.open(popup);
             }
             Action::Pause => {
                 app.stop_playback();
@@ -79,7 +79,7 @@ impl Action {
                         .handle(action, app.cursor.get(), app.selected_track_index.get());
 
                 if let Err(popup) = result {
-                    app.popups.push(popup);
+                    app.popups.open(popup);
                 }
             }
             Action::SelectTrack(index) => {

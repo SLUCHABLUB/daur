@@ -30,7 +30,7 @@ impl App {
 
                 let mut event_captured = false;
 
-                if let Some(popup) = self.popups.last() {
+                if let Some(popup) = self.popups.top() {
                     let mut actions = Vec::new();
 
                     event_captured = popup.handle_key(key, &mut actions);
