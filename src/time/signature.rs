@@ -1,12 +1,12 @@
 use crate::project::changing::Changing;
-use crate::ratio::Ratio;
+use crate::ratio::NonZeroRatio;
 use crate::time::bar::Bar;
-use crate::time::duration::Duration;
+use crate::time::duration::NonZeroDuration;
 use crate::time::instant::Instant;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
-use std::num::NonZeroU8;
+use std::num::{NonZeroU32, NonZeroU8};
 
 #[expect(clippy::unwrap_used, reason = "4 is not 0")]
 const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
@@ -18,14 +18,17 @@ pub struct TimeSignature {
 }
 
 impl TimeSignature {
-    pub fn bar_duration(self) -> Duration {
-        Duration {
-            whole_notes: Ratio::new(self.beats_per_bar.get().into(), self.beat_size.get().into()),
+    pub fn bar_duration(self) -> NonZeroDuration {
+        NonZeroDuration {
+            whole_notes: NonZeroRatio::new(
+                NonZeroU32::from(self.beats_per_bar),
+                NonZeroU32::from(self.beat_size),
+            ),
         }
     }
 
-    pub fn beat_duration(self) -> Duration {
-        self.bar_duration() / Ratio::from(self.beats_per_bar)
+    pub fn beat_duration(self) -> NonZeroDuration {
+        self.bar_duration() / NonZeroRatio::from(self.beats_per_bar)
     }
 }
 

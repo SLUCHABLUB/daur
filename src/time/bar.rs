@@ -21,11 +21,11 @@ impl Bar {
     /// Return the number of grid cells that fit in the bar, rounded up
     pub fn grid_cell_count(&self, overview_settings: OverviewSettings) -> Ratio {
         let exact = self.time_signature.bar_duration() / overview_settings.cell_duration;
-        exact.ceiled()
+        exact.get().ceiled()
     }
 
     pub fn duration(&self) -> Duration {
-        self.time_signature.bar_duration()
+        self.time_signature.bar_duration().get()
     }
 
     pub fn period(&self) -> Period {

@@ -1,3 +1,10 @@
+mod non_zero;
+
+// FIXME
+#[expect(clippy::module_name_repetitions, reason = "FIXME")]
+pub use non_zero::NonZeroDuration;
+
+use crate::ratio::NonZeroRatio;
 use crate::ratio::Ratio;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
@@ -9,10 +16,6 @@ pub struct Duration {
 impl Duration {
     pub const ZERO: Duration = Duration {
         whole_notes: Ratio::ZERO,
-    };
-
-    pub const QUARTER: Duration = Duration {
-        whole_notes: Ratio::QUARTER,
     };
 }
 
@@ -61,18 +64,18 @@ impl MulAssign<Ratio> for Duration {
     }
 }
 
-impl Div for Duration {
+impl Div<NonZeroDuration> for Duration {
     type Output = Ratio;
 
-    fn div(self, rhs: Duration) -> Ratio {
+    fn div(self, rhs: NonZeroDuration) -> Ratio {
         self.whole_notes / rhs.whole_notes
     }
 }
 
-impl Div<Ratio> for Duration {
+impl Div<NonZeroRatio> for Duration {
     type Output = Duration;
 
-    fn div(self, rhs: Ratio) -> Duration {
+    fn div(self, rhs: NonZeroRatio) -> Duration {
         Duration {
             whole_notes: self.whole_notes / rhs,
         }

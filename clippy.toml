@@ -3,7 +3,9 @@ arithmetic-side-effects-allowed = [
     "length::offset::Offset",
     "pitch::Pitch",
     "ratio::Ratio",
+    "ratio::non_zero::NonZeroRatio",
     "time::duration::Duration",
+    "time::duration::non_zero::NonZeroDuration",
     "time::instant::Instant",
 ]
 # `f` is used in Display::fmt 

@@ -1,3 +1,7 @@
+mod non_zero;
+
+pub use non_zero::NonZeroRatio;
+
 use num::{
     rational, CheckedAdd as _, CheckedDiv as _, CheckedMul as _, CheckedSub as _,
     FromPrimitive as _, ToPrimitive as _,
@@ -184,16 +188,15 @@ impl MulAssign for Ratio {
 }
 
 // TODO: non-zero type
-impl Div for Ratio {
+impl Div<NonZeroRatio> for Ratio {
     type Output = Ratio;
 
-    fn div(self, rhs: Ratio) -> Ratio {
-        debug_assert_ne!(rhs, Ratio::ZERO, "tried dividing by zero");
-        if let Some(inner) = self.inner.checked_div(&rhs.inner) {
+    fn div(self, rhs: NonZeroRatio) -> Ratio {
+        if let Some(inner) = self.inner.checked_div(&rhs.get().inner) {
             Ratio { inner }
         } else {
             #[expect(clippy::arithmetic_side_effects, reason = "see `Ratio::big_inner`")]
-            Ratio::approximate_big(self.big_inner() / rhs.big_inner())
+            Ratio::approximate_big(self.big_inner() / rhs.get().big_inner())
         }
     }
 }

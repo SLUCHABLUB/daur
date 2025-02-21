@@ -41,7 +41,7 @@ impl Window {
         let offset = self.overview_settings.offset + column - self.x;
 
         let cell = (offset / self.overview_settings.cell_width).rounded();
-        let duration = self.overview_settings.cell_duration * cell;
+        let duration = self.overview_settings.cell_duration.get() * cell;
         Instant {
             since_start: duration,
         }
