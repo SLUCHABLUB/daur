@@ -11,7 +11,6 @@ use std::fmt::{Display, Formatter};
 use std::num::NonZeroU8;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
-// TODO: non-zero version
 /// A rational number.
 /// When operations would result in a non-representable value, the result is an approximation.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -187,7 +186,6 @@ impl MulAssign for Ratio {
     }
 }
 
-// TODO: non-zero type
 impl Div<NonZeroRatio> for Ratio {
     type Output = Ratio;
 
