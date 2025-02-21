@@ -10,8 +10,6 @@ mod key;
 mod keyboard;
 mod length;
 mod lock;
-mod locked_tree;
-mod locked_vec;
 mod note;
 mod notes;
 mod pitch;
