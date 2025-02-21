@@ -12,6 +12,7 @@ use rodio::Device;
 use std::path::PathBuf;
 use std::sync::{Arc, Weak};
 
+/// An action to take on the app
 #[derive(Clone, Default, Educe)]
 #[educe(Eq, PartialEq)]
 pub enum Action {
