@@ -146,7 +146,7 @@ impl Widget for Overview {
             actions.push(Action::SelectTrack(self.index));
         }
 
-        // TODO: && clip not clicked
+        // TODO: if clip is selected, open its right-click-menu
         if button == MouseButton::Right {
             actions.push(Action::OpenPopup(right_click_menu().at(position)));
         }
