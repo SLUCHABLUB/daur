@@ -4,6 +4,7 @@ mod util;
 pub use non_zero::NonZeroRatio;
 use std::cmp::Ordering;
 
+use crate::ratio::util::lcm;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::num::{FpCategory, NonZeroU128, NonZeroU32};
@@ -208,8 +209,7 @@ impl Add for Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.big_raw();
 
-        // TODO: use lcm
-        let lcm = lhs_denominator.saturating_mul(rhs_denominator);
+        let lcm = lcm(lhs_denominator, rhs_denominator);
 
         let lhs = lhs_numerator.saturating_mul(lcm.get());
         let rhs = rhs_numerator.saturating_mul(lcm.get());
@@ -232,8 +232,7 @@ impl Sub for Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.big_raw();
 
-        // TODO: use lcm
-        let lcm = lhs_denominator.saturating_mul(rhs_denominator);
+        let lcm = lcm(lhs_denominator, rhs_denominator);
 
         let lhs = lhs_numerator.saturating_mul(lcm.get());
         let rhs = rhs_numerator.saturating_mul(lcm.get());
