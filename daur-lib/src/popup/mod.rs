@@ -11,7 +11,6 @@ pub use popups::Popups;
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::key::Key;
-use crate::keyboard;
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::size::Size;
@@ -27,6 +26,7 @@ use crate::widget::button::Button;
 use crate::widget::has_size::HasSize as _;
 use crate::widget::to_widget::ToWidget as _;
 use crate::widget::Widget;
+use crate::{keyboard, Ratio};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -138,8 +138,8 @@ impl Popup {
             }
         } else {
             Point {
-                x: area.x + area.width / 2 - size.width / 2,
-                y: area.y + area.height / 2 - size.height / 2,
+                x: area.x + area.width * Ratio::HALF - size.width * Ratio::HALF,
+                y: area.y + area.height * Ratio::HALF - size.height * Ratio::HALF,
             }
         };
 

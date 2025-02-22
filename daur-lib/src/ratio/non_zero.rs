@@ -1,18 +1,25 @@
-use crate::ratio::Ratio;
-use std::num::NonZeroU32;
+use crate::ratio::util::make_coprime;
+use crate::ratio::{Ratio, FOUR, ONE};
+use std::cmp::Ordering;
+use std::num::{NonZeroU128, NonZeroU32};
 use std::ops::{Div, DivAssign};
 
 /// A non-zero `Ratio`
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct NonZeroRatio {
-    inner: Ratio,
+    numerator: NonZeroU32,
+    denominator: NonZeroU32,
 }
 
 impl NonZeroRatio {
     /// 1 / 4
-    pub const QUARTER: NonZeroRatio = NonZeroRatio {
-        inner: Ratio::QUARTER,
-    };
+    pub const QUARTER: NonZeroRatio = NonZeroRatio::reciprocal_of(FOUR);
+
+    /// 1
+    pub const ONE: NonZeroRatio = NonZeroRatio::integer(ONE);
+
+    const MIN: NonZeroRatio = NonZeroRatio::reciprocal_of(NonZeroU32::MAX);
+    const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU32::MAX);
 
     /// Creates a new `NonZeroRatio` representing `numerator` / `denominator`
     #[must_use]
@@ -21,29 +28,98 @@ impl NonZeroRatio {
         // Therefore, `num::rational::Ratio`s thereof cannot be reduced
         // since it requires comparison with zero.
 
+        let [numerator, denominator] = make_coprime(numerator, denominator);
+
         NonZeroRatio {
-            inner: Ratio::new(numerator.get(), denominator.get()),
+            numerator,
+            denominator,
         }
     }
 
     /// Converts an integer to a `NonZeroRatio`
     #[must_use]
-    pub fn int(integer: NonZeroU32) -> NonZeroRatio {
+    pub const fn integer(integer: NonZeroU32) -> NonZeroRatio {
         NonZeroRatio {
-            inner: Ratio::int(integer.get()),
+            numerator: integer,
+            denominator: ONE,
+        }
+    }
+
+    /// Constructs the ratio 1 / `integer`
+    #[must_use]
+    pub const fn reciprocal_of(integer: NonZeroU32) -> NonZeroRatio {
+        NonZeroRatio {
+            numerator: ONE,
+            denominator: integer,
+        }
+    }
+
+    /// Returns the reciprocal of `self`
+    #[must_use]
+    pub const fn reciprocal(self) -> NonZeroRatio {
+        NonZeroRatio {
+            numerator: self.denominator,
+            denominator: self.numerator,
         }
     }
 
     /// Converts `self` to a `Ratio`
     #[must_use]
     pub fn get(self) -> Ratio {
-        self.inner
+        Ratio {
+            numerator: self.numerator.get(),
+            denominator: self.denominator,
+        }
     }
 
     /// Converts a `Ratio` to a `NonZeroRatio` if it is not zero
     #[must_use]
     pub fn from_ratio(ratio: Ratio) -> Option<NonZeroRatio> {
-        (ratio == Ratio::ZERO).then_some(NonZeroRatio { inner: ratio })
+        Some(NonZeroRatio {
+            numerator: NonZeroU32::new(ratio.numerator)?,
+            denominator: ratio.denominator,
+        })
+    }
+
+    pub(super) fn approximate_big(
+        mut numerator: NonZeroU128,
+        mut denominator: NonZeroU128,
+    ) -> NonZeroRatio {
+        let fallback = match numerator.cmp(&denominator) {
+            Ordering::Less => NonZeroRatio::MIN,
+            Ordering::Equal => return NonZeroRatio::ONE,
+            Ordering::Greater => NonZeroRatio::MAX,
+        };
+
+        loop {
+            if let Ok(numerator) = NonZeroU32::try_from(numerator) {
+                if let Ok(denominator) = NonZeroU32::try_from(denominator) {
+                    return NonZeroRatio::new(numerator, denominator);
+                }
+            }
+
+            let Some(new_numerator) = NonZeroU128::new(numerator.get() >> 1) else {
+                return fallback;
+            };
+            let Some(new_denominator) = NonZeroU128::new(denominator.get() >> 1) else {
+                return fallback;
+            };
+
+            numerator = new_numerator;
+            denominator = new_denominator;
+        }
+    }
+}
+
+impl PartialOrd<Self> for NonZeroRatio {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for NonZeroRatio {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.get().cmp(&other.get())
     }
 }
 

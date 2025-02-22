@@ -6,7 +6,7 @@ pub mod size;
 use crate::ratio::Ratio;
 use ratatui::layout::{Constraint, Spacing};
 use saturating_cast::SaturatingCast as _;
-use std::num::Saturating;
+use std::num::{NonZeroU32, Saturating};
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
 /// An abstract orthogonal distance between two points
@@ -96,7 +96,7 @@ impl Mul<Ratio> for Length {
     type Output = Length;
 
     fn mul(self, rhs: Ratio) -> Self::Output {
-        let length = (Ratio::new(self.inner.0.into(), 1) * rhs).round();
+        let length = (Ratio::integer(self.inner.0.into()) * rhs).round();
         let length = length.saturating_cast();
         Length::new(length)
     }
@@ -106,7 +106,7 @@ impl Mul<u32> for Length {
     type Output = Length;
 
     fn mul(self, rhs: u32) -> Self::Output {
-        self * Ratio::new(rhs, 1)
+        self * Ratio::integer(rhs)
     }
 }
 
@@ -123,14 +123,16 @@ impl Div for Length {
     type Output = Ratio;
 
     fn div(self, rhs: Length) -> Self::Output {
-        Ratio::new(u32::from(self.inner.0), u32::from(rhs.inner.0))
+        // FIXME
+        let denominator = NonZeroU32::new(u32::from(rhs.inner.0)).unwrap();
+        Ratio::new(u32::from(self.inner.0), denominator)
     }
 }
 
-impl Div<u32> for Length {
+impl Div<NonZeroU32> for Length {
     type Output = Length;
 
-    fn div(self, rhs: u32) -> Self::Output {
+    fn div(self, rhs: NonZeroU32) -> Self::Output {
         #![expect(
             clippy::suspicious_arithmetic_impl,
             reason = "we multiply by the reciprocal"

@@ -19,7 +19,7 @@ use thiserror::Error;
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
 const DEFAULT_NOTES_COLOUR: Color = Color::Magenta;
 const DEFAULT_NOTES_DURATION: Duration = Duration {
-    whole_notes: Ratio::int(4),
+    whole_notes: Ratio::integer(4),
 };
 
 const DEFAULT_AUDIO_COLOUR: Color = Color::Green;

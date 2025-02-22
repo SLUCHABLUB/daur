@@ -1,146 +1,203 @@
 mod non_zero;
+mod util;
 
 pub use non_zero::NonZeroRatio;
+use std::cmp::Ordering;
 
-use num::{
-    rational, CheckedAdd as _, CheckedDiv as _, CheckedMul as _, CheckedSub as _,
-    FromPrimitive as _, ToPrimitive as _,
-};
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::num::NonZeroU8;
+use std::num::{FpCategory, NonZeroU128, NonZeroU32};
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
+
+const ONE: NonZeroU32 = NonZeroU32::MIN;
+const TWO: NonZeroU32 = ONE.saturating_add(1);
+const FOUR: NonZeroU32 = TWO.saturating_pow(2);
 
 /// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+// INVARIANT: `numerator` and `denominator` are co-prime
+// due to this we can derive `Eq` and `PartialEq`
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Ratio {
-    inner: rational::Ratio<u32>,
+    numerator: u32,
+    denominator: NonZeroU32,
 }
 
 impl Ratio {
     /// 0
-    pub const ZERO: Ratio = Ratio::int(0);
+    pub const ZERO: Ratio = Ratio::integer(0);
+
+    /// 1 / 2
+    pub const HALF: Ratio = Ratio::reciprocal_of(TWO);
 
     /// 1 / 4
-    pub const QUARTER: Ratio = Ratio {
-        inner: rational::Ratio::new_raw(1, 4),
-    };
+    pub const QUARTER: Ratio = Ratio::reciprocal_of(FOUR);
 
     /// 1
-    pub const ONE: Ratio = Ratio::int(1);
+    pub const ONE: Ratio = Ratio::integer(1);
+
+    const MAX: Ratio = Ratio::integer(u32::MAX);
 
     /// Creates a new `Ratio` representing `numerator` / `denominator`
     #[must_use]
-    pub fn new(numerator: u32, denominator: u32) -> Self {
-        Ratio {
-            inner: rational::Ratio::new(numerator, denominator),
-        }
+    pub fn new(numerator: u32, denominator: NonZeroU32) -> Ratio {
+        let Some(numerator) = NonZeroU32::new(numerator) else {
+            return Self::ZERO;
+        };
+
+        NonZeroRatio::new(numerator, denominator).get()
     }
 
     /// Converts an integer to a `Ratio`
     #[must_use]
-    pub const fn int(int: u32) -> Ratio {
+    pub const fn integer(integer: u32) -> Ratio {
         Ratio {
-            inner: rational::Ratio::new_raw(int, 1),
+            numerator: integer,
+            denominator: ONE,
+        }
+    }
+
+    /// Constructs the ratio 1 / `integer`
+    #[must_use]
+    pub const fn reciprocal_of(integer: NonZeroU32) -> Ratio {
+        Ratio {
+            numerator: 1,
+            denominator: integer,
         }
     }
 
     /// Calculates the ceiling of the ratio
     #[must_use]
     pub fn ceil(self) -> u32 {
-        self.ceiled().inner.to_integer()
+        let quotient = self.numerator / self.denominator;
+        let remainder = self.numerator % self.denominator;
+
+        if remainder == 0 {
+            quotient
+        } else {
+            quotient.saturating_add(1)
+        }
     }
 
     /// Returns the ratio representing the ceiling of `self`
     #[must_use]
     pub fn ceiled(self) -> Ratio {
-        Ratio {
-            inner: self.inner.ceil(),
-        }
+        Ratio::integer(self.ceil())
     }
 
     /// Rounds `self` to an integer
     #[must_use]
     pub fn round(self) -> u32 {
-        self.rounded().inner.to_integer()
+        let quotient = self.numerator / self.denominator;
+        let remainder = self.numerator % self.denominator;
+
+        let fractional_part = Ratio::new(remainder, self.denominator);
+
+        if fractional_part < Ratio::HALF {
+            quotient
+        } else {
+            quotient.saturating_add(1)
+        }
     }
 
     /// Rounds `self`
     #[must_use]
     pub fn rounded(self) -> Ratio {
-        Ratio {
-            inner: self.inner.round(),
-        }
+        Ratio::integer(self.round())
     }
-}
 
-impl Ratio {
     /// Approximates a float as a `Ratio`
     #[must_use]
     pub fn approximate(float: f64) -> Ratio {
-        Ratio {
-            inner: rational::Ratio::from_f64(float).unwrap_or_default(),
+        #![expect(clippy::cast_sign_loss, reason = "we check sign")]
+        #![expect(
+            clippy::cast_possible_truncation,
+            reason = "values are converted to integers and checked against MAX"
+        )]
+
+        const MAX: f64 = Ratio::MAX.to_float();
+        const EPSILON: f64 = Ratio::MAX.to_float();
+
+        if float.is_sign_negative() {
+            return Ratio::ZERO;
+        }
+
+        match float.classify() {
+            FpCategory::Nan | FpCategory::Zero => return Ratio::ZERO,
+            FpCategory::Infinite => return Ratio::MAX,
+            FpCategory::Subnormal | FpCategory::Normal => (),
+        }
+
+        if float < EPSILON {
+            return Ratio::ZERO;
+        }
+        if MAX < float {
+            return Ratio::MAX;
+        }
+
+        let mut low_guess = Ratio::integer(float.floor() as u32);
+        let mut high_guess = Ratio::integer(float.ceil() as u32);
+
+        loop {
+            let mean_guess = (low_guess + high_guess) * Ratio::HALF;
+
+            match float.total_cmp(&mean_guess.to_float()) {
+                Ordering::Less => high_guess = mean_guess,
+                Ordering::Equal => return mean_guess,
+                Ordering::Greater => low_guess = mean_guess,
+            }
         }
     }
 
     /// Approximates `self` as a float
     #[must_use]
-    pub fn to_float(self) -> f64 {
-        self.inner
-            .to_f64()
-            .unwrap_or_else(|| f64::from(*self.inner.numer()) / f64::from(*self.inner.denom()))
+    pub const fn to_float(self) -> f64 {
+        self.numerator as f64 / self.denominator.get() as f64
+    }
+
+    fn approximate_big(denominator: u128, reciprocal: NonZeroU128) -> Ratio {
+        let Some(denominator) = NonZeroU128::new(denominator) else {
+            return Ratio::ZERO;
+        };
+
+        NonZeroRatio::approximate_big(denominator, reciprocal).get()
+    }
+
+    /// Due to using lcm (multiplication) in addition to addition in addition (in extension),
+    /// we need to use u128 as opposed to u64 for the result
+    fn big_raw(self) -> (u128, NonZeroU128) {
+        (
+            u128::from(self.numerator),
+            NonZeroU128::from(self.denominator),
+        )
     }
 }
 
-impl Ratio {
-    fn approximate_big(big: rational::Ratio<u128>) -> Ratio {
-        if big == rational::Ratio::ZERO {
-            return Ratio::ZERO;
-        }
-
-        let (numerator, denominator) = big.into_raw();
-        Ratio::approximate_u128(numerator, denominator)
+impl PartialOrd for Ratio {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
+}
 
-    fn approximate_u128(mut numerator: u128, mut denominator: u128) -> Ratio {
-        if let Ok(numerator) = u32::try_from(numerator) {
-            if let Ok(denominator) = u32::try_from(denominator) {
-                return Ratio {
-                    inner: rational::Ratio::new_raw(numerator, denominator),
-                };
-            }
-        }
-
-        numerator = u128::max(numerator >> 1, 1);
-        denominator = u128::max(denominator >> 1, 1);
-
-        Ratio::approximate_u128(numerator, denominator)
-    }
-
-    /// Due to using lcm (multiplication) in addition to addition in addition (in reduction),
-    /// we need to use u128 as opposed to u64 for the result
-    fn big_inner(self) -> rational::Ratio<u128> {
-        let (numerator, denominator) = self.inner.into_raw();
-        rational::Ratio::new_raw(u128::from(numerator), u128::from(denominator))
+impl Ord for Ratio {
+    fn cmp(&self, other: &Self) -> Ordering {
+        #![expect(clippy::arithmetic_side_effects, reason = "we cast to u64 first")]
+        Ord::cmp(
+            &(u64::from(self.numerator) * u64::from(other.denominator.get())),
+            &(u64::from(other.numerator) * u64::from(self.denominator.get())),
+        )
     }
 }
 
 impl Display for Ratio {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.inner.fmt(f)
+        write!(f, "{}/{}", self.numerator, self.denominator)
     }
 }
 
-impl From<NonZeroU8> for Ratio {
-    fn from(value: NonZeroU8) -> Self {
-        Ratio {
-            #[expect(
-                clippy::non_zero_suggestions,
-                reason = "we don't care about non-zeroness"
-            )]
-            inner: rational::Ratio::from(u32::from(value.get())),
-        }
+impl Default for Ratio {
+    fn default() -> Self {
+        Ratio::ZERO
     }
 }
 
@@ -148,12 +205,17 @@ impl Add for Ratio {
     type Output = Ratio;
 
     fn add(self, rhs: Ratio) -> Ratio {
-        if let Some(inner) = self.inner.checked_add(&rhs.inner) {
-            Ratio { inner }
-        } else {
-            #[expect(clippy::arithmetic_side_effects, reason = "see `Ratio::big_inner`")]
-            Ratio::approximate_big(self.big_inner() + rhs.big_inner())
-        }
+        let (lhs_numerator, lhs_denominator) = self.big_raw();
+        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
+
+        // TODO: use lcm
+        let lcm = lhs_denominator.saturating_mul(rhs_denominator);
+
+        let lhs = lhs_numerator.saturating_mul(lcm.get());
+        let rhs = rhs_numerator.saturating_mul(lcm.get());
+
+        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
+        Ratio::approximate_big(lhs + rhs, lcm)
     }
 }
 
@@ -167,16 +229,16 @@ impl Sub for Ratio {
     type Output = Ratio;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        if self <= rhs {
-            return Ratio::ZERO;
-        }
+        let (lhs_numerator, lhs_denominator) = self.big_raw();
+        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
 
-        if let Some(inner) = self.inner.checked_sub(&rhs.inner) {
-            Ratio { inner }
-        } else {
-            #[expect(clippy::arithmetic_side_effects, reason = "see `Ratio::big_inner`")]
-            Ratio::approximate_big(self.big_inner() - rhs.big_inner())
-        }
+        // TODO: use lcm
+        let lcm = lhs_denominator.saturating_mul(rhs_denominator);
+
+        let lhs = lhs_numerator.saturating_mul(lcm.get());
+        let rhs = rhs_numerator.saturating_mul(lcm.get());
+
+        Ratio::approximate_big(lhs.saturating_sub(rhs), lcm)
     }
 }
 
@@ -190,12 +252,13 @@ impl Mul for Ratio {
     type Output = Ratio;
 
     fn mul(self, rhs: Ratio) -> Ratio {
-        if let Some(inner) = self.inner.checked_mul(&rhs.inner) {
-            Ratio { inner }
-        } else {
-            #[expect(clippy::arithmetic_side_effects, reason = "see `Ratio::big_inner`")]
-            Ratio::approximate_big(self.big_inner() * rhs.big_inner())
-        }
+        let (lhs_numerator, lhs_denominator) = self.big_raw();
+        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
+
+        Ratio::approximate_big(
+            lhs_numerator.saturating_mul(rhs_numerator),
+            lhs_denominator.saturating_mul(rhs_denominator),
+        )
     }
 }
 
@@ -209,11 +272,7 @@ impl Div<NonZeroRatio> for Ratio {
     type Output = Ratio;
 
     fn div(self, rhs: NonZeroRatio) -> Ratio {
-        if let Some(inner) = self.inner.checked_div(&rhs.get().inner) {
-            Ratio { inner }
-        } else {
-            #[expect(clippy::arithmetic_side_effects, reason = "see `Ratio::big_inner`")]
-            Ratio::approximate_big(self.big_inner() / rhs.get().big_inner())
-        }
+        #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
+        self * rhs.reciprocal().get()
     }
 }

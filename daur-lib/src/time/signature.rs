@@ -37,7 +37,7 @@ impl Signature {
     /// The duration of one beat
     #[must_use]
     pub fn beat_duration(self) -> NonZeroDuration {
-        self.bar_duration() / NonZeroRatio::int(NonZeroU32::from(self.beats_per_bar))
+        self.bar_duration() / NonZeroRatio::integer(NonZeroU32::from(self.beats_per_bar))
     }
 }
 
