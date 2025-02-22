@@ -128,7 +128,6 @@ impl Mul<usize> for Length {
     }
 }
 
-// TODO: require rhs to be NonZero
 impl Div<NonZeroLength> for Length {
     type Output = Ratio;
 
