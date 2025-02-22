@@ -1,4 +1,4 @@
-use crate::time::duration::Duration;
+use crate::time::Duration;
 
 /// A (temporary or permanent) change in some setting, such as key or time signature.
 #[derive(Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

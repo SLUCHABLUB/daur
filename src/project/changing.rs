@@ -1,17 +1,20 @@
-use crate::time::instant::Instant;
+use crate::time::{Instant, NonZeroInstant};
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, Default)]
 pub struct Changing<T> {
     pub start: T,
-    // TODO: change key to be non-zero
-    pub changes: BTreeMap<Instant, T>,
+    pub changes: BTreeMap<NonZeroInstant, T>,
 }
 
 impl<T: Copy> Changing<T> {
     pub fn get(&self, instant: Instant) -> T {
+        let Some(end) = NonZeroInstant::from_instant(instant) else {
+            return self.start;
+        };
+
         self.changes
-            .range(..instant)
+            .range(..end)
             .next_back()
             .map_or(self.start, |(_, value)| *value)
     }

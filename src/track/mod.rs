@@ -7,8 +7,8 @@ use std::collections::BTreeMap;
 
 use crate::clip::Clip;
 use crate::project::changing::Changing;
-use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
+use crate::time::Instant;
 use crate::time::TimeSignature;
 use crate::track::settings::Settings;
 use arcstr::{literal, ArcStr};

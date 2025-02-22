@@ -1,7 +1,5 @@
 mod non_zero;
 
-// FIXME
-#[expect(clippy::module_name_repetitions, reason = "FIXME")]
 pub use non_zero::NonZeroDuration;
 
 use crate::ratio::NonZeroRatio;

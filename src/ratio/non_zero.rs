@@ -1,5 +1,6 @@
 use crate::ratio::Ratio;
 use num::rational;
+use std::cmp::Ordering;
 use std::num::{NonZeroU32, NonZeroU8};
 use std::ops::{Div, DivAssign};
 
@@ -45,6 +46,26 @@ impl NonZeroRatio {
         Some(NonZeroRatio {
             inner: rational::Ratio::new_raw(numerator, denominator),
         })
+    }
+}
+
+impl PartialEq for NonZeroRatio {
+    fn eq(&self, other: &Self) -> bool {
+        self.get() == other.get()
+    }
+}
+
+impl Eq for NonZeroRatio {}
+
+impl PartialOrd for NonZeroRatio {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for NonZeroRatio {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.get().cmp(&other.get())
     }
 }
 

@@ -6,7 +6,7 @@
 use crate::app::App;
 use crate::popup::Popup;
 use crate::project;
-use crate::time::instant::Instant;
+use crate::time::Instant;
 use educe::Educe;
 use rodio::Device;
 use std::path::PathBuf;

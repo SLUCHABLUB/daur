@@ -3,8 +3,8 @@ use crate::length::offset::Offset;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::project::changing::Changing;
-use crate::time::instant::Instant;
 use crate::time::period::Period;
+use crate::time::Instant;
 use crate::time::TimeSignature;
 use std::sync::Arc;
 

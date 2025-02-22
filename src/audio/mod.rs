@@ -3,9 +3,9 @@ mod source;
 pub use source::AudioSource;
 
 use crate::project::changing::Changing;
-use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::tempo::Tempo;
+use crate::time::Instant;
 use crate::time::TimeSignature;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};

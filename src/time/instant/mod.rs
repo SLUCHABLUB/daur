@@ -1,3 +1,7 @@
+mod non_zero;
+
+pub use non_zero::NonZeroInstant;
+
 use crate::project::changing::Changing;
 use crate::time::duration::Duration;
 use crate::time::period::Period;

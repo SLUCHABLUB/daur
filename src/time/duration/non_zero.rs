@@ -2,7 +2,7 @@ use crate::ratio::NonZeroRatio;
 use crate::time::duration::Duration;
 use std::ops::{Div, DivAssign};
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct NonZeroDuration {
     pub whole_notes: NonZeroRatio,
 }
@@ -16,6 +16,12 @@ impl NonZeroDuration {
         Duration {
             whole_notes: self.whole_notes.get(),
         }
+    }
+
+    pub fn from_duration(duration: Duration) -> Option<NonZeroDuration> {
+        Some(NonZeroDuration {
+            whole_notes: NonZeroRatio::from_ratio(duration.whole_notes)?,
+        })
     }
 }
 

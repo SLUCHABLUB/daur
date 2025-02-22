@@ -8,9 +8,9 @@ use crate::project::changing::Changing;
 use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
 use crate::project::Project;
-use crate::time::instant::Instant;
 use crate::time::tempo::Tempo;
 use crate::time::TimeSignature;
+use crate::time::{Instant, NonZeroInstant};
 use crate::widget::Widget;
 use std::sync::{Arc, Weak};
 use thiserror::Error;
@@ -99,12 +99,12 @@ impl Manager {
             }
             Edit::AddTrack(track) => project.tracks.push(Arc::new(track)),
             Edit::ChangeKey { position, key } => {
-                if position == Instant::START {
-                    Arc::make_mut(&mut project.key).start = key;
-                } else {
+                if let Some(position) = NonZeroInstant::from_instant(position) {
                     Arc::make_mut(&mut project.key)
                         .changes
                         .insert(position, key);
+                } else {
+                    Arc::make_mut(&mut project.key).start = key;
                 }
             }
         }

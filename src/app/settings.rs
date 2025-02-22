@@ -1,5 +1,5 @@
 use crate::length::Length;
-use crate::time::duration::NonZeroDuration;
+use crate::time::NonZeroDuration;
 
 #[derive(Copy, Clone, Debug)]
 pub struct OverviewSettings {
