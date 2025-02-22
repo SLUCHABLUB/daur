@@ -7,7 +7,7 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::num::{FpCategory, NonZeroU128, NonZeroU32};
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 const ONE: NonZeroU32 = NonZeroU32::MIN;
 const TWO: NonZeroU32 = ONE.saturating_add(1);
@@ -274,5 +274,11 @@ impl Div<NonZeroRatio> for Ratio {
     fn div(self, rhs: NonZeroRatio) -> Ratio {
         #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
         self * rhs.reciprocal().get()
+    }
+}
+
+impl DivAssign<NonZeroRatio> for Ratio {
+    fn div_assign(&mut self, rhs: NonZeroRatio) {
+        *self = *self / rhs;
     }
 }
