@@ -1,4 +1,4 @@
-#![doc = include_str!("../README.md")]
+//! The inner workings of the DAW
 
 mod app;
 mod audio;
