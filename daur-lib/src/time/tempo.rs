@@ -1,9 +1,11 @@
 use crate::project::changing::Changing;
 use crate::time::period::Period;
 use crate::time::signature::Signature;
+use crate::time::NonZeroInstant;
 use ordered_float::NotNan;
 use std::fmt;
 use std::fmt::{Display, Formatter};
+use std::ops::Bound;
 use std::time::Duration;
 
 /// A musical tempo
@@ -53,7 +55,13 @@ impl Changing<Tempo> {
         let tempo = self.get(period.start);
         let mut periods = vec![(period, tempo)];
 
-        for (instant, tempo) in self.changes.range(period.start..) {
+        let range = (
+            NonZeroInstant::from_instant(period.start).map_or(Bound::Unbounded, Bound::Excluded),
+            Bound::Unbounded,
+        );
+
+        // Iterate over all the changes _after_ `period.start`
+        for (instant, tempo) in self.changes.range(range) {
             if period.end() <= instant.get() {
                 break;
             }
