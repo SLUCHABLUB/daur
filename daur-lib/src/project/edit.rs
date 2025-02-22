@@ -1,6 +1,5 @@
 use crate::audio::Audio;
-use crate::clip::content::Content;
-use crate::clip::Clip;
+use crate::clip::{Clip, ClipContent};
 use crate::key::Key;
 use crate::notes::Notes;
 use crate::popup::Popup;
@@ -65,7 +64,7 @@ impl Edit {
                 clip: Clip {
                     name: DEFAULT_NOTES_NAME,
                     colour: DEFAULT_NOTES_COLOUR,
-                    content: Content::Notes(Notes::empty(DEFAULT_NOTES_DURATION)),
+                    content: ClipContent::Notes(Notes::empty(DEFAULT_NOTES_DURATION)),
                 },
             },
             Action::AddTrack => Edit::AddTrack(Track::new()),
@@ -99,7 +98,7 @@ impl Edit {
                     clip: Clip {
                         name,
                         colour: DEFAULT_AUDIO_COLOUR,
-                        content: Content::Audio(audio),
+                        content: ClipContent::Audio(audio),
                     },
                 }
             }

@@ -27,4 +27,6 @@ mod test;
 
 pub use app::App;
 pub use audio::{Audio, AudioSource};
+pub use cell::Cell;
+pub use clip::{Clip, ClipContent, ClipSource};
 pub use ratio::{NonZeroRatio, Ratio};
