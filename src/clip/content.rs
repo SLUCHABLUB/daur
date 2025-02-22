@@ -4,8 +4,7 @@ use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::time::period::Period;
 use crate::time::tempo::Tempo;
-use crate::time::Instant;
-use crate::time::TimeSignature;
+use crate::time::{Instant, TimeSignature};
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Points};
 

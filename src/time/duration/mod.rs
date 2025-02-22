@@ -2,8 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroDuration;
 
-use crate::ratio::NonZeroRatio;
-use crate::ratio::Ratio;
+use crate::ratio::{NonZeroRatio, Ratio};
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

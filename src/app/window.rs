@@ -4,8 +4,7 @@ use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::project::changing::Changing;
 use crate::time::period::Period;
-use crate::time::Instant;
-use crate::time::TimeSignature;
+use crate::time::{Instant, TimeSignature};
 use std::sync::Arc;
 
 /// A window into

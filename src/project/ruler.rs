@@ -1,6 +1,5 @@
 use crate::app::window::Window;
-use crate::app::Action;
-use crate::app::OverviewSettings;
+use crate::app::{Action, OverviewSettings};
 use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;

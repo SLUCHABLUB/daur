@@ -1,6 +1,5 @@
 use crate::app::window::Window;
-use crate::app::Action;
-use crate::app::OverviewSettings;
+use crate::app::{Action, OverviewSettings};
 use crate::clip::Clip;
 use crate::length::offset::Offset;
 use crate::length::point::Point;
@@ -10,8 +9,7 @@ use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
 use crate::time::tempo::Tempo;
-use crate::time::Instant;
-use crate::time::TimeSignature;
+use crate::time::{Instant, TimeSignature};
 use crate::track::Track;
 use crate::widget::text::Text;
 use crate::widget::Widget;

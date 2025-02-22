@@ -1,7 +1,6 @@
 use crate::note::Note;
 use crate::pitch::Pitch;
-use crate::time::Duration;
-use crate::time::Instant;
+use crate::time::{Duration, Instant};
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Rectangle};
 use std::collections::BTreeMap;
