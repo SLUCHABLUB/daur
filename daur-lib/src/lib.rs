@@ -26,4 +26,5 @@ pub mod time;
 mod test;
 
 pub use app::App;
+pub use audio::{Audio, AudioSource};
 pub use ratio::{NonZeroRatio, Ratio};

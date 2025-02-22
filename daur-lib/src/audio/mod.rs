@@ -11,6 +11,7 @@ use std::io::Read;
 use std::num::FpCategory;
 use std::time::Duration;
 
+/// Some stereo 64-bit floating point audio
 #[derive(Clone, PartialEq, Debug)]
 pub struct Audio {
     sample_rate: u32,
@@ -20,10 +21,14 @@ pub struct Audio {
 }
 
 impl Audio {
+    /// Returns the number of stereo sample-pairs
+    #[must_use]
     pub fn sample_count(&self) -> usize {
         usize::max(self.channels[0].len(), self.channels[1].len())
     }
 
+    /// Returns the audio's duration
+    #[must_use]
     pub fn duration(&self) -> Duration {
         const NANOS_PER_SEC: u64 = 1_000_000_000;
 
@@ -48,6 +53,7 @@ impl Audio {
         Duration::new(seconds, nanos)
     }
 
+    /// An iterator of the samples converted to mono
     pub fn mono_samples(&self) -> impl Iterator<Item = f64> + use<'_> {
         Itertools::zip_longest(self.channels[0].iter(), self.channels[1].iter()).map(|either| {
             match either {
@@ -57,6 +63,8 @@ impl Audio {
         })
     }
 
+    /// Returns the period of the audio
+    #[must_use]
     pub fn period(
         &self,
         start: Instant,
@@ -66,6 +74,7 @@ impl Audio {
         Period::from_real_time(start, time_signature, tempo, self.duration())
     }
 
+    /// Returns a [`Source`](rodio::source::Source) for the audio
     pub fn to_source(&self, offset: usize) -> AudioSource {
         AudioSource::new(self.clone(), offset)
     }

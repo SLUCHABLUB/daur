@@ -2,7 +2,9 @@ use crate::audio::Audio;
 use rodio::Source;
 use std::time::Duration;
 
+/// A [`Source`] for an audio
 #[derive(Debug)]
+#[must_use = "AudioSource is an iterator"]
 pub struct AudioSource {
     audio: Audio,
     right: bool,
@@ -11,7 +13,7 @@ pub struct AudioSource {
 }
 
 impl AudioSource {
-    pub fn new(audio: Audio, sample: usize) -> AudioSource {
+    pub(super) fn new(audio: Audio, sample: usize) -> AudioSource {
         AudioSource {
             audio,
             right: false,
