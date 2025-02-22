@@ -19,8 +19,8 @@ mod sign;
 mod track;
 mod widget;
 
-pub mod measure;
 pub mod time;
+pub mod ui;
 
 #[cfg(test)]
 mod test;

@@ -1,6 +1,6 @@
 use crate::app::Action;
 use crate::cell::Cell;
-use crate::measure::{Point, Rectangle};
+use crate::ui::{Point, Rectangle};
 use crate::widget::bordered::Bordered;
 use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;

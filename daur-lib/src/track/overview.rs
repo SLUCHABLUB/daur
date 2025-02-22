@@ -1,12 +1,12 @@
 use crate::app::window::Window;
 use crate::app::{Action, OverviewSettings};
 use crate::clip::Clip;
-use crate::measure::{Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
 use crate::time::{Instant, Signature, Tempo};
 use crate::track::Track;
+use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::{literal, ArcStr};

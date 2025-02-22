@@ -12,7 +12,7 @@ pub mod to_widget;
 
 use crate::app::Action;
 use crate::lock::Lock;
-use crate::measure::{Point, Rectangle};
+use crate::ui::{Point, Rectangle};
 use crate::widget::macros::or_popup;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;

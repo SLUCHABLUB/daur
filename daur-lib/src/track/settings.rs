@@ -1,6 +1,6 @@
 use crate::app::Action;
-use crate::measure::{Point, Rectangle};
 use crate::track::Track;
+use crate::ui::{Point, Rectangle};
 use crate::widget::bordered::Bordered;
 use crate::widget::text::Text;
 use crate::widget::Widget;

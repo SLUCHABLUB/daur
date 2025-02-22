@@ -1,5 +1,5 @@
 use crate::app::Action;
-use crate::measure::{Length, NonZeroLength, Point, Rectangle, Size};
+use crate::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use arcstr::ArcStr;

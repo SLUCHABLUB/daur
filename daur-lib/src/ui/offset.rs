@@ -1,9 +1,9 @@
-use crate::measure::Length;
+use crate::ui::Length;
 use ratatui::layout::Spacing;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub};
 
-/// A signed [`Length`](crate::measure::length)
+/// A signed [`Length`](crate::ui::length)
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
     inner: i32,

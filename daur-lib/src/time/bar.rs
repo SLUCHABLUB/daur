@@ -1,12 +1,12 @@
 use crate::app::OverviewSettings;
-use crate::measure::Length;
 use crate::ratio::Ratio;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
 use crate::time::period::Period;
 use crate::time::signature::Signature;
+use crate::ui::Length;
 
-/// A bar, or measure
+/// A bar, or ui
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Bar {
     /// When the bar starts

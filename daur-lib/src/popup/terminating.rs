@@ -1,6 +1,6 @@
 use crate::app::Action;
-use crate::measure::{Point, Rectangle, Size};
 use crate::popup::Popup;
+use crate::ui::{Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;

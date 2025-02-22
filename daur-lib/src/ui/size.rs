@@ -1,4 +1,4 @@
-use crate::measure::Length;
+use crate::ui::Length;
 use ratatui::layout::Direction;
 
 /// The size of something on the screen

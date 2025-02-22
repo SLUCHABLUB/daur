@@ -1,10 +1,10 @@
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::keyboard::Key;
-use crate::measure::Length;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
+use crate::ui::Length;
 use crate::widget::bordered::Bordered;
 use crate::widget::button::Button;
 use crate::widget::has_size::HasSize as _;

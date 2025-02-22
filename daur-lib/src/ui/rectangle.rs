@@ -1,5 +1,5 @@
-use crate::measure::point::Point;
-use crate::measure::Length;
+use crate::ui::point::Point;
+use crate::ui::Length;
 use ratatui::layout::{Constraint, Direction, Flex, Layout, Rect, Spacing};
 
 /// A rectangle on the screen

@@ -1,5 +1,5 @@
 use crate::app::Action;
-use crate::measure::{Length, Offset, Point, Rectangle, Size};
+use crate::ui::{Length, Offset, Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
@@ -51,7 +51,7 @@ impl<T> Stack<T> {
     {
         let children = children.into_iter();
         let length = children.len().saturating_cast();
-        // Using a ratio of 1 / measure is faster than using a fill of 1
+        // Using a ratio of 1 / ui is faster than using a fill of 1
         Stack::vertical(children.map(|child| (child, Constraint::Ratio(1, length))))
     }
 

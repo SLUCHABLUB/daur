@@ -1,7 +1,7 @@
 use crate::app::settings::OverviewSettings;
-use crate::measure::{Length, Offset, Rectangle};
 use crate::project::changing::Changing;
 use crate::time::{Instant, Period, Signature};
+use crate::ui::{Length, Offset, Rectangle};
 use std::sync::Arc;
 
 /// A window into

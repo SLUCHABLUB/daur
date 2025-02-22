@@ -1,8 +1,8 @@
 use crate::app::window::Window;
 use crate::app::{Action, OverviewSettings};
-use crate::measure::{Length, NonZeroLength, Point, Rectangle};
 use crate::project::changing::Changing;
 use crate::time::Signature;
+use crate::ui::{Length, NonZeroLength, Point, Rectangle};
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::ArcStr;

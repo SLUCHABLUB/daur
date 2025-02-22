@@ -1,9 +1,9 @@
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::keyboard::Key;
-use crate::measure::{Point, Rectangle};
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
+use crate::ui::{Point, Rectangle};
 use crate::widget::button::Button;
 use crate::widget::homogenous::Stack;
 use crate::widget::to_widget::ToWidget;

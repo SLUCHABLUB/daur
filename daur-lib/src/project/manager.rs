@@ -1,7 +1,6 @@
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::lock::Lock;
-use crate::measure::Length;
 use crate::popup::Popup;
 use crate::project::action::Action;
 use crate::project::changing::Changing;
@@ -9,6 +8,7 @@ use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
 use crate::project::Project;
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
+use crate::ui::Length;
 use crate::widget::Widget;
 use std::sync::{Arc, Weak};
 use thiserror::Error;

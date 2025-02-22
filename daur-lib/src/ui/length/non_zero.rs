@@ -1,4 +1,4 @@
-use crate::measure::Length;
+use crate::ui::Length;
 use std::num::NonZeroU16;
 
 const ONE: NonZeroU16 = NonZeroU16::MIN;

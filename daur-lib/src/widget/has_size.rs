@@ -1,5 +1,5 @@
 use crate::lock::Lock;
-use crate::measure::{Length, Size};
+use crate::ui::{Length, Size};
 use crate::widget::Widget;
 use ratatui_explorer::FileExplorer;
 

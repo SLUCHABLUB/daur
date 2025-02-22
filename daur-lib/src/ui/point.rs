@@ -1,4 +1,4 @@
-use crate::measure::Length;
+use crate::ui::Length;
 use ratatui::layout::Position;
 
 /// A point on the screen
