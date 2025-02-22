@@ -1,11 +1,12 @@
 use crate::project::changing::Changing;
 use crate::time::period::Period;
-use crate::time::signature::TimeSignature;
+use crate::time::signature::Signature;
 use ordered_float::NotNan;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::time::Duration;
 
+/// A musical tempo
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Tempo {
     // INVARIANT: is positive
@@ -17,10 +18,12 @@ impl Tempo {
         self.bpm.recip() * 60.0
     }
 
+    /// Converts a period to a real-time duration
+    #[must_use]
     pub fn period_to_real_time_duration(
         self,
         period: Period,
-        time_signature: TimeSignature,
+        time_signature: Signature,
     ) -> Duration {
         let beat_count = period.duration / time_signature.beat_duration();
         let seconds = beat_count.to_float() * self.beat_in_seconds();

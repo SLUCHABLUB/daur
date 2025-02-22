@@ -3,14 +3,13 @@ use crate::length::offset::Offset;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::project::changing::Changing;
-use crate::time::period::Period;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Period, Signature};
 use std::sync::Arc;
 
 /// A window into
 #[derive(Clone)]
 pub struct Window {
-    pub time_signature: Arc<Changing<TimeSignature>>,
+    pub time_signature: Arc<Changing<Signature>>,
     pub overview_settings: OverviewSettings,
     pub x: Length,
     pub width: Length,
@@ -62,7 +61,7 @@ impl Window {
 
         for bar in self.time_signature.bars() {
             if !bar.period().contains(instant) {
-                let width = bar.column_width(self.overview_settings);
+                let width = bar.width(self.overview_settings);
                 column += width;
                 continue;
             }

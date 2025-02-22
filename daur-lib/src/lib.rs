@@ -17,8 +17,12 @@ mod popup;
 mod project;
 mod ratio;
 mod sign;
-mod time;
+pub mod time;
 mod track;
 mod widget;
 
+#[cfg(test)]
+mod test;
+
 pub use app::App;
+pub use ratio::{NonZeroRatio, Ratio};

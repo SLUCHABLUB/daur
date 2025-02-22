@@ -2,22 +2,29 @@ use crate::ratio::NonZeroRatio;
 use crate::time::duration::Duration;
 use std::ops::{Div, DivAssign};
 
+/// A non-zero `Duration`
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct NonZeroDuration {
+    /// The number of whole-note durations
     pub whole_notes: NonZeroRatio,
 }
 
 impl NonZeroDuration {
+    /// The duration of a quarter note
     pub const QUARTER: NonZeroDuration = NonZeroDuration {
         whole_notes: NonZeroRatio::QUARTER,
     };
 
+    /// Converts `self` to a `Duration`
+    #[must_use]
     pub fn get(self) -> Duration {
         Duration {
             whole_notes: self.whole_notes.get(),
         }
     }
 
+    /// Converts a `Duration` to a `NonZeroDuration` is it is not zero
+    #[must_use]
     pub fn from_duration(duration: Duration) -> Option<NonZeroDuration> {
         Some(NonZeroDuration {
             whole_notes: NonZeroRatio::from_ratio(duration.whole_notes)?,

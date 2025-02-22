@@ -5,12 +5,15 @@ pub use non_zero::NonZeroDuration;
 use crate::ratio::{NonZeroRatio, Ratio};
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
+/// A musical duration
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Duration {
+    /// The number of whole-note durations
     pub whole_notes: Ratio,
 }
 
 impl Duration {
+    /// No time
     pub const ZERO: Duration = Duration {
         whole_notes: Ratio::ZERO,
     };

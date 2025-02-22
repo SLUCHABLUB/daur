@@ -3,9 +3,7 @@ mod source;
 pub use source::AudioSource;
 
 use crate::project::changing::Changing;
-use crate::time::period::Period;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Period, Signature, Tempo};
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{rational, Integer as _};
@@ -62,7 +60,7 @@ impl Audio {
     pub fn period(
         &self,
         start: Instant,
-        time_signature: &Changing<TimeSignature>,
+        time_signature: &Changing<Signature>,
         tempo: &Changing<Tempo>,
     ) -> Period {
         Period::from_real_time(start, time_signature, tempo, self.duration())

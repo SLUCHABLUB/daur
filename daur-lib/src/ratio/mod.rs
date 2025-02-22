@@ -11,7 +11,7 @@ use std::fmt::{Display, Formatter};
 use std::num::NonZeroU8;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
-/// A rational number.
+/// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Ratio {
@@ -19,40 +19,55 @@ pub struct Ratio {
 }
 
 impl Ratio {
+    /// 0
     pub const ZERO: Ratio = Ratio::int(0);
 
+    /// 1 / 4
     pub const QUARTER: Ratio = Ratio {
         inner: rational::Ratio::new_raw(1, 4),
     };
 
+    /// 1
     pub const ONE: Ratio = Ratio::int(1);
 
+    /// Creates a new `Ratio` representing `numerator` / `denominator`
+    #[must_use]
     pub fn new(numerator: u32, denominator: u32) -> Self {
         Ratio {
             inner: rational::Ratio::new(numerator, denominator),
         }
     }
 
+    /// Converts an integer to a `Ratio`
+    #[must_use]
     pub const fn int(int: u32) -> Ratio {
         Ratio {
             inner: rational::Ratio::new_raw(int, 1),
         }
     }
 
+    /// Calculates the ceiling of the ratio
+    #[must_use]
     pub fn ceil(self) -> u32 {
         self.ceiled().inner.to_integer()
     }
 
+    /// Returns the ratio representing the ceiling of `self`
+    #[must_use]
     pub fn ceiled(self) -> Ratio {
         Ratio {
             inner: self.inner.ceil(),
         }
     }
 
+    /// Rounds `self` to an integer
+    #[must_use]
     pub fn round(self) -> u32 {
         self.rounded().inner.to_integer()
     }
 
+    /// Rounds `self`
+    #[must_use]
     pub fn rounded(self) -> Ratio {
         Ratio {
             inner: self.inner.round(),
@@ -61,12 +76,16 @@ impl Ratio {
 }
 
 impl Ratio {
+    /// Approximates a float as a `Ratio`
+    #[must_use]
     pub fn approximate(float: f64) -> Ratio {
         Ratio {
             inner: rational::Ratio::from_f64(float).unwrap_or_default(),
         }
     }
 
+    /// Approximates `self` as a float
+    #[must_use]
     pub fn to_float(self) -> f64 {
         self.inner
             .to_f64()

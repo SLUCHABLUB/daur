@@ -4,7 +4,7 @@ use crate::length::point::Point;
 use crate::length::rectangle::Rectangle;
 use crate::length::Length;
 use crate::project::changing::Changing;
-use crate::time::TimeSignature;
+use crate::time::Signature;
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::ArcStr;
@@ -15,7 +15,7 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Ruler {
-    pub time_signature: Arc<Changing<TimeSignature>>,
+    pub time_signature: Arc<Changing<Signature>>,
     pub overview_settings: OverviewSettings,
 }
 
@@ -40,7 +40,7 @@ impl Widget for Ruler {
             started = true;
 
             let width = bar
-                .column_width(self.overview_settings)
+                .width(self.overview_settings)
                 .min(area.x + area.width - x);
 
             let area = Rectangle {

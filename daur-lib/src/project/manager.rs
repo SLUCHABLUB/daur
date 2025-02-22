@@ -8,8 +8,7 @@ use crate::project::changing::Changing;
 use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
 use crate::project::Project;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, NonZeroInstant, TimeSignature};
+use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::widget::Widget;
 use std::sync::{Arc, Weak};
 use thiserror::Error;
@@ -37,7 +36,7 @@ impl Manager {
         Arc::clone(&self.project.read().tempo)
     }
 
-    pub fn time_signature(&self) -> Arc<Changing<TimeSignature>> {
+    pub fn time_signature(&self) -> Arc<Changing<Signature>> {
         Arc::clone(&self.project.read().time_signature)
     }
 

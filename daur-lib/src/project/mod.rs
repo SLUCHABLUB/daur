@@ -17,8 +17,7 @@ use crate::length::Length;
 use crate::project::changing::Changing;
 use crate::project::ruler::Ruler;
 use crate::project::source::ProjectSource;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Signature, Tempo};
 use crate::track::overview::Overview;
 use crate::track::Track;
 use crate::widget::button::Button;
@@ -39,7 +38,7 @@ pub struct Project {
     pub title: ArcStr,
 
     pub key: Arc<Changing<Key>>,
-    pub time_signature: Arc<Changing<TimeSignature>>,
+    pub time_signature: Arc<Changing<Signature>>,
     // TODO: continuous change
     pub tempo: Arc<Changing<Tempo>>,
 
@@ -47,7 +46,7 @@ pub struct Project {
 }
 
 impl Project {
-    pub fn time_signature(&self) -> Arc<Changing<TimeSignature>> {
+    pub fn time_signature(&self) -> Arc<Changing<Signature>> {
         Arc::clone(&self.time_signature)
     }
 

@@ -5,26 +5,29 @@ pub use non_zero::NonZeroInstant;
 use crate::project::changing::Changing;
 use crate::time::duration::Duration;
 use crate::time::period::Period;
-use crate::time::signature::TimeSignature;
+use crate::time::signature::Signature;
 use crate::time::tempo::Tempo;
 use num::Integer as _;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Sub};
 use std::time;
 
+/// An instant in musical time
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Instant {
+    /// The duration since the starting point
     pub since_start: Duration,
 }
 
 impl Instant {
+    /// The starting point
     pub const START: Instant = Instant {
         since_start: Duration::ZERO,
     };
 
     fn real_time_duration_since_start(
         self,
-        time_signature: &Changing<TimeSignature>,
+        time_signature: &Changing<Signature>,
         tempo: &Changing<Tempo>,
     ) -> time::Duration {
         let period = Period {
@@ -34,9 +37,11 @@ impl Instant {
         period.real_time_duration(time_signature, tempo)
     }
 
+    /// Gets the offset in samples from the staring point
+    #[must_use]
     pub fn to_sample(
         self,
-        time_signature: &Changing<TimeSignature>,
+        time_signature: &Changing<Signature>,
         tempo: &Changing<Tempo>,
         sample_rate: u32,
     ) -> usize {

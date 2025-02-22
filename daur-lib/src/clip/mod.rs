@@ -6,9 +6,7 @@ pub use source::ClipSource;
 
 use crate::clip::content::Content;
 use crate::project::changing::Changing;
-use crate::time::period::Period;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Period, Signature, Tempo};
 use ratatui::layout::Alignment;
 use ratatui::style::{Color, Style};
 use ratatui::symbols::border::{PLAIN, THICK};
@@ -26,7 +24,7 @@ impl Clip {
     pub fn period(
         &self,
         start: Instant,
-        time_signature: &Changing<TimeSignature>,
+        time_signature: &Changing<Signature>,
         tempo: &Changing<Tempo>,
     ) -> Period {
         self.content.period(start, time_signature, tempo)

@@ -8,8 +8,7 @@ use crate::length::Length;
 use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Signature, Tempo};
 use crate::track::Track;
 use crate::widget::text::Text;
 use crate::widget::Widget;
@@ -40,7 +39,7 @@ fn right_click_menu() -> Arc<Popup> {
 pub struct Overview {
     pub track: Arc<Track>,
     pub selected_clip: Weak<Clip>,
-    pub time_signature: Arc<Changing<TimeSignature>>,
+    pub time_signature: Arc<Changing<Signature>>,
     pub tempo: Arc<Changing<Tempo>>,
     pub settings: OverviewSettings,
     pub cursor: Instant,

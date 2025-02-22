@@ -9,21 +9,26 @@ const ONE: NonZeroU32 = NonZeroU32::new(1).unwrap();
 #[expect(clippy::unwrap_used, reason = "4 is not zero")]
 const FOUR: NonZeroU32 = NonZeroU32::new(4).unwrap();
 
+/// A non-zero `Ratio`
 #[derive(Copy, Clone, Debug)]
 pub struct NonZeroRatio {
     inner: rational::Ratio<NonZeroU32>,
 }
 
 impl NonZeroRatio {
+    /// 1 / 4
     pub const QUARTER: NonZeroRatio = NonZeroRatio {
         inner: rational::Ratio::new_raw(ONE, FOUR),
     };
 
+    /// Creates a new `NonZeroRatio` representing `numerator` / `denominator`
+    #[must_use]
     pub fn new(numerator: NonZeroU32, denominator: NonZeroU32) -> NonZeroRatio {
         // The non-zero types don't implement `num::Integer`.
         // Therefore, `num::rational::Ratio`s thereof cannot be reduced
         // since it requires comparison with zero.
 
+        #![expect(clippy::missing_panics_doc, reason = "this won't panic")]
         #[expect(
             clippy::unwrap_used,
             reason = "since the arguments are non-zero, this will be too"
@@ -31,12 +36,16 @@ impl NonZeroRatio {
         NonZeroRatio::from_ratio(Ratio::new(numerator.get(), denominator.get())).unwrap()
     }
 
+    /// Converts `self` to a `Ratio`
+    #[must_use]
     pub fn get(self) -> Ratio {
         let (numerator, denominator) = self.inner.into_raw();
         let inner = rational::Ratio::new_raw(numerator.get(), denominator.get());
         Ratio { inner }
     }
 
+    /// Converts a `Ratio` to a `NonZeroRatio` if it is not zero
+    #[must_use]
     pub fn from_ratio(ratio: Ratio) -> Option<NonZeroRatio> {
         let (numerator, denominator) = ratio.inner.into_raw();
 

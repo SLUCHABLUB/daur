@@ -2,9 +2,7 @@ use crate::audio::Audio;
 use crate::notes::Notes;
 use crate::pitch::Pitch;
 use crate::project::changing::Changing;
-use crate::time::period::Period;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Period, Signature, Tempo};
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Points};
 
@@ -21,7 +19,7 @@ impl Content {
     pub fn period(
         &self,
         start: Instant,
-        time_signature: &Changing<TimeSignature>,
+        time_signature: &Changing<Signature>,
         tempo: &Changing<Tempo>,
     ) -> Period {
         match self {

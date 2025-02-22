@@ -7,8 +7,7 @@ use std::collections::BTreeMap;
 
 use crate::clip::Clip;
 use crate::project::changing::Changing;
-use crate::time::tempo::Tempo;
-use crate::time::{Instant, TimeSignature};
+use crate::time::{Instant, Signature, Tempo};
 use crate::track::settings::Settings;
 use arcstr::{literal, ArcStr};
 use std::sync::Arc;
@@ -39,7 +38,7 @@ impl Track {
 
     pub fn to_source(
         &self,
-        time_signature: &Changing<TimeSignature>,
+        time_signature: &Changing<Signature>,
         tempo: &Changing<Tempo>,
         sample_rate: u32,
         offset: usize,
