@@ -1,24 +1,17 @@
 use crate::ratio::Ratio;
-use num::rational;
-use std::cmp::Ordering;
-use std::num::{NonZeroU32, NonZeroU8};
+use std::num::NonZeroU32;
 use std::ops::{Div, DivAssign};
 
-#[expect(clippy::unwrap_used, reason = "1 is not zero")]
-const ONE: NonZeroU32 = NonZeroU32::new(1).unwrap();
-#[expect(clippy::unwrap_used, reason = "4 is not zero")]
-const FOUR: NonZeroU32 = NonZeroU32::new(4).unwrap();
-
 /// A non-zero `Ratio`
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct NonZeroRatio {
-    inner: rational::Ratio<NonZeroU32>,
+    inner: Ratio,
 }
 
 impl NonZeroRatio {
     /// 1 / 4
     pub const QUARTER: NonZeroRatio = NonZeroRatio {
-        inner: rational::Ratio::new_raw(ONE, FOUR),
+        inner: Ratio::QUARTER,
     };
 
     /// Creates a new `NonZeroRatio` representing `numerator` / `denominator`
@@ -28,61 +21,29 @@ impl NonZeroRatio {
         // Therefore, `num::rational::Ratio`s thereof cannot be reduced
         // since it requires comparison with zero.
 
-        #![expect(clippy::missing_panics_doc, reason = "this won't panic")]
-        #[expect(
-            clippy::unwrap_used,
-            reason = "since the arguments are non-zero, this will be too"
-        )]
-        NonZeroRatio::from_ratio(Ratio::new(numerator.get(), denominator.get())).unwrap()
+        NonZeroRatio {
+            inner: Ratio::new(numerator.get(), denominator.get()),
+        }
+    }
+
+    /// Converts an integer to a `NonZeroRatio`
+    #[must_use]
+    pub fn int(integer: NonZeroU32) -> NonZeroRatio {
+        NonZeroRatio {
+            inner: Ratio::int(integer.get()),
+        }
     }
 
     /// Converts `self` to a `Ratio`
     #[must_use]
     pub fn get(self) -> Ratio {
-        let (numerator, denominator) = self.inner.into_raw();
-        let inner = rational::Ratio::new_raw(numerator.get(), denominator.get());
-        Ratio { inner }
+        self.inner
     }
 
     /// Converts a `Ratio` to a `NonZeroRatio` if it is not zero
     #[must_use]
     pub fn from_ratio(ratio: Ratio) -> Option<NonZeroRatio> {
-        let (numerator, denominator) = ratio.inner.into_raw();
-
-        let numerator = NonZeroU32::new(numerator)?;
-        let denominator = NonZeroU32::new(denominator)?;
-
-        Some(NonZeroRatio {
-            inner: rational::Ratio::new_raw(numerator, denominator),
-        })
-    }
-}
-
-impl PartialEq for NonZeroRatio {
-    fn eq(&self, other: &Self) -> bool {
-        self.get() == other.get()
-    }
-}
-
-impl Eq for NonZeroRatio {}
-
-impl PartialOrd for NonZeroRatio {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for NonZeroRatio {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.get().cmp(&other.get())
-    }
-}
-
-impl From<NonZeroU8> for NonZeroRatio {
-    fn from(value: NonZeroU8) -> Self {
-        NonZeroRatio {
-            inner: rational::Ratio::new_raw(NonZeroU32::from(value), ONE),
-        }
+        (ratio == Ratio::ZERO).then_some(NonZeroRatio { inner: ratio })
     }
 }
 
