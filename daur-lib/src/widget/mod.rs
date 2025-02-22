@@ -11,9 +11,8 @@ pub mod text;
 pub mod to_widget;
 
 use crate::app::Action;
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
 use crate::lock::Lock;
+use crate::measure::{Point, Rectangle};
 use crate::widget::macros::or_popup;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;

@@ -1,5 +1,5 @@
 use crate::cell::Cell;
-use crate::length::point::Point;
+use crate::measure::Point;
 use crate::popup::Popup;
 use arcstr::ArcStr;
 use std::sync::Weak;

@@ -1,24 +1,27 @@
-use crate::length::Length;
+use crate::measure::Length;
 use ratatui::layout::Position;
 
+/// A point on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct Point {
+    /// The x coordinate of the point
     pub x: Length,
+    /// The y coordinate of the point
     pub y: Length,
 }
 
 impl Point {
-    pub fn from_position(position: Position) -> Self {
+    pub(crate) fn from_position(position: Position) -> Self {
         Point {
             x: Length::new(position.x),
             y: Length::new(position.y),
         }
     }
 
-    pub fn to_position(self) -> Position {
+    pub(crate) fn to_position(self) -> Position {
         Position {
-            x: self.x.inner.0,
-            y: self.y.inner.0,
+            x: self.x.inner(),
+            y: self.y.inner(),
         }
     }
 }

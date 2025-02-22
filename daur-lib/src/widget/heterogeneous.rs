@@ -1,10 +1,7 @@
 use crate::app::Action;
-use crate::length::offset::Offset;
-use crate::length::rectangle::Rectangle;
-use crate::length::size::Size;
-use crate::length::Length;
+use crate::measure::{Length, Offset, Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
-use crate::widget::{Point, Widget};
+use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use itertools::Itertools as _;
 use ratatui::buffer::Buffer;
@@ -36,7 +33,7 @@ impl<const N: usize, Children> Stack<N, Children> {
     fn areas(&self, area: Rectangle) -> [Rectangle; N] {
         #[expect(
             clippy::unwrap_used,
-            reason = "the returned iterator has the same length as the constraints one passed in"
+            reason = "the returned iterator has the same measure as the constraints one passed in"
         )]
         area.split(self.constraints, self.direction, self.flex, &self.spacing)
             .collect_array()

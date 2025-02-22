@@ -1,7 +1,7 @@
 arithmetic-side-effects-allowed = [
-    "length::Length",
-    "length::offset::Offset",
     "pitch::Pitch",
+    "measure::length::Length",
+    "measure::offset::Offset",
     "ratio::Ratio",
     "ratio::non_zero::NonZeroRatio",
     "time::duration::Duration",

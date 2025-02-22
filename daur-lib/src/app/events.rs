@@ -1,7 +1,6 @@
 use crate::app::{or_popup, App};
 use crate::keyboard::Key;
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
+use crate::measure::{Point, Rectangle};
 use crate::widget::Widget as _;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};

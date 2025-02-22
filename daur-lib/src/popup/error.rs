@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::keyboard::Key;
-use crate::length::Length;
+use crate::measure::Length;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::popup::Popup;

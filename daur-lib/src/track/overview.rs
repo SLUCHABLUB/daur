@@ -1,10 +1,7 @@
 use crate::app::window::Window;
 use crate::app::{Action, OverviewSettings};
 use crate::clip::Clip;
-use crate::length::offset::Offset;
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
-use crate::length::Length;
+use crate::measure::{Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
@@ -77,18 +74,22 @@ impl Widget for Overview {
             );
             let clip_area_end = clip_area.x + clip_area.width;
 
+            let Some(clip_area_width) = NonZeroLength::from_length(clip_area.width) else {
+                continue;
+            };
+
             let [mut x, y] = clip.content.full_overview_viewport();
             let full_width = x[1] - x[0];
 
             if clip_area.x < Offset::ZERO {
                 // The fraction of the clip that is outside the window (on the left)
-                let fraction = (clip_area.x.abs() / clip_area.width).to_float();
+                let fraction = (clip_area.x.abs() / clip_area_width).to_float();
                 x[0] += fraction * full_width;
             }
             if area_end < clip_area_end {
                 let delta = (clip_area_end - area_end).saturate();
                 // The fraction of the clip that is outside the window (on the right)
-                let fraction = (delta / clip_area.width).to_float();
+                let fraction = (delta / clip_area_width).to_float();
                 x[1] -= fraction * full_width;
             }
 
@@ -116,7 +117,7 @@ impl Widget for Overview {
                 height: area.height,
             };
 
-            let rows = area.height / Length::CHAR_HEIGHT;
+            let rows = area.height / NonZeroLength::CHAR_HEIGHT;
             let rows = rows.round().saturating_cast();
 
             Text::left_aligned(vec![VERTICAL; rows].join("\n").into()).render(

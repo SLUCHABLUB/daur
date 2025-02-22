@@ -1,23 +1,24 @@
-use crate::length::Length;
+use crate::measure::Length;
 use ratatui::layout::Spacing;
 use saturating_cast::SaturatingCast as _;
-use std::num::Saturating;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub};
 
+/// A signed [`Length`](crate::measure::length)
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
-    inner: Saturating<i32>,
+    inner: i32,
 }
 
 impl Offset {
     const fn new(value: i32) -> Offset {
-        Offset {
-            inner: Saturating(value),
-        }
+        Offset { inner: value }
     }
 
+    /// 0
     pub const ZERO: Offset = Offset::new(0);
 
+    /// Returns the absolute value of self
+    #[must_use]
     pub fn abs(self) -> Length {
         if self.inner.is_negative() {
             -self
@@ -27,18 +28,22 @@ impl Offset {
         .saturate()
     }
 
+    /// Convert `self` to a [`Length`] by saturating
+    #[must_use]
     pub fn saturate(self) -> Length {
-        Length::new(self.inner.0.saturating_cast())
+        Length::new(self.inner.saturating_cast())
     }
 
+    /// Converts self to a [`Length`] if it fits
+    #[must_use]
     pub fn to_length(self) -> Option<Length> {
-        Some(Length::new(u16::try_from(self.inner.0).ok()?))
+        Some(Length::new(u16::try_from(self.inner).ok()?))
     }
 }
 
 impl From<Length> for Offset {
     fn from(length: Length) -> Self {
-        Offset::new(i32::from(length.inner.0))
+        Offset::new(i32::from(length.inner()))
     }
 }
 
@@ -56,7 +61,7 @@ impl Add for Offset {
 
     fn add(self, rhs: Self) -> Self::Output {
         Offset {
-            inner: self.inner + rhs.inner,
+            inner: self.inner.saturating_add(rhs.inner),
         }
     }
 }
@@ -66,7 +71,7 @@ impl Sub for Offset {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Offset {
-            inner: self.inner - rhs.inner,
+            inner: self.inner.saturating_sub(rhs.inner),
         }
     }
 }
@@ -75,7 +80,9 @@ impl Neg for Offset {
     type Output = Offset;
 
     fn neg(self) -> Self::Output {
-        Offset { inner: -self.inner }
+        Offset {
+            inner: self.inner.saturating_neg(),
+        }
     }
 }
 
@@ -100,7 +107,7 @@ impl Mul<i32> for Offset {
 
     fn mul(self, rhs: i32) -> Self::Output {
         Offset {
-            inner: self.inner * Saturating(rhs),
+            inner: self.inner.saturating_mul(rhs),
         }
     }
 }
@@ -109,9 +116,7 @@ impl Mul<usize> for Offset {
     type Output = Offset;
 
     fn mul(self, rhs: usize) -> Self::Output {
-        Offset {
-            inner: self.inner * Saturating(rhs.saturating_cast()),
-        }
+        self * rhs.saturating_cast::<i32>()
     }
 }
 

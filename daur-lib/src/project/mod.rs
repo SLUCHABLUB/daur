@@ -13,7 +13,7 @@ use crate::app;
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::key::Key;
-use crate::length::Length;
+use crate::measure::Length;
 use crate::project::changing::Changing;
 use crate::project::ruler::Ruler;
 use crate::project::source::ProjectSource;

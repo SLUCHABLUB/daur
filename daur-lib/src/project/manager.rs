@@ -1,7 +1,7 @@
 use crate::app::OverviewSettings;
 use crate::clip::Clip;
-use crate::length::Length;
 use crate::lock::Lock;
+use crate::measure::Length;
 use crate::popup::Popup;
 use crate::project::action::Action;
 use crate::project::changing::Changing;

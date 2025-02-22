@@ -1,8 +1,5 @@
 use crate::app::Action;
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
-use crate::length::size::Size;
-use crate::length::Length;
+use crate::measure::{Length, NonZeroLength, Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
 use arcstr::ArcStr;
@@ -47,7 +44,9 @@ impl Text {
         )]
 
         if self.centered {
-            let line_count = (height / Length::CHAR_HEIGHT).round().saturating_cast();
+            let line_count = (height / NonZeroLength::CHAR_HEIGHT)
+                .round()
+                .saturating_cast();
             let mut lines = vec![Line::raw(""); line_count];
 
             #[expect(clippy::integer_division, reason = "favour top by rounding down")]

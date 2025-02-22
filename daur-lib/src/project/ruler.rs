@@ -1,8 +1,6 @@
 use crate::app::window::Window;
 use crate::app::{Action, OverviewSettings};
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
-use crate::length::Length;
+use crate::measure::{Length, NonZeroLength, Point, Rectangle};
 use crate::project::changing::Changing;
 use crate::time::Signature;
 use crate::widget::text::Text;
@@ -64,9 +62,9 @@ impl Widget for Ruler {
 }
 
 // TODO: implement this with a stack rather than a paragraph
-fn segment(index: usize, cell_width: Length, bar_width: Length) -> impl Widget {
+fn segment(index: usize, cell_width: NonZeroLength, bar_width: Length) -> impl Widget {
     let cell_count = (bar_width / cell_width).ceil() as usize;
-    let spaces_per_cell = cell_width / Length::CHAR_WIDTH;
+    let spaces_per_cell = cell_width.get() / NonZeroLength::CHAR_WIDTH;
     let spaces_per_cell = spaces_per_cell.round().saturating_cast();
 
     let mut cell = vec![b' '; spaces_per_cell];

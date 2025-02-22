@@ -8,7 +8,6 @@ mod clip;
 mod interval;
 mod key;
 mod keyboard;
-mod length;
 mod lock;
 mod note;
 mod notes;
@@ -17,9 +16,11 @@ mod popup;
 mod project;
 mod ratio;
 mod sign;
-pub mod time;
 mod track;
 mod widget;
+
+pub mod measure;
+pub mod time;
 
 #[cfg(test)]
 mod test;

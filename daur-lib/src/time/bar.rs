@@ -1,5 +1,5 @@
 use crate::app::OverviewSettings;
-use crate::length::Length;
+use crate::measure::Length;
 use crate::ratio::Ratio;
 use crate::time::duration::Duration;
 use crate::time::instant::Instant;
@@ -19,7 +19,7 @@ impl Bar {
     /// The display-width of the bar
     #[must_use]
     pub fn width(&self, overview_settings: OverviewSettings) -> Length {
-        overview_settings.cell_width * self.grid_cell_count(overview_settings)
+        overview_settings.cell_width.get() * self.grid_cell_count(overview_settings)
     }
 
     // TODO: should we round up here?

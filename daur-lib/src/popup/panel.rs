@@ -1,8 +1,7 @@
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::keyboard::Key;
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
+use crate::measure::{Point, Rectangle};
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::widget::button::Button;

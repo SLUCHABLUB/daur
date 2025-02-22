@@ -1,7 +1,5 @@
 use crate::app::settings::OverviewSettings;
-use crate::length::offset::Offset;
-use crate::length::rectangle::Rectangle;
-use crate::length::Length;
+use crate::measure::{Length, Offset, Rectangle};
 use crate::project::changing::Changing;
 use crate::time::{Instant, Period, Signature};
 use std::sync::Arc;
@@ -70,7 +68,7 @@ impl Window {
 
             let cell_offset = offset / self.overview_settings.cell_duration;
 
-            column += self.overview_settings.cell_width * cell_offset;
+            column += self.overview_settings.cell_width.get() * cell_offset;
 
             break;
         }

@@ -1,49 +1,59 @@
-pub mod offset;
-pub mod point;
-pub mod rectangle;
-pub mod size;
+mod non_zero;
+
+pub use non_zero::NonZeroLength;
 
 use crate::ratio::Ratio;
 use ratatui::layout::{Constraint, Spacing};
 use saturating_cast::SaturatingCast as _;
-use std::num::{NonZeroU32, Saturating};
+use std::num::NonZeroU32;
 use std::ops::{Add, AddAssign, Div, Mul, Sub};
 
-/// An abstract orthogonal distance between two points
+/// An orthogonal distance between two points
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Length {
-    inner: Saturating<u16>,
+    inner: u16,
 }
 
 impl Length {
-    const fn new(value: u16) -> Length {
-        Length {
-            inner: Saturating(value),
-        }
+    pub(super) const fn new(value: u16) -> Length {
+        Length { inner: value }
     }
 
+    pub(super) const fn inner(self) -> u16 {
+        self.inner
+    }
+
+    /// 0
     pub const ZERO: Length = Length::new(0);
 
+    /// Double the border-thickness of a bordered widget
     pub const DOUBLE_BORDER: Length = Length::new(2);
 
+    /// The width of the musical cursor
     pub const CURSOR_WIDTH: Length = Length::CHAR_WIDTH;
 
-    pub const DEFAULT_CELL_WIDTH: Length = Length::new(4);
-
+    /// The width of a character
     pub const CHAR_WIDTH: Length = Length::new(1);
 
+    /// The height of a character
     pub const CHAR_HEIGHT: Length = Length::new(1);
 
+    /// The minimum height of the project bar
     pub const PROJECT_BAR_MINIMUM: Length = Length::new(5);
 
+    /// The default width of the track-settings sidebar
     pub const TRACK_SETTINGS_DEFAULT: Length = Length::new(20);
 
+    /// Returns the height of the string
+    #[must_use]
     pub fn string_height(string: &str) -> Self {
         let length = string.lines().count();
         let length = length.saturating_cast();
         Length::new(length)
     }
 
+    /// Returns the width of the string
+    #[must_use]
     pub fn string_width(string: &str) -> Self {
         // TODO: use graphemes
         let length = string.chars().count();
@@ -51,18 +61,22 @@ impl Length {
         Length::new(length)
     }
 
+    /// Converts `self` to a `Constraint`
+    #[must_use]
     pub fn constraint(self) -> Constraint {
-        Constraint::Length(self.inner.0)
+        Constraint::Length(self.inner)
     }
 
+    /// Converts `self` to a `Constraint` using `Constraint::Max`
+    #[must_use]
     pub fn constraint_max(self) -> Constraint {
-        Constraint::Max(self.inner.0)
+        Constraint::Max(self.inner)
     }
 }
 
 impl From<Length> for Spacing {
     fn from(length: Length) -> Self {
-        Spacing::Space(length.inner.0)
+        Spacing::Space(length.inner)
     }
 }
 
@@ -70,9 +84,7 @@ impl Add for Length {
     type Output = Length;
 
     fn add(self, rhs: Length) -> Self::Output {
-        Length {
-            inner: self.inner + rhs.inner,
-        }
+        Length::new(self.inner.saturating_add(rhs.inner))
     }
 }
 
@@ -86,9 +98,7 @@ impl Sub for Length {
     type Output = Length;
 
     fn sub(self, rhs: Length) -> Self::Output {
-        Length {
-            inner: self.inner - rhs.inner,
-        }
+        Length::new(self.inner.saturating_sub(rhs.inner))
     }
 }
 
@@ -96,7 +106,7 @@ impl Mul<Ratio> for Length {
     type Output = Length;
 
     fn mul(self, rhs: Ratio) -> Self::Output {
-        let length = (Ratio::integer(self.inner.0.into()) * rhs).round();
+        let length = (Ratio::integer(self.inner.into()) * rhs).round();
         let length = length.saturating_cast();
         Length::new(length)
     }
@@ -119,13 +129,12 @@ impl Mul<usize> for Length {
 }
 
 // TODO: require rhs to be NonZero
-impl Div for Length {
+impl Div<NonZeroLength> for Length {
     type Output = Ratio;
 
-    fn div(self, rhs: Length) -> Self::Output {
-        // FIXME
-        let denominator = NonZeroU32::new(u32::from(rhs.inner.0)).unwrap();
-        Ratio::new(u32::from(self.inner.0), denominator)
+    fn div(self, rhs: NonZeroLength) -> Self::Output {
+        let denominator = NonZeroU32::from(rhs.inner());
+        Ratio::new(u32::from(self.inner), denominator)
     }
 }
 

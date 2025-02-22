@@ -1,5 +1,5 @@
 use crate::app::{or_popup, App};
-use crate::length::rectangle::Rectangle;
+use crate::measure::Rectangle;
 use crate::widget::Widget as _;
 use never::Never;
 use ratatui::DefaultTerminal;

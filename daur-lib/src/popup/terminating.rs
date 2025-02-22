@@ -1,7 +1,5 @@
 use crate::app::Action;
-use crate::length::point::Point;
-use crate::length::rectangle::Rectangle;
-use crate::length::size::Size;
+use crate::measure::{Point, Rectangle, Size};
 use crate::popup::Popup;
 use crate::widget::has_size::HasSize;
 use crate::widget::Widget;
