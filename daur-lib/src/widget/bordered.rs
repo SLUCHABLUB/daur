@@ -12,7 +12,6 @@ use ratatui::widgets::{Block, WidgetRef as _};
 /// A simpler version of [`Block`](widgets::Block)
 #[derive(Debug)]
 pub struct Bordered<Child> {
-    // TODO: use arc_str to avoid allocating
     title: ArcStr,
     title_alignment: Alignment,
     thick: bool,
