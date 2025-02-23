@@ -1,3 +1,5 @@
+//! A simple multi-selection widget
+
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::ui::{Point, Rectangle};
@@ -10,8 +12,10 @@ use bitbag::{BitBag, Flags};
 use crossterm::event::MouseButton;
 use std::fmt::Display;
 
+/// The type returned by [`selector`]
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
+/// A simple multi-selection widget
 pub fn selector<T: Copy + Flags + Display>(cell: &Cell<BitBag<T>>) -> Selector<T> {
     Stack::horizontal_sized(T::VARIANTS.iter().map(|(_, variant, _)| {
         let name = format!("{variant}");
@@ -25,6 +29,8 @@ pub fn selector<T: Copy + Flags + Display>(cell: &Cell<BitBag<T>>) -> Selector<T
     .spacing(1)
 }
 
+/// A selection option
+#[derive(Debug)]
 pub struct Option<'cell, T: Flags> {
     name: ArcStr,
     value: T,

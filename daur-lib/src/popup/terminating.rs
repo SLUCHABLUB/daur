@@ -1,8 +1,7 @@
 use crate::app::Action;
 use crate::popup::Popup;
 use crate::ui::{Point, Rectangle, Size};
-use crate::widget::has_size::HasSize;
-use crate::widget::Widget;
+use crate::widget::{HasSize, Widget};
 use crossterm::event::MouseButton;
 use educe::Educe;
 use ratatui::buffer::Buffer;
@@ -26,8 +25,8 @@ impl<Child> Terminating<Child> {
 
 // TODO: use injective
 impl<Child: Widget> Widget for Terminating<Child> {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        self.child.render(area, buf, mouse_position);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        self.child.render(area, buffer, mouse_position);
     }
 
     fn click(
@@ -45,8 +44,8 @@ impl<Child: Widget> Widget for Terminating<Child> {
 }
 
 impl<Child: Widget> Widget for &Terminating<Child> {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        (*self).render(area, buf, mouse_position);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        (*self).render(area, buffer, mouse_position);
     }
 
     fn click(

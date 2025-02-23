@@ -1,3 +1,5 @@
+//! A simple single-selection widget
+
 use crate::app::Action;
 use crate::cell::Cell;
 use crate::ui::{Point, Rectangle};
@@ -10,8 +12,10 @@ use crossterm::event::MouseButton;
 use std::fmt::Display;
 use strum::VariantArray;
 
+/// The type returned by [`selector`]
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
+/// A simple single-selection widget
 pub fn selector<T: Copy + PartialEq + Display + VariantArray>(cell: &Cell<T>) -> Selector<T> {
     Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| {
         let name = format!("{variant}");
@@ -25,7 +29,9 @@ pub fn selector<T: Copy + PartialEq + Display + VariantArray>(cell: &Cell<T>) ->
     .spacing(1)
 }
 
-pub struct Option<'cell, T> {
+/// A selection option
+#[derive(Debug)]
+pub struct Option<'cell, T: Copy> {
     name: ArcStr,
     value: T,
     cell: &'cell Cell<T>,

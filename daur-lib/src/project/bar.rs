@@ -2,11 +2,8 @@ use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::project::Project;
-use crate::widget::bordered::Bordered;
-use crate::widget::button::Button;
 use crate::widget::heterogeneous::{ThreeStack, TwoStack};
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Bordered, Button, Text, Widget};
 use arcstr::{format, literal, ArcStr};
 use ratatui::layout::{Constraint, Flex};
 

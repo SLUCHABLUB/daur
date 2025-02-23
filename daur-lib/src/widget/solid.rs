@@ -10,23 +10,27 @@ use ratatui::widgets::WidgetRef as _;
 /// A solid colour
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Solid {
+    /// The colour
     pub colour: Color,
 }
 
 impl Solid {
+    /// A solid black widget
     pub const BLACK: Solid = Solid {
         colour: Color::Black,
     };
+
+    /// A solid white widget
     pub const WHITE: Solid = Solid {
         colour: Color::White,
     };
 }
 
 impl Widget for Solid {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
         Canvas::<fn(&mut Context)>::default()
             .background_color(self.colour)
-            .render_ref(area.to_rect(), buf);
+            .render_ref(area.to_rect(), buffer);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}

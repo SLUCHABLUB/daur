@@ -1,9 +1,7 @@
 use crate::app::Action;
 use crate::track::Track;
 use crate::ui::{Point, Rectangle};
-use crate::widget::bordered::Bordered;
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Bordered, Text, Widget};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -25,8 +23,8 @@ impl Settings {
 }
 
 impl Widget for Settings {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        self.visual().render(area, buf, mouse_position);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        self.visual().render(area, buffer, mouse_position);
     }
 
     fn click(

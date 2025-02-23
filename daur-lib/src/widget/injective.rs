@@ -20,8 +20,8 @@ pub trait Injective {
 }
 
 impl<T: Injective> Widget for T {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        self.visual().render(area, buf, mouse_position);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        self.visual().render(area, buffer, mouse_position);
     }
 
     fn click(

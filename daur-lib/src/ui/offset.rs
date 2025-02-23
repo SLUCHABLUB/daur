@@ -1,9 +1,9 @@
 use crate::ui::Length;
 use ratatui::layout::Spacing;
 use saturating_cast::SaturatingCast as _;
-use std::ops::{Add, AddAssign, Mul, Neg, Sub};
+use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
-/// A signed [`Length`](crate::ui::length)
+/// A signed [`Length`]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
     inner: i32,
@@ -129,5 +129,11 @@ impl AddAssign<Length> for Offset {
 impl AddAssign<Offset> for Length {
     fn add_assign(&mut self, rhs: Offset) {
         *self = (rhs + *self).saturate();
+    }
+}
+
+impl SubAssign<Length> for Offset {
+    fn sub_assign(&mut self, rhs: Length) {
+        *self = *self - rhs;
     }
 }

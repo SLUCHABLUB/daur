@@ -16,11 +16,9 @@ use crate::time::{Instant, Signature, Tempo};
 use crate::track::overview::Overview;
 use crate::track::Track;
 use crate::ui::{Grid, Length};
-use crate::widget::button::Button;
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Button, Text, Widget};
 use crate::{app, time, ui};
 use arcstr::{literal, ArcStr};
 use ratatui::prelude::Constraint;
@@ -81,7 +79,7 @@ impl Project {
         let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
 
         // TODO: put something here?
-        let empty_space = Text::EMPTY;
+        let empty_space = Text::centered(literal!(":)"));
 
         let ruler = Ruler {
             mapping: self.ui_mapping(grid, overview_offset),

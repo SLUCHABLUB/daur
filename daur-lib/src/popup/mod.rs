@@ -18,11 +18,7 @@ use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Length, Point, Rectangle, Size};
-use crate::widget::bordered::Bordered;
-use crate::widget::button::Button;
-use crate::widget::has_size::HasSize as _;
-use crate::widget::to_widget::ToWidget as _;
-use crate::widget::Widget;
+use crate::widget::{Bordered, Button, HasSize as _, ToWidget as _, Widget};
 use crate::{keyboard, Ratio};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
@@ -178,22 +174,22 @@ impl Popup {
 }
 
 impl Widget for Popup {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        Clear.render_ref(area.to_rect(), buf);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        Clear.render_ref(area.to_rect(), buffer);
         let title = self.info().title.clone();
 
         match self {
             Popup::Buttons(buttons) => {
-                Bordered::plain(title, buttons.to_widget()).render(area, buf, mouse_position);
+                Bordered::plain(title, buttons.to_widget()).render(area, buffer, mouse_position);
             }
             Popup::Error(message) => {
-                Bordered::plain(title, message.to_widget()).render(area, buf, mouse_position);
+                Bordered::plain(title, message.to_widget()).render(area, buffer, mouse_position);
             }
             Popup::Explorer(explorer) => {
-                Bordered::plain(title, explorer.to_widget()).render(area, buf, mouse_position);
+                Bordered::plain(title, explorer.to_widget()).render(area, buffer, mouse_position);
             }
             Popup::KeySelector(selector) => {
-                Bordered::plain(title, selector.to_widget()).render(area, buf, mouse_position);
+                Bordered::plain(title, selector.to_widget()).render(area, buffer, mouse_position);
             }
         }
     }

@@ -1,7 +1,6 @@
 use crate::app::Action;
 use crate::ui::{Length, Mapping, NonZeroLength, Point, Rectangle};
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Text, Widget};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -13,7 +12,7 @@ pub struct Ruler {
 }
 
 impl Widget for Ruler {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let mut started = false;
         for (index, bar) in self.mapping.time_signature.bars().enumerate() {
             let x = match self.mapping.offset_in_range(bar.start, area.width) {
@@ -32,7 +31,11 @@ impl Widget for Ruler {
                 height: area.height,
             };
 
-            segment(index, self.mapping.grid.cell_width, width).render(area, buf, mouse_position);
+            segment(index, self.mapping.grid.cell_width, width).render(
+                area,
+                buffer,
+                mouse_position,
+            );
         }
     }
 

@@ -3,7 +3,9 @@ use crate::ui::{Length, Size};
 use crate::widget::Widget;
 use ratatui_explorer::FileExplorer;
 
+/// A widget with a _"canonical"_ size
 pub trait HasSize: Widget {
+    /// Returns the widget's _"canonical"_ size
     fn size(&self) -> Size;
 }
 

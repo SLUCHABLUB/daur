@@ -2,8 +2,7 @@ use crate::app::Action;
 use crate::pitch::Pitch;
 use crate::ui::{NonZeroLength, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::solid::Solid;
-use crate::widget::Widget;
+use crate::widget::{Solid, Widget};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
@@ -14,7 +13,7 @@ pub struct Key {
 }
 
 impl Widget for Key {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let black_part = if self.pitch.chroma().is_black_key() {
             Solid::BLACK
         } else {
@@ -25,7 +24,7 @@ impl Widget for Key {
 
         TwoStack::horizontal((black_part, Solid::WHITE), constraints).render(
             area,
-            buf,
+            buffer,
             mouse_position,
         );
     }

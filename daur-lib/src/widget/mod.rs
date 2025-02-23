@@ -1,20 +1,33 @@
-pub mod bordered;
-pub mod button;
-pub mod has_size;
+//! The UI of daur is based on widgets, based on the system used by the `ratatui` crate
+
+mod bordered;
+mod button;
+mod feed;
+mod has_size;
+// TODO: reexport
+pub(crate) mod injective;
+mod macros;
+mod solid;
+mod text;
+mod to_widget;
+
 pub mod heterogeneous;
 pub mod homogenous;
-mod injective;
-pub mod macros;
 pub mod multi;
 pub mod single;
-pub mod solid;
-pub mod text;
-pub mod to_widget;
+
+pub use bordered::Bordered;
+pub use button::Button;
+pub use feed::{feed, Feed};
+pub use has_size::HasSize;
+pub(crate) use macros::{or_popup, popup_error};
+pub use solid::Solid;
+pub use text::Text;
+pub use to_widget::ToWidget;
 
 use crate::app::Action;
 use crate::lock::Lock;
 use crate::ui::{Point, Rectangle};
-use crate::widget::macros::or_popup;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::widgets::canvas::{Canvas, Context};
@@ -22,10 +35,12 @@ use ratatui::widgets::{Block, WidgetRef as _};
 use ratatui_explorer::{FileExplorer, Input};
 
 /// Like [`Widget`](ratatui::widgets::Widget) but with mouse info.
-#[must_use = "Widgets need to be rendered"]
+#[must_use = "Widgets don't render themselves"]
 pub trait Widget {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point);
+    /// Render the widget in the given area in `buffer`
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point);
 
+    /// Click the widget
     fn click(
         &self,
         area: Rectangle,
@@ -37,16 +52,16 @@ pub trait Widget {
 
 // TODO: remove and add a custom clip-overview widget
 impl<F: Fn(&mut Context)> Widget for Canvas<'_, F> {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
-        self.render_ref(area.to_rect(), buf);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
+        self.render_ref(area.to_rect(), buffer);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
 }
 
 impl Widget for &Lock<FileExplorer> {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
-        self.read().widget().render_ref(area.to_rect(), buf);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
+        self.read().widget().render_ref(area.to_rect(), buffer);
     }
 
     fn click(&self, area: Rectangle, _: MouseButton, position: Point, actions: &mut Vec<Action>) {

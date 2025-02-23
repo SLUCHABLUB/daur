@@ -4,10 +4,8 @@ use crate::keyboard::Key;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Point, Rectangle};
-use crate::widget::button::Button;
 use crate::widget::homogenous::Stack;
-use crate::widget::to_widget::ToWidget;
-use crate::widget::Widget as _;
+use crate::widget::{Button, ToWidget, Widget as _};
 use crossterm::event::{KeyCode, MouseButton};
 
 #[derive(Clone, Eq, PartialEq, Debug)]

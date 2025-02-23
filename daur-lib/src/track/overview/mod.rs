@@ -42,7 +42,7 @@ pub struct Overview {
 }
 
 impl Widget for Overview {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let window_end = Offset::from(area.x + area.width);
 
         // TODO: alternate background colour for grid
@@ -88,7 +88,7 @@ impl Widget for Overview {
                 .y_bounds(y)
                 .render(
                     Rectangle::intersection(clip_area, area),
-                    buf,
+                    buffer,
                     mouse_position,
                 );
         }
@@ -102,7 +102,7 @@ impl Widget for Overview {
                 height: area.height,
             };
 
-            Cursor.render(area, buf, mouse_position);
+            Cursor.render(area, buffer, mouse_position);
         }
     }
 

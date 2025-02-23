@@ -12,8 +12,7 @@ use crate::pitch::Pitch;
 use crate::ui::{Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Text, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -51,9 +50,9 @@ impl PianoRoll {
 }
 
 impl Widget for PianoRoll {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let Some(clip) = self.clip.as_ref().map(Arc::clone) else {
-            Text::centered(NO_CLIP_SELECTED).render(area, buf, mouse_position);
+            Text::centered(NO_CLIP_SELECTED).render(area, buffer, mouse_position);
             return;
         };
 
@@ -81,7 +80,7 @@ impl Widget for PianoRoll {
 
             (stack, constraint)
         }))
-        .render(area, buf, mouse_position);
+        .render(area, buffer, mouse_position);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {

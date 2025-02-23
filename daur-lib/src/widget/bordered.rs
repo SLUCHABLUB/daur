@@ -19,6 +19,7 @@ pub struct Bordered<Child> {
 }
 
 impl<Child> Bordered<Child> {
+    /// Creates a titled border around `child`
     pub fn new(title: ArcStr, child: Child, thick: bool) -> Self {
         Bordered {
             title,
@@ -28,14 +29,18 @@ impl<Child> Bordered<Child> {
         }
     }
 
+    /// Creates a titled plain border around `child`
     pub fn plain(title: ArcStr, child: Child) -> Self {
         Bordered::new(title, child, false)
     }
 
+    /// Creates a titled **thick** border around `child`
     pub fn thick(title: ArcStr, child: Child) -> Self {
         Bordered::new(title, child, true)
     }
 
+    /// Sets whether `self` is **thick**
+    #[must_use]
     pub fn thickness(mut self, thick: bool) -> Self {
         self.thick = thick;
         self
@@ -54,10 +59,10 @@ impl<Child> Bordered<Child> {
 }
 
 impl<Child: Widget> Widget for Bordered<Child> {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let block = self.to_block();
-        block.render_ref(area.to_rect(), buf);
-        self.child.render(self.inner(area), buf, mouse_position);
+        block.render_ref(area.to_rect(), buffer);
+        self.child.render(self.inner(area), buffer, mouse_position);
     }
 
     fn click(

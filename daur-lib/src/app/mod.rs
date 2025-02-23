@@ -213,12 +213,12 @@ impl Default for App {
 }
 
 impl Widget for App {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        self.background().render(area, buf, mouse_position);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        self.background().render(area, buffer, mouse_position);
 
         for popup in self.popups.to_stack() {
             let area = popup.area_in_window(area);
-            popup.render(area, buf, mouse_position);
+            popup.render(area, buffer, mouse_position);
         }
     }
 

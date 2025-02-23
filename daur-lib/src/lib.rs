@@ -18,10 +18,10 @@ mod project;
 mod ratio;
 mod sign;
 mod track;
-mod widget;
 
 pub mod time;
 pub mod ui;
+pub mod widget;
 
 #[cfg(test)]
 mod test;

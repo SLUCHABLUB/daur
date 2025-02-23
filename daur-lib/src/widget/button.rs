@@ -8,24 +8,30 @@ use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 
+/// A button
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub struct Button {
+    /// The action to take when the button is clicked
     pub action: Action,
-    label: Text,
-    description: Option<Text>,
-    bordered: bool,
+    /// The default label for the button
+    pub label: Text,
+    /// An optional description to display when the button is hovered
+    pub description: Option<Text>,
 }
 
 impl Button {
+    /// Constructs a simple button with no border and left aligned text
+    #[must_use]
     pub fn simple(label: ArcStr, action: Action) -> Self {
         Button {
             action,
             label: Text::left_aligned(label),
             description: None,
-            bordered: false,
         }
     }
 
+    /// Constructs a standard button with a border and centered text
+    #[must_use]
     pub fn standard(label: ArcStr, action: Action) -> Bordered<Self> {
         Bordered::plain(
             ArcStr::new(),
@@ -33,11 +39,12 @@ impl Button {
                 action,
                 label: Text::centered(label),
                 description: None,
-                bordered: true,
             },
         )
     }
 
+    /// Constructs a button with a description, border and centered text
+    #[must_use]
     pub fn described(label: ArcStr, description: ArcStr, action: Action) -> Bordered<Self> {
         Bordered::plain(
             ArcStr::new(),
@@ -45,7 +52,6 @@ impl Button {
                 action,
                 label: Text::centered(label),
                 description: Some(Text::centered(description)),
-                bordered: true,
             },
         )
     }
@@ -57,14 +63,14 @@ impl Button {
 
 // TODO: use injective
 impl Widget for Button {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let text = if area.contains(mouse_position) {
             self.description()
         } else {
             &self.label
         };
 
-        text.render(area, buf, mouse_position);
+        text.render(area, buffer, mouse_position);
     }
 
     fn click(&self, _: Rectangle, button: MouseButton, _: Point, actions: &mut Vec<Action>) {

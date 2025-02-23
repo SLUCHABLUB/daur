@@ -1,7 +1,6 @@
 use crate::app::Action;
 use crate::ui::{NonZeroLength, Point, Rectangle};
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Text, Widget};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use itertools::Itertools as _;
@@ -13,14 +12,14 @@ use std::iter::repeat_n;
 pub struct Cursor;
 
 impl Widget for Cursor {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let height = (area.height / NonZeroLength::CHAR_HEIGHT)
             .round()
             .saturating_cast();
 
         Text::left_aligned(ArcStr::from(repeat_n(VERTICAL, height).join("\n"))).render(
             area,
-            buf,
+            buffer,
             mouse_position,
         );
     }

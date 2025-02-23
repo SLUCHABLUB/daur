@@ -11,18 +11,18 @@ use ratatui::widgets::{Paragraph, WidgetRef as _};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 
+/// Some text
 #[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub struct Text {
+    /// The text
     pub string: ArcStr,
+    /// Whether the text is centered or not (top-left aligned)
     pub centered: bool,
 }
 
 impl Text {
-    pub const EMPTY: Text = Text {
-        string: ArcStr::new(),
-        centered: false,
-    };
-
+    /// Constructs a top-left aligned text widget
+    #[must_use]
     pub fn left_aligned(string: ArcStr) -> Text {
         Text {
             string,
@@ -30,6 +30,8 @@ impl Text {
         }
     }
 
+    /// Constructs a centered text widget
+    #[must_use]
     pub fn centered(string: ArcStr) -> Text {
         Text {
             string,
@@ -67,8 +69,9 @@ impl Text {
 }
 
 impl Widget for Text {
-    fn render(&self, area: Rectangle, buf: &mut Buffer, _: Point) {
-        self.paragraph(area.height).render_ref(area.to_rect(), buf);
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
+        self.paragraph(area.height)
+            .render_ref(area.to_rect(), buffer);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
