@@ -6,16 +6,14 @@ use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
 use crate::time::{Instant, Signature, Tempo};
+use crate::track::overview::cursor::Cursor;
 use crate::track::Track;
 use crate::ui::{Grid, Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
-use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::symbols::line::VERTICAL;
 use ratatui_explorer::File;
-use saturating_cast::SaturatingCast as _;
 use std::sync::{Arc, Weak};
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
@@ -117,14 +115,7 @@ impl Widget for Overview {
                 height: area.height,
             };
 
-            let rows = area.height / NonZeroLength::CHAR_HEIGHT;
-            let rows = rows.round().saturating_cast();
-
-            Text::left_aligned(vec![VERTICAL; rows].join("\n").into()).render(
-                area,
-                buf,
-                mouse_position,
-            );
+            Cursor.render(area, buf, mouse_position);
         }
     }
 
