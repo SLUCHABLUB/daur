@@ -84,7 +84,7 @@ impl Widget for Overview {
             }
 
             let clip_area = Rectangle {
-                x: clip_start.saturate(),
+                x: (clip_start + area.x).saturate(),
                 y: area.y,
                 width: clip_width.get(),
                 height: area.height,
@@ -103,9 +103,9 @@ impl Widget for Overview {
         }
 
         // Render the cursor
-        if let Some(cursor_column) = mapping.offset_in_range(self.cursor, area.width) {
+        if let Some(cursor_offset) = mapping.offset_in_range(self.cursor, area.width) {
             let area = Rectangle {
-                x: cursor_column,
+                x: cursor_offset + area.x,
                 y: area.y,
                 width: Length::CURSOR_WIDTH,
                 height: area.height,

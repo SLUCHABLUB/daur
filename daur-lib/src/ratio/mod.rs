@@ -156,12 +156,12 @@ impl Ratio {
         self.numerator as f64 / self.denominator.get() as f64
     }
 
-    fn approximate_big(denominator: u128, reciprocal: NonZeroU128) -> Ratio {
-        let Some(denominator) = NonZeroU128::new(denominator) else {
+    fn approximate_big(numerator: u128, denominator: NonZeroU128) -> Ratio {
+        let Some(numerator) = NonZeroU128::new(numerator) else {
             return Ratio::ZERO;
         };
 
-        NonZeroRatio::approximate_big(denominator, reciprocal).get()
+        NonZeroRatio::approximate_big(numerator, denominator).get()
     }
 
     /// Due to using lcm (multiplication) in addition to addition in addition (in extension),
@@ -211,8 +211,8 @@ impl Add for Ratio {
 
         let lcm = lcm(lhs_denominator, rhs_denominator);
 
-        let lhs = lhs_numerator.saturating_mul(lcm.get());
-        let rhs = rhs_numerator.saturating_mul(lcm.get());
+        let lhs = lhs_numerator.saturating_mul(lcm.get() / lhs_denominator);
+        let rhs = rhs_numerator.saturating_mul(lcm.get() / rhs_denominator);
 
         #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
         Ratio::approximate_big(lhs + rhs, lcm)
@@ -234,8 +234,8 @@ impl Sub for Ratio {
 
         let lcm = lcm(lhs_denominator, rhs_denominator);
 
-        let lhs = lhs_numerator.saturating_mul(lcm.get());
-        let rhs = rhs_numerator.saturating_mul(lcm.get());
+        let lhs = lhs_numerator.saturating_mul(lcm.get() / lhs_denominator);
+        let rhs = rhs_numerator.saturating_mul(lcm.get() / rhs_denominator);
 
         Ratio::approximate_big(lhs.saturating_sub(rhs), lcm)
     }

@@ -30,7 +30,7 @@ impl Widget for Ruler {
         let mut started = false;
         for (index, bar) in self.time_signature.bars().enumerate() {
             let x = match mapping.offset_in_range(bar.start, area.width) {
-                Some(x) => x,
+                Some(x) => x + area.x,
                 None if started => break,
                 None => continue,
             };
