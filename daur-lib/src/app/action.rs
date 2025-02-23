@@ -1,4 +1,4 @@
-#![allow(
+#![expect(
     clippy::used_underscore_binding,
     reason = "educe generates names with underscores in their implementations"
 )]
