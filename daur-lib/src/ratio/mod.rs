@@ -86,6 +86,18 @@ impl Ratio {
         Ratio::integer(self.ceil())
     }
 
+    /// Calculates the floor of the ratio
+    #[must_use]
+    pub fn floor(self) -> u32 {
+        self.numerator / self.denominator
+    }
+
+    /// Returns the ratio representing the floor of `self`
+    #[must_use]
+    pub fn floored(self) -> Ratio {
+        Ratio::integer(self.floor())
+    }
+
     /// Rounds `self` to an integer
     #[must_use]
     pub fn round(self) -> u32 {

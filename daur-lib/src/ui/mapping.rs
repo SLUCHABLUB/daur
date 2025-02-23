@@ -64,7 +64,7 @@ impl Mapping {
     pub fn instant_on_grid(&self, offset: Length) -> Instant {
         let offset = self.offset + offset;
 
-        let cell = (offset / self.grid.cell_width).rounded();
+        let cell = (offset / self.grid.cell_width).floored();
         let duration = self.grid.cell_duration.get() * cell;
         Instant {
             since_start: duration,
