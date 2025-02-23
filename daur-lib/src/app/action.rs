@@ -1,8 +1,3 @@
-#![expect(
-    clippy::used_underscore_binding,
-    reason = "educe generates names with underscores in their implementations"
-)]
-
 use crate::app::App;
 use crate::popup::Popup;
 use crate::time::Instant;
