@@ -64,7 +64,7 @@ impl Widget for Overview {
 
             let clip_start = mapping.offset(period.start);
             let clip_end = mapping.offset(period.end());
-            let clip_width = clip_start - clip_end;
+            let clip_width = clip_end - clip_start;
 
             let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
                 continue;
