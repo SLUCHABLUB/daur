@@ -17,6 +17,7 @@ use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");
+const OPEN_PIANO_ROLL: ArcStr = literal!("open piano roll");
 
 pub fn open_import_audio_popup() -> Action {
     let action = move |file: &File| Action::import_audio(file.path());
@@ -28,6 +29,7 @@ fn right_click_menu() -> Arc<Popup> {
     Popup::unimportant_buttons([
         (IMPORT_AUDIO, open_import_audio_popup()),
         (ADD_NOTES, Action::Project(project::Action::AddNotes)),
+        (OPEN_PIANO_ROLL, Action::OpenPianoRoll),
     ])
 }
 
@@ -139,7 +141,6 @@ impl Widget for Overview {
             actions.push(Action::SelectTrack(self.index));
         }
 
-        // TODO: if clip is selected, open its right-click-menu
         if button == MouseButton::Right {
             actions.push(Action::OpenPopup(right_click_menu().at(position)));
         }

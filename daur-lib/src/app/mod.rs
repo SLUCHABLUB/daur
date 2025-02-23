@@ -68,7 +68,7 @@ pub struct App {
 
     grid: Grid,
     overview_offset: Length,
-    piano_roll_settings: PianoRollSettings,
+    piano_roll_settings: Cell<PianoRollSettings>,
 
     cached_mouse_position: Cell<Point>,
     cached_area: Cell<Rectangle>,
@@ -102,7 +102,7 @@ impl App {
 
             grid: Grid::default(),
             overview_offset: Length::ZERO,
-            piano_roll_settings: PianoRollSettings::default(),
+            piano_roll_settings: Cell::new(PianoRollSettings::default()),
 
             cached_mouse_position: Cell::default(),
             cached_area: Cell::default(),
@@ -188,7 +188,7 @@ impl App {
                         self.selected_track_index.get(),
                         self.selected_clip_index.get(),
                     ),
-                    settings: self.piano_roll_settings,
+                    settings: self.piano_roll_settings.get(),
                     // TODO: scrolling
                     lowest_pitch: Pitch::A440,
                 },
@@ -196,7 +196,7 @@ impl App {
             [
                 self.project_bar_size.constraint(),
                 Constraint::Fill(1),
-                self.piano_roll_settings.height.constraint(),
+                self.piano_roll_settings.get().height.constraint(),
             ],
         )
     }

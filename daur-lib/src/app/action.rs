@@ -5,8 +5,9 @@
 
 use crate::app::App;
 use crate::popup::Popup;
-use crate::project;
 use crate::time::Instant;
+use crate::ui::Length;
+use crate::{project, Ratio};
 use educe::Educe;
 use rodio::Device;
 use std::path::PathBuf;
@@ -29,6 +30,9 @@ pub enum Action {
     MoveCursor(Instant),
     /// Selects the given track
     SelectTrack(usize),
+
+    OpenPianoRoll,
+    SetPianoRollHeight(Length),
 
     /// Stop playing
     Pause,
@@ -66,6 +70,16 @@ impl Action {
                     app.start_playback();
                 }
             }
+
+            Action::OpenPianoRoll => {
+                Action::SetPianoRollHeight(app.cached_area.get().height * Ratio::HALF).take(app);
+            }
+            Action::SetPianoRollHeight(height) => {
+                let mut settings = app.piano_roll_settings.get();
+                settings.height = height;
+                app.piano_roll_settings.set(settings);
+            }
+
             Action::OpenPopup(popup) => {
                 app.popups.open(popup);
             }
