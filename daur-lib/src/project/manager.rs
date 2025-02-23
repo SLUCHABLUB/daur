@@ -1,4 +1,3 @@
-use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::lock::Lock;
 use crate::popup::Popup;
@@ -8,7 +7,7 @@ use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
 use crate::project::Project;
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
-use crate::ui::Length;
+use crate::ui::{Grid, Length};
 use crate::widget::Widget;
 use std::sync::{Arc, Weak};
 use thiserror::Error;
@@ -51,14 +50,16 @@ impl Manager {
     pub fn workspace(
         &self,
         track_settings_size: Length,
-        overview_settings: OverviewSettings,
+        grid: Grid,
+        overview_offset: Length,
         selected_track_index: usize,
         selected_clip: &Weak<Clip>,
         cursor: Instant,
     ) -> impl Widget {
         self.project.read().workspace(
             track_settings_size,
-            overview_settings,
+            grid,
+            overview_offset,
             selected_track_index,
             selected_clip,
             cursor,

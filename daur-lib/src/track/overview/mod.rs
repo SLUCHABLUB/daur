@@ -1,12 +1,13 @@
-use crate::app::window::Window;
-use crate::app::{Action, OverviewSettings};
+mod cursor;
+
+use crate::app::Action;
 use crate::clip::Clip;
 use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
 use crate::time::{Instant, Signature, Tempo};
 use crate::track::Track;
-use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle};
+use crate::ui::{Grid, Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::{literal, ArcStr};
@@ -38,60 +39,59 @@ pub struct Overview {
     pub selected_clip: Weak<Clip>,
     pub time_signature: Arc<Changing<Signature>>,
     pub tempo: Arc<Changing<Tempo>>,
-    pub settings: OverviewSettings,
+    pub grid: Grid,
+    pub offset: Length,
     pub cursor: Instant,
     pub index: usize,
 }
 
-impl Overview {
-    fn window(&self, area: Rectangle) -> Window {
-        let time_signature = Arc::clone(&self.time_signature);
-
-        Window {
-            time_signature,
-            overview_settings: self.settings,
-            x: area.x,
-            width: area.width,
-        }
-    }
-}
-
 impl Widget for Overview {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        let area_end = Offset::from(area.x + area.width);
+        let window_end = Offset::from(area.x + area.width);
 
-        let window = self.window(area);
+        let time_signature = Arc::clone(&self.time_signature);
+
+        let mapping = Mapping {
+            time_signature,
+            grid: self.grid,
+            offset: self.offset,
+        };
 
         // TODO: alternate background colour for grid
 
         // Render the clips
         for (start, clip) in &self.track.clips {
-            let clip_area = window.period_to_unchecked_rect(
-                clip.period(*start, &self.time_signature, &self.tempo),
-                area.x,
-                area.y,
-                area.height,
-            );
-            let clip_area_end = clip_area.x + clip_area.width;
+            let period = clip.period(*start, &self.time_signature, &self.tempo);
 
-            let Some(clip_area_width) = NonZeroLength::from_length(clip_area.width) else {
+            let clip_start = mapping.offset(period.start);
+            let clip_end = mapping.offset(period.end());
+            let clip_width = clip_start - clip_end;
+
+            let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
                 continue;
             };
 
             let [mut x, y] = clip.content.full_overview_viewport();
             let full_width = x[1] - x[0];
 
-            if clip_area.x < Offset::ZERO {
+            if clip_start < Offset::ZERO {
                 // The fraction of the clip that is outside the window (on the left)
-                let fraction = (clip_area.x.abs() / clip_area_width).to_float();
+                let fraction = (clip_start.abs() / clip_width).to_float();
                 x[0] += fraction * full_width;
             }
-            if area_end < clip_area_end {
-                let delta = (clip_area_end - area_end).saturate();
+            if window_end < clip_end {
+                let delta = (clip_end - window_end).saturate();
                 // The fraction of the clip that is outside the window (on the right)
-                let fraction = (delta / clip_area_width).to_float();
+                let fraction = (delta / clip_width).to_float();
                 x[1] -= fraction * full_width;
             }
+
+            let clip_area = Rectangle {
+                x: clip_start.saturate(),
+                y: area.y,
+                width: clip_width.get(),
+                height: area.height,
+            };
 
             let selected = self
                 .selected_clip
@@ -102,14 +102,14 @@ impl Widget for Overview {
                 .x_bounds(x)
                 .y_bounds(y)
                 .render(
-                    Rectangle::intersection(clip_area.clamp(), area),
+                    Rectangle::intersection(clip_area, area),
                     buf,
                     mouse_position,
                 );
         }
 
         // Render the cursor
-        if let Some(cursor_column) = window.instant_to_column(self.cursor) {
+        if let Some(cursor_column) = mapping.offset_in_range(self.cursor, area.width) {
             let area = Rectangle {
                 x: cursor_column,
                 y: area.y,
@@ -137,9 +137,15 @@ impl Widget for Overview {
     ) {
         // TODO: move, select or open clips
 
-        let window = self.window(area);
+        let time_signature = Arc::clone(&self.time_signature);
 
-        let instant = window.column_to_instant_on_grid(position.x);
+        let mapping = Mapping {
+            time_signature,
+            grid: self.grid,
+            offset: self.offset,
+        };
+
+        let instant = mapping.instant_on_grid(position.x - area.x);
 
         if button == MouseButton::Left {
             actions.push(Action::MoveCursor(instant));

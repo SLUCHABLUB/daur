@@ -1,8 +1,7 @@
-use crate::app::window::Window;
-use crate::app::{Action, OverviewSettings};
+use crate::app::Action;
 use crate::project::changing::Changing;
 use crate::time::Signature;
-use crate::ui::{Length, NonZeroLength, Point, Rectangle};
+use crate::ui::{Grid, Length, Mapping, NonZeroLength, Point, Rectangle};
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::ArcStr;
@@ -14,32 +13,30 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct Ruler {
     pub time_signature: Arc<Changing<Signature>>,
-    pub overview_settings: OverviewSettings,
+    pub grid: Grid,
+    pub offset: Length,
 }
 
 impl Widget for Ruler {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let time_signature = Arc::clone(&self.time_signature);
 
-        let window = Window {
+        let mapping = Mapping {
             time_signature,
-            overview_settings: self.overview_settings,
-            x: area.x,
-            width: area.width,
+            grid: self.grid,
+            offset: self.offset,
         };
 
         let mut started = false;
         for (index, bar) in self.time_signature.bars().enumerate() {
-            let x = match window.instant_to_column(bar.start) {
+            let x = match mapping.offset_in_range(bar.start, area.width) {
                 Some(x) => x,
                 None if started => break,
                 None => continue,
             };
             started = true;
 
-            let width = bar
-                .width(self.overview_settings)
-                .min(area.x + area.width - x);
+            let width = mapping.bar_width(bar).min(area.x + area.width - x);
 
             let area = Rectangle {
                 x,
@@ -48,11 +45,7 @@ impl Widget for Ruler {
                 height: area.height,
             };
 
-            segment(index, self.overview_settings.cell_width, width).render(
-                area,
-                buf,
-                mouse_position,
-            );
+            segment(index, self.grid.cell_width, width).render(area, buf, mouse_position);
         }
     }
 

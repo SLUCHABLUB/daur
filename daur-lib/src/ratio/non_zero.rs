@@ -5,7 +5,7 @@ use std::num::{NonZeroU128, NonZeroU32};
 use std::ops::{Div, DivAssign};
 
 /// A non-zero `Ratio`
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct NonZeroRatio {
     numerator: NonZeroU32,
     denominator: NonZeroU32,

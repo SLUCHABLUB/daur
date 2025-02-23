@@ -1,14 +1,11 @@
 mod action;
 mod audio;
-pub mod control;
+mod control;
 mod draw;
 mod events;
 mod macros;
-mod settings;
-pub mod window;
 
 pub use action::Action;
-pub use settings::OverviewSettings;
 
 use crate::app::audio::spawn_audio_thread;
 use crate::app::control::default;
@@ -22,7 +19,7 @@ use crate::popup::Popups;
 use crate::project::manager::Manager;
 use crate::project::Project;
 use crate::time::{Instant, Period};
-use crate::ui::{Length, Point, Rectangle};
+use crate::ui::{Grid, Length, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::Widget;
 use crossterm::event::MouseButton;
@@ -65,7 +62,8 @@ pub struct App {
     selected_clip: Weak<Clip>,
     cursor: Cell<Instant>,
 
-    overview_settings: OverviewSettings,
+    grid: Grid,
+    overview_offset: Length,
 
     cached_mouse_position: Cell<Point>,
     cached_area: Cell<Rectangle>,
@@ -97,7 +95,8 @@ impl App {
             selected_clip: Weak::new(),
             cursor: Cell::new(Instant::START),
 
-            overview_settings: OverviewSettings::default(),
+            grid: Grid::default(),
+            overview_offset: Length::ZERO,
 
             cached_mouse_position: Cell::default(),
             cached_area: Cell::default(),
@@ -172,7 +171,8 @@ impl App {
                 self.project.bar(self.is_playing()),
                 self.project.workspace(
                     self.track_settings_size,
-                    self.overview_settings,
+                    self.grid,
+                    self.overview_offset,
                     self.selected_track_index.get(),
                     &self.selected_clip,
                     self.playback_position(),

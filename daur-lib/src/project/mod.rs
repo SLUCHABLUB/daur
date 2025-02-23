@@ -10,7 +10,6 @@ mod source;
 pub use action::Action;
 
 use crate::app;
-use crate::app::OverviewSettings;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::project::changing::Changing;
@@ -19,7 +18,7 @@ use crate::project::source::ProjectSource;
 use crate::time::{Instant, Signature, Tempo};
 use crate::track::overview::Overview;
 use crate::track::Track;
-use crate::ui::Length;
+use crate::ui::{Grid, Length};
 use crate::widget::button::Button;
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
@@ -57,7 +56,8 @@ impl Project {
     pub fn workspace(
         &self,
         track_settings_size: Length,
-        overview_settings: OverviewSettings,
+        grid: Grid,
+        overview_offset: Length,
         selected_track_index: usize,
         selected_clip: &Weak<Clip>,
         cursor: Instant,
@@ -72,7 +72,8 @@ impl Project {
 
         let ruler = Ruler {
             time_signature: self.time_signature(),
-            overview_settings,
+            grid,
+            offset: overview_offset,
         };
         let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
 
@@ -87,7 +88,8 @@ impl Project {
                 selected_clip: Weak::clone(selected_clip),
                 time_signature: self.time_signature(),
                 tempo: self.tempo(),
-                settings: overview_settings,
+                grid,
+                offset: overview_offset,
                 cursor,
                 index,
             });
@@ -99,7 +101,8 @@ impl Project {
             selected_clip: Weak::clone(selected_clip),
             time_signature: self.time_signature(),
             tempo: self.tempo(),
-            settings: overview_settings,
+            grid,
+            offset: overview_offset,
             cursor,
             index: usize::MAX,
         });

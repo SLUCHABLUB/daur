@@ -1,7 +1,7 @@
 use crate::time::{Instant, NonZeroInstant};
 use std::collections::BTreeMap;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Debug, Default)]
 pub struct Changing<T> {
     pub start: T,
     pub changes: BTreeMap<NonZeroInstant, T>,

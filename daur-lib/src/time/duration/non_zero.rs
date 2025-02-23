@@ -3,7 +3,7 @@ use crate::time::duration::Duration;
 use std::ops::{Div, DivAssign};
 
 /// A non-zero `Duration`
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct NonZeroDuration {
     /// The number of whole-note durations
     pub whole_notes: NonZeroRatio,
