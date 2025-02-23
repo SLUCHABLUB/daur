@@ -2,15 +2,11 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::project::changing::Changing;
 use crate::time::duration::Duration;
-use crate::time::period::Period;
-use crate::time::signature::Signature;
-use crate::time::tempo::Tempo;
+use crate::time::Mapping;
 use num::Integer as _;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Sub};
-use std::time;
 
 /// An instant in musical time
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -25,31 +21,15 @@ impl Instant {
         since_start: Duration::ZERO,
     };
 
-    fn real_time_duration_since_start(
-        self,
-        time_signature: &Changing<Signature>,
-        tempo: &Changing<Tempo>,
-    ) -> time::Duration {
-        let period = Period {
-            start: Instant::START,
-            duration: self.since_start,
-        };
-        period.real_time_duration(time_signature, tempo)
-    }
-
+    // TODO: move to its own mapping
     /// Gets the offset in samples from the staring point
     #[must_use]
-    pub fn to_sample(
-        self,
-        time_signature: &Changing<Signature>,
-        tempo: &Changing<Tempo>,
-        sample_rate: u32,
-    ) -> usize {
+    pub fn to_sample(self, mapping: &Mapping, sample_rate: u32) -> usize {
         const NANOS_PER_SECOND: u128 = 1_000_000_000;
         const HALF: u128 = 500_000_000;
 
         let sample_rate = u128::from(sample_rate);
-        let duration = self.real_time_duration_since_start(time_signature, tempo);
+        let duration = mapping.real_time_offset(self);
 
         // < 2^64 * 10^9 < 2^94
         let nanos = duration.as_nanos();

@@ -2,13 +2,12 @@ mod cursor;
 
 use crate::app::Action;
 use crate::popup::Popup;
-use crate::project;
-use crate::project::changing::Changing;
-use crate::time::{Instant, Signature, Tempo};
+use crate::time::Instant;
 use crate::track::overview::cursor::Cursor;
 use crate::track::Track;
-use crate::ui::{Grid, Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
+use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::widget::Widget;
+use crate::{project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -36,10 +35,8 @@ fn right_click_menu() -> Arc<Popup> {
 pub struct Overview {
     pub track: Arc<Track>,
     pub selected_clip_index: usize,
-    pub time_signature: Arc<Changing<Signature>>,
-    pub tempo: Arc<Changing<Tempo>>,
-    pub grid: Grid,
-    pub offset: Length,
+    pub time_mapping: time::Mapping,
+    pub ui_mapping: ui::Mapping,
     pub cursor: Instant,
     pub index: usize,
 }
@@ -48,22 +45,14 @@ impl Widget for Overview {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
         let window_end = Offset::from(area.x + area.width);
 
-        let time_signature = Arc::clone(&self.time_signature);
-
-        let mapping = Mapping {
-            time_signature,
-            grid: self.grid,
-            offset: self.offset,
-        };
-
         // TODO: alternate background colour for grid
 
         // Render the clips
         for (index, (start, clip)) in self.track.clips.iter().enumerate() {
-            let period = clip.period(*start, &self.time_signature, &self.tempo);
+            let period = clip.period(*start, &self.time_mapping);
 
-            let clip_start = mapping.offset(period.start);
-            let clip_end = mapping.offset(period.end());
+            let clip_start = self.ui_mapping.offset(period.start);
+            let clip_end = self.ui_mapping.offset(period.end());
             let clip_width = clip_end - clip_start;
 
             let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
@@ -105,7 +94,7 @@ impl Widget for Overview {
         }
 
         // Render the cursor
-        if let Some(cursor_offset) = mapping.offset_in_range(self.cursor, area.width) {
+        if let Some(cursor_offset) = self.ui_mapping.offset_in_range(self.cursor, area.width) {
             let area = Rectangle {
                 x: cursor_offset + area.x,
                 y: area.y,
@@ -126,15 +115,7 @@ impl Widget for Overview {
     ) {
         // TODO: move, select or open clips
 
-        let time_signature = Arc::clone(&self.time_signature);
-
-        let mapping = Mapping {
-            time_signature,
-            grid: self.grid,
-            offset: self.offset,
-        };
-
-        let instant = mapping.instant_on_grid(position.x - area.x);
+        let instant = self.ui_mapping.instant_on_grid(position.x - area.x);
 
         if button == MouseButton::Left {
             actions.push(Action::MoveCursor(instant));

@@ -1,8 +1,7 @@
 use crate::audio::Audio;
 use crate::notes::Notes;
 use crate::pitch::Pitch;
-use crate::project::changing::Changing;
-use crate::time::{Instant, Period, Signature, Tempo};
+use crate::time::{Instant, Mapping, Period};
 use ratatui::style::Color;
 use ratatui::widgets::canvas::{Context, Points};
 
@@ -21,14 +20,9 @@ pub enum ClipContent {
 impl ClipContent {
     /// Returns the period of the content
     #[must_use]
-    pub fn period(
-        &self,
-        start: Instant,
-        time_signature: &Changing<Signature>,
-        tempo: &Changing<Tempo>,
-    ) -> Period {
+    pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
         match self {
-            ClipContent::Audio(audio) => audio.period(start, time_signature, tempo),
+            ClipContent::Audio(audio) => audio.period(start, mapping),
             ClipContent::Notes(notes) => Period {
                 start,
                 duration: notes.duration(),

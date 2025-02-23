@@ -37,6 +37,7 @@ impl Ratio {
     /// 1
     pub const ONE: Ratio = Ratio::integer(1);
 
+    const EPSILON: Ratio = Ratio::reciprocal_of(NonZeroU32::MAX);
     const MAX: Ratio = Ratio::integer(u32::MAX);
 
     /// Creates a new `Ratio` representing `numerator` / `denominator`
@@ -129,7 +130,7 @@ impl Ratio {
         )]
 
         const MAX: f64 = Ratio::MAX.to_float();
-        const EPSILON: f64 = Ratio::MAX.to_float();
+        const EPSILON: f64 = Ratio::EPSILON.to_float();
 
         if float.is_sign_negative() {
             return Ratio::ZERO;
@@ -153,6 +154,10 @@ impl Ratio {
 
         loop {
             let mean_guess = (low_guess + high_guess) * Ratio::HALF;
+
+            if mean_guess == low_guess || mean_guess == high_guess {
+                return mean_guess;
+            }
 
             match float.total_cmp(&mean_guess.to_float()) {
                 Ordering::Less => high_guess = mean_guess,

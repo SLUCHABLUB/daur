@@ -2,8 +2,7 @@ mod source;
 
 pub use source::AudioSource;
 
-use crate::project::changing::Changing;
-use crate::time::{Instant, Period, Signature, Tempo};
+use crate::time::{Instant, Mapping, Period};
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{rational, Integer as _};
@@ -65,13 +64,8 @@ impl Audio {
 
     /// Returns the period of the audio
     #[must_use]
-    pub fn period(
-        &self,
-        start: Instant,
-        time_signature: &Changing<Signature>,
-        tempo: &Changing<Tempo>,
-    ) -> Period {
-        Period::from_real_time(start, time_signature, tempo, self.duration())
+    pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
+        mapping.period(start, self.duration())
     }
 
     /// Returns a [`Source`](rodio::source::Source) for the audio

@@ -1,6 +1,5 @@
 mod action;
 mod bar;
-pub mod change;
 pub mod changing;
 mod edit;
 pub mod manager;
@@ -9,7 +8,6 @@ mod source;
 
 pub use action::Action;
 
-use crate::app;
 use crate::key::Key;
 use crate::project::changing::Changing;
 use crate::project::ruler::Ruler;
@@ -23,6 +21,7 @@ use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
 use crate::widget::text::Text;
 use crate::widget::Widget;
+use crate::{app, time, ui};
 use arcstr::{literal, ArcStr};
 use ratatui::prelude::Constraint;
 use saturating_cast::SaturatingCast as _;
@@ -52,6 +51,21 @@ impl Project {
         Arc::clone(&self.tempo)
     }
 
+    pub fn time_mapping(&self) -> time::Mapping {
+        time::Mapping {
+            tempo: self.tempo(),
+            time_signature: self.time_signature(),
+        }
+    }
+
+    pub fn ui_mapping(&self, grid: Grid, offset: Length) -> ui::Mapping {
+        ui::Mapping {
+            time_signature: self.time_signature(),
+            grid,
+            offset,
+        }
+    }
+
     pub fn workspace(
         &self,
         track_settings_size: Length,
@@ -70,9 +84,7 @@ impl Project {
         let empty_space = Text::EMPTY;
 
         let ruler = Ruler {
-            time_signature: self.time_signature(),
-            grid,
-            offset: overview_offset,
+            mapping: self.ui_mapping(grid, overview_offset),
         };
         let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
 
@@ -85,10 +97,8 @@ impl Project {
             track_overviews.push(Overview {
                 track,
                 selected_clip_index,
-                time_signature: self.time_signature(),
-                tempo: self.tempo(),
-                grid,
-                offset: overview_offset,
+                time_mapping: self.time_mapping(),
+                ui_mapping: self.ui_mapping(grid, overview_offset),
                 cursor,
                 index,
             });
@@ -98,10 +108,8 @@ impl Project {
         track_overviews.push(Overview {
             track: Arc::new(Track::new()),
             selected_clip_index,
-            time_signature: self.time_signature(),
-            tempo: self.tempo(),
-            grid,
-            offset: overview_offset,
+            time_mapping: self.time_mapping(),
+            ui_mapping: self.ui_mapping(grid, overview_offset),
             cursor,
             index: usize::MAX,
         });
@@ -128,15 +136,14 @@ impl Project {
     }
 
     pub fn to_source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {
-        let offset = cursor.to_sample(&self.time_signature, &self.tempo, sample_rate);
+        let mapping = self.time_mapping();
+        let offset = cursor.to_sample(&mapping, sample_rate);
         ProjectSource {
             sample_rate,
             tracks: self
                 .tracks
                 .iter()
-                .map(|track| {
-                    track.to_source(&self.time_signature, &self.tempo, sample_rate, offset)
-                })
+                .map(|track| track.to_source(&mapping, sample_rate, offset))
                 .collect(),
         }
     }

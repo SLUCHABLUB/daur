@@ -4,8 +4,7 @@ mod source;
 pub use content::ClipContent;
 pub use source::ClipSource;
 
-use crate::project::changing::Changing;
-use crate::time::{Instant, Period, Signature, Tempo};
+use crate::time::{Instant, Mapping, Period};
 use arcstr::ArcStr;
 use ratatui::layout::Alignment;
 use ratatui::style::{Color, Style};
@@ -27,13 +26,8 @@ pub struct Clip {
 impl Clip {
     /// The [`Period`] of the clip
     #[must_use]
-    pub fn period(
-        &self,
-        start: Instant,
-        time_signature: &Changing<Signature>,
-        tempo: &Changing<Tempo>,
-    ) -> Period {
-        self.content.period(start, time_signature, tempo)
+    pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
+        self.content.period(start, mapping)
     }
 
     /// Returns the canvas for the clip overview.

@@ -1,42 +1,29 @@
 use crate::app::Action;
-use crate::project::changing::Changing;
-use crate::time::Signature;
-use crate::ui::{Grid, Length, Mapping, NonZeroLength, Point, Rectangle};
+use crate::ui::{Length, Mapping, NonZeroLength, Point, Rectangle};
 use crate::widget::text::Text;
 use crate::widget::Widget;
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use saturating_cast::SaturatingCast as _;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct Ruler {
-    pub time_signature: Arc<Changing<Signature>>,
-    pub grid: Grid,
-    pub offset: Length,
+    pub mapping: Mapping,
 }
 
 impl Widget for Ruler {
     fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
-        let time_signature = Arc::clone(&self.time_signature);
-
-        let mapping = Mapping {
-            time_signature,
-            grid: self.grid,
-            offset: self.offset,
-        };
-
         let mut started = false;
-        for (index, bar) in self.time_signature.bars().enumerate() {
-            let x = match mapping.offset_in_range(bar.start, area.width) {
+        for (index, bar) in self.mapping.time_signature.bars().enumerate() {
+            let x = match self.mapping.offset_in_range(bar.start, area.width) {
                 Some(x) => x + area.x,
                 None if started => break,
                 None => continue,
             };
             started = true;
 
-            let width = mapping.bar_width(bar).min(area.x + area.width - x);
+            let width = self.mapping.bar_width(bar).min(area.x + area.width - x);
 
             let area = Rectangle {
                 x,
@@ -45,7 +32,7 @@ impl Widget for Ruler {
                 height: area.height,
             };
 
-            segment(index, self.grid.cell_width, width).render(area, buf, mouse_position);
+            segment(index, self.mapping.grid.cell_width, width).render(area, buf, mouse_position);
         }
     }
 

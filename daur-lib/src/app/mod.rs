@@ -19,7 +19,7 @@ use crate::pitch::Pitch;
 use crate::popup::Popups;
 use crate::project::manager::Manager;
 use crate::project::Project;
-use crate::time::{Instant, Period};
+use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Point, Rectangle};
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::Widget;
@@ -157,14 +157,18 @@ impl App {
     }
 
     fn playback_position(&self) -> Instant {
+        let mapping = Mapping {
+            tempo: self.project.tempo(),
+            time_signature: self.project.time_signature(),
+        };
+
         if let Some(playback_start) = self.playback_start.get() {
-            Period::from_real_time(
-                self.cursor.get(),
-                &self.project.time_signature(),
-                &self.project.tempo(),
-                playback_start.elapsed().unwrap_or(Duration::ZERO),
-            )
-            .end()
+            mapping
+                .period(
+                    self.cursor.get(),
+                    playback_start.elapsed().unwrap_or(Duration::ZERO),
+                )
+                .end()
         } else {
             self.cursor.get()
         }
