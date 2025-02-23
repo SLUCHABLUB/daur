@@ -1,7 +1,6 @@
 mod cursor;
 
 use crate::app::Action;
-use crate::clip::Clip;
 use crate::popup::Popup;
 use crate::project;
 use crate::project::changing::Changing;
@@ -14,7 +13,7 @@ use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui_explorer::File;
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");
@@ -34,7 +33,7 @@ fn right_click_menu() -> Arc<Popup> {
 
 pub struct Overview {
     pub track: Arc<Track>,
-    pub selected_clip: Weak<Clip>,
+    pub selected_clip_index: usize,
     pub time_signature: Arc<Changing<Signature>>,
     pub tempo: Arc<Changing<Tempo>>,
     pub grid: Grid,
@@ -58,7 +57,7 @@ impl Widget for Overview {
         // TODO: alternate background colour for grid
 
         // Render the clips
-        for (start, clip) in &self.track.clips {
+        for (index, (start, clip)) in self.track.clips.iter().enumerate() {
             let period = clip.period(*start, &self.time_signature, &self.tempo);
 
             let clip_start = mapping.offset(period.start);
@@ -91,10 +90,7 @@ impl Widget for Overview {
                 height: area.height,
             };
 
-            let selected = self
-                .selected_clip
-                .upgrade()
-                .is_some_and(|upgrade| upgrade == *clip);
+            let selected = self.selected_clip_index == index;
 
             clip.overview_canvas(selected)
                 .x_bounds(x)

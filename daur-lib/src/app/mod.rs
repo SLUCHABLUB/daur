@@ -13,15 +13,17 @@ use crate::app::draw::spawn_draw_thread;
 use crate::app::events::spawn_events_thread;
 use crate::app::macros::or_popup;
 use crate::cell::Cell;
-use crate::clip::Clip;
 use crate::keyboard::Key;
+use crate::piano_roll::PianoRoll;
+use crate::pitch::Pitch;
 use crate::popup::Popups;
 use crate::project::manager::Manager;
 use crate::project::Project;
 use crate::time::{Instant, Period};
 use crate::ui::{Grid, Length, Point, Rectangle};
-use crate::widget::heterogeneous::TwoStack;
+use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::Widget;
+use crate::PianoRollSettings;
 use crossterm::event::MouseButton;
 use educe::Educe;
 use ratatui::buffer::Buffer;
@@ -33,7 +35,7 @@ use rodio::Device;
 use std::collections::HashMap;
 use std::hint::spin_loop;
 use std::panic::resume_unwind;
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 /// A running instance of the DAW
@@ -59,11 +61,14 @@ pub struct App {
 
     // Note that this may not actually index a valid track
     selected_track_index: Cell<usize>,
-    selected_clip: Weak<Clip>,
+    // Note that this may not actually index a valid clip
+    selected_clip_index: Cell<usize>,
+
     cursor: Cell<Instant>,
 
     grid: Grid,
     overview_offset: Length,
+    piano_roll_settings: PianoRollSettings,
 
     cached_mouse_position: Cell<Point>,
     cached_area: Cell<Rectangle>,
@@ -92,11 +97,12 @@ impl App {
             track_settings_size: Length::TRACK_SETTINGS_DEFAULT,
 
             selected_track_index: Cell::new(0),
-            selected_clip: Weak::new(),
+            selected_clip_index: Cell::new(0),
             cursor: Cell::new(Instant::START),
 
             grid: Grid::default(),
             overview_offset: Length::ZERO,
+            piano_roll_settings: PianoRollSettings::default(),
 
             cached_mouse_position: Cell::default(),
             cached_area: Cell::default(),
@@ -166,7 +172,7 @@ impl App {
 
     /// The app's main widget, behind any popups
     fn background(&self) -> impl Widget + use<'_> {
-        TwoStack::vertical(
+        ThreeStack::vertical(
             (
                 self.project.bar(self.is_playing()),
                 self.project.workspace(
@@ -174,11 +180,24 @@ impl App {
                     self.grid,
                     self.overview_offset,
                     self.selected_track_index.get(),
-                    &self.selected_clip,
+                    self.selected_clip_index.get(),
                     self.playback_position(),
                 ),
+                PianoRoll {
+                    clip: self.project.clip(
+                        self.selected_track_index.get(),
+                        self.selected_clip_index.get(),
+                    ),
+                    settings: self.piano_roll_settings,
+                    // TODO: scrolling
+                    lowest_pitch: Pitch::A440,
+                },
             ),
-            [self.project_bar_size.constraint(), Constraint::Fill(1)],
+            [
+                self.project_bar_size.constraint(),
+                Constraint::Fill(1),
+                self.piano_roll_settings.height.constraint(),
+            ],
         )
     }
 }

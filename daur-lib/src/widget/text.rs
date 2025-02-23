@@ -47,6 +47,11 @@ impl Text {
             let line_count = (height / NonZeroLength::CHAR_HEIGHT)
                 .round()
                 .saturating_cast();
+
+            if line_count == 0 {
+                return Paragraph::new("");
+            }
+
             let mut lines = vec![Line::raw(""); line_count];
 
             #[expect(clippy::integer_division, reason = "favour top by rounding down")]

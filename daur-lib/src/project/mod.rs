@@ -10,7 +10,6 @@ mod source;
 pub use action::Action;
 
 use crate::app;
-use crate::clip::Clip;
 use crate::key::Key;
 use crate::project::changing::Changing;
 use crate::project::ruler::Ruler;
@@ -27,7 +26,7 @@ use crate::widget::Widget;
 use arcstr::{literal, ArcStr};
 use ratatui::prelude::Constraint;
 use saturating_cast::SaturatingCast as _;
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
@@ -59,7 +58,7 @@ impl Project {
         grid: Grid,
         overview_offset: Length,
         selected_track_index: usize,
-        selected_clip: &Weak<Clip>,
+        selected_clip_index: usize,
         cursor: Instant,
     ) -> impl Widget {
         let track_count = self.tracks.len().saturating_cast();
@@ -85,7 +84,7 @@ impl Project {
             track_settings.push(track.settings(selected, index));
             track_overviews.push(Overview {
                 track,
-                selected_clip: Weak::clone(selected_clip),
+                selected_clip_index,
                 time_signature: self.time_signature(),
                 tempo: self.tempo(),
                 grid,
@@ -98,7 +97,7 @@ impl Project {
         // A "dummy-track" for the row with the add track button
         track_overviews.push(Overview {
             track: Arc::new(Track::new()),
-            selected_clip: Weak::clone(selected_clip),
+            selected_clip_index,
             time_signature: self.time_signature(),
             tempo: self.tempo(),
             grid,
