@@ -1,5 +1,5 @@
 use crate::project::changing::Changing;
-use crate::time::{Bar, Instant, Signature};
+use crate::time::{Bar, Instant, Period, Signature};
 use crate::ui::grid::Grid;
 use crate::ui::{Length, Offset};
 use std::sync::Arc;
@@ -59,7 +59,7 @@ impl Mapping {
         (offset < max).then_some(offset)
     }
 
-    /// Maps offset from the left of the window to an [`Instant`] on the grid
+    /// Maps an offset from the left of the window to an [`Instant`] on the grid
     #[must_use]
     pub fn instant_on_grid(&self, offset: Length) -> Instant {
         let offset = self.offset + offset;
@@ -69,5 +69,27 @@ impl Mapping {
         Instant {
             since_start: duration,
         }
+    }
+
+    /// Maps an offset from the left of the window to an [`Instant`]
+    #[must_use]
+    pub fn instant(&self, offset: Length) -> Instant {
+        let offset = self.offset + offset;
+
+        let cell = offset / self.grid.cell_width;
+        let duration = self.grid.cell_duration.get() * cell;
+        Instant {
+            since_start: duration,
+        }
+    }
+
+    /// Maps an offset from the left of the window and a width to a [`Period`]
+    #[must_use]
+    pub fn period(&self, x: Length, width: Length) -> Period {
+        let end = x + width;
+        let start = self.instant(x);
+        let end = self.instant(end);
+        let duration = end - start;
+        Period { start, duration }
     }
 }
