@@ -1,3 +1,5 @@
+mod piano_roll;
+
 use crate::note::Note;
 use crate::pitch::Pitch;
 use crate::time::{Duration, Instant};

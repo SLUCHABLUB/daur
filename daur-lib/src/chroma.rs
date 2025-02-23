@@ -5,8 +5,9 @@ use std::fmt::{Display, Formatter};
 use strum::VariantArray;
 
 #[expect(clippy::min_ident_chars, reason = "Chromas are named after letters")]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, VariantArray)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, VariantArray)]
 pub enum Chroma {
+    #[default]
     A,
     Bb,
     B,
@@ -27,6 +28,10 @@ impl Chroma {
             Sign::Sharp => self.sharp_name(),
             Sign::Flat => self.flat_name(),
         }
+    }
+
+    pub fn is_black_key(self) -> bool {
+        self.sharp_name() != self.flat_name()
     }
 
     pub fn with_sign(self, sign: Sign) -> Chroma {

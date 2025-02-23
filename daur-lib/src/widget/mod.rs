@@ -7,6 +7,7 @@ mod injective;
 pub mod macros;
 pub mod multi;
 pub mod single;
+pub mod solid;
 pub mod text;
 pub mod to_widget;
 
