@@ -4,7 +4,8 @@ use crate::popup::Popup;
 use crate::project::Project;
 use crate::widget::heterogeneous::{ThreeStack, TwoStack};
 use crate::widget::{Bordered, Button, Text, Widget};
-use arcstr::{format, literal, ArcStr};
+use crate::ToArcStr as _;
+use arcstr::{literal, ArcStr};
 use ratatui::layout::{Constraint, Flex};
 
 const PLAY: ArcStr = literal!("\u{25B6}");
@@ -42,17 +43,17 @@ impl Project {
         let fallbacks = ThreeStack::horizontal(
             (
                 Button::described(
-                    format!("{}", self.key.start),
+                    self.key.start.to_arc_str(),
                     KEY_DESCRIPTION,
                     select_key(self.key.start),
                 ),
                 Button::described(
-                    format!("{}", self.time_signature.start),
+                    self.time_signature.start.to_arc_str(),
                     TIME_SIGNATURE_DESCRIPTION,
                     Action::None,
                 ),
                 Button::described(
-                    format!("{}", self.tempo.start),
+                    self.tempo.start.to_arc_str(),
                     TEMPO_DESCRIPTION,
                     Action::None,
                 ),

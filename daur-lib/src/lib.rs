@@ -17,6 +17,7 @@ mod popup;
 mod project;
 mod ratio;
 mod sign;
+mod string;
 mod track;
 
 pub mod time;
@@ -32,3 +33,4 @@ pub use cell::Cell;
 pub use clip::{Clip, ClipContent, ClipSource};
 pub use piano_roll::PianoRollSettings;
 pub use ratio::{NonZeroRatio, Ratio};
+pub use string::ToArcStr;

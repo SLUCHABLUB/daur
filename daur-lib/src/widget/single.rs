@@ -7,7 +7,8 @@ use crate::widget::bordered::Bordered;
 use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;
 use crate::widget::text::Text;
-use arcstr::{format, ArcStr};
+use crate::ToArcStr;
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use std::fmt::Display;
 use strum::VariantArray;
@@ -17,8 +18,7 @@ pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
 /// A simple single-selection widget
 pub fn selector<T: Copy + PartialEq + Display + VariantArray>(cell: &Cell<T>) -> Selector<T> {
-    // TODO: use ToArcStr::to_arc_str
-    selector_with_formatter(cell, |variant| format!("{variant}"))
+    selector_with_formatter(cell, ToArcStr::to_arc_str)
 }
 
 /// A simple single-selection widget that uses a custom formatter rather than [`Display`]
