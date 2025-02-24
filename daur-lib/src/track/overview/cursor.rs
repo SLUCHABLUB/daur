@@ -17,7 +17,7 @@ impl Widget for Cursor {
             .round()
             .saturating_cast();
 
-        Text::left_aligned(ArcStr::from(repeat_n(VERTICAL, height).join("\n"))).render(
+        Text::top_left(ArcStr::from(repeat_n(VERTICAL, height).join("\n"))).render(
             area,
             buffer,
             mouse_position,

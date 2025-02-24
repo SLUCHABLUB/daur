@@ -1,32 +1,41 @@
 use crate::app::Action;
 use crate::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
-use crate::widget::Widget;
+use crate::widget::{Alignment, Widget};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::Alignment;
+use ratatui::layout;
 use ratatui::text::Line;
 use ratatui::widgets::{Paragraph, WidgetRef as _};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 
 /// Some text
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Text {
     /// The text
     pub string: ArcStr,
-    /// Whether the text is centred or not (top-left aligned)
-    pub centered: bool,
+    /// How the text should be aligned
+    pub alignment: Alignment,
 }
 
 impl Text {
     /// Constructs a top-left aligned text widget
     #[must_use]
-    pub fn left_aligned(string: ArcStr) -> Text {
+    pub fn top_left(string: ArcStr) -> Text {
         Text {
             string,
-            centered: false,
+            alignment: Alignment::TopLeft,
+        }
+    }
+
+    /// Constructs a top-right aligned text widget
+    #[must_use]
+    pub fn top_right(string: ArcStr) -> Text {
+        Text {
+            string,
+            alignment: Alignment::TopRight,
         }
     }
 
@@ -35,36 +44,49 @@ impl Text {
     pub fn centred(string: ArcStr) -> Text {
         Text {
             string,
-            centered: true,
+            alignment: Alignment::Centre,
+        }
+    }
+
+    /// Constructs a bottom-right aligned text widget
+    #[must_use]
+    pub fn bottom_right(string: ArcStr) -> Text {
+        Text {
+            string,
+            alignment: Alignment::BottomRight,
         }
     }
 
     fn paragraph(&self, height: Length) -> Paragraph {
-        #![expect(
-            clippy::indexing_slicing,
-            reason = "by dividing `line_count` by 2, the index will be inside `lines`"
-        )]
-
-        if self.centered {
-            let line_count = (height / NonZeroLength::CHAR_HEIGHT)
-                .round()
-                .saturating_cast();
-
-            if line_count == 0 {
-                return Paragraph::new("");
+        let alignment = match self.alignment {
+            Alignment::TopLeft | Alignment::Left | Alignment::BottomLeft => layout::Alignment::Left,
+            Alignment::Top | Alignment::Centre | Alignment::Bottom => layout::Alignment::Center,
+            Alignment::TopRight | Alignment::Right | Alignment::BottomRight => {
+                layout::Alignment::Right
             }
+        };
 
-            let mut lines = vec![Line::raw(""); line_count];
+        let full_line_count: usize = (height / NonZeroLength::CHAR_HEIGHT)
+            .round()
+            .saturating_cast();
 
-            #[expect(clippy::integer_division, reason = "favour top by rounding down")]
-            let halfway = line_count.saturating_sub(1) / 2;
+        let Some(max_padding) = full_line_count.checked_sub(1) else {
+            return Paragraph::new("");
+        };
 
-            lines[halfway] = Line::raw(self.string.as_str());
+        #[expect(clippy::integer_division, reason = "favour top by rounding down")]
+        let mut padding = match self.alignment {
+            Alignment::TopLeft | Alignment::Top | Alignment::TopRight => 0,
+            Alignment::Left | Alignment::Centre | Alignment::Right => max_padding / 2,
+            Alignment::BottomLeft | Alignment::Bottom | Alignment::BottomRight => max_padding,
+        };
 
-            Paragraph::new(lines).alignment(Alignment::Center)
-        } else {
-            Paragraph::new(self.string.as_str())
-        }
+        padding = padding.saturating_sub(self.string.lines().count());
+
+        let mut lines = vec![Line::raw(""); padding];
+        lines.extend(self.string.lines().map(Line::raw));
+
+        Paragraph::new(lines).alignment(alignment)
     }
 }
 

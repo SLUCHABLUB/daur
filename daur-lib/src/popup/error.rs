@@ -72,8 +72,8 @@ impl ToWidget for ErrorPopup {
 
         ThreeStack::vertical(
             (
-                Text::left_aligned(self.display()),
-                Text::left_aligned(self.debug()),
+                Text::top_left(self.display()),
+                Text::top_left(self.debug()),
                 Terminating {
                     child: acknowledge_button,
                     popup: self.info.this(),

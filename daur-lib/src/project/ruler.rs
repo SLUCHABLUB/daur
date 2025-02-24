@@ -1,7 +1,6 @@
 use crate::app::Action;
 use crate::ui::{Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
 use crate::widget::{feed, Text, Widget};
-use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Direction;
@@ -43,6 +42,10 @@ impl Widget for Ruler {
 type Rule = Text;
 
 fn rule(index: usize, cell_width: NonZeroLength, bar_width: Length) -> Rule {
+    let full_width = (bar_width / NonZeroLength::CHAR_WIDTH)
+        .round()
+        .saturating_cast();
+
     let cell_count = (bar_width / cell_width).ceil() as usize;
     let spaces_per_cell = cell_width.get() / NonZeroLength::CHAR_WIDTH;
     let spaces_per_cell = spaces_per_cell.round().saturating_cast();
@@ -56,17 +59,17 @@ fn rule(index: usize, cell_width: NonZeroLength, bar_width: Length) -> Rule {
         *first = b'|';
     }
 
-    let string = index.to_string() + "\n" + &*String::from_utf8_lossy(&cells);
-
-    // TODO: right align
-    Text::left_aligned(ArcStr::from(string))
+    Text::top_right(arcstr::format!(
+        "{index:<1$}\n{}",
+        String::from_utf8_lossy(&cells),
+        full_width
+    ))
 }
 
 fn negative_rule(index: isize, bar_width: Length) -> Rule {
-    let arrow_count = bar_width / NonZeroLength::CHAR_WIDTH;
-    let string =
-        index.to_string() + "\n" + "|" + &*">".repeat(arrow_count.round().saturating_cast());
+    let width = (bar_width / NonZeroLength::CHAR_WIDTH)
+        .round()
+        .saturating_cast();
 
-    // TODO: right align
-    Text::left_aligned(ArcStr::from(string))
+    Text::top_right(arcstr::format!("{index:<1$}\n{:><1$}", "|", width))
 }

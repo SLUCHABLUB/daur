@@ -11,11 +11,13 @@ mod solid;
 mod text;
 mod to_widget;
 
+mod alignment;
 pub mod heterogeneous;
 pub mod homogenous;
 pub mod multi;
 pub mod single;
 
+pub use alignment::Alignment;
 pub use bordered::Bordered;
 pub use button::Button;
 pub use feed::{feed, Feed};

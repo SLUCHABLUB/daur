@@ -9,7 +9,7 @@ use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 
 /// A button
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Button {
     /// The action to take when the button is clicked
     pub action: Action,
@@ -25,7 +25,7 @@ impl Button {
     pub fn simple(label: ArcStr, action: Action) -> Self {
         Button {
             action,
-            label: Text::left_aligned(label),
+            label: Text::top_left(label),
             description: None,
         }
     }
