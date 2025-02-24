@@ -49,7 +49,7 @@ impl<T: Copy + PartialEq> Injective for Option<'_, T> {
         let is_set = self.cell.get() == self.value;
         let name = ArcStr::clone(&self.name);
 
-        Bordered::new(ArcStr::new(), Text::centered(name), is_set)
+        Bordered::new(ArcStr::new(), Text::centred(name), is_set)
     }
 
     fn inject(&self, _: Rectangle, button: MouseButton, _: Point, _: &mut Vec<Action>) {

@@ -37,21 +37,21 @@ impl Button {
             ArcStr::new(),
             Button {
                 action,
-                label: Text::centered(label),
+                label: Text::centred(label),
                 description: None,
             },
         )
     }
 
-    /// Constructs a button with a description, border and centered text
+    /// Constructs a button with a description, border and centred text
     #[must_use]
     pub fn described(label: ArcStr, description: ArcStr, action: Action) -> Bordered<Self> {
         Bordered::plain(
             ArcStr::new(),
             Button {
                 action,
-                label: Text::centered(label),
-                description: Some(Text::centered(description)),
+                label: Text::centred(label),
+                description: Some(Text::centred(description)),
             },
         )
     }

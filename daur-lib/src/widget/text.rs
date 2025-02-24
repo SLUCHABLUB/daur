@@ -16,7 +16,7 @@ use std::cmp::max;
 pub struct Text {
     /// The text
     pub string: ArcStr,
-    /// Whether the text is centered or not (top-left aligned)
+    /// Whether the text is centred or not (top-left aligned)
     pub centered: bool,
 }
 
@@ -32,7 +32,7 @@ impl Text {
 
     /// Constructs a centered text widget
     #[must_use]
-    pub fn centered(string: ArcStr) -> Text {
+    pub fn centred(string: ArcStr) -> Text {
         Text {
             string,
             centered: true,

@@ -62,7 +62,7 @@ impl Project {
         );
 
         let left_side = TwoStack::horizontal(
-            (Text::centered(literal!("TODO")), fallbacks),
+            (Text::centred(literal!("TODO")), fallbacks),
             [Constraint::Fill(1); 2],
         )
         .flex(Flex::SpaceBetween);
@@ -70,7 +70,7 @@ impl Project {
         Bordered::thick(
             self.title(),
             ThreeStack::horizontal(
-                (left_side, playback_button, Text::centered(literal!("TODO"))),
+                (left_side, playback_button, Text::centred(literal!("TODO"))),
                 [
                     Constraint::Fill(1),
                     Constraint::Length(7),

@@ -40,7 +40,7 @@ pub struct PianoRoll {
 impl Widget for PianoRoll {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let Some(clip) = self.clip.as_ref().map(Arc::clone) else {
-            Text::centered(NO_CLIP_SELECTED).render(area, buffer, mouse_position);
+            Text::centred(NO_CLIP_SELECTED).render(area, buffer, mouse_position);
             return;
         };
 

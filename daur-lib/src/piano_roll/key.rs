@@ -25,7 +25,7 @@ impl Widget for PianoKey {
 
         // TODO: only do this for the tonic
         // TODO: align to the bottom right
-        let white_part = Text::centered(ArcStr::from(self.pitch.name(self.key.sign)));
+        let white_part = Text::centred(ArcStr::from(self.pitch.name(self.key.sign)));
 
         let constraints = [self.black_key_depth.get().constraint(), Constraint::Fill(1)];
 

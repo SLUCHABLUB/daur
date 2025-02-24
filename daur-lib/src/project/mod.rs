@@ -78,7 +78,7 @@ impl Project {
         let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
 
         // TODO: put something here?
-        let empty_space = Text::centered(literal!(":)"));
+        let empty_space = Text::centred(literal!(":)"));
 
         let ruler = Ruler {
             mapping: self.ui_mapping(grid),

@@ -18,7 +18,7 @@ impl Settings {
     fn visual(&self) -> impl Widget {
         let title = ArcStr::clone(&self.track.name);
 
-        Bordered::new(title, Text::centered(literal!("TODO")), self.selected)
+        Bordered::new(title, Text::centred(literal!("TODO")), self.selected)
     }
 }
 
