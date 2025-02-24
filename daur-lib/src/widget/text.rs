@@ -57,7 +57,7 @@ impl Text {
             let mut lines = vec![Line::raw(""); line_count];
 
             #[expect(clippy::integer_division, reason = "favour top by rounding down")]
-            let halfway = line_count / 2;
+            let halfway = line_count.saturating_sub(1) / 2;
 
             lines[halfway] = Line::raw(self.string.as_str());
 
