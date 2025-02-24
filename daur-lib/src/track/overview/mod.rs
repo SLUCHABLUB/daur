@@ -100,7 +100,7 @@ impl Widget for Overview {
         let Some(cursor_offset) = cursor_offset.to_length() else {
             return;
         };
-        if area.width < cursor_offset {
+        if area.width <= cursor_offset {
             return;
         }
 
