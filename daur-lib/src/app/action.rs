@@ -67,7 +67,7 @@ impl Action {
             }
 
             Action::OpenPianoRoll => {
-                Action::SetPianoRollHeight(app.cached_area.get().height * Ratio::HALF).take(app);
+                Action::SetPianoRollHeight(app.last_size.get().height * Ratio::HALF).take(app);
             }
             Action::SetPianoRollHeight(height) => {
                 let mut settings = app.piano_roll_settings.get();

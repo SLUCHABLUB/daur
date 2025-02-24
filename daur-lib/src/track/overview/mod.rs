@@ -5,7 +5,7 @@ use crate::popup::Popup;
 use crate::time::Instant;
 use crate::track::overview::cursor::Cursor;
 use crate::track::Track;
-use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle};
+use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle, Size};
 use crate::widget::Widget;
 use crate::{project, time, ui};
 use arcstr::{literal, ArcStr};
@@ -44,7 +44,7 @@ pub struct Overview {
 
 impl Widget for Overview {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        let window_end = Offset::from(area.x + area.width);
+        let window_end = Offset::from(area.position.x + area.size.width);
 
         // TODO: alternate background colour for grid
 
@@ -76,10 +76,14 @@ impl Widget for Overview {
             }
 
             let clip_area = Rectangle {
-                x: (clip_start + area.x).saturate(),
-                y: area.y,
-                width: clip_width.get(),
-                height: area.height,
+                position: Point {
+                    x: (clip_start + area.position.x).saturate(),
+                    y: area.position.y,
+                },
+                size: Size {
+                    width: clip_width.get(),
+                    height: area.size.height,
+                },
             };
 
             let selected = self.selected_clip_index == index;
@@ -100,15 +104,19 @@ impl Widget for Overview {
         let Some(cursor_offset) = cursor_offset.to_length() else {
             return;
         };
-        if area.width <= cursor_offset {
+        if area.size.width <= cursor_offset {
             return;
         }
 
         let cursor_area = Rectangle {
-            x: cursor_offset + area.x,
-            y: area.y,
-            width: Length::CURSOR_WIDTH,
-            height: area.height,
+            position: Point {
+                x: cursor_offset + area.position.x,
+                y: area.position.y,
+            },
+            size: Size {
+                width: Length::CURSOR_WIDTH,
+                height: area.size.height,
+            },
         };
 
         Cursor.render(cursor_area, buffer, mouse_position);
@@ -123,7 +131,7 @@ impl Widget for Overview {
     ) {
         // TODO: move, select or open clips
 
-        let ui_offset = Offset::from(position.x - area.x) - self.offset;
+        let ui_offset = Offset::from(position.x - area.position.x) - self.offset;
         let instant = self.ui_mapping.instant_on_grid(ui_offset.saturate());
 
         if button == MouseButton::Left {

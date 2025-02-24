@@ -46,14 +46,14 @@ impl Widget for PianoRoll {
 
         let roll_start = self
             .mapping
-            .instant(area.x + self.settings.piano_depth.get());
+            .instant(area.position.x + self.settings.piano_depth.get());
         let piano_key_key = self.key.get(roll_start);
 
         // TODO: change the anchor point to be at the bottom
         feed(
             Direction::Vertical,
             -self.settings.y_offset,
-            area.height,
+            area.size.height,
             |index| {
                 let interval = Interval::from_semitones(index.saturating_neg().saturating_cast());
                 let key = PianoKey {

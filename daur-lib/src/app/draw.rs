@@ -21,9 +21,9 @@ impl App {
             terminal.draw(|frame| {
                 let area = Rectangle::from_rect(frame.area());
                 let buf = frame.buffer_mut();
-                let mouse_position = self.cached_mouse_position.get();
+                let mouse_position = self.las_mouse_position.get();
 
-                self.cached_area.set(area);
+                self.last_size.set(area.size);
 
                 self.render(area, buf, mouse_position);
             }),

@@ -1,11 +1,12 @@
 use crate::app::{or_popup, App};
 use crate::keyboard::Key;
-use crate::ui::{Length, Offset, Point, Rectangle, Vector};
+use crate::ui::{Length, Offset, Point, Size, Vector};
 use crate::widget::Widget as _;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};
 use never::Never;
-use ratatui::layout::{Position, Rect};
+use ratatui::layout;
+use ratatui::layout::Position;
 use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
 
@@ -53,7 +54,7 @@ impl App {
             Event::Mouse(event) => {
                 self.should_redraw.set(true);
 
-                self.cached_mouse_position
+                self.las_mouse_position
                     .set(Point::from_position(Position::new(event.column, event.row)));
 
                 match event.kind {
@@ -61,9 +62,9 @@ impl App {
                         let mut action_queue = Vec::new();
 
                         self.click(
-                            self.cached_area.get(),
+                            self.last_rectangle(),
                             button,
-                            self.cached_mouse_position.get(),
+                            self.las_mouse_position.get(),
                             &mut action_queue,
                         );
 
@@ -93,9 +94,8 @@ impl App {
             Event::Resize(width, height) => {
                 self.should_redraw.set(true);
 
-                // TODO: change to a size
-                self.cached_area
-                    .set(Rectangle::from_rect(Rect::new(0, 0, width, height)));
+                self.last_size
+                    .set(Size::from_size(layout::Size { width, height }));
             }
         }
     }
@@ -103,8 +103,8 @@ impl App {
     fn scroll(&self, direction: Vector) {
         let offset = -direction;
 
-        let mouse_position = self.cached_mouse_position.get();
-        let height = self.cached_area.get().height;
+        let mouse_position = self.las_mouse_position.get();
+        let height = self.last_size.get().height;
 
         if mouse_position.y < self.project_bar_size {
             // scroll the project bar (do nothing)

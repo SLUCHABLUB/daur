@@ -11,6 +11,12 @@ pub struct Point {
 }
 
 impl Point {
+    /// The origin point, in the top-left corner of the screen
+    pub const ZERO: Point = Point {
+        x: Length::ZERO,
+        y: Length::ZERO,
+    };
+
     pub(crate) fn from_position(position: Position) -> Self {
         Point {
             x: Length::new(position.x),

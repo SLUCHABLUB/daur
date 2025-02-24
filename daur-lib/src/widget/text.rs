@@ -92,7 +92,7 @@ impl Text {
 
 impl Widget for Text {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        self.paragraph(area.height)
+        self.paragraph(area.size.height)
             .render_ref(area.to_rect(), buffer);
     }
 

@@ -125,23 +125,18 @@ impl Popup {
                 position
             } else {
                 Point {
-                    x: area.x + area.width - size.width,
-                    y: area.y + area.height - size.height,
+                    x: area.position.x + area.size.width - size.width,
+                    y: area.position.y + area.size.height - size.height,
                 }
             }
         } else {
             Point {
-                x: area.x + area.width * Ratio::HALF - size.width * Ratio::HALF,
-                y: area.y + area.height * Ratio::HALF - size.height * Ratio::HALF,
+                x: area.position.x + area.size.width * Ratio::HALF - size.width * Ratio::HALF,
+                y: area.position.y + area.size.height * Ratio::HALF - size.height * Ratio::HALF,
             }
         };
 
-        area.intersection(Rectangle {
-            x: position.x,
-            y: position.y,
-            width: size.width,
-            height: size.height,
-        })
+        area.intersection(Rectangle { position, size })
     }
 
     fn preferred_size(&self) -> Size {

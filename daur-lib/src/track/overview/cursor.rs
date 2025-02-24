@@ -13,7 +13,7 @@ pub struct Cursor;
 
 impl Widget for Cursor {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        let height = (area.height / NonZeroLength::CHAR_HEIGHT)
+        let height = (area.size.height / NonZeroLength::CHAR_HEIGHT)
             .round()
             .saturating_cast();
 

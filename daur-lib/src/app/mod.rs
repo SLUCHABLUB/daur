@@ -19,7 +19,7 @@ use crate::popup::Popups;
 use crate::project::manager::Manager;
 use crate::project::Project;
 use crate::time::{Instant, Mapping};
-use crate::ui::{Grid, Length, Offset, Point, Rectangle};
+use crate::ui::{Grid, Length, Offset, Point, Rectangle, Size};
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::Widget;
 use crate::{ui, PianoRollSettings};
@@ -69,8 +69,8 @@ pub struct App {
     overview_offset: Cell<Offset>,
     piano_roll_settings: Cell<PianoRollSettings>,
 
-    cached_mouse_position: Cell<Point>,
-    cached_area: Cell<Rectangle>,
+    las_mouse_position: Cell<Point>,
+    last_size: Cell<Size>,
     should_redraw: Cell<bool>,
     should_exit: Cell<bool>,
 }
@@ -103,8 +103,8 @@ impl App {
             overview_offset: Cell::new(Offset::ZERO),
             piano_roll_settings: Cell::new(PianoRollSettings::default()),
 
-            cached_mouse_position: Cell::default(),
-            cached_area: Cell::default(),
+            las_mouse_position: Cell::default(),
+            last_size: Cell::default(),
             should_redraw: Cell::new(true),
             should_exit: Cell::new(false),
         }
@@ -153,6 +153,13 @@ impl App {
     pub fn stop_playback(&self) {
         self.cursor.set(self.playback_position());
         self.playback_start.set(None);
+    }
+
+    fn last_rectangle(&self) -> Rectangle {
+        Rectangle {
+            position: Point::ZERO,
+            size: self.last_size.get(),
+        }
     }
 
     fn playback_position(&self) -> Instant {

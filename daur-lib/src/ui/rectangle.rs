@@ -1,18 +1,14 @@
 use crate::ui::point::Point;
-use crate::ui::Length;
+use crate::ui::Size;
 use ratatui::layout::{Constraint, Direction, Flex, Layout, Rect, Spacing};
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Rectangle {
-    /// The distance from the left of the screen to the rectangle
-    pub x: Length,
-    /// The distance from the top of the screen to the rectangle
-    pub y: Length,
-    /// The width of the rectangle
-    pub width: Length,
-    /// The height of the rectangle
-    pub height: Length,
+    /// The top left point of the rectangle
+    pub position: Point,
+    /// The size of the rectangle
+    pub size: Size,
 }
 
 impl Rectangle {
@@ -30,20 +26,13 @@ impl Rectangle {
 
     pub(crate) fn from_rect(rect: Rect) -> Self {
         Rectangle {
-            x: Length::new(rect.x),
-            y: Length::new(rect.y),
-            width: Length::new(rect.width),
-            height: Length::new(rect.height),
+            position: Point::from_position(rect.as_position()),
+            size: Size::from_size(rect.as_size()),
         }
     }
 
     pub(crate) fn to_rect(self) -> Rect {
-        Rect {
-            x: self.x.inner(),
-            y: self.y.inner(),
-            width: self.width.inner(),
-            height: self.height.inner(),
-        }
+        Rect::from((self.position.to_position(), self.size.to_size()))
     }
 
     /// Split the rect based on the layout specification
