@@ -6,10 +6,12 @@ pub use settings::PianoRollSettings;
 
 use crate::app::Action;
 use crate::interval::Interval;
-use crate::piano_roll::key::Key;
+use crate::key::Key;
+use crate::piano_roll::key::PianoKey;
 use crate::piano_roll::row::Row;
 use crate::pitch::Pitch;
-use crate::ui::{Point, Rectangle};
+use crate::project::changing::Changing;
+use crate::ui::{Mapping, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
 use crate::widget::{Text, Widget};
@@ -31,8 +33,10 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 pub struct PianoRoll {
     pub clip: Option<Arc<Clip>>,
 
+    pub mapping: Mapping,
     pub settings: PianoRollSettings,
 
+    pub key: Arc<Changing<Key>>,
     pub lowest_pitch: Pitch,
 }
 
@@ -56,6 +60,11 @@ impl Widget for PianoRoll {
             return;
         };
 
+        let roll_start = self
+            .mapping
+            .instant(area.x + self.settings.piano_depth.get());
+        let piano_key_key = self.key.get(roll_start);
+
         let key_count = (area.height / self.settings.key_width)
             .ceil()
             .saturating_cast();
@@ -63,7 +72,8 @@ impl Widget for PianoRoll {
 
         Stack::vertical(constraints.enumerate().map(|(index, constraint)| {
             let interval = Interval::from_semitones(index.saturating_cast());
-            let key = Key {
+            let key = PianoKey {
+                key: piano_key_key,
                 pitch: self.lowest_pitch + interval,
                 black_key_depth: self.settings.black_key_depth,
             };

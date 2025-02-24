@@ -1,4 +1,5 @@
 use crate::clip::Clip;
+use crate::key::Key;
 use crate::lock::Lock;
 use crate::popup::Popup;
 use crate::project::action::Action;
@@ -29,6 +30,10 @@ impl Manager {
             project: Lock::new(project),
             history: Lock::new(Vec::new()),
         }
+    }
+
+    pub fn key(&self) -> Arc<Changing<Key>> {
+        Arc::clone(&self.project.read().key)
     }
 
     pub fn tempo(&self) -> Arc<Changing<Tempo>> {

@@ -23,7 +23,7 @@ use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Point, Rectangle};
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::Widget;
-use crate::PianoRollSettings;
+use crate::{ui, PianoRollSettings};
 use crossterm::event::MouseButton;
 use educe::Educe;
 use ratatui::buffer::Buffer;
@@ -192,7 +192,14 @@ impl App {
                         self.selected_track_index.get(),
                         self.selected_clip_index.get(),
                     ),
+                    mapping: ui::Mapping {
+                        time_signature: self.project.time_signature(),
+                        grid: self.grid,
+                        offset: self.piano_roll_settings.get().offset,
+                    },
                     settings: self.piano_roll_settings.get(),
+
+                    key: self.project.key(),
                     // TODO: scrolling
                     lowest_pitch: Pitch::A440,
                 },

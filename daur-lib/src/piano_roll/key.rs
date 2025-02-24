@@ -1,18 +1,21 @@
 use crate::app::Action;
+use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::{NonZeroLength, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{Solid, Widget};
+use crate::widget::{Solid, Text, Widget};
+use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 
-pub struct Key {
+pub struct PianoKey {
+    pub key: Key,
     pub pitch: Pitch,
     pub black_key_depth: NonZeroLength,
 }
 
-impl Widget for Key {
+impl Widget for PianoKey {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let black_part = if self.pitch.chroma().is_black_key() {
             Solid::BLACK
@@ -20,9 +23,13 @@ impl Widget for Key {
             Solid::WHITE
         };
 
+        // TODO: only do this for the tonic
+        // TODO: align to the bottom right
+        let white_part = Text::centered(ArcStr::from(self.pitch.name(self.key.sign)));
+
         let constraints = [self.black_key_depth.get().constraint(), Constraint::Fill(1)];
 
-        TwoStack::horizontal((black_part, Solid::WHITE), constraints).render(
+        TwoStack::horizontal((black_part, white_part), constraints).render(
             area,
             buffer,
             mouse_position,

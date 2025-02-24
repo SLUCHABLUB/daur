@@ -94,6 +94,7 @@ impl Chroma {
     }
 }
 
+// TODO: remove: Chroma::name should be used instead
 impl Display for Chroma {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         if self.sharp_name() == self.flat_name() {

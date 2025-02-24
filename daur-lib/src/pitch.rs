@@ -1,5 +1,7 @@
 use crate::chroma::Chroma;
 use crate::interval::Interval;
+use crate::sign::Sign;
+use num::Integer as _;
 use std::cmp::Ordering;
 use std::ops::{Add, AddAssign, Sub};
 
@@ -30,6 +32,20 @@ impl Pitch {
             11 => Chroma::Ab,
             _ => Chroma::default(),
         }
+    }
+
+    fn octave_number(self) -> i16 {
+        let semitones_from_c4 = self.from_a440.semitones().saturating_sub(9);
+        #[expect(
+            unstable_name_collisions,
+            reason = "we will use the std version when it gets stabilised"
+        )]
+        let octaves_from_c4 = semitones_from_c4.div_floor(&12);
+        octaves_from_c4
+    }
+
+    pub fn name(self, sign: Sign) -> String {
+        format!("{}{}", self.chroma().name(sign), self.octave_number())
     }
 }
 
