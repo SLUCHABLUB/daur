@@ -35,7 +35,7 @@ impl Pitch {
     }
 
     fn octave_number(self) -> i16 {
-        let semitones_from_c4 = self.from_a440.semitones().saturating_sub(9);
+        let semitones_from_c4 = self.from_a440.semitones().saturating_add(9);
         #[expect(
             unstable_name_collisions,
             reason = "we will use the std version when it gets stabilised"

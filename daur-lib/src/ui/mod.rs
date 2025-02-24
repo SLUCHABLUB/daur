@@ -7,6 +7,7 @@ mod offset;
 mod point;
 mod rectangle;
 mod size;
+mod vector;
 
 pub use grid::Grid;
 pub use length::{Length, NonZeroLength};
@@ -15,3 +16,4 @@ pub use offset::Offset;
 pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
+pub use vector::Vector;

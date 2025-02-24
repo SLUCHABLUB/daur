@@ -15,12 +15,11 @@ use crate::app::macros::or_popup;
 use crate::cell::Cell;
 use crate::keyboard::Key;
 use crate::piano_roll::PianoRoll;
-use crate::pitch::Pitch;
 use crate::popup::Popups;
 use crate::project::manager::Manager;
 use crate::project::Project;
 use crate::time::{Instant, Mapping};
-use crate::ui::{Grid, Length, Point, Rectangle};
+use crate::ui::{Grid, Length, Offset, Point, Rectangle};
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::Widget;
 use crate::{ui, PianoRollSettings};
@@ -67,7 +66,7 @@ pub struct App {
     cursor: Cell<Instant>,
 
     grid: Grid,
-    overview_offset: Length,
+    overview_offset: Cell<Offset>,
     piano_roll_settings: Cell<PianoRollSettings>,
 
     cached_mouse_position: Cell<Point>,
@@ -101,7 +100,7 @@ impl App {
             cursor: Cell::new(Instant::START),
 
             grid: Grid::default(),
-            overview_offset: Length::ZERO,
+            overview_offset: Cell::new(Offset::ZERO),
             piano_roll_settings: Cell::new(PianoRollSettings::default()),
 
             cached_mouse_position: Cell::default(),
@@ -182,7 +181,7 @@ impl App {
                 self.project.workspace(
                     self.track_settings_size,
                     self.grid,
-                    self.overview_offset,
+                    self.overview_offset.get(),
                     self.selected_track_index.get(),
                     self.selected_clip_index.get(),
                     self.playback_position(),
@@ -195,13 +194,10 @@ impl App {
                     mapping: ui::Mapping {
                         time_signature: self.project.time_signature(),
                         grid: self.grid,
-                        offset: self.piano_roll_settings.get().offset,
                     },
                     settings: self.piano_roll_settings.get(),
 
                     key: self.project.key(),
-                    // TODO: scrolling
-                    lowest_pitch: Pitch::A440,
                 },
             ),
             [

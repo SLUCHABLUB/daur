@@ -1,5 +1,6 @@
 export CARGO_TERM_COLOR := "always"
 export RUST_BACKTRACE := "1"
+log_file := env("CARGO_TARGET_DIR", "target") / "log.txt"
 
 default:
     @just --list
@@ -8,7 +9,8 @@ run:
     @just run-tui
 
 run-tui:
-    cargo run -p daur-tui
+    @-rm {{log_file}}
+    cargo run -p daur-tui 2> {{log_file}}
 
 check:
     cargo +nightly fmt

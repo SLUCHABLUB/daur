@@ -8,7 +8,7 @@ use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
 use crate::project::Project;
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
-use crate::ui::{Grid, Length};
+use crate::ui::{Grid, Length, Offset};
 use crate::widget::Widget;
 use std::sync::Arc;
 use thiserror::Error;
@@ -71,7 +71,7 @@ impl Manager {
         &self,
         track_settings_size: Length,
         grid: Grid,
-        overview_offset: Length,
+        overview_offset: Offset,
         selected_track_index: usize,
         selected_clip_index: usize,
         cursor: Instant,

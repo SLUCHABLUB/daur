@@ -13,16 +13,14 @@ use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::ui::{Mapping, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::homogenous::Stack;
-use crate::widget::{Text, Widget};
+use crate::widget::{feed, Text, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
-use itertools::chain;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
+use ratatui::prelude::Direction;
 use saturating_cast::SaturatingCast as _;
-use std::iter::{once, repeat_n};
 use std::sync::Arc;
 
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
@@ -37,20 +35,6 @@ pub struct PianoRoll {
     pub settings: PianoRollSettings,
 
     pub key: Arc<Changing<Key>>,
-    pub lowest_pitch: Pitch,
-}
-
-impl PianoRoll {
-    fn constraints(&self, key_count: usize) -> impl Iterator<Item = Constraint> {
-        // since the highest key might be cut off, we use a ::Fill for it
-        chain(
-            once(Constraint::Fill(1)),
-            repeat_n(
-                self.settings.key_width.get().constraint(),
-                key_count.saturating_sub(1),
-            ),
-        )
-    }
 }
 
 impl Widget for PianoRoll {
@@ -65,31 +49,32 @@ impl Widget for PianoRoll {
             .instant(area.x + self.settings.piano_depth.get());
         let piano_key_key = self.key.get(roll_start);
 
-        let key_count = (area.height / self.settings.key_width)
-            .ceil()
-            .saturating_cast();
-        let constraints = self.constraints(key_count);
+        // TODO: change the anchor point to be at the bottom
+        feed(
+            Direction::Vertical,
+            -self.settings.y_offset,
+            area.height,
+            |index| {
+                let interval = Interval::from_semitones(index.saturating_neg().saturating_cast());
+                let key = PianoKey {
+                    key: piano_key_key,
+                    pitch: Pitch::A440 + interval,
+                    black_key_depth: self.settings.black_key_depth,
+                };
+                let row = Row {
+                    clip: Arc::clone(&clip),
+                };
 
-        Stack::vertical(constraints.enumerate().map(|(index, constraint)| {
-            let interval = Interval::from_semitones(index.saturating_cast());
-            let key = PianoKey {
-                key: piano_key_key,
-                pitch: self.lowest_pitch + interval,
-                black_key_depth: self.settings.black_key_depth,
-            };
-            let row = Row {
-                clip: Arc::clone(&clip),
-            };
+                let constraints = [
+                    self.settings.piano_depth.get().constraint(),
+                    Constraint::Fill(1),
+                ];
 
-            let constraints = [
-                self.settings.piano_depth.get().constraint(),
-                Constraint::Fill(1),
-            ];
+                let stack = TwoStack::horizontal((key, row), constraints);
 
-            let stack = TwoStack::horizontal((key, row), constraints);
-
-            (stack, constraint)
-        }))
+                (stack, self.settings.key_width.get())
+            },
+        )
         .render(area, buffer, mouse_position);
     }
 

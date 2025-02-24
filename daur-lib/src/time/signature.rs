@@ -72,4 +72,9 @@ impl Changing<Signature> {
             Some(bar)
         })
     }
+
+    pub fn bar_n(&self, index: usize) -> Bar {
+        #[expect(clippy::unwrap_used, reason = "`bars()` never returns `None`")]
+        self.bars().nth(index).unwrap()
+    }
 }

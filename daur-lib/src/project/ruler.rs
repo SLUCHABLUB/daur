@@ -1,42 +1,38 @@
 use crate::app::Action;
-use crate::ui::{Length, Mapping, NonZeroLength, Point, Rectangle};
-use crate::widget::{Text, Widget};
+use crate::ui::{Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
+use crate::widget::{feed, Text, Widget};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
+use ratatui::layout::Direction;
 use saturating_cast::SaturatingCast as _;
 
 #[derive(Clone)]
 pub struct Ruler {
     pub mapping: Mapping,
+    /// How far along the overview has been scrolled
+    pub offset: Offset,
 }
 
 impl Widget for Ruler {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        let mut started = false;
-        for (index, bar) in self.mapping.time_signature.bars().enumerate() {
-            let x = match self.mapping.offset_in_range(bar.start, area.width) {
-                Some(x) => x + area.x,
-                None if started => break,
-                None => continue,
-            };
-            started = true;
-
-            let width = self.mapping.bar_width(bar).min(area.x + area.width - x);
-
-            let area = Rectangle {
-                x,
-                y: area.y,
-                width,
-                height: area.height,
+        feed(Direction::Horizontal, self.offset, area.width, |index| {
+            let Ok(index) = usize::try_from(index) else {
+                let first = self.mapping.time_signature.bar_n(0);
+                let width = self.mapping.bar_width(first);
+                let rule = negative_rule(index, width);
+                return (rule, width);
             };
 
-            segment(index, self.mapping.grid.cell_width, width).render(
-                area,
-                buffer,
-                mouse_position,
-            );
-        }
+            let bar = self.mapping.time_signature.bar_n(index);
+
+            let width = self.mapping.bar_width(bar);
+
+            let rule = rule(index, self.mapping.grid.cell_width, width);
+
+            (rule, width)
+        })
+        .render(area, buffer, mouse_position);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
@@ -44,8 +40,9 @@ impl Widget for Ruler {
     }
 }
 
-// TODO: implement this with a stack rather than a paragraph
-fn segment(index: usize, cell_width: NonZeroLength, bar_width: Length) -> impl Widget {
+type Rule = Text;
+
+fn rule(index: usize, cell_width: NonZeroLength, bar_width: Length) -> Rule {
     let cell_count = (bar_width / cell_width).ceil() as usize;
     let spaces_per_cell = cell_width.get() / NonZeroLength::CHAR_WIDTH;
     let spaces_per_cell = spaces_per_cell.round().saturating_cast();
@@ -61,5 +58,15 @@ fn segment(index: usize, cell_width: NonZeroLength, bar_width: Length) -> impl W
 
     let string = index.to_string() + "\n" + &*String::from_utf8_lossy(&cells);
 
+    // TODO: right align
+    Text::left_aligned(ArcStr::from(string))
+}
+
+fn negative_rule(index: isize, bar_width: Length) -> Rule {
+    let arrow_count = bar_width / NonZeroLength::CHAR_WIDTH;
+    let string =
+        index.to_string() + "\n" + "|" + &*">".repeat(arrow_count.round().saturating_cast());
+
+    // TODO: right align
     Text::left_aligned(ArcStr::from(string))
 }

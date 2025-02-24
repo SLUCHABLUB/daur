@@ -37,6 +37,7 @@ pub struct Overview {
     pub selected_clip_index: usize,
     pub time_mapping: time::Mapping,
     pub ui_mapping: ui::Mapping,
+    pub offset: Offset,
     pub cursor: Instant,
     pub index: usize,
 }
@@ -51,8 +52,8 @@ impl Widget for Overview {
         for (index, (start, clip)) in self.track.clips.iter().enumerate() {
             let period = clip.period(*start, &self.time_mapping);
 
-            let clip_start = self.ui_mapping.offset(period.start);
-            let clip_end = self.ui_mapping.offset(period.end());
+            let clip_start = Offset::from(self.ui_mapping.offset(period.start)) + self.offset;
+            let clip_end = Offset::from(self.ui_mapping.offset(period.end())) + self.offset;
             let clip_width = clip_end - clip_start;
 
             let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
@@ -94,16 +95,23 @@ impl Widget for Overview {
         }
 
         // Render the cursor
-        if let Some(cursor_offset) = self.ui_mapping.offset_in_range(self.cursor, area.width) {
-            let area = Rectangle {
-                x: cursor_offset + area.x,
-                y: area.y,
-                width: Length::CURSOR_WIDTH,
-                height: area.height,
-            };
-
-            Cursor.render(area, buffer, mouse_position);
+        let cursor_offset = self.ui_mapping.offset(self.cursor);
+        let cursor_offset = Offset::from(cursor_offset) + self.offset;
+        let Some(cursor_offset) = cursor_offset.to_length() else {
+            return;
+        };
+        if area.width < cursor_offset {
+            return;
         }
+
+        let cursor_area = Rectangle {
+            x: cursor_offset + area.x,
+            y: area.y,
+            width: Length::CURSOR_WIDTH,
+            height: area.height,
+        };
+
+        Cursor.render(cursor_area, buffer, mouse_position);
     }
 
     fn click(
@@ -115,7 +123,8 @@ impl Widget for Overview {
     ) {
         // TODO: move, select or open clips
 
-        let instant = self.ui_mapping.instant_on_grid(position.x - area.x);
+        let ui_offset = Offset::from(position.x - area.x) - self.offset;
+        let instant = self.ui_mapping.instant_on_grid(ui_offset.saturate());
 
         if button == MouseButton::Left {
             actions.push(Action::MoveCursor(instant));

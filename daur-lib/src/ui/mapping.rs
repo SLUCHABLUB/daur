@@ -1,7 +1,7 @@
 use crate::project::changing::Changing;
 use crate::time::{Bar, Instant, Period, Signature};
 use crate::ui::grid::Grid;
-use crate::ui::{Length, Offset};
+use crate::ui::Length;
 use std::sync::Arc;
 
 /// A mapping between screen (x-)coordinates and musical time
@@ -11,12 +11,10 @@ pub struct Mapping {
     pub time_signature: Arc<Changing<Signature>>,
     /// The grid settings
     pub grid: Grid,
-    /// The offset from [`Instant::START`]
-    pub offset: Length,
 }
 
 impl Mapping {
-    /// Calculates the display-width of `bad`
+    /// Calculates the display-width of `bar`
     #[must_use]
     pub fn bar_width(&self, bar: Bar) -> Length {
         let cell_count = bar.period().duration / self.grid.cell_duration;
@@ -24,7 +22,9 @@ impl Mapping {
         self.grid.cell_width.get() * cell_count
     }
 
-    fn absolute_offset(&self, instant: Instant) -> Length {
+    /// Maps an [`Instant`] to an offset from the left of the window
+    #[must_use]
+    pub fn offset(&self, instant: Instant) -> Length {
         let mut offset = Length::ZERO;
 
         for bar in self.time_signature.bars() {
@@ -45,25 +45,9 @@ impl Mapping {
         offset
     }
 
-    /// Maps an [`Instant`] to an offset from the left of the window
-    #[must_use]
-    pub fn offset(&self, instant: Instant) -> Offset {
-        Offset::from(self.absolute_offset(instant)) - self.offset
-    }
-
-    /// Maps an [`Instant`] to an offset from the left of the window if it is less than `max`
-    #[must_use]
-    pub fn offset_in_range(&self, instant: Instant, max: Length) -> Option<Length> {
-        let offset = self.offset(instant).to_length()?;
-
-        (offset < max).then_some(offset)
-    }
-
     /// Maps an offset from the left of the window to an [`Instant`] on the grid
     #[must_use]
     pub fn instant_on_grid(&self, offset: Length) -> Instant {
-        let offset = self.offset + offset;
-
         let cell = (offset / self.grid.cell_width).floored();
         let duration = self.grid.cell_duration.get() * cell;
         Instant {
@@ -74,8 +58,6 @@ impl Mapping {
     /// Maps an offset from the left of the window to an [`Instant`]
     #[must_use]
     pub fn instant(&self, offset: Length) -> Instant {
-        let offset = self.offset + offset;
-
         let cell = offset / self.grid.cell_width;
         let duration = self.grid.cell_duration.get() * cell;
         Instant {

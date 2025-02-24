@@ -15,7 +15,7 @@ use crate::project::source::ProjectSource;
 use crate::time::{Instant, Signature, Tempo};
 use crate::track::overview::Overview;
 use crate::track::Track;
-use crate::ui::{Grid, Length};
+use crate::ui::{Grid, Length, Offset};
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
 use crate::widget::{Button, Text, Widget};
@@ -56,11 +56,10 @@ impl Project {
         }
     }
 
-    pub fn ui_mapping(&self, grid: Grid, offset: Length) -> ui::Mapping {
+    pub fn ui_mapping(&self, grid: Grid) -> ui::Mapping {
         ui::Mapping {
             time_signature: self.time_signature(),
             grid,
-            offset,
         }
     }
 
@@ -68,7 +67,7 @@ impl Project {
         &self,
         track_settings_size: Length,
         grid: Grid,
-        overview_offset: Length,
+        overview_offset: Offset,
         selected_track_index: usize,
         selected_clip_index: usize,
         cursor: Instant,
@@ -82,7 +81,8 @@ impl Project {
         let empty_space = Text::centered(literal!(":)"));
 
         let ruler = Ruler {
-            mapping: self.ui_mapping(grid, overview_offset),
+            mapping: self.ui_mapping(grid),
+            offset: overview_offset,
         };
         let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
 
@@ -96,7 +96,8 @@ impl Project {
                 track,
                 selected_clip_index,
                 time_mapping: self.time_mapping(),
-                ui_mapping: self.ui_mapping(grid, overview_offset),
+                ui_mapping: self.ui_mapping(grid),
+                offset: overview_offset,
                 cursor,
                 index,
             });
@@ -107,7 +108,8 @@ impl Project {
             track: Arc::new(Track::new()),
             selected_clip_index,
             time_mapping: self.time_mapping(),
-            ui_mapping: self.ui_mapping(grid, overview_offset),
+            ui_mapping: self.ui_mapping(grid),
+            offset: overview_offset,
             cursor,
             index: usize::MAX,
         });

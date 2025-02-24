@@ -1,10 +1,12 @@
-use crate::ui::{Length, NonZeroLength};
+use crate::ui::{Length, NonZeroLength, Offset};
 
 /// Settings pertaining to the piano roll
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct PianoRollSettings {
     /// How far along the piano roll is scrolled
-    pub offset: Length,
+    pub x_offset: Length,
+    /// How far from A4 the piano roll is scrolled
+    pub y_offset: Offset,
     /// The height of the piano roll itself
     pub height: Length,
 
@@ -19,7 +21,8 @@ pub struct PianoRollSettings {
 impl Default for PianoRollSettings {
     fn default() -> Self {
         PianoRollSettings {
-            offset: Length::ZERO,
+            x_offset: Length::ZERO,
+            y_offset: Offset::ZERO,
             height: Length::ZERO,
             key_width: NonZeroLength::CHAR_HEIGHT,
             piano_depth: NonZeroLength::DEFAULT_PIANO_DEPTH,

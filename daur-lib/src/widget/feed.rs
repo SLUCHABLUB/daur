@@ -42,7 +42,9 @@ where
             index = 1;
         }
         Ordering::Greater => loop {
-            let (child, size) = generator(index);
+            let new = index.saturating_sub(1);
+
+            let (child, size) = generator(new);
             offset -= size;
 
             if offset < Offset::ZERO {
@@ -51,7 +53,7 @@ where
                 break;
             }
 
-            index = index.saturating_sub(1);
+            index = new;
         },
     }
 

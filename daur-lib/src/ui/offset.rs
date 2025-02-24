@@ -14,6 +14,23 @@ impl Offset {
         Offset { inner: value }
     }
 
+    /// Constructs a positive [`Offset`]
+    #[must_use]
+    pub const fn positive(length: Length) -> Offset {
+        Offset {
+            inner: length.inner() as i32,
+        }
+    }
+
+    /// Constructs a negative [`Offset`]
+    #[must_use]
+    pub const fn negative(length: Length) -> Offset {
+        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in i32")]
+        Offset {
+            inner: -(length.inner() as i32),
+        }
+    }
+
     /// 0
     pub const ZERO: Offset = Offset::new(0);
 
@@ -63,6 +80,12 @@ impl Add for Offset {
         Offset {
             inner: self.inner.saturating_add(rhs.inner),
         }
+    }
+}
+
+impl AddAssign for Offset {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
     }
 }
 
