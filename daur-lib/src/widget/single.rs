@@ -17,14 +17,19 @@ pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
 /// A simple single-selection widget
 pub fn selector<T: Copy + PartialEq + Display + VariantArray>(cell: &Cell<T>) -> Selector<T> {
-    Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| {
-        let name = format!("{variant}");
+    // TODO: use ToArcStr::to_arc_str
+    selector_with_formatter(cell, |variant| format!("{variant}"))
+}
 
-        Option {
-            name,
-            value: *variant,
-            cell,
-        }
+/// A simple single-selection widget that uses a custom formatter rather than [`Display`]
+pub fn selector_with_formatter<T: Copy + PartialEq + VariantArray, F: FnMut(&T) -> ArcStr>(
+    cell: &Cell<T>,
+    mut formatter: F,
+) -> Selector<T> {
+    Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| Option {
+        name: formatter(variant),
+        value: *variant,
+        cell,
     }))
     .spacing(1)
 }

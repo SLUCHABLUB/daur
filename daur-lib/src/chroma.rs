@@ -1,7 +1,6 @@
 use crate::sign::{Sign, FLAT, SHARP};
+use arcstr::{literal, ArcStr};
 use const_str::concat;
-use std::fmt;
-use std::fmt::{Display, Formatter};
 use strum::VariantArray;
 
 #[expect(clippy::min_ident_chars, reason = "Chromas are named after letters")]
@@ -23,7 +22,7 @@ pub enum Chroma {
 }
 
 impl Chroma {
-    pub fn name(self, sign: Sign) -> &'static str {
+    pub fn name(self, sign: Sign) -> ArcStr {
         match sign {
             Sign::Sharp => self.sharp_name(),
             Sign::Flat => self.flat_name(),
@@ -59,48 +58,37 @@ impl Chroma {
         }
     }
 
-    fn sharp_name(self) -> &'static str {
+    fn sharp_name(self) -> ArcStr {
         match self {
-            Chroma::A => "A",
-            Chroma::Bb => concat!("A", SHARP),
-            Chroma::B => "B",
-            Chroma::C => "C",
-            Chroma::Db => concat!("C", SHARP),
-            Chroma::D => "D",
-            Chroma::Eb => concat!("D", SHARP),
-            Chroma::E => "E",
-            Chroma::F => "F",
-            Chroma::Gb => concat!("F", SHARP),
-            Chroma::G => "G",
-            Chroma::Ab => concat!("G", SHARP),
+            Chroma::A => literal!("A"),
+            Chroma::Bb => literal!(concat!("A", SHARP)),
+            Chroma::B => literal!("B"),
+            Chroma::C => literal!("C"),
+            Chroma::Db => literal!(concat!("C", SHARP)),
+            Chroma::D => literal!("D"),
+            Chroma::Eb => literal!(concat!("D", SHARP)),
+            Chroma::E => literal!("E"),
+            Chroma::F => literal!("F"),
+            Chroma::Gb => literal!(concat!("F", SHARP)),
+            Chroma::G => literal!("G"),
+            Chroma::Ab => literal!(concat!("G", SHARP)),
         }
     }
 
-    fn flat_name(self) -> &'static str {
+    fn flat_name(self) -> ArcStr {
         match self {
-            Chroma::A => "A",
-            Chroma::Bb => concat!("B", FLAT),
-            Chroma::B => "B",
-            Chroma::C => "C",
-            Chroma::Db => concat!("D", FLAT),
-            Chroma::D => "D",
-            Chroma::Eb => concat!("E", FLAT),
-            Chroma::E => "E",
-            Chroma::F => "F",
-            Chroma::Gb => concat!("G", FLAT),
-            Chroma::G => "G",
-            Chroma::Ab => concat!("A", FLAT),
-        }
-    }
-}
-
-// TODO: remove: Chroma::name should be used instead
-impl Display for Chroma {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        if self.sharp_name() == self.flat_name() {
-            write!(f, "{}", self.sharp_name())
-        } else {
-            write!(f, "{}/{}", self.sharp_name(), self.flat_name())
+            Chroma::A => literal!("A"),
+            Chroma::Bb => literal!(concat!("B", FLAT)),
+            Chroma::B => literal!("B"),
+            Chroma::C => literal!("C"),
+            Chroma::Db => literal!(concat!("D", FLAT)),
+            Chroma::D => literal!("D"),
+            Chroma::Eb => literal!(concat!("E", FLAT)),
+            Chroma::E => literal!("E"),
+            Chroma::F => literal!("F"),
+            Chroma::Gb => literal!(concat!("G", FLAT)),
+            Chroma::G => literal!("G"),
+            Chroma::Ab => literal!(concat!("A", FLAT)),
         }
     }
 }

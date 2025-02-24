@@ -152,7 +152,7 @@ impl ToWidget for KeySelector {
 
         FourStack::vertical(
             (
-                single::selector(&self.tonic),
+                single::selector_with_formatter(&self.tonic, |chroma| chroma.name(self.sign.get())),
                 single::selector(&self.sign).flex(Flex::Center),
                 multi::selector(&self.intervals),
                 buttons,
