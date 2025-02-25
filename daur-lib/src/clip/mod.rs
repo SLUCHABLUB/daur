@@ -44,7 +44,7 @@ impl Clip {
             .block(
                 Block::bordered()
                     .borders(Borders::TOP)
-                    .title_alignment(Alignment::Center)
+                    .title_alignment(Alignment::Right)
                     .border_set(set)
                     .title(self.name.as_str())
                     .style(Style::new().bg(self.colour)),

@@ -6,13 +6,12 @@ use crate::time::Instant;
 use crate::track::overview::cursor::Cursor;
 use crate::track::Track;
 use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle, Size};
-use crate::widget::{feed, Widget};
+use crate::widget::{feed, Direction, Widget};
 use crate::{project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use num::Integer as _;
 use ratatui::buffer::Buffer;
-use ratatui::prelude::Direction;
 use ratatui_explorer::File;
 use std::sync::Arc;
 
@@ -51,79 +50,74 @@ impl Widget for Overview {
         // TODO: alternate background colour for grid
 
         // Render the clips
-        feed(
-            Direction::Horizontal,
-            self.offset,
-            area.size.width,
-            |index| {
-                let Ok(index) = usize::try_from(index) else {
-                    return (None, self.offset.abs());
-                };
+        feed(Direction::Right, self.offset, area.size.width, |index| {
+            let Ok(index) = usize::try_from(index) else {
+                return (None, self.offset.abs());
+            };
 
-                let (index, parity) = index.div_rem(&2);
+            let (index, parity) = index.div_rem(&2);
 
-                // if index is even
-                if parity == 0 {
-                    // Return the space between clips
+            // if index is even
+            if parity == 0 {
+                // Return the space between clips
 
-                    let last_clip_end = index
-                        .checked_sub(1)
-                        .and_then(|index| {
-                            let (start, clip) = self.track.clips.iter().nth(index)?;
-                            let end = clip.period(*start, &self.time_mapping).end();
-                            Some(self.ui_mapping.offset(end))
-                        })
-                        .unwrap_or(Length::ZERO);
+                let last_clip_end = index
+                    .checked_sub(1)
+                    .and_then(|index| {
+                        let (start, clip) = self.track.clips.iter().nth(index)?;
+                        let end = clip.period(*start, &self.time_mapping).end();
+                        Some(self.ui_mapping.offset(end))
+                    })
+                    .unwrap_or(Length::ZERO);
 
-                    let next_clip_start = self
-                        .track
-                        .clips
-                        .keys()
-                        .nth(index)
-                        .map_or(Length::MAX, |instant| self.ui_mapping.offset(*instant));
+                let next_clip_start = self
+                    .track
+                    .clips
+                    .keys()
+                    .nth(index)
+                    .map_or(Length::MAX, |instant| self.ui_mapping.offset(*instant));
 
-                    let size = next_clip_start - last_clip_end;
+                let size = next_clip_start - last_clip_end;
 
-                    return (None, size);
-                }
+                return (None, size);
+            }
 
-                let Some((start, clip)) = self.track.clips.iter().nth(index) else {
-                    return (None, Length::MAX);
-                };
+            let Some((start, clip)) = self.track.clips.iter().nth(index) else {
+                return (None, Length::MAX);
+            };
 
-                let period = clip.period(*start, &self.time_mapping);
+            let period = clip.period(*start, &self.time_mapping);
 
-                let clip_start = Offset::from(self.ui_mapping.offset(period.start)) + self.offset;
-                let clip_end = Offset::from(self.ui_mapping.offset(period.end())) + self.offset;
-                let clip_width = clip_end - clip_start;
+            let clip_start = Offset::from(self.ui_mapping.offset(period.start)) + self.offset;
+            let clip_end = Offset::from(self.ui_mapping.offset(period.end())) + self.offset;
+            let clip_width = clip_end - clip_start;
 
-                let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
-                    return (None, Length::ZERO);
-                };
+            let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
+                return (None, Length::ZERO);
+            };
 
-                let [mut x, y] = clip.content.full_overview_viewport();
-                let full_width = x[1] - x[0];
+            let [mut x, y] = clip.content.full_overview_viewport();
+            let full_width = x[1] - x[0];
 
-                if clip_start < Offset::ZERO {
-                    // The fraction of the clip that is outside the window (on the left)
-                    let fraction = (clip_start.abs() / clip_width).to_float();
-                    x[0] += fraction * full_width;
-                }
-                if window_end < clip_end {
-                    let delta = (clip_end - window_end).saturate();
-                    // The fraction of the clip that is outside the window (on the right)
-                    let fraction = (delta / clip_width).to_float();
-                    x[1] -= fraction * full_width;
-                }
+            if clip_start < Offset::ZERO {
+                // The fraction of the clip that is outside the window (on the left)
+                let fraction = (clip_start.abs() / clip_width).to_float();
+                x[0] += fraction * full_width;
+            }
+            if window_end < clip_end {
+                let delta = (clip_end - window_end).saturate();
+                // The fraction of the clip that is outside the window (on the right)
+                let fraction = (delta / clip_width).to_float();
+                x[1] -= fraction * full_width;
+            }
 
-                let selected = self.selected_clip_index == index;
+            let selected = self.selected_clip_index == index;
 
-                (
-                    Some(clip.overview_canvas(selected).x_bounds(x).y_bounds(y)),
-                    clip_width.get(),
-                )
-            },
-        )
+            (
+                Some(clip.overview_canvas(selected).x_bounds(x).y_bounds(y)),
+                clip_width.get(),
+            )
+        })
         .render(area, buffer, mouse_position);
 
         // TODO: use a Z-stack

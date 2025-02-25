@@ -1,7 +1,8 @@
 use crate::ui::{Length, Offset};
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::homogenous::Stack;
-use ratatui::layout::{Constraint, Direction};
+use crate::widget::Direction;
+use ratatui::layout::Constraint;
 use std::cmp::Ordering;
 use std::iter::from_fn;
 

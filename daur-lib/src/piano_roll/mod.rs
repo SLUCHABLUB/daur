@@ -13,13 +13,12 @@ use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::ui::{Mapping, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{feed, Text, Widget};
+use crate::widget::{feed, Direction, Text, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
-use ratatui::prelude::Direction;
 use saturating_cast::SaturatingCast as _;
 use std::sync::Arc;
 
@@ -51,7 +50,7 @@ impl Widget for PianoRoll {
 
         // TODO: change the anchor point to be at the bottom
         feed(
-            Direction::Vertical,
+            Direction::Up,
             -self.settings.y_offset,
             area.size.height,
             |index| {

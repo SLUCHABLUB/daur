@@ -1,9 +1,8 @@
 use crate::app::Action;
 use crate::ui::{Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
-use crate::widget::{feed, Text, Widget};
+use crate::widget::{feed, Direction, Text, Widget};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::Direction;
 use saturating_cast::SaturatingCast as _;
 
 #[derive(Clone)]
@@ -15,27 +14,22 @@ pub struct Ruler {
 
 impl Widget for Ruler {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        feed(
-            Direction::Horizontal,
-            self.offset,
-            area.size.width,
-            |index| {
-                let Ok(index) = usize::try_from(index) else {
-                    let first = self.mapping.time_signature.bar_n(0);
-                    let width = self.mapping.bar_width(first);
-                    let rule = negative_rule(index, width);
-                    return (rule, width);
-                };
+        feed(Direction::Right, self.offset, area.size.width, |index| {
+            let Ok(index) = usize::try_from(index) else {
+                let first = self.mapping.time_signature.bar_n(0);
+                let width = self.mapping.bar_width(first);
+                let rule = negative_rule(index, width);
+                return (rule, width);
+            };
 
-                let bar = self.mapping.time_signature.bar_n(index);
+            let bar = self.mapping.time_signature.bar_n(index);
 
-                let width = self.mapping.bar_width(bar);
+            let width = self.mapping.bar_width(bar);
 
-                let rule = rule(index, self.mapping.grid.cell_width, width);
+            let rule = rule(index, self.mapping.grid.cell_width, width);
 
-                (rule, width)
-            },
-        )
+            (rule, width)
+        })
         .render(area, buffer, mouse_position);
     }
 

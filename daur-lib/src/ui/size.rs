@@ -1,6 +1,6 @@
 use crate::ui::Length;
+use crate::widget::Direction;
 use ratatui::layout;
-use ratatui::layout::Direction;
 
 /// The size of something on the screen
 #[derive(Copy, Clone, Debug, Default)]
@@ -36,8 +36,8 @@ impl Size {
     #[must_use]
     pub fn parallel_to(self, direction: Direction) -> Length {
         match direction {
-            Direction::Horizontal => self.width,
-            Direction::Vertical => self.height,
+            Direction::Left | Direction::Right => self.width,
+            Direction::Up | Direction::Down => self.height,
         }
     }
 
@@ -45,8 +45,8 @@ impl Size {
     #[must_use]
     pub fn orthogonal_to(self, direction: Direction) -> Length {
         match direction {
-            Direction::Horizontal => self.height,
-            Direction::Vertical => self.width,
+            Direction::Left | Direction::Right => self.height,
+            Direction::Up | Direction::Down => self.width,
         }
     }
 
@@ -59,11 +59,11 @@ impl Size {
         direction: Direction,
     ) -> Size {
         match direction {
-            Direction::Horizontal => Size {
+            Direction::Left | Direction::Right => Size {
                 width: parallel,
                 height: orthogonal,
             },
-            Direction::Vertical => Size {
+            Direction::Up | Direction::Down => Size {
                 width: orthogonal,
                 height: parallel,
             },

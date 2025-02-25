@@ -3,10 +3,10 @@
 use crate::app::Action;
 use crate::ui::{Length, Offset, Point, Rectangle, Size};
 use crate::widget::has_size::HasSize;
-use crate::widget::Widget;
+use crate::widget::{Direction, Widget};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Flex, Spacing};
+use ratatui::layout::{Constraint, Flex, Spacing};
 use saturating_cast::SaturatingCast as _;
 use std::iter::zip;
 
@@ -39,7 +39,7 @@ impl<Child> Stack<Child> {
     pub fn horizontal<Children: IntoIterator<Item = (Child, Constraint)>>(
         children: Children,
     ) -> Self {
-        Stack::new(Direction::Horizontal, children)
+        Stack::new(Direction::Right, children)
     }
 
     /// Constructs a vertical stack
@@ -47,7 +47,7 @@ impl<Child> Stack<Child> {
     pub fn vertical<Children: IntoIterator<Item = (Child, Constraint)>>(
         children: Children,
     ) -> Self {
-        Stack::new(Direction::Vertical, children)
+        Stack::new(Direction::Down, children)
     }
 
     /// Constructs a horizontal stack where all widgets have a _"canonical"_ size

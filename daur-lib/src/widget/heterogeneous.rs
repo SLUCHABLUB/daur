@@ -2,12 +2,11 @@
 
 use crate::app::Action;
 use crate::ui::{Length, Offset, Point, Rectangle, Size};
-use crate::widget::has_size::HasSize;
-use crate::widget::Widget;
+use crate::widget::{Direction, HasSize, Widget};
 use crossterm::event::MouseButton;
 use itertools::Itertools as _;
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Constraint, Direction, Flex, Spacing};
+use ratatui::layout::{Constraint, Flex, Spacing};
 
 /// A stack of two widgets
 pub type TwoStack<A, B> = Stack<2, (A, B)>;
@@ -77,7 +76,7 @@ macro_rules! impl_hetero {
                 children: ($($generic),*),
                 constraints: [Constraint; $len],
             ) -> Self {
-                Self::new(Direction::Horizontal, children, constraints)
+                Self::new(Direction::Right, children, constraints)
             }
 
             /// Constructs a vertical stack
@@ -85,7 +84,7 @@ macro_rules! impl_hetero {
                 children: ($($generic),*),
                 constraints: [Constraint; $len],
             ) -> Self {
-                Self::new(Direction::Vertical, children, constraints)
+                Self::new(Direction::Down, children, constraints)
             }
 
             /// Constructs a new stack where all children have a _"canonical"_ size
@@ -109,7 +108,7 @@ macro_rules! impl_hetero {
                     $($generic: HasSize),*
             {
                 Self::new_sized(
-                    Direction::Horizontal,
+                    Direction::Right,
                     children,
                 )
             }
@@ -120,7 +119,7 @@ macro_rules! impl_hetero {
                     $($generic: HasSize),*
             {
                 Self::new_sized(
-                    Direction::Vertical,
+                    Direction::Down,
                     children,
                 )
             }

@@ -1,6 +1,8 @@
 use crate::ui::point::Point;
 use crate::ui::Size;
-use ratatui::layout::{Constraint, Direction, Flex, Layout, Rect, Spacing};
+use crate::widget::Direction;
+use ratatui::layout;
+use ratatui::layout::{Constraint, Flex, Layout, Rect, Spacing};
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]
@@ -37,15 +39,29 @@ impl Rectangle {
 
     /// Split the rect based on the layout specification
     // TODO: move away from ratatui types
-    pub fn split<Constraints: IntoIterator<Item = Constraint>>(
+    pub fn split<Constraints: AsMut<[Constraint]>>(
         self,
-        constraints: Constraints,
+        mut constraints: Constraints,
         direction: Direction,
         flex: Flex,
         spacing: &Spacing,
     ) -> impl Iterator<Item = Rectangle> {
-        #[expect(clippy::unnecessary_to_owned, reason = "false positive")]
-        Layout::new(direction, constraints)
+        let (direction, reverse) = match direction {
+            Direction::Up => (layout::Direction::Vertical, true),
+            Direction::Left => (layout::Direction::Horizontal, true),
+            Direction::Down => (layout::Direction::Vertical, false),
+            Direction::Right => (layout::Direction::Horizontal, false),
+        };
+
+        if reverse {
+            constraints.as_mut().reverse();
+        };
+
+        #[expect(
+            clippy::unnecessary_to_owned,
+            reason = "false positive (clippy #14242)"
+        )]
+        Layout::new(direction, constraints.as_mut().iter())
             .flex(flex)
             .spacing(spacing.clone())
             .split(self.to_rect())
