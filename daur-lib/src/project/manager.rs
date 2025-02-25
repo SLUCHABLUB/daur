@@ -98,7 +98,6 @@ impl Manager {
     fn edit(&self, edit: Edit) -> Result<(), Arc<Popup>> {
         let mut project = self.project.write();
 
-        // TODO: is the guard dropped here?
         self.history.write().push(edit.clone());
 
         match edit {
