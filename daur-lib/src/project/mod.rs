@@ -21,7 +21,7 @@ use crate::widget::homogenous::Stack;
 use crate::widget::{Button, Text, Widget};
 use crate::{app, time, ui};
 use arcstr::{literal, ArcStr};
-use ratatui::prelude::Constraint;
+use ratatui::layout::Constraint;
 use saturating_cast::SaturatingCast as _;
 use std::sync::Arc;
 

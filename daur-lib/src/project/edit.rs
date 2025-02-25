@@ -9,7 +9,7 @@ use crate::time::{Duration, Instant};
 use crate::track::Track;
 use arcstr::{literal, ArcStr};
 use hound::WavReader;
-use ratatui::prelude::Color;
+use ratatui::style::Color;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 use std::sync::Arc;
