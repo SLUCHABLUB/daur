@@ -5,9 +5,9 @@ use crate::widget::{Alignment, Widget};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::layout;
 use ratatui::text::Line;
-use ratatui::widgets::{Paragraph, WidgetRef as _};
+use ratatui::widgets::Paragraph;
+use ratatui::{layout, widgets};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 
@@ -92,8 +92,7 @@ impl Text {
 
 impl Widget for Text {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        self.paragraph(area.size.height)
-            .render_ref(area.to_rect(), buffer);
+        widgets::Widget::render(self.paragraph(area.size.height), area.to_rect(), buffer);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}

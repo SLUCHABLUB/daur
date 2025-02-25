@@ -7,7 +7,8 @@ use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
 use ratatui::symbols::border::{PLAIN, THICK};
-use ratatui::widgets::{Block, WidgetRef as _};
+use ratatui::widgets;
+use ratatui::widgets::Block;
 
 /// A simpler version of [`Block`](widgets::Block)
 #[derive(Debug)]
@@ -61,7 +62,7 @@ impl<Child> Bordered<Child> {
 impl<Child: Widget> Widget for Bordered<Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let block = self.to_block();
-        block.render_ref(area.to_rect(), buffer);
+        widgets::Widget::render(block, area.to_rect(), buffer);
         self.child.render(self.inner(area), buffer, mouse_position);
     }
 

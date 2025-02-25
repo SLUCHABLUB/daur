@@ -23,7 +23,8 @@ use crate::{keyboard, Ratio};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::widgets::{Clear, WidgetRef as _};
+use ratatui::widgets;
+use ratatui::widgets::Clear;
 use ratatui_explorer::{File, FileExplorer};
 use std::error::Error;
 use std::sync::{Arc, Weak};
@@ -170,7 +171,7 @@ impl Popup {
 
 impl Widget for Popup {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        Clear.render_ref(area.to_rect(), buffer);
+        widgets::Widget::render(Clear, area.to_rect(), buffer);
         let title = self.info().title.clone();
 
         match self {

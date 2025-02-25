@@ -23,6 +23,6 @@ thiserror = "2.0.11"
 
 # TODO: remove these and make this crate UI agnostic
 crossterm = { version = "0.28.1", features = ["serde"] }
-ratatui = { version = "0.29.0", features = ["unstable-widget-ref"] }
+ratatui = { version = "0.30.0-alpha.1" }
 # TODO: use the official version when thread-safing pr makes it into production
 ratatui-explorer = { git = "https://github.com/SLUCHABLUB/ratatui-explorer" }

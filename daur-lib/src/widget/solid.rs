@@ -4,8 +4,8 @@ use crate::widget::Widget;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::style::Color;
+use ratatui::widgets;
 use ratatui::widgets::canvas::{Canvas, Context};
-use ratatui::widgets::WidgetRef as _;
 
 /// A solid colour
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -28,9 +28,11 @@ impl Solid {
 
 impl Widget for Solid {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        Canvas::<fn(&mut Context)>::default()
-            .background_color(self.colour)
-            .render_ref(area.to_rect(), buffer);
+        widgets::Widget::render(
+            Canvas::<fn(&mut Context)>::default().background_color(self.colour),
+            area.to_rect(),
+            buffer,
+        );
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
