@@ -44,6 +44,8 @@ impl Length {
     /// The default width of the track-settings sidebar
     pub const TRACK_SETTINGS_DEFAULT: Length = Length::new(20);
 
+    pub(crate) const MAX: Length = Length::new(u16::MAX);
+
     /// Returns the height of the string
     #[must_use]
     pub fn string_height(string: &str) -> Self {

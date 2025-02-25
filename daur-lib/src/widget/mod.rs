@@ -52,6 +52,26 @@ pub trait Widget {
     );
 }
 
+impl<T: Widget> Widget for Option<T> {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        if let Some(widget) = self {
+            widget.render(area, buffer, mouse_position);
+        }
+    }
+
+    fn click(
+        &self,
+        area: Rectangle,
+        button: MouseButton,
+        position: Point,
+        actions: &mut Vec<Action>,
+    ) {
+        if let Some(widget) = self {
+            widget.click(area, button, position, actions);
+        }
+    }
+}
+
 // TODO: remove and add a custom clip-overview widget
 impl<F: Fn(&mut Context)> Widget for Canvas<'_, F> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
