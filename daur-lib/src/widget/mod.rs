@@ -5,14 +5,15 @@ mod button;
 mod feed;
 mod has_size;
 // TODO: reexport
+mod alignment;
+mod direction;
 pub(crate) mod injective;
 mod macros;
+mod ruler;
 mod solid;
 mod text;
 mod to_widget;
 
-mod alignment;
-mod direction;
 pub mod heterogeneous;
 pub mod homogenous;
 pub mod multi;
@@ -25,6 +26,7 @@ pub use direction::Direction;
 pub use feed::{feed, Feed};
 pub use has_size::HasSize;
 pub(crate) use macros::{or_popup, popup_error};
+pub use ruler::Ruler;
 pub use solid::Solid;
 pub use text::Text;
 pub use to_widget::ToWidget;

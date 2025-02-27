@@ -5,8 +5,10 @@ use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use saturating_cast::SaturatingCast as _;
 
-#[derive(Clone)]
+/// A ruler of musical time
+#[derive(Clone, Debug)]
 pub struct Ruler {
+    /// The ui mapping used by the ruler
     pub mapping: Mapping,
     /// How far along the overview has been scrolled
     pub offset: Offset,

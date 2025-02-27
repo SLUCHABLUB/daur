@@ -11,9 +11,9 @@ use crate::piano_roll::key::PianoKey;
 use crate::piano_roll::row::Row;
 use crate::pitch::Pitch;
 use crate::project::changing::Changing;
-use crate::ui::{Mapping, Point, Rectangle};
+use crate::ui::{Mapping, Offset, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{feed, Direction, Text, Widget};
+use crate::widget::{feed, Direction, Ruler, Text, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -43,39 +43,51 @@ impl Widget for PianoRoll {
             return;
         };
 
+        let ruler = Ruler {
+            mapping: self.mapping.clone(),
+            offset: Offset::negative(self.settings.x_offset),
+        };
+        let constraints = [Constraint::Max(2), Constraint::Fill(1)];
+
         let roll_start = self
             .mapping
             .instant(area.position.x + self.settings.piano_depth.get());
         let piano_key_key = self.key.get(roll_start);
 
         // TODO: change the anchor point to be at the bottom
-        feed(
-            Direction::Up,
-            -self.settings.y_offset,
-            area.size.height,
-            |index| {
-                let interval = Interval::from_semitones(index.saturating_cast());
-                let pitch = Pitch::A440 + interval;
+        TwoStack::vertical(
+            (
+                ruler,
+                feed(
+                    Direction::Up,
+                    -self.settings.y_offset,
+                    area.size.height,
+                    |index| {
+                        let interval = Interval::from_semitones(index.saturating_cast());
+                        let pitch = Pitch::A440 + interval;
 
-                let key = PianoKey {
-                    key: piano_key_key,
-                    pitch,
-                    black_key_depth: self.settings.black_key_depth,
-                };
-                let row = Row {
-                    clip: Arc::clone(&clip),
-                    pitch,
-                };
+                        let key = PianoKey {
+                            key: piano_key_key,
+                            pitch,
+                            black_key_depth: self.settings.black_key_depth,
+                        };
+                        let row = Row {
+                            clip: Arc::clone(&clip),
+                            pitch,
+                        };
 
-                let constraints = [
-                    self.settings.piano_depth.get().constraint(),
-                    Constraint::Fill(1),
-                ];
+                        let constraints = [
+                            self.settings.piano_depth.get().constraint(),
+                            Constraint::Fill(1),
+                        ];
 
-                let stack = TwoStack::horizontal((key, row), constraints);
+                        let stack = TwoStack::horizontal((key, row), constraints);
 
-                (stack, self.settings.key_width.get())
-            },
+                        (stack, self.settings.key_width.get())
+                    },
+                ),
+            ),
+            constraints,
         )
         .render(area, buffer, mouse_position);
     }

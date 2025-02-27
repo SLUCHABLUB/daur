@@ -3,14 +3,12 @@ mod bar;
 pub mod changing;
 mod edit;
 pub mod manager;
-mod ruler;
 mod source;
 
 pub use action::Action;
 
 use crate::key::Key;
 use crate::project::changing::Changing;
-use crate::project::ruler::Ruler;
 use crate::project::source::ProjectSource;
 use crate::time::{Instant, Signature, Tempo};
 use crate::track::overview::Overview;
@@ -18,7 +16,7 @@ use crate::track::Track;
 use crate::ui::{Grid, Length, Offset};
 use crate::widget::heterogeneous::TwoStack;
 use crate::widget::homogenous::Stack;
-use crate::widget::{Button, Text, Widget};
+use crate::widget::{Button, Ruler, Text, Widget};
 use crate::{app, time, ui};
 use arcstr::{literal, ArcStr};
 use ratatui::layout::Constraint;
