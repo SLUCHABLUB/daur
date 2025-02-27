@@ -118,7 +118,8 @@ impl App {
 
             let mut settings = self.piano_roll_settings.get();
 
-            settings.x_offset += offset.x;
+            // The x offset is to the right
+            settings.x_offset -= offset.x;
             settings.y_offset += offset.y;
 
             self.piano_roll_settings.set(settings);

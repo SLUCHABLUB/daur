@@ -13,7 +13,7 @@ use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::ui::{Mapping, Offset, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{feed, Direction, Ruler, Text, Widget};
+use crate::widget::{feed, Direction, Ruler, Solid, Text, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -43,11 +43,22 @@ impl Widget for PianoRoll {
             return;
         };
 
-        let ruler = Ruler {
-            mapping: self.mapping.clone(),
-            offset: Offset::negative(self.settings.x_offset),
-        };
-        let constraints = [Constraint::Max(2), Constraint::Fill(1)];
+        let horizontal_constraints = [
+            self.settings.piano_depth.get().constraint(),
+            Constraint::Fill(1),
+        ];
+        let vertical_constraints = [Constraint::Max(2), Constraint::Fill(1)];
+
+        let ruler = TwoStack::horizontal(
+            (
+                Solid::EMPTY,
+                Ruler {
+                    mapping: self.mapping.clone(),
+                    offset: Offset::negative(self.settings.x_offset),
+                },
+            ),
+            horizontal_constraints,
+        );
 
         let roll_start = self
             .mapping
@@ -76,18 +87,13 @@ impl Widget for PianoRoll {
                             pitch,
                         };
 
-                        let constraints = [
-                            self.settings.piano_depth.get().constraint(),
-                            Constraint::Fill(1),
-                        ];
-
-                        let stack = TwoStack::horizontal((key, row), constraints);
+                        let stack = TwoStack::horizontal((key, row), horizontal_constraints);
 
                         (stack, self.settings.key_width.get())
                     },
                 ),
             ),
-            constraints,
+            vertical_constraints,
         )
         .render(area, buffer, mouse_position);
     }

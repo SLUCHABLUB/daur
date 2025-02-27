@@ -15,6 +15,11 @@ pub struct Solid {
 }
 
 impl Solid {
+    /// An empty widget
+    pub const EMPTY: Solid = Solid {
+        colour: Color::Reset,
+    };
+
     /// A solid black widget
     pub const BLACK: Solid = Solid {
         colour: Color::Black,

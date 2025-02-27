@@ -160,3 +160,9 @@ impl SubAssign<Length> for Offset {
         *self = *self - rhs;
     }
 }
+
+impl SubAssign<Offset> for Length {
+    fn sub_assign(&mut self, rhs: Offset) {
+        *self = ((-rhs) + *self).saturate();
+    }
+}
