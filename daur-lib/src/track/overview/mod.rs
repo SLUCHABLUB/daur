@@ -6,7 +6,7 @@ use crate::time::Instant;
 use crate::track::overview::cursor::Cursor;
 use crate::track::Track;
 use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle, Size};
-use crate::widget::{feed, Direction, Widget};
+use crate::widget::{Direction, Feed, Widget};
 use crate::{project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -50,7 +50,7 @@ impl Widget for Overview {
         // TODO: alternate background colour for grid
 
         // Render the clips
-        feed(Direction::Right, self.offset, area.size.width, |index| {
+        Feed::new(Direction::Right, self.offset, |index| {
             let Ok(index) = usize::try_from(index) else {
                 return (None, self.offset.abs());
             };

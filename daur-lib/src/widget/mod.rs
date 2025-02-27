@@ -23,7 +23,7 @@ pub use alignment::Alignment;
 pub use bordered::Bordered;
 pub use button::Button;
 pub use direction::Direction;
-pub use feed::{feed, Feed};
+pub use feed::Feed;
 pub use has_size::HasSize;
 pub(crate) use macros::{or_popup, popup_error};
 pub use ruler::Ruler;

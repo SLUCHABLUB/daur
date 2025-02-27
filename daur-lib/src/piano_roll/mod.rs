@@ -13,7 +13,7 @@ use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::ui::{Mapping, Offset, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{feed, Direction, Ruler, Solid, Text, Widget};
+use crate::widget::{Direction, Feed, Ruler, Solid, Text, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -68,29 +68,24 @@ impl Widget for PianoRoll {
         TwoStack::vertical(
             (
                 ruler,
-                feed(
-                    Direction::Up,
-                    -self.settings.y_offset,
-                    area.size.height,
-                    |index| {
-                        let interval = Interval::from_semitones(index.saturating_cast());
-                        let pitch = Pitch::A440 + interval;
+                Feed::new(Direction::Up, -self.settings.y_offset, |index| {
+                    let interval = Interval::from_semitones(index.saturating_cast());
+                    let pitch = Pitch::A440 + interval;
 
-                        let key = PianoKey {
-                            key: piano_key_key,
-                            pitch,
-                            black_key_depth: self.settings.black_key_depth,
-                        };
-                        let row = Row {
-                            clip: Arc::clone(&clip),
-                            pitch,
-                        };
+                    let key = PianoKey {
+                        key: piano_key_key,
+                        pitch,
+                        black_key_depth: self.settings.black_key_depth,
+                    };
+                    let row = Row {
+                        clip: Arc::clone(&clip),
+                        pitch,
+                    };
 
-                        let stack = TwoStack::horizontal((key, row), horizontal_constraints);
+                    let stack = TwoStack::horizontal((key, row), horizontal_constraints);
 
-                        (stack, self.settings.key_width.get())
-                    },
-                ),
+                    (stack, self.settings.key_width.get())
+                }),
             ),
             vertical_constraints,
         )

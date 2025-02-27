@@ -1,6 +1,6 @@
 use crate::app::Action;
 use crate::ui::{Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
-use crate::widget::{feed, Direction, Text, Widget};
+use crate::widget::{Direction, Feed, Text, Widget};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use saturating_cast::SaturatingCast as _;
@@ -16,7 +16,7 @@ pub struct Ruler {
 
 impl Widget for Ruler {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        feed(Direction::Right, self.offset, area.size.width, |index| {
+        Feed::new(Direction::Right, self.offset, |index| {
             let Ok(index) = usize::try_from(index) else {
                 let first = self.mapping.time_signature.bar_n(0);
                 let width = self.mapping.bar_width(first);
