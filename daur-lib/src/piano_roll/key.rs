@@ -23,8 +23,11 @@ impl Widget for PianoKey {
             Solid::WHITE
         };
 
-        // TODO: only do this for the tonic
-        let white_part = Text::bottom_right(ArcStr::from(self.pitch.name(self.key.sign)));
+        let white_part = Text::bottom_right(if self.pitch.chroma() == self.key.tonic {
+            ArcStr::from(self.pitch.name(self.key.sign))
+        } else {
+            ArcStr::new()
+        });
 
         let constraints = [self.black_key_depth.get().constraint(), Constraint::Fill(1)];
 

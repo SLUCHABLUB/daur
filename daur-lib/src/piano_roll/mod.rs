@@ -55,13 +55,16 @@ impl Widget for PianoRoll {
             area.size.height,
             |index| {
                 let interval = Interval::from_semitones(index.saturating_cast());
+                let pitch = Pitch::A440 + interval;
+
                 let key = PianoKey {
                     key: piano_key_key,
-                    pitch: Pitch::A440 + interval,
+                    pitch,
                     black_key_depth: self.settings.black_key_depth,
                 };
                 let row = Row {
                     clip: Arc::clone(&clip),
+                    pitch,
                 };
 
                 let constraints = [
