@@ -39,6 +39,7 @@ impl Widget for PianoKey {
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
+        // TODO: resizing the piano
         // TODO: plink the key
         // TODO: select all notes with the keys pitch
     }

@@ -80,8 +80,5 @@ impl Widget for PianoRoll {
         .render(area, buffer, mouse_position);
     }
 
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
-        // TODO: resizing the piano
-        // TODO: selecting notes
-    }
+    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
 }
