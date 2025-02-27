@@ -53,20 +53,16 @@ impl Rectangle {
             Direction::Right => (layout::Direction::Horizontal, false),
         };
 
-        if reverse {
-            constraints.as_mut().reverse();
-        };
-
-        #[expect(
-            clippy::unnecessary_to_owned,
-            reason = "false positive (clippy #14242)"
-        )]
-        Layout::new(direction, constraints.as_mut().iter())
+        let mut rects = Layout::new(direction, constraints.as_mut().iter())
             .flex(flex)
             .spacing(spacing.clone())
             .split(self.to_rect())
-            .to_vec()
-            .into_iter()
-            .map(Rectangle::from_rect)
+            .to_vec();
+
+        if reverse {
+            rects.reverse();
+        }
+
+        rects.into_iter().map(Rectangle::from_rect)
     }
 }

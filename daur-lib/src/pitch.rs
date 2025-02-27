@@ -41,7 +41,7 @@ impl Pitch {
             reason = "we will use the std version when it gets stabilised"
         )]
         let octaves_from_c4 = semitones_from_c4.div_floor(&12);
-        octaves_from_c4
+        octaves_from_c4.saturating_add(4)
     }
 
     pub fn name(self, sign: Sign) -> String {

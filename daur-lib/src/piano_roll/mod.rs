@@ -54,7 +54,7 @@ impl Widget for PianoRoll {
             -self.settings.y_offset,
             area.size.height,
             |index| {
-                let interval = Interval::from_semitones(index.saturating_neg().saturating_cast());
+                let interval = Interval::from_semitones(index.saturating_cast());
                 let key = PianoKey {
                     key: piano_key_key,
                     pitch: Pitch::A440 + interval,
