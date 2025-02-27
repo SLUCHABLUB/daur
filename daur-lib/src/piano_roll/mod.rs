@@ -65,7 +65,6 @@ impl Widget for PianoRoll {
             .instant(area.position.x + self.settings.piano_depth.get());
         let piano_key_key = self.key.get(roll_start);
 
-        // TODO: change the anchor point to be at the bottom
         TwoStack::vertical(
             (
                 ruler,
