@@ -2,4 +2,4 @@
 
 mod stack;
 
-pub use stack::{Stack, TwoStack, ThreeStack, FourStack};
+pub use stack::{FourStack, Stack, ThreeStack, TwoStack};
