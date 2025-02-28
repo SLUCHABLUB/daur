@@ -22,7 +22,7 @@ pub struct Feed<Children> {
 
 // Whilst you could remove the trait bound, since it is not needed for the constructor,
 // it helps with type inference. The struct initializer can always be used.
-impl<Children: Fn(isize) -> Child, Child> Feed<Children> {
+impl<Children: Fn(isize) -> (Child, Length), Child> Feed<Children> {
     /// Constructs a new feed
     pub fn new(direction: Direction, offset: Offset, children: Children) -> Feed<Children> {
         Feed {
