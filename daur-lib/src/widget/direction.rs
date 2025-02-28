@@ -9,5 +9,4 @@ pub enum Direction {
     Down,
     /// From the left to the right
     Right,
-    // TODO: Outward
 }
