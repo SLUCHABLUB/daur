@@ -23,6 +23,9 @@ pub struct Clip {
     pub content: ClipContent,
 }
 
+pub(crate) type Painter<'clip> = Box<dyn Fn(&mut Context) + 'clip>;
+pub(crate) type OverviewCanvas<'clip> = Canvas<'clip, Painter<'clip>>;
+
 impl Clip {
     /// The [`Period`] of the clip
     #[must_use]
@@ -32,15 +35,14 @@ impl Clip {
 
     /// Returns the canvas for the clip overview.
     /// The viewport bounds have not yet been set.
-    pub(crate) fn overview_canvas(
-        &self,
-        selected: bool,
-    ) -> Canvas<impl Fn(&mut Context) + use<'_>> {
+    pub(crate) fn overview_canvas(&self, selected: bool) -> OverviewCanvas {
         let set = if selected { THICK } else { PLAIN };
+
+        let painter: Painter = Box::new(|context| self.content.paint_overview(context));
 
         Canvas::default()
             .background_color(self.colour)
-            .paint(|context| self.content.paint_overview(context))
+            .paint(painter)
             .block(
                 Block::bordered()
                     .borders(Borders::TOP)

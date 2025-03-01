@@ -11,6 +11,14 @@ pub struct Layers<Children> {
     pub children: Children,
 }
 
+impl<Children> Layers<Children> {
+    /// Constructs a new `Layers`
+    #[must_use]
+    pub fn new(children: Children) -> Layers<Children> {
+        Layers { children }
+    }
+}
+
 macro_rules! impl_layers {
     ($len:literal; $($generic:ident),*; $($index:tt),*) => {
         impl<$($generic: Widget),*> Widget for Layers<($($generic),*)> {

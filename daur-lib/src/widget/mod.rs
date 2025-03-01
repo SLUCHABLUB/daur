@@ -14,6 +14,7 @@ mod solid;
 mod text;
 mod to_widget;
 
+mod cursor;
 pub mod heterogeneous;
 pub mod homogenous;
 pub mod multi;
@@ -22,6 +23,7 @@ pub mod single;
 pub use alignment::Alignment;
 pub use bordered::Bordered;
 pub use button::Button;
+pub use cursor::CursorWindow;
 pub use direction::Direction;
 pub use feed::Feed;
 pub use has_size::HasSize;
