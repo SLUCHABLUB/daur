@@ -27,7 +27,7 @@ pub mod widget;
 #[cfg(test)]
 mod test;
 
-pub use app::App;
+pub use app::{Action, App};
 pub use audio::{Audio, AudioSource};
 pub use cell::Cell;
 pub use clip::{Clip, ClipContent, ClipSource};

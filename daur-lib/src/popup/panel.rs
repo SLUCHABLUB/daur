@@ -1,11 +1,10 @@
-use crate::app::Action;
-use crate::cell::Cell;
 use crate::keyboard::Key;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Point, Rectangle};
 use crate::widget::homogenous::Stack;
 use crate::widget::{Button, ToWidget, Widget as _};
+use crate::{Action, Cell};
 use crossterm::event::{KeyCode, MouseButton};
 
 #[derive(Clone, Eq, PartialEq, Debug)]

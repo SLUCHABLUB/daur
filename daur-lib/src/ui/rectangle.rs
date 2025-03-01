@@ -1,5 +1,4 @@
-use crate::ui::point::Point;
-use crate::ui::Size;
+use crate::ui::{Point, Size};
 use crate::widget::Direction;
 use ratatui::layout;
 use ratatui::layout::{Constraint, Flex, Layout, Rect, Spacing};

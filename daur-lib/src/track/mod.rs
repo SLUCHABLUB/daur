@@ -5,9 +5,9 @@ mod source;
 pub use source::TrackSource;
 use std::collections::BTreeMap;
 
-use crate::clip::Clip;
 use crate::time::{Instant, Mapping};
 use crate::track::settings::Settings;
+use crate::Clip;
 use arcstr::{literal, ArcStr};
 use std::sync::Arc;
 

@@ -2,8 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::time::duration::Duration;
-use crate::time::Mapping;
+use crate::time::{Duration, Mapping};
 use num::Integer as _;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Sub};

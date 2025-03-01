@@ -1,7 +1,6 @@
-use crate::app::action::Action;
 use crate::app::macros::or_popup;
-use crate::app::App;
 use crate::popup::Popup;
+use crate::{Action, App};
 use arcstr::ArcStr;
 use never::Never;
 use rodio::cpal::traits::HostTrait as _;

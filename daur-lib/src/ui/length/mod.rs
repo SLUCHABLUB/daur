@@ -2,7 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroLength;
 
-use crate::ratio::Ratio;
+use crate::Ratio;
 use ratatui::layout::{Constraint, Spacing};
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU32;

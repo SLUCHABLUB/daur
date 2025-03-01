@@ -8,8 +8,6 @@ mod terminating;
 
 pub use popups::Popups;
 
-use crate::app::Action;
-use crate::cell::Cell;
 use crate::key::Key;
 use crate::popup::error::ErrorPopup;
 use crate::popup::explorer::ExplorerPopup;
@@ -19,7 +17,7 @@ use crate::popup::panel::ButtonPanel;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Length, Point, Rectangle, Size};
 use crate::widget::{Bordered, Button, HasSize as _, ToWidget as _, Widget};
-use crate::{keyboard, Ratio};
+use crate::{keyboard, Action, Cell, Ratio};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;

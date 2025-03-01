@@ -1,5 +1,3 @@
-use crate::app::Action;
-use crate::cell::Cell;
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
 use crate::popup::info::PopupInfo;
@@ -8,7 +6,7 @@ use crate::popup::Popup;
 use crate::sign::Sign;
 use crate::widget::heterogeneous::{FourStack, TwoStack};
 use crate::widget::{multi, single, Bordered, Button, ToWidget};
-use crate::{keyboard, project};
+use crate::{keyboard, project, Action, Cell};
 use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
 use crossterm::event::{KeyCode, KeyModifiers};

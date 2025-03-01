@@ -1,5 +1,4 @@
-use crate::time::duration::NonZeroDuration;
-use crate::time::instant::Instant;
+use crate::time::{Instant, NonZeroDuration};
 
 /// An `Instant` distinct from  the starting point
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]

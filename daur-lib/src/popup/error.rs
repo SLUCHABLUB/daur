@@ -1,5 +1,3 @@
-use crate::app::Action;
-use crate::cell::Cell;
 use crate::keyboard::Key;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
@@ -7,6 +5,7 @@ use crate::popup::Popup;
 use crate::ui::Length;
 use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::{Bordered, Button, HasSize as _, Text, ToWidget};
+use crate::{Action, Cell};
 use arcstr::{format, literal, ArcStr};
 use crossterm::event::KeyCode;
 use ratatui::layout::{Constraint, Flex};

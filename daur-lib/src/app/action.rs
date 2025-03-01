@@ -1,8 +1,7 @@
-use crate::app::App;
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
-use crate::{project, Ratio};
+use crate::{project, App, Ratio};
 use educe::Educe;
 use rodio::Device;
 use std::path::PathBuf;
@@ -26,7 +25,9 @@ pub enum Action {
     /// Selects the given track
     SelectTrack(usize),
 
+    /// Sets the piano roll's height to half the screen
     OpenPianoRoll,
+    /// Sets the piano roll's height
     SetPianoRollHeight(Length),
 
     /// Stop playing
@@ -36,6 +37,7 @@ pub enum Action {
     /// `Play` or `Pause`
     PlayPause,
 
+    /// Takes a project action
     Project(project::Action),
 
     /// Sets the audio output device
@@ -47,10 +49,12 @@ pub enum Action {
 }
 
 impl Action {
+    /// Returns an action for importing audio
     pub fn import_audio<P: Into<PathBuf>>(file: P) -> Action {
         Action::Project(project::Action::ImportAudio { file: file.into() })
     }
 
+    /// Take the action on the app
     pub fn take(self, app: &App) {
         match self {
             Action::None => (),

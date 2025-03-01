@@ -1,12 +1,10 @@
 //! A simple multi-selection widget
 
-use crate::app::Action;
-use crate::cell::Cell;
 use crate::ui::{Point, Rectangle};
-use crate::widget::bordered::Bordered;
 use crate::widget::homogenous::Stack;
 use crate::widget::injective::Injective;
-use crate::widget::text::Text;
+use crate::widget::{Bordered, Text};
+use crate::{Action, Cell};
 use arcstr::{format, ArcStr};
 use bitbag::{BitBag, Flags};
 use crossterm::event::MouseButton;

@@ -1,7 +1,4 @@
-use crate::time::duration::Duration;
-use crate::time::instant::Instant;
-use crate::time::period::Period;
-use crate::time::signature::Signature;
+use crate::time::{Duration, Instant, Period, Signature};
 
 /// A bar, or ui
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

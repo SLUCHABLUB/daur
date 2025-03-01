@@ -1,5 +1,4 @@
-use crate::time::duration::Duration;
-use crate::time::instant::Instant;
+use crate::time::{Duration, Instant};
 use std::ops::Range;
 
 /// A period of musical time

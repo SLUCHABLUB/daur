@@ -1,9 +1,7 @@
 use crate::app::Action;
 use crate::ui::{Length, Point, Rectangle, Size};
-use crate::widget::bordered::Bordered;
 use crate::widget::has_size::HasSize;
-use crate::widget::text::Text;
-use crate::widget::Widget;
+use crate::widget::{Bordered, Text, Widget};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
