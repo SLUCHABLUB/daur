@@ -19,6 +19,7 @@ pub mod heterogeneous;
 pub mod homogenous;
 pub mod multi;
 pub mod single;
+mod size_informed;
 
 pub use alignment::Alignment;
 pub use bordered::Bordered;
@@ -29,6 +30,7 @@ pub use feed::Feed;
 pub use has_size::HasSize;
 pub(crate) use macros::{or_popup, popup_error};
 pub use ruler::Ruler;
+pub use size_informed::SizeInformed;
 pub use solid::Solid;
 pub use text::Text;
 pub use to_widget::ToWidget;
@@ -43,7 +45,7 @@ use ratatui::widgets::canvas::{Canvas, Context};
 use ratatui::widgets::Block;
 use ratatui_explorer::{FileExplorer, Input};
 
-/// Like [`Widget`](ratatui::widgets::Widget) but with mouse info.
+/// Like [`Widget`](widgets::Widget) but with mouse info.
 #[must_use = "Widgets don't render themselves"]
 pub trait Widget {
     /// Render the widget in the given area in `buffer`
@@ -75,6 +77,28 @@ impl<T: Widget> Widget for Option<T> {
     ) {
         if let Some(widget) = self {
             widget.click(area, button, position, actions);
+        }
+    }
+}
+
+impl<T: Widget, E: Widget> Widget for Result<T, E> {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        match self {
+            Ok(ok) => ok.render(area, buffer, mouse_position),
+            Err(err) => err.render(area, buffer, mouse_position),
+        }
+    }
+
+    fn click(
+        &self,
+        area: Rectangle,
+        button: MouseButton,
+        position: Point,
+        actions: &mut Vec<Action>,
+    ) {
+        match self {
+            Ok(ok) => ok.click(area, button, position, actions),
+            Err(err) => err.click(area, button, position, actions),
         }
     }
 }

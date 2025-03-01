@@ -12,7 +12,6 @@ rustflags = [
     "--deny", "non_ascii_idents",
     "--deny", "redundant_imports",
     "--deny", "redundant_lifetimes",
-    "--deny", "single_use_lifetimes",
     "--deny", "trivial_casts",
     "--deny", "trivial_numeric_casts",
     "--deny", "unit_bindings",

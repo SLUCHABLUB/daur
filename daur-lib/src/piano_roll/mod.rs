@@ -13,7 +13,7 @@ use crate::pitch::Pitch;
 use crate::project::changing::Changing;
 use crate::ui::{Mapping, Offset, Point, Rectangle};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{Direction, Feed, Ruler, Solid, Text, Widget};
+use crate::widget::{Direction, Feed, Ruler, Solid, Text, ToWidget, Widget};
 use crate::Clip;
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -36,11 +36,13 @@ pub struct PianoRoll {
     pub key: Arc<Changing<Key>>,
 }
 
-impl Widget for PianoRoll {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+impl ToWidget for PianoRoll {
+    type Widget<'widget> =
+        Result<TwoStack<TwoStack<Solid, Ruler>, Feed<'widget, TwoStack<PianoKey, Row>>>, Text>;
+
+    fn to_widget(&self) -> Self::Widget<'_> {
         let Some(clip) = self.clip.as_ref().map(Arc::clone) else {
-            Text::centred(NO_CLIP_SELECTED).render(area, buffer, mouse_position);
-            return;
+            return Err(Text::centred(NO_CLIP_SELECTED));
         };
 
         let horizontal_constraints = [
@@ -60,15 +62,13 @@ impl Widget for PianoRoll {
             horizontal_constraints,
         );
 
-        let roll_start = self
-            .mapping
-            .instant(area.position.x + self.settings.piano_depth.get());
+        let roll_start = self.mapping.instant(self.settings.piano_depth.get());
         let piano_key_key = self.key.get(roll_start);
 
-        TwoStack::vertical(
+        Ok(TwoStack::vertical(
             (
                 ruler,
-                Feed::new(Direction::Up, -self.settings.y_offset, |index| {
+                Feed::new(Direction::Up, -self.settings.y_offset, move |index| {
                     let interval = Interval::from_semitones(index.saturating_cast());
                     let pitch = Pitch::A440 + interval;
 
@@ -88,9 +88,22 @@ impl Widget for PianoRoll {
                 }),
             ),
             vertical_constraints,
-        )
-        .render(area, buffer, mouse_position);
+        ))
+    }
+}
+
+impl Widget for PianoRoll {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+        self.to_widget().render(area, buffer, mouse_position);
     }
 
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
+    fn click(
+        &self,
+        area: Rectangle,
+        button: MouseButton,
+        position: Point,
+        actions: &mut Vec<Action>,
+    ) {
+        self.to_widget().click(area, button, position, actions);
+    }
 }

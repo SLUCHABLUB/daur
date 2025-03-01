@@ -4,39 +4,42 @@ use crate::widget::heterogeneous::ThreeStack;
 use crate::widget::homogenous::Stack;
 use crate::widget::{Direction, Widget};
 use crossterm::event::MouseButton;
+use educe::Educe;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 use std::cmp::Ordering;
 use std::iter::from_fn;
 
 /// A window into an infinite and scrollable stack
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
-pub struct Feed<Children> {
+#[derive(Educe)]
+#[educe(Debug)]
+pub struct Feed<'generator, Child> {
     /// The direction in which the widgets are laid out
     pub direction: Direction,
     /// How far the feed has been scrolled
     pub offset: Offset,
     /// The functions used for generating the widgets
-    pub children: Children,
+    #[educe(Debug(ignore))]
+    pub generator: Box<dyn Fn(isize) -> (Child, Length) + 'generator>,
 }
 
 // Whilst you could remove the trait bound, since it is not needed for the constructor,
 // it helps with type inference. The struct initializer can always be used.
-impl<Children: Fn(isize) -> (Child, Length), Child> Feed<Children> {
+impl<'generator, Child> Feed<'generator, Child> {
     /// Constructs a new feed
-    pub fn new(direction: Direction, offset: Offset, children: Children) -> Feed<Children> {
+    pub fn new<Generator>(direction: Direction, offset: Offset, generator: Generator) -> Self
+    where
+        Generator: Fn(isize) -> (Child, Length) + 'generator,
+    {
         Feed {
             direction,
             offset,
-            children,
+            generator: Box::new(generator),
         }
     }
 }
 
-impl<Child: Widget, Children> Widget for Feed<Children>
-where
-    Children: Fn(isize) -> (Child, Length),
-{
+impl<Child: Widget> Widget for Feed<'_, Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let mut offset = self.offset;
 
@@ -47,7 +50,7 @@ where
 
         match offset.cmp(&Offset::ZERO) {
             Ordering::Less => loop {
-                let (child, size) = (self.children)(index);
+                let (child, size) = (self.generator)(index);
                 offset += size;
                 index = index.saturating_add(1);
 
@@ -58,7 +61,7 @@ where
                 }
             },
             Ordering::Equal => {
-                let (child, size) = (self.children)(0);
+                let (child, size) = (self.generator)(0);
                 first = child;
                 first_size = size;
                 index = 1;
@@ -66,7 +69,7 @@ where
             Ordering::Greater => loop {
                 let new = index.saturating_sub(1);
 
-                let (child, size) = (self.children)(new);
+                let (child, size) = (self.generator)(new);
                 offset -= size;
 
                 if offset < Offset::ZERO {
@@ -84,7 +87,7 @@ where
         let homogeneous = Stack::new(
             self.direction,
             from_fn(|| {
-                let (child, size) = (self.children)(index);
+                let (child, size) = (self.generator)(index);
 
                 let new_last_size = last_size - size;
 
@@ -99,7 +102,7 @@ where
             }),
         );
 
-        let (last, _) = (self.children)(index);
+        let (last, _) = (self.generator)(index);
 
         let constraints = [
             first_size.constraint(),
