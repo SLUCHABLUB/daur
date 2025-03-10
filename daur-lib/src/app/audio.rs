@@ -9,7 +9,7 @@ use std::hint::spin_loop;
 use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
 
-// TODO: base upon the device
+// TODO: base on the device
 const SAMPLE_RATE: u32 = 44_100;
 
 pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<Never> {
