@@ -73,4 +73,13 @@ impl Mapping {
         let duration = end - start;
         Period { start, duration }
     }
+
+    /// Calculates the width of a `Period`
+    #[must_use]
+    pub fn width_of(&self, period: Period) -> Length {
+        let start = self.offset(period.start);
+        let end = self.offset(period.end());
+
+        end - start
+    }
 }

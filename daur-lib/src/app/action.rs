@@ -1,3 +1,8 @@
+#![allow(
+    clippy::used_underscore_binding,
+    reason = "educe generates code with underscore prefixes"
+)]
+
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
@@ -22,8 +27,15 @@ pub enum Action {
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
-    /// Selects the given track
+    /// Selects the track with the given index
     SelectTrack(usize),
+    /// Selects a clip
+    SelectClip {
+        /// The index of the track in which the clip resides
+        track_index: usize,
+        /// The index of the clip to select
+        index: usize,
+    },
 
     /// Sets the piano roll's height to half the screen
     OpenPianoRoll,
@@ -106,6 +118,10 @@ impl Action {
             }
             Action::SelectTrack(index) => {
                 app.selected_track_index.set(index);
+            }
+            Action::SelectClip { track_index, index } => {
+                app.selected_track_index.set(track_index);
+                app.selected_clip_index.set(index);
             }
             Action::SetDevice(device) => {
                 app.device.set(Some(device));

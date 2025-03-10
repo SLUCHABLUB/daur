@@ -1,12 +1,11 @@
 use crate::app::Action;
-use crate::clip::OverviewCanvas;
 use crate::popup::Popup;
-use crate::time::Instant;
+use crate::time::{Instant, Period};
 use crate::track::Track;
-use crate::ui::{Length, NonZeroLength, Offset, Point, Rectangle};
+use crate::ui::{Length, Offset, Point, Rectangle};
 use crate::widget::heterogeneous::Layers;
 use crate::widget::{CursorWindow, Direction, Feed, SizeInformed, ToWidget, Widget};
-use crate::{project, time, ui};
+use crate::{clip, project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use num::Integer as _;
@@ -43,28 +42,26 @@ pub struct Overview {
 }
 
 impl ToWidget for Overview {
-    type Widget<'widget> = SizeInformed<
-        'widget,
-        Layers<(Feed<'widget, Option<OverviewCanvas<'widget>>>, CursorWindow)>,
-    >;
+    type Widget<'widget> =
+        SizeInformed<'widget, Layers<(Feed<'widget, Option<clip::Overview>>, CursorWindow)>>;
 
     fn to_widget(&self) -> Self::Widget<'_> {
         SizeInformed::new(move |size| {
+            let overview_period = self.ui_mapping.period(self.offset.saturate(), size.width);
+
             Layers::new((
                 Feed::new(Direction::Right, self.offset, move |index| {
-                    let window_end = Offset::from(size.width);
-
                     let Ok(index) = usize::try_from(index) else {
                         return (None, self.offset.abs());
                     };
 
-                    let (index, parity) = index.div_rem(&2);
+                    let (clip_index, parity) = index.div_rem(&2);
 
                     // if index is even
                     if parity == 0 {
                         // Return the space between clips
 
-                        let last_clip_end = index
+                        let last_clip_end = clip_index
                             .checked_sub(1)
                             .and_then(|index| {
                                 let (start, clip) = self.track.clips.iter().nth(index)?;
@@ -77,7 +74,7 @@ impl ToWidget for Overview {
                             .track
                             .clips
                             .keys()
-                            .nth(index)
+                            .nth(clip_index)
                             .map_or(Length::MAX, |instant| self.ui_mapping.offset(*instant));
 
                         let size = next_clip_start - last_clip_end;
@@ -85,42 +82,30 @@ impl ToWidget for Overview {
                         return (None, size);
                     }
 
-                    let Some((start, clip)) = self.track.clips.iter().nth(index) else {
+                    let Some((start, clip)) = self.track.clips.iter().nth(clip_index) else {
                         return (None, Length::MAX);
                     };
 
-                    let period = clip.period(*start, &self.time_mapping);
+                    let clip_period = clip.period(*start, &self.time_mapping);
+                    let clip_width = self.ui_mapping.width_of(clip_period);
 
-                    let clip_start =
-                        Offset::from(self.ui_mapping.offset(period.start)) + self.offset;
-                    let clip_end = Offset::from(self.ui_mapping.offset(period.end())) + self.offset;
-                    let clip_width = clip_end - clip_start;
-
-                    let Some(clip_width) = NonZeroLength::from_length(clip_width.saturate()) else {
-                        return (None, Length::ZERO);
+                    let Some(visible_period) = Period::intersection(overview_period, clip_period)
+                    else {
+                        return (None, clip_width);
                     };
 
-                    let [mut x, y] = clip.content.full_overview_viewport();
-                    let full_width = x[1] - x[0];
+                    let selected = self.selected_clip_index == clip_index;
 
-                    if clip_start < Offset::ZERO {
-                        // The fraction of the clip that is outside the window (on the left)
-                        let fraction = (clip_start.abs() / clip_width).to_float();
-                        x[0] += fraction * full_width;
-                    }
-                    if window_end < clip_end {
-                        let delta = (clip_end - window_end).saturate();
-                        // The fraction of the clip that is outside the window (on the right)
-                        let fraction = (delta / clip_width).to_float();
-                        x[1] -= fraction * full_width;
-                    }
+                    let overview = clip::Overview {
+                        clip: Arc::clone(clip),
+                        selected,
+                        track_index: self.index,
+                        index,
+                        period: clip_period,
+                        visible_period,
+                    };
 
-                    let selected = self.selected_clip_index == index;
-
-                    (
-                        Some(clip.overview_canvas(selected).x_bounds(x).y_bounds(y)),
-                        clip_width.get(),
-                    )
+                    (Some(overview), clip_width)
                 }),
                 CursorWindow {
                     mapping: self.ui_mapping.clone(),

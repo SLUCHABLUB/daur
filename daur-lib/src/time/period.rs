@@ -1,4 +1,5 @@
 use crate::time::{Duration, Instant};
+use std::cmp::{max, min};
 use std::ops::Range;
 
 /// A period of musical time
@@ -15,6 +16,30 @@ impl Period {
     #[must_use]
     pub fn end(&self) -> Instant {
         self.start + self.duration
+    }
+
+    /// Constructs a new `Period` from a `start` and `end` point.
+    /// If `end` is before `start`, `None` is returned.
+    #[must_use]
+    pub fn from_endpoints(start: Instant, end: Instant) -> Option<Period> {
+        if end < start {
+            return None;
+        }
+
+        Some(Period {
+            start,
+            duration: end - start,
+        })
+    }
+
+    /// Returns the intersection between the two periods.
+    /// If the periods do not intersect, `None` is returned
+    #[must_use]
+    pub fn intersection(first: Period, second: Period) -> Option<Period> {
+        Period::from_endpoints(
+            max(first.start, second.start),
+            min(first.end(), second.end()),
+        )
     }
 
     fn range(self) -> Range<Instant> {
