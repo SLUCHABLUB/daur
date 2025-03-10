@@ -60,7 +60,16 @@ impl Manager {
     }
 
     pub fn source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {
-        self.project.read().to_source(sample_rate, cursor)
+        let tracks = self.project.read().tracks.clone();
+        let mapping = self.project.read().time_mapping();
+        let offset = cursor.to_sample(&mapping, sample_rate);
+        ProjectSource {
+            sample_rate,
+            tracks: tracks
+                .into_iter()
+                .map(|track| track.to_source(&mapping, sample_rate, offset))
+                .collect(),
+        }
     }
 
     pub fn bar(&self, playing: bool) -> impl Widget {
@@ -96,9 +105,9 @@ impl Manager {
     }
 
     fn edit(&self, edit: Edit) -> Result<(), Arc<Popup>> {
-        let mut project = self.project.write();
-
         self.history.write().push(edit.clone());
+
+        let mut project = self.project.write();
 
         match edit {
             Edit::AddClip {

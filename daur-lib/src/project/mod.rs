@@ -9,7 +9,6 @@ pub use action::Action;
 
 use crate::key::Key;
 use crate::project::changing::Changing;
-use crate::project::source::ProjectSource;
 use crate::time::{Instant, Signature, Tempo};
 use crate::track::overview::Overview;
 use crate::track::Track;
@@ -131,18 +130,5 @@ impl Project {
             TwoStack::horizontal((settings_column, overview_column), horizontal_constraints);
 
         TwoStack::vertical((ruler_row, track_area), ruler_constraints)
-    }
-
-    pub fn to_source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {
-        let mapping = self.time_mapping();
-        let offset = cursor.to_sample(&mapping, sample_rate);
-        ProjectSource {
-            sample_rate,
-            tracks: self
-                .tracks
-                .iter()
-                .map(|track| track.to_source(&mapping, sample_rate, offset))
-                .collect(),
-        }
     }
 }
