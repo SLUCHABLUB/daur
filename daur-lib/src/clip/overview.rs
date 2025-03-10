@@ -34,7 +34,7 @@ impl Widget for Overview {
         let [mut x, y] = self.clip.content.full_overview_viewport();
         let viewport_width = x[1] - x[0];
 
-        let left_cutoff = self.visible_period.start.since_start;
+        let left_cutoff = self.visible_period.start - self.period.start;
         let right_cutoff = self.period.end() - self.visible_period.end();
 
         let left_cutoff_fraction = left_cutoff / clip_duration;
