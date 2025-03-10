@@ -47,7 +47,9 @@ impl ToWidget for Overview {
 
     fn to_widget(&self) -> Self::Widget<'_> {
         SizeInformed::new(move |size| {
-            let overview_period = self.ui_mapping.period(self.offset.saturate(), size.width);
+            let overview_period = self
+                .ui_mapping
+                .period((-self.offset).saturate(), size.width);
 
             Layers::new((
                 Feed::new(Direction::Right, self.offset, move |index| {
