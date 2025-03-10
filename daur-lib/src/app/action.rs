@@ -42,6 +42,11 @@ pub enum Action {
     /// Sets the piano roll's height
     SetPianoRollHeight(Length),
 
+    /// Scrolls the overview to the left by one cell
+    ScrollLeft,
+    /// Scrolls the overview to the right by one cell
+    ScrollRight,
+
     /// Stop playing
     Pause,
     /// Start playing
@@ -80,6 +85,15 @@ impl Action {
                 if app.is_playing() {
                     app.start_playback();
                 }
+            }
+
+            Action::ScrollLeft => {
+                app.overview_offset
+                    .set(app.overview_offset.get() - app.grid.cell_width.get());
+            }
+            Action::ScrollRight => {
+                app.overview_offset
+                    .set(app.overview_offset.get() + app.grid.cell_width.get());
             }
 
             Action::OpenPianoRoll => {

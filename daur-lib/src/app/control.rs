@@ -26,5 +26,13 @@ pub fn default() -> HashMap<Key, Action> {
             Key::new(KeyCode::Char('p'), KeyModifiers::NONE),
             Action::OpenPianoRoll,
         ),
+        (
+            Key::new(KeyCode::Tab, KeyModifiers::NONE),
+            Action::ScrollLeft,
+        ),
+        (
+            Key::new(KeyCode::BackTab, KeyModifiers::SHIFT),
+            Action::ScrollRight,
+        ),
     ])
 }
