@@ -72,7 +72,7 @@ impl Project {
         let track_count = self.tracks.len().saturating_cast();
 
         let horizontal_constraints = [track_settings_size.constraint(), Constraint::Fill(1)];
-        let ruler_constraints = [Constraint::Max(2), Constraint::Fill(1)];
+        let ruler_constraints = [Constraint::Length(2), Constraint::Fill(1)];
 
         // TODO: put something here?
         let empty_space = Text::centred(literal!(":)"));

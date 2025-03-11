@@ -68,12 +68,6 @@ impl Length {
     pub fn constraint(self) -> Constraint {
         Constraint::Length(self.inner)
     }
-
-    /// Converts `self` to a `Constraint` using `Constraint::Max`
-    #[must_use]
-    pub fn constraint_max(self) -> Constraint {
-        Constraint::Max(self.inner)
-    }
 }
 
 impl From<Length> for Spacing {

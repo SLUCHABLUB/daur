@@ -49,7 +49,7 @@ impl ToWidget for PianoRoll {
             self.settings.piano_depth.get().constraint(),
             Constraint::Fill(1),
         ];
-        let vertical_constraints = [Constraint::Max(2), Constraint::Fill(1)];
+        let vertical_constraints = [Constraint::Length(2), Constraint::Fill(1)];
 
         let ruler = TwoStack::horizontal(
             (

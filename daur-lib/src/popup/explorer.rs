@@ -64,7 +64,7 @@ impl ExplorerPopup {
     }
 
     fn vertical_constraints() -> [Constraint; 2] {
-        [Constraint::Fill(1), Constraint::Max(3)]
+        [Constraint::Fill(1), Constraint::Length(3)]
     }
 }
 

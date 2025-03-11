@@ -63,8 +63,9 @@ impl ToWidget for ErrorPopup {
     fn to_widget(&self) -> Self::Widget<'_> {
         let acknowledge_button =
             Button::standard(ACKNOWLEDGE, Action::None).thickness(self.selected.get());
+        // TODO: favour buttons (by means of size-informed?)
         let constraints = [
-            Length::string_height(&self.display).constraint_max(),
+            Length::string_height(&self.display).constraint(),
             Constraint::Fill(1),
             acknowledge_button.size().height.constraint(),
         ];
