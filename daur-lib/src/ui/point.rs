@@ -1,5 +1,6 @@
-use crate::ui::Length;
+use crate::ui::{Length, Vector};
 use ratatui::layout::Position;
+use std::ops::AddAssign;
 
 /// A point on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
@@ -29,5 +30,12 @@ impl Point {
             x: self.x.inner(),
             y: self.y.inner(),
         }
+    }
+}
+
+impl AddAssign<Vector> for Point {
+    fn add_assign(&mut self, rhs: Vector) {
+        self.x += rhs.x;
+        self.y += rhs.y;
     }
 }
