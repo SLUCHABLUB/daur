@@ -57,6 +57,6 @@ impl ToWidget for ButtonPanel {
     type Widget<'buttons> = Stack<&'buttons Terminating<Button>>;
 
     fn to_widget(&self) -> Self::Widget<'_> {
-        Stack::equidistant_vertical(&self.buttons)
+        Stack::equisized_vertical(&self.buttons)
     }
 }

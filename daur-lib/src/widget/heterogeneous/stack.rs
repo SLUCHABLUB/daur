@@ -18,7 +18,8 @@ pub type FourStack<A, B, C, D> = Stack<4, (A, B, C, D)>;
 pub struct Stack<const N: usize, Children> {
     direction: Direction,
     children: Children,
-    constraints: [Constraint; N],
+    // None means that the children should be sized equally
+    constraints: Option<[Constraint; N]>,
     flex: Flex,
     spacing: Spacing,
 }
@@ -41,11 +42,17 @@ impl<const N: usize, Children> Stack<N, Children> {
     fn areas(&self, area: Rectangle) -> [Rectangle; N] {
         #[expect(
             clippy::unwrap_used,
-            reason = "the returned iterator has the same ui as the constraints one passed in"
+            reason = "the returned iterators have the same size as the array/length argument"
         )]
-        area.split(self.constraints, self.direction, self.flex, &self.spacing)
-            .collect_array()
-            .unwrap()
+        if let Some(constraints) = self.constraints {
+            area.split(constraints, self.direction, self.flex, &self.spacing)
+                .collect_array()
+                .unwrap()
+        } else {
+            area.split_equally(N, self.direction)
+                .collect_array()
+                .unwrap()
+        }
     }
 }
 
@@ -63,13 +70,13 @@ macro_rules! impl_stack {
                 Stack {
                     direction,
                     children,
-                    constraints,
+                    constraints: Some(constraints),
                     flex: Flex::SpaceBetween,
                     spacing: Spacing::default(),
                 }
             }
 
-            /// Constructs a horizontal stack
+            /// Constructs a horizontal stack.
             pub fn horizontal(
                 children: ($($generic),*),
                 constraints: [Constraint; $len],
@@ -77,7 +84,7 @@ macro_rules! impl_stack {
                 Self::new(Direction::Right, children, constraints)
             }
 
-            /// Constructs a vertical stack
+            /// Constructs a vertical stack.
             pub fn vertical(
                 children: ($($generic),*),
                 constraints: [Constraint; $len],
@@ -120,6 +127,34 @@ macro_rules! impl_stack {
                     Direction::Down,
                     children,
                 )
+            }
+
+            /// Constructs a new stack with equally sized children.
+            pub fn new_equisized(
+                direction: Direction,
+                children: ($($generic),*),
+            ) -> Self {
+                Stack {
+                    direction,
+                    children,
+                    constraints: None,
+                    flex: Flex::SpaceBetween,
+                    spacing: Spacing::default(),
+                }
+            }
+
+            /// Constructs a horizontal stack.
+            pub fn equisized_horizontal(
+                children: ($($generic),*),
+            ) -> Self {
+                Self::new_equisized(Direction::Right, children)
+            }
+
+            /// Constructs a vertical stack.
+            pub fn equisized_vertical(
+                children: ($($generic),*),
+            ) -> Self {
+                Self::new_equisized(Direction::Down, children)
             }
         }
 

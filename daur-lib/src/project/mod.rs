@@ -118,13 +118,10 @@ impl Project {
         );
 
         let settings_column = TwoStack::vertical(
-            (
-                Stack::equidistant_vertical(track_settings),
-                add_track_button,
-            ),
+            (Stack::equisized_vertical(track_settings), add_track_button),
             [Constraint::Fill(track_count), Constraint::Fill(1)],
         );
-        let overview_column = Stack::equidistant_vertical(track_overviews);
+        let overview_column = Stack::equisized_vertical(track_overviews);
 
         let track_area =
             TwoStack::horizontal((settings_column, overview_column), horizontal_constraints);

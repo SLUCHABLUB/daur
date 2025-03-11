@@ -40,32 +40,27 @@ impl Project {
             Button::described(PLAY, PLAY_DESCRIPTION, Action::Play)
         };
 
-        let fallbacks = ThreeStack::horizontal(
-            (
-                Button::described(
-                    self.key.start.to_arc_str(),
-                    KEY_DESCRIPTION,
-                    select_key(self.key.start),
-                ),
-                Button::described(
-                    self.time_signature.start.to_arc_str(),
-                    TIME_SIGNATURE_DESCRIPTION,
-                    Action::None,
-                ),
-                Button::described(
-                    self.tempo.start.to_arc_str(),
-                    TEMPO_DESCRIPTION,
-                    Action::None,
-                ),
+        let fallbacks = ThreeStack::equisized_horizontal((
+            Button::described(
+                self.key.start.to_arc_str(),
+                KEY_DESCRIPTION,
+                select_key(self.key.start),
             ),
-            [Constraint::Fill(1); 3],
-        );
+            Button::described(
+                self.time_signature.start.to_arc_str(),
+                TIME_SIGNATURE_DESCRIPTION,
+                Action::None,
+            ),
+            Button::described(
+                self.tempo.start.to_arc_str(),
+                TEMPO_DESCRIPTION,
+                Action::None,
+            ),
+        ));
 
-        let left_side = TwoStack::horizontal(
-            (Text::centred(literal!("TODO")), fallbacks),
-            [Constraint::Fill(1); 2],
-        )
-        .flex(Flex::SpaceBetween);
+        let left_side =
+            TwoStack::equisized_horizontal((Text::centred(literal!("TODO")), fallbacks))
+                .flex(Flex::SpaceBetween);
 
         Bordered::thick(
             self.title(),

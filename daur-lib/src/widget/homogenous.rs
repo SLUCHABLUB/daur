@@ -76,7 +76,7 @@ impl<Child> Stack<Child> {
 
     /// Constructs a horizontal stack of widgets that all have the same size
     #[must_use]
-    pub fn equidistant_horizontal<Children>(children: Children) -> Self
+    pub fn equisized_horizontal<Children>(children: Children) -> Self
     where
         Children: IntoIterator<Item = Child>,
         Children::IntoIter: ExactSizeIterator,
@@ -89,7 +89,7 @@ impl<Child> Stack<Child> {
 
     /// Constructs a vertical stack of widgets that all have the same size
     #[must_use]
-    pub fn equidistant_vertical<Children>(children: Children) -> Self
+    pub fn equisized_vertical<Children>(children: Children) -> Self
     where
         Children: IntoIterator<Item = Child>,
         Children::IntoIter: ExactSizeIterator,
