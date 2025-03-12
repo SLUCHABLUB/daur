@@ -238,7 +238,7 @@ impl Widget for App {
         position: Point,
         actions: &mut Vec<Action>,
     ) {
-        for popup in self.popups.to_stack() {
+        for popup in self.popups.to_stack().into_iter().rev() {
             let area = popup.area_in_window(area);
             if area.contains(position) {
                 popup.click(area, button, position, actions);
