@@ -38,6 +38,10 @@ pub struct Project {
 }
 
 impl Project {
+    pub fn title(&self) -> ArcStr {
+        ArcStr::clone(&self.title)
+    }
+
     pub fn time_signature(&self) -> Arc<Changing<Signature>> {
         Arc::clone(&self.time_signature)
     }
