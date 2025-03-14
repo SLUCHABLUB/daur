@@ -1,12 +1,9 @@
-use crate::app::Action;
 use crate::key::Key;
 use crate::pitch::Pitch;
-use crate::ui::{NonZeroLength, Point, Rectangle};
+use crate::ui::NonZeroLength;
 use crate::widget::heterogeneous::{Layers, TwoStack};
-use crate::widget::{Solid, Text, Widget};
+use crate::widget::{Solid, Text, ToWidget};
 use arcstr::ArcStr;
-use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 
 #[derive(Copy, Clone, Debug)]
@@ -16,8 +13,14 @@ pub struct PianoKey {
     pub black_key_depth: NonZeroLength,
 }
 
-impl Widget for PianoKey {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+impl ToWidget for PianoKey {
+    // TODO: use `Button` for:
+    //       - resizing the piano
+    //       - plinking the key
+    //       - selecting all notes with the keys pitch
+    type Widget<'widget> = TwoStack<Solid, Layers<(Solid, Text)>>;
+
+    fn to_widget(&self) -> Self::Widget<'_> {
         let top = if self.pitch.chroma().is_black_key() {
             Solid::BLACK
         } else {
@@ -34,12 +37,6 @@ impl Widget for PianoKey {
 
         let constraints = [self.black_key_depth.get().constraint(), Constraint::Fill(1)];
 
-        TwoStack::horizontal((top, bottom), constraints).render(area, buffer, mouse_position);
-    }
-
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
-        // TODO: resizing the piano
-        // TODO: plink the key
-        // TODO: select all notes with the keys pitch
+        TwoStack::horizontal((top, bottom), constraints)
     }
 }
