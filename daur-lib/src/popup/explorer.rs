@@ -5,7 +5,7 @@ use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{or_popup, Bordered, Button, OnClick, Text, ToWidget};
+use crate::widget::{or_popup, Bordered, Button, OnClick, Ref, Text, ToWidget};
 use arcstr::{literal, ArcStr};
 use crossterm::event::KeyCode;
 use educe::Educe;
@@ -70,7 +70,7 @@ impl ExplorerPopup {
 
 impl ToWidget for ExplorerPopup {
     type Widget<'lock> = TwoStack<
-        &'lock Lock<FileExplorer>,
+        Ref<'lock, Lock<FileExplorer>>,
         TwoStack<Terminating<Bordered<Text>>, Terminating<Button<'static, Bordered<Text>>>>,
     >;
 
@@ -88,6 +88,9 @@ impl ToWidget for ExplorerPopup {
 
         let buttons = TwoStack::horizontal_sized((cancel, confirm)).flex(Flex::SpaceBetween);
 
-        TwoStack::vertical((&self.explorer, buttons), Self::vertical_constraints())
+        TwoStack::vertical(
+            (Ref::from(&self.explorer), buttons),
+            Self::vertical_constraints(),
+        )
     }
 }

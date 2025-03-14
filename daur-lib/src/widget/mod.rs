@@ -114,7 +114,7 @@ impl<F: Fn(&mut Context)> Widget for Canvas<'_, F> {
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
 }
 
-impl Widget for &Lock<FileExplorer> {
+impl Widget for Lock<FileExplorer> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
         widgets::Widget::render(self.read().widget(), area.to_rect(), buffer);
     }

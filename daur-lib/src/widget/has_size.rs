@@ -11,7 +11,7 @@ pub trait HasSize: Widget {
 
 // This implementation breaks with ome non-default themes
 // but it sufficient for out purposes at the moment
-impl HasSize for &Lock<FileExplorer> {
+impl HasSize for Lock<FileExplorer> {
     fn size(&self) -> Size {
         let explorer = self.read();
 
