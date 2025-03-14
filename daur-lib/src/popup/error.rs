@@ -75,7 +75,7 @@ impl ToWidget for ErrorPopup {
                 Text::top_left(self.display()),
                 Text::top_left(self.debug()),
                 Terminating {
-                    child: acknowledge_button,
+                    content: acknowledge_button,
                     popup: self.info.this(),
                 },
             ),

@@ -17,6 +17,7 @@ mod to_widget;
 pub mod heterogeneous;
 pub mod homogenous;
 pub mod multi;
+mod reference;
 pub mod single;
 mod size_informed;
 
@@ -29,6 +30,7 @@ pub use feed::Feed;
 pub use has_size::HasSize;
 pub use hoverable::Hoverable;
 pub(crate) use macros::{or_popup, popup_error};
+pub use reference::Ref;
 pub use ruler::Ruler;
 pub use size_informed::SizeInformed;
 pub use solid::Solid;

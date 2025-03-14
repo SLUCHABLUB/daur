@@ -1,17 +1,15 @@
 use crate::app::Action;
 use crate::popup::Popup;
-use crate::ui::{Point, Rectangle, Size};
-use crate::widget::{HasSize, Widget};
-use crossterm::event::MouseButton;
+use crate::ui::Size;
+use crate::widget::{Button, HasSize, OnClick, Ref, ToWidget, Widget};
 use educe::Educe;
-use ratatui::buffer::Buffer;
 use std::sync::Weak;
 
 /// A button that also closes the containing popup
 #[derive(Clone, Debug, Educe)]
 #[educe(Eq, PartialEq)]
-pub struct Terminating<Child> {
-    pub child: Child,
+pub struct Terminating<Content> {
+    pub content: Content,
     /// The id of the containing popup
     #[educe(Eq(ignore))]
     pub popup: Weak<Popup>,
@@ -23,50 +21,22 @@ impl<Child> Terminating<Child> {
     }
 }
 
-// TODO: use injective
-impl<Child: Widget> Widget for Terminating<Child> {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        self.child.render(area, buffer, mouse_position);
-    }
+impl<Content: Widget> ToWidget for Terminating<Content> {
+    type Widget<'widget>
+        = Button<'static, Ref<'widget, Content>>
+    where
+        Content: 'widget;
 
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        self.child.click(area, button, position, actions);
-        if button == MouseButton::Left {
-            actions.push(Action::ClosePopup(self.popup()));
+    fn to_widget(&self) -> Self::Widget<'_> {
+        Button {
+            on_click: OnClick::from(Action::ClosePopup(self.popup())),
+            content: Ref::from(&self.content),
         }
-    }
-}
-
-impl<Child: Widget> Widget for &Terminating<Child> {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        (*self).render(area, buffer, mouse_position);
-    }
-
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        (*self).click(area, button, position, actions);
     }
 }
 
 impl<Child: HasSize> HasSize for Terminating<Child> {
     fn size(&self) -> Size {
-        self.child.size()
-    }
-}
-
-impl<Child: HasSize> HasSize for &Terminating<Child> {
-    fn size(&self) -> Size {
-        (*self).size()
+        self.content.size()
     }
 }

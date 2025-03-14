@@ -135,11 +135,11 @@ impl ToWidget for KeySelector {
     fn to_widget(&self) -> Self::Widget<'_> {
         let buttons = TwoStack::horizontal_sized((
             Terminating {
-                child: Bordered::plain(Text::centred(CANCEL)),
+                content: Bordered::plain(Text::centred(CANCEL)),
                 popup: self.info.this(),
             },
             Terminating {
-                child: Button::standard(
+                content: Button::standard(
                     CONFIRM,
                     OnClick::from(Action::Project(project::Action::SetDefaultKey(self.key()))),
                 ),

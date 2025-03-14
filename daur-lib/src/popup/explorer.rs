@@ -78,11 +78,11 @@ impl ToWidget for ExplorerPopup {
         let action = (self.action)(self.explorer.read().current());
 
         let confirm = Terminating {
-            child: Button::standard(CONFIRM, OnClick::from(action)),
+            content: Button::standard(CONFIRM, OnClick::from(action)),
             popup: self.info.this(),
         };
         let cancel = Terminating {
-            child: Bordered::plain(Text::centred(CANCEL)),
+            content: Bordered::plain(Text::centred(CANCEL)),
             popup: self.info.this(),
         };
 

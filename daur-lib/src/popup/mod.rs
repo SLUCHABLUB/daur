@@ -65,7 +65,7 @@ impl Popup {
                 buttons: buttons
                     .into_iter()
                     .map(|(name, action)| Terminating {
-                        child: Button::simple(name, OnClick::from(action)),
+                        content: Button::simple(name, OnClick::from(action)),
                         popup: info.this(),
                     })
                     .collect(),
