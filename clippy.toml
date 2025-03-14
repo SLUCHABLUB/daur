@@ -2,6 +2,7 @@ arithmetic-side-effects-allowed = [
     "pitch::Pitch",
     "ui::length::Length",
     "ui::offset::Offset",
+    "ui::point::Point",
     "ui::vector::Vector",
     "ratio::Ratio",
     "ratio::non_zero::NonZeroRatio",

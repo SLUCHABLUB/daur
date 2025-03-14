@@ -1,9 +1,9 @@
 use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
-use crate::project::Project;
+use crate::time::{Signature, Tempo};
 use crate::widget::heterogeneous::{ThreeStack, TwoStack};
-use crate::widget::{Bordered, Button, Text, Widget};
+use crate::widget::{Bordered, Button, Hoverable, OnClick, Text, ToWidget};
 use crate::ToArcStr as _;
 use arcstr::{literal, ArcStr};
 use ratatui::layout::{Constraint, Flex};
@@ -18,39 +18,65 @@ const KEY_DESCRIPTION: ArcStr = literal!("key");
 const TIME_SIGNATURE_DESCRIPTION: ArcStr = literal!("time sig.");
 const TEMPO_DESCRIPTION: ArcStr = literal!("tempo");
 
-pub fn select_key(key: Key) -> Action {
-    Action::OpenPopup(Popup::key_selector(key))
+fn select_key(key: Key) -> OnClick<'static> {
+    OnClick::from(Action::OpenPopup(Popup::key_selector(key)))
 }
 
-impl Project {
-    // TODO: window controls (opening instrument rack, piano roll, et.c)
+/// The bar att the top of the app window.
+#[derive(Debug)]
+pub struct Bar {
+    /// The title of the project.
+    pub title: ArcStr,
+    /// The default tempo of the project.
+    pub tempo: Tempo,
+    /// The default time signature of the project.
+    pub time_signature: Signature,
+    /// The default key of the project.
+    pub key: Key,
+    /// Whether the audio is playing.
+    pub playing: bool,
+}
 
-    // TODO: record, loop, metronome
-    // TODO: cursor fine positioning
-    // TODO: grid size
-    // TODO: master volume
-    pub fn bar(&self, playing: bool) -> impl Widget {
-        let playback_button = if playing {
-            Button::described(PAUSE, PAUSE_DESCRIPTION, Action::Pause)
+// TODO: window controls (opening instrument rack, piano roll, et.c)
+
+// TODO: record, loop, metronome
+// TODO: cursor fine positioning
+// TODO: grid size
+// TODO: master volume
+impl ToWidget for Bar {
+    type Widget<'widget> = Bordered<
+        ThreeStack<
+            TwoStack<
+                Text,
+                ThreeStack<
+                    Button<'static, Hoverable<Bordered<Text>>>,
+                    Button<'static, Hoverable<Bordered<Text>>>,
+                    Button<'static, Hoverable<Bordered<Text>>>,
+                >,
+            >,
+            Button<'static, Hoverable<Bordered<Text>>>,
+            Text,
+        >,
+    >;
+
+    fn to_widget(&self) -> Self::Widget<'_> {
+        let playback_button = if self.playing {
+            Button::described(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
         } else {
-            Button::described(PLAY, PLAY_DESCRIPTION, Action::Play)
+            Button::described(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
         };
 
         let fallbacks = ThreeStack::equisized_horizontal((
+            Button::described(self.key.to_arc_str(), KEY_DESCRIPTION, select_key(self.key)),
             Button::described(
-                self.key.start.to_arc_str(),
-                KEY_DESCRIPTION,
-                select_key(self.key.start),
-            ),
-            Button::described(
-                self.time_signature.start.to_arc_str(),
+                self.time_signature.to_arc_str(),
                 TIME_SIGNATURE_DESCRIPTION,
-                Action::None,
+                OnClick::default(),
             ),
             Button::described(
-                self.tempo.start.to_arc_str(),
+                self.tempo.to_arc_str(),
                 TEMPO_DESCRIPTION,
-                Action::None,
+                OnClick::default(),
             ),
         ));
 
@@ -58,8 +84,8 @@ impl Project {
             TwoStack::equisized_horizontal((Text::centred(literal!("TODO")), fallbacks))
                 .flex(Flex::SpaceBetween);
 
-        Bordered::thick(
-            self.title(),
+        Bordered::titled(
+            ArcStr::clone(&self.title),
             ThreeStack::horizontal(
                 (left_side, playback_button, Text::centred(literal!("TODO"))),
                 [
@@ -70,5 +96,6 @@ impl Project {
             )
             .flex(Flex::Center),
         )
+        .thickness(true)
     }
 }

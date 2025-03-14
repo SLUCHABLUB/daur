@@ -1,14 +1,15 @@
-pub mod overview;
+mod overview;
 mod settings;
 mod source;
 
+pub use overview::{open_import_audio_popup, Overview};
+pub use settings::Settings;
 pub use source::TrackSource;
-use std::collections::BTreeMap;
 
 use crate::time::{Instant, Mapping};
-use crate::track::settings::Settings;
 use crate::Clip;
 use arcstr::{literal, ArcStr};
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");

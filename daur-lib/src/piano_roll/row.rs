@@ -8,6 +8,7 @@ use ratatui::buffer::Buffer;
 use ratatui::style::Color;
 use std::sync::Arc;
 
+#[derive(Debug)]
 pub struct Row {
     pub clip: Arc<Clip>,
     pub pitch: Pitch,

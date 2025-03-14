@@ -2,14 +2,13 @@ use crate::app::Action;
 use crate::popup::Popup;
 use crate::time::{Instant, Period};
 use crate::track::Track;
-use crate::ui::{Length, Offset, Point, Rectangle};
+use crate::ui::{Length, Offset};
 use crate::widget::heterogeneous::Layers;
-use crate::widget::{CursorWindow, Direction, Feed, SizeInformed, ToWidget, Widget};
+use crate::widget::{Button, CursorWindow, Direction, Feed, OnClick, SizeInformed, ToWidget};
 use crate::{clip, project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use num::Integer as _;
-use ratatui::buffer::Buffer;
 use ratatui_explorer::File;
 use std::sync::Arc;
 
@@ -31,6 +30,7 @@ fn right_click_menu() -> Arc<Popup> {
     ])
 }
 
+#[derive(Debug)]
 pub struct Overview {
     pub track: Arc<Track>,
     pub selected_clip_index: usize,
@@ -42,106 +42,94 @@ pub struct Overview {
 }
 
 impl ToWidget for Overview {
-    type Widget<'widget> =
-        SizeInformed<'widget, Layers<(Feed<'widget, Option<clip::Overview>>, CursorWindow)>>;
+    type Widget<'widget> = Button<
+        'widget,
+        SizeInformed<'widget, Layers<(Feed<'widget, Option<clip::Overview>>, CursorWindow)>>,
+    >;
 
     fn to_widget(&self) -> Self::Widget<'_> {
-        SizeInformed::new(move |size| {
-            let overview_period = self
-                .ui_mapping
-                .period((-self.offset).saturate(), size.width);
+        Button {
+            on_click: OnClick::new(|button, _, position, actions| {
+                // TODO: move, select or open clips
+                if button == MouseButton::Left {
+                    actions.send(Action::SelectTrack(self.index));
+                }
 
-            Layers::new((
-                Feed::new(Direction::Right, self.offset, move |index| {
-                    let Ok(index) = usize::try_from(index) else {
-                        return (None, self.offset.abs());
-                    };
+                if button == MouseButton::Right {
+                    actions.send(Action::OpenPopup(right_click_menu().at(position)));
+                }
+            }),
+            content: SizeInformed::new(move |size| {
+                let overview_period = self
+                    .ui_mapping
+                    .period((-self.offset).saturate(), size.width);
 
-                    let (clip_index, parity) = index.div_rem(&2);
+                Layers::new((
+                    Feed::new(Direction::Right, self.offset, move |index| {
+                        let Ok(index) = usize::try_from(index) else {
+                            return (None, self.offset.abs());
+                        };
 
-                    // if index is even
-                    if parity == 0 {
-                        // Return the space between clips
+                        let (clip_index, parity) = index.div_rem(&2);
 
-                        let last_clip_end = clip_index
-                            .checked_sub(1)
-                            .and_then(|index| {
-                                let (start, clip) = self.track.clips.iter().nth(index)?;
-                                let end = clip.period(*start, &self.time_mapping).end();
-                                Some(self.ui_mapping.offset(end))
-                            })
-                            .unwrap_or(Length::ZERO);
+                        // if index is even
+                        if parity == 0 {
+                            // Return the space between clips
 
-                        let next_clip_start = self
-                            .track
-                            .clips
-                            .keys()
-                            .nth(clip_index)
-                            .map_or(Length::MAX, |instant| self.ui_mapping.offset(*instant));
+                            let last_clip_end = clip_index
+                                .checked_sub(1)
+                                .and_then(|index| {
+                                    let (start, clip) = self.track.clips.iter().nth(index)?;
+                                    let end = clip.period(*start, &self.time_mapping).end();
+                                    Some(self.ui_mapping.offset(end))
+                                })
+                                .unwrap_or(Length::ZERO);
 
-                        let size = next_clip_start - last_clip_end;
+                            let next_clip_start = self
+                                .track
+                                .clips
+                                .keys()
+                                .nth(clip_index)
+                                .map_or(Length::MAX, |instant| self.ui_mapping.offset(*instant));
 
-                        return (None, size);
-                    }
+                            let size = next_clip_start - last_clip_end;
 
-                    let Some((start, clip)) = self.track.clips.iter().nth(clip_index) else {
-                        return (None, Length::MAX);
-                    };
+                            return (None, size);
+                        }
 
-                    let clip_period = clip.period(*start, &self.time_mapping);
-                    let clip_width = self.ui_mapping.width_of(clip_period);
+                        let Some((start, clip)) = self.track.clips.iter().nth(clip_index) else {
+                            return (None, Length::MAX);
+                        };
 
-                    let Some(visible_period) = Period::intersection(overview_period, clip_period)
-                    else {
-                        return (None, clip_width);
-                    };
+                        let clip_period = clip.period(*start, &self.time_mapping);
+                        let clip_width = self.ui_mapping.width_of(clip_period);
 
-                    let selected = self.selected_clip_index == clip_index;
+                        let Some(visible_period) =
+                            Period::intersection(overview_period, clip_period)
+                        else {
+                            return (None, clip_width);
+                        };
 
-                    let overview = clip::Overview {
-                        clip: Arc::clone(clip),
-                        selected,
-                        track_index: self.index,
-                        index,
-                        period: clip_period,
-                        visible_period,
-                    };
+                        let selected = self.selected_clip_index == clip_index;
 
-                    (Some(overview), clip_width)
-                }),
-                CursorWindow {
-                    mapping: self.ui_mapping.clone(),
-                    offset: self.offset,
-                    instant: self.cursor,
-                },
-            ))
-        })
-    }
-}
+                        let overview = clip::Overview {
+                            clip: Arc::clone(clip),
+                            selected,
+                            track_index: self.index,
+                            index,
+                            period: clip_period,
+                            visible_period,
+                        };
 
-impl Widget for Overview {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        self.to_widget().render(area, buffer, mouse_position);
-    }
-
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        // TODO: move, select or open clips
-        let _ = area;
-
-        if button == MouseButton::Left {
-            actions.push(Action::SelectTrack(self.index));
+                        (Some(overview), clip_width)
+                    }),
+                    CursorWindow {
+                        mapping: self.ui_mapping.clone(),
+                        offset: self.offset,
+                        instant: self.cursor,
+                    },
+                ))
+            }),
         }
-
-        if button == MouseButton::Right {
-            actions.push(Action::OpenPopup(right_click_menu().at(position)));
-        }
-
-        self.to_widget().click(area, button, position, actions);
     }
 }

@@ -2,6 +2,7 @@ use crate::app::{or_popup, App};
 use crate::keyboard::Key;
 use crate::ui::{Length, Offset, Point, Size, Vector};
 use crate::widget::Widget as _;
+use crate::Action;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};
 use never::Never;
@@ -59,16 +60,30 @@ impl App {
 
                 match event.kind {
                     MouseEventKind::Down(button) => {
-                        let mut action_queue = Vec::new();
+                        let area = self.last_rectangle();
+                        let position = self.las_mouse_position.get();
+                        let mut actions = Vec::new();
 
-                        self.click(
-                            self.last_rectangle(),
-                            button,
-                            self.las_mouse_position.get(),
-                            &mut action_queue,
-                        );
+                        let mut broke = false;
 
-                        for action in action_queue {
+                        for popup in self.popups.to_stack().into_iter().rev() {
+                            let area = popup.area_in_window(area);
+                            if area.contains(position) {
+                                popup.click(area, button, position, &mut actions);
+                                broke = true;
+                                break;
+                            }
+
+                            if popup.info().unimportant {
+                                actions.push(Action::ClosePopup(popup.info().this()));
+                            }
+                        }
+
+                        if !broke {
+                            self.click(area, button, position, &mut actions);
+                        }
+
+                        for action in actions {
                             action.take(self);
                         }
                     }

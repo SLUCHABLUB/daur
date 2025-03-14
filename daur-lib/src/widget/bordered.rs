@@ -12,35 +12,35 @@ use ratatui::widgets::Block;
 
 /// A simpler version of [`Block`](widgets::Block)
 #[derive(Debug)]
-pub struct Bordered<Child> {
-    title: ArcStr,
-    title_alignment: Alignment,
-    thick: bool,
-    child: Child,
+pub struct Bordered<Content> {
+    /// The title to display on the borders top edge.
+    pub title: ArcStr,
+    /// Whether the border is **thick**.
+    pub thick: bool,
+    /// The content within the border.
+    pub content: Content,
 }
 
-impl<Child> Bordered<Child> {
-    /// Creates a titled border around `child`
-    pub fn new(title: ArcStr, child: Child, thick: bool) -> Self {
+impl<Content> Bordered<Content> {
+    /// Creates a border around `content` without a title
+    pub fn plain(content: Content) -> Self {
         Bordered {
-            title,
-            title_alignment: Alignment::Center,
-            thick,
-            child,
+            title: ArcStr::new(),
+            thick: false,
+            content,
         }
     }
 
-    /// Creates a titled plain border around `child`
-    pub fn plain(title: ArcStr, child: Child) -> Self {
-        Bordered::new(title, child, false)
+    /// Creates a border around `content` with a title
+    pub fn titled(title: ArcStr, content: Content) -> Self {
+        Bordered {
+            title,
+            thick: false,
+            content,
+        }
     }
 
-    /// Creates a titled **thick** border around `child`
-    pub fn thick(title: ArcStr, child: Child) -> Self {
-        Bordered::new(title, child, true)
-    }
-
-    /// Sets whether `self` is **thick**
+    /// Sets whether `self` is **thick**.
     #[must_use]
     pub fn thickness(mut self, thick: bool) -> Self {
         self.thick = thick;
@@ -50,7 +50,7 @@ impl<Child> Bordered<Child> {
     fn to_block(&self) -> Block {
         Block::bordered()
             .title(&*self.title)
-            .title_alignment(self.title_alignment)
+            .title_alignment(Alignment::Center)
             .border_set(if self.thick { THICK } else { PLAIN })
     }
 
@@ -63,7 +63,8 @@ impl<Child: Widget> Widget for Bordered<Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let block = self.to_block();
         widgets::Widget::render(block, area.to_rect(), buffer);
-        self.child.render(self.inner(area), buffer, mouse_position);
+        self.content
+            .render(self.inner(area), buffer, mouse_position);
     }
 
     fn click(
@@ -73,14 +74,14 @@ impl<Child: Widget> Widget for Bordered<Child> {
         position: Point,
         actions: &mut Vec<Action>,
     ) {
-        self.child
+        self.content
             .click(self.inner(area), button, position, actions);
     }
 }
 
 impl<Child: HasSize> HasSize for Bordered<Child> {
     fn size(&self) -> Size {
-        let mut size = self.child.size();
+        let mut size = self.content.size();
         size.height += Length::DOUBLE_BORDER;
         size.width += Length::DOUBLE_BORDER;
         size

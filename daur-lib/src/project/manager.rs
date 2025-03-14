@@ -3,13 +3,12 @@ use crate::key::Key;
 use crate::lock::Lock;
 use crate::popup::Popup;
 use crate::project::action::Action;
-use crate::project::changing::Changing;
 use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
-use crate::project::Project;
+use crate::project::{Bar, Project, Workspace};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, Length, Offset};
-use crate::widget::Widget;
+use crate::Changing;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -17,6 +16,7 @@ use thiserror::Error;
 #[error("No track is selected")]
 struct NoTrackSelected;
 
+/// Manages mutation of a [`Project`].
 #[derive(Debug)]
 pub struct Manager {
     project: Lock<Project>,
@@ -25,6 +25,8 @@ pub struct Manager {
 }
 
 impl Manager {
+    /// Constructs a new manager for `project`.
+    #[must_use]
     pub fn new(project: Project) -> Manager {
         Manager {
             project: Lock::new(project),
@@ -32,18 +34,26 @@ impl Manager {
         }
     }
 
+    /// Returns the key of the project.
+    #[must_use]
     pub fn key(&self) -> Arc<Changing<Key>> {
         Arc::clone(&self.project.read().key)
     }
 
+    /// Returns the tempo of the project.
+    #[must_use]
     pub fn tempo(&self) -> Arc<Changing<Tempo>> {
         Arc::clone(&self.project.read().tempo)
     }
 
+    /// Returns the time signature of the project.
+    #[must_use]
     pub fn time_signature(&self) -> Arc<Changing<Signature>> {
         Arc::clone(&self.project.read().time_signature)
     }
 
+    /// Returns a clip from its index.
+    #[must_use]
     pub fn clip(
         &self,
         selected_track_index: usize,
@@ -59,6 +69,8 @@ impl Manager {
             .map(Arc::clone)
     }
 
+    /// Returns an audio source for the project
+    #[must_use]
     pub fn source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {
         let tracks = self.project.read().tracks.clone();
         let mapping = self.project.read().time_mapping();
@@ -72,11 +84,18 @@ impl Manager {
         }
     }
 
-    pub fn bar(&self, playing: bool) -> impl Widget {
-        self.project.read().bar(playing)
+    pub(crate) fn bar(&self, playing: bool) -> Bar {
+        let project = self.project.read();
+        Bar {
+            title: project.title(),
+            tempo: project.tempo.start,
+            time_signature: project.time_signature.start,
+            key: project.key.start,
+            playing,
+        }
     }
 
-    pub fn workspace(
+    pub(crate) fn workspace(
         &self,
         track_settings_size: Length,
         grid: Grid,
@@ -84,18 +103,26 @@ impl Manager {
         selected_track_index: usize,
         selected_clip_index: usize,
         cursor: Instant,
-    ) -> impl Widget {
-        self.project.read().workspace(
-            track_settings_size,
-            grid,
+    ) -> Workspace {
+        let project = self.project.read();
+        Workspace {
             overview_offset,
             selected_track_index,
             selected_clip_index,
+            track_settings_width: track_settings_size,
+            tracks: project.tracks.clone(),
+            ui_mapping: project.ui_mapping(grid),
+            time_mapping: project.time_mapping(),
             cursor,
-        )
+        }
     }
 
-    pub fn handle(
+    /// Take an action on the project.
+    ///
+    /// # Errors
+    ///
+    /// If the action can not be completed, a popup to open will be returned.
+    pub fn take(
         &self,
         action: Action,
         cursor: Instant,

@@ -1,12 +1,11 @@
 //! A simple single-selection widget
 
-use crate::app::Action;
 use crate::cell::Cell;
-use crate::ui::{Point, Rectangle};
+use crate::ui::Size;
 use crate::widget::bordered::Bordered;
 use crate::widget::homogenous::Stack;
-use crate::widget::injective::Injective;
 use crate::widget::text::Text;
+use crate::widget::{Button, HasSize, OnClick, ToWidget};
 use crate::ToArcStr;
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
@@ -17,12 +16,17 @@ use strum::VariantArray;
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
 /// A simple single-selection widget
-pub fn selector<T: Copy + PartialEq + Display + VariantArray>(cell: &Cell<T>) -> Selector<T> {
+pub fn selector<T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
+    cell: &Cell<T>,
+) -> Selector<T> {
     selector_with_formatter(cell, ToArcStr::to_arc_str)
 }
 
 /// A simple single-selection widget that uses a custom formatter rather than [`Display`]
-pub fn selector_with_formatter<T: Copy + PartialEq + VariantArray, F: FnMut(&T) -> ArcStr>(
+pub fn selector_with_formatter<
+    T: Copy + PartialEq + VariantArray + Send + Sync,
+    F: FnMut(&T) -> ArcStr,
+>(
     cell: &Cell<T>,
     mut formatter: F,
 ) -> Selector<T> {
@@ -42,21 +46,33 @@ pub struct Option<'cell, T: Copy> {
     cell: &'cell Cell<T>,
 }
 
-impl<T: Copy + PartialEq> Injective for Option<'_, T> {
-    type Visual = Bordered<Text>;
+impl<T: Copy + PartialEq + Send + Sync> ToWidget for Option<'_, T> {
+    type Widget<'widget>
+        = Button<'widget, Bordered<Text>>
+    where
+        Self: 'widget;
 
-    fn visual(&self) -> Self::Visual {
+    fn to_widget(&self) -> Self::Widget<'_> {
         let is_set = self.cell.get() == self.value;
         let name = ArcStr::clone(&self.name);
 
-        Bordered::new(ArcStr::new(), Text::centred(name), is_set)
-    }
+        let on_click = OnClick::new(|button, _, _, _| {
+            if button != MouseButton::Left {
+                return;
+            }
 
-    fn inject(&self, _: Rectangle, button: MouseButton, _: Point, _: &mut Vec<Action>) {
-        if button != MouseButton::Left {
-            return;
+            self.cell.set(self.value);
+        });
+
+        Button {
+            on_click,
+            content: Bordered::plain(Text::centred(name)).thickness(is_set),
         }
+    }
+}
 
-        self.cell.set(self.value);
+impl<T: Copy + PartialEq + Send + Sync> HasSize for Option<'_, T> {
+    fn size(&self) -> Size {
+        self.to_widget().size()
     }
 }

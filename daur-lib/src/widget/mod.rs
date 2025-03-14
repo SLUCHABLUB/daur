@@ -1,20 +1,19 @@
 //! The UI of daur is based on widgets, based on the system used by the `ratatui` crate
 
+mod alignment;
 mod bordered;
 mod button;
+mod cursor;
+mod direction;
 mod feed;
 mod has_size;
-// TODO: reexport
-mod alignment;
-mod direction;
-pub(crate) mod injective;
+mod hoverable;
 mod macros;
 mod ruler;
 mod solid;
 mod text;
 mod to_widget;
 
-mod cursor;
 pub mod heterogeneous;
 pub mod homogenous;
 pub mod multi;
@@ -23,11 +22,12 @@ mod size_informed;
 
 pub use alignment::Alignment;
 pub use bordered::Bordered;
-pub use button::Button;
+pub use button::{Button, OnClick};
 pub use cursor::CursorWindow;
 pub use direction::Direction;
 pub use feed::Feed;
 pub use has_size::HasSize;
+pub use hoverable::Hoverable;
 pub(crate) use macros::{or_popup, popup_error};
 pub use ruler::Ruler;
 pub use size_informed::SizeInformed;

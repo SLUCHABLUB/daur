@@ -3,14 +3,14 @@ use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Point, Rectangle};
 use crate::widget::homogenous::Stack;
-use crate::widget::{Button, ToWidget, Widget as _};
+use crate::widget::{Button, Text, ToWidget, Widget as _};
 use crate::{Action, Cell};
 use crossterm::event::{KeyCode, MouseButton};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Debug)]
 pub struct ButtonPanel {
     pub info: PopupInfo,
-    pub buttons: Vec<Terminating<Button>>,
+    pub buttons: Vec<Terminating<Button<'static, Text>>>,
     // TODO: display
     pub selected: Cell<Option<usize>>,
 }
@@ -54,7 +54,7 @@ impl ButtonPanel {
 }
 
 impl ToWidget for ButtonPanel {
-    type Widget<'buttons> = Stack<&'buttons Terminating<Button>>;
+    type Widget<'buttons> = Stack<&'buttons Terminating<Button<'static, Text>>>;
 
     fn to_widget(&self) -> Self::Widget<'_> {
         Stack::equisized_vertical(&self.buttons)

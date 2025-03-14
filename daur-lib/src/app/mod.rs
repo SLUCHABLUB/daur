@@ -15,16 +15,13 @@ use crate::app::macros::or_popup;
 use crate::keyboard::Key;
 use crate::piano_roll::PianoRoll;
 use crate::popup::Popups;
-use crate::project::manager::Manager;
-use crate::project::Project;
+use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset, Point, Rectangle, Size};
 use crate::widget::heterogeneous::ThreeStack;
-use crate::widget::Widget;
-use crate::{ui, Cell, PianoRollSettings};
-use crossterm::event::MouseButton;
+use crate::widget::ToWidget;
+use crate::{project, ui, Cell, PianoRollSettings};
 use educe::Educe;
-use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 use ratatui::DefaultTerminal;
 use rodio::cpal::traits::HostTrait as _;
@@ -178,9 +175,19 @@ impl App {
             self.cursor.get()
         }
     }
+}
 
-    /// The app's main widget, behind any popups
-    fn background(&self) -> impl Widget + use<'_> {
+impl Default for App {
+    fn default() -> Self {
+        App::new()
+    }
+}
+
+/// Popups are not included here
+impl ToWidget for App {
+    type Widget<'widget> = ThreeStack<project::Bar, project::Workspace, PianoRoll>;
+
+    fn to_widget(&self) -> Self::Widget<'_> {
         ThreeStack::vertical(
             (
                 self.project.bar(self.is_playing()),
@@ -212,44 +219,5 @@ impl App {
                 self.piano_roll_settings.get().height.constraint(),
             ],
         )
-    }
-}
-
-impl Default for App {
-    fn default() -> Self {
-        App::new()
-    }
-}
-
-impl Widget for App {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        self.background().render(area, buffer, mouse_position);
-
-        for popup in self.popups.to_stack() {
-            let area = popup.area_in_window(area);
-            popup.render(area, buffer, mouse_position);
-        }
-    }
-
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        for popup in self.popups.to_stack().into_iter().rev() {
-            let area = popup.area_in_window(area);
-            if area.contains(position) {
-                popup.click(area, button, position, actions);
-                return;
-            }
-
-            if popup.info().unimportant {
-                actions.push(Action::ClosePopup(popup.info().this()));
-            }
-        }
-
-        self.background().click(area, button, position, actions);
     }
 }

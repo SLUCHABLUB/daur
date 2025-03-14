@@ -5,7 +5,7 @@ use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
 use crate::sign::Sign;
 use crate::widget::heterogeneous::{FourStack, TwoStack};
-use crate::widget::{multi, single, Bordered, Button, ToWidget};
+use crate::widget::{multi, single, Bordered, Button, OnClick, Text, ToWidget};
 use crate::{keyboard, project, Action, Cell};
 use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
@@ -129,19 +129,19 @@ impl ToWidget for KeySelector {
         single::Selector<'cell, Chroma>,
         single::Selector<'cell, Sign>,
         multi::Selector<'cell, KeyInterval>,
-        TwoStack<Terminating<Bordered<Button>>, Terminating<Bordered<Button>>>,
+        TwoStack<Terminating<Bordered<Text>>, Terminating<Button<'static, Bordered<Text>>>>,
     >;
 
     fn to_widget(&self) -> Self::Widget<'_> {
         let buttons = TwoStack::horizontal_sized((
             Terminating {
-                child: Button::standard(CANCEL, Action::None),
+                child: Bordered::plain(Text::centred(CANCEL)),
                 popup: self.info.this(),
             },
             Terminating {
                 child: Button::standard(
                     CONFIRM,
-                    Action::Project(project::Action::SetDefaultKey(self.key())),
+                    OnClick::from(Action::Project(project::Action::SetDefaultKey(self.key()))),
                 ),
                 popup: self.info.this(),
             },

@@ -12,6 +12,7 @@ use ratatui::widgets::canvas::Canvas;
 use ratatui::widgets::{Block, Borders};
 use std::sync::Arc;
 
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Overview {
     pub clip: Arc<Clip>,
     pub selected: bool,

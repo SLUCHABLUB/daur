@@ -4,20 +4,16 @@ mod settings;
 
 pub use settings::PianoRollSettings;
 
-use crate::app::Action;
 use crate::interval::Interval;
 use crate::key::Key;
 use crate::piano_roll::key::PianoKey;
 use crate::piano_roll::row::Row;
 use crate::pitch::Pitch;
-use crate::project::changing::Changing;
-use crate::ui::{Mapping, Offset, Point, Rectangle};
+use crate::ui::{Mapping, Offset};
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{Direction, Feed, Ruler, Solid, Text, ToWidget, Widget};
-use crate::Clip;
+use crate::widget::{Direction, Feed, Ruler, Solid, Text, ToWidget};
+use crate::{Changing, Clip};
 use arcstr::{literal, ArcStr};
-use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 use saturating_cast::SaturatingCast as _;
 use std::sync::Arc;
@@ -27,6 +23,7 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 // The piano roll has a fixed lower pitch.
 // Resizing it will thus cause the bottom to be fixed.
 // Since the top is the thing you move this seems intuitive.
+#[derive(Debug)]
 pub struct PianoRoll {
     pub clip: Option<Arc<Clip>>,
 
@@ -89,21 +86,5 @@ impl ToWidget for PianoRoll {
             ),
             vertical_constraints,
         ))
-    }
-}
-
-impl Widget for PianoRoll {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        self.to_widget().render(area, buffer, mouse_position);
-    }
-
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        self.to_widget().click(area, button, position, actions);
     }
 }

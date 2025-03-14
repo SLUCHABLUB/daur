@@ -5,7 +5,7 @@ use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
 use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{or_popup, Bordered, Button, ToWidget};
+use crate::widget::{or_popup, Bordered, Button, OnClick, Text, ToWidget};
 use arcstr::{literal, ArcStr};
 use crossterm::event::KeyCode;
 use educe::Educe;
@@ -71,18 +71,18 @@ impl ExplorerPopup {
 impl ToWidget for ExplorerPopup {
     type Widget<'lock> = TwoStack<
         &'lock Lock<FileExplorer>,
-        TwoStack<Terminating<Bordered<Button>>, Terminating<Bordered<Button>>>,
+        TwoStack<Terminating<Bordered<Text>>, Terminating<Button<'static, Bordered<Text>>>>,
     >;
 
     fn to_widget(&self) -> Self::Widget<'_> {
         let action = (self.action)(self.explorer.read().current());
 
         let confirm = Terminating {
-            child: Button::standard(CONFIRM, action),
+            child: Button::standard(CONFIRM, OnClick::from(action)),
             popup: self.info.this(),
         };
         let cancel = Terminating {
-            child: Button::standard(CANCEL, Action::None),
+            child: Bordered::plain(Text::centred(CANCEL)),
             popup: self.info.this(),
         };
 

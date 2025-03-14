@@ -1,5 +1,5 @@
 use crate::keyboard::Key;
-use crate::track::overview::open_import_audio_popup;
+use crate::track::open_import_audio_popup;
 use crate::{project, Action};
 use crossterm::event::{KeyCode, KeyModifiers};
 use std::collections::HashMap;

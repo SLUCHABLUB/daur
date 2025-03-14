@@ -1,6 +1,5 @@
-use crate::project::changing::Changing;
 use crate::time::{Duration, Instant, NonZeroInstant, Period, Signature, Tempo};
-use crate::Ratio;
+use crate::{Changing, Ratio};
 use itertools::{chain, min};
 use std::iter::from_fn;
 use std::sync::Arc;

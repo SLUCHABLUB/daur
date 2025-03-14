@@ -9,6 +9,7 @@ use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 
+#[derive(Copy, Clone, Debug)]
 pub struct PianoKey {
     pub key: Key,
     pub pitch: Pitch,

@@ -13,17 +13,13 @@ use std::path::PathBuf;
 use std::sync::{Arc, Weak};
 
 /// An action to take on the app
-#[derive(Clone, Default, Educe)]
-#[educe(Eq, PartialEq, Debug)]
+#[derive(Clone, Educe)]
+#[educe(Debug)]
 pub enum Action {
-    /// Does nothing
-    #[default]
-    None,
-
     /// Opens the popup
     OpenPopup(Arc<Popup>),
     /// Closes the popup
-    ClosePopup(#[educe(Eq(ignore))] Weak<Popup>),
+    ClosePopup(Weak<Popup>),
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
@@ -58,7 +54,7 @@ pub enum Action {
     Project(project::Action),
 
     /// Sets the audio output device
-    SetDevice(#[educe(Eq(ignore), Debug(ignore))] Device),
+    SetDevice(#[educe(Debug(ignore))] Device),
 
     /// Saves and exits the program
     Exit,
@@ -74,7 +70,6 @@ impl Action {
     /// Take the action on the app
     pub fn take(self, app: &App) {
         match self {
-            Action::None => (),
             Action::ClosePopup(popup) => {
                 app.popups.close(&popup);
             }
@@ -124,7 +119,7 @@ impl Action {
             Action::Project(action) => {
                 let result =
                     app.project
-                        .handle(action, app.cursor.get(), app.selected_track_index.get());
+                        .take(action, app.cursor.get(), app.selected_track_index.get());
 
                 if let Err(popup) = result {
                     app.popups.open(popup);

@@ -16,7 +16,7 @@ use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Length, Point, Rectangle, Size};
-use crate::widget::{Bordered, Button, HasSize as _, ToWidget as _, Widget};
+use crate::widget::{Bordered, Button, HasSize as _, OnClick, ToWidget as _, Widget};
 use crate::{keyboard, Action, Cell, Ratio};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
@@ -27,7 +27,7 @@ use ratatui_explorer::{File, FileExplorer};
 use std::error::Error;
 use std::sync::{Arc, Weak};
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Debug)]
 pub enum Popup {
     Buttons(ButtonPanel),
     Error(ErrorPopup),
@@ -65,7 +65,7 @@ impl Popup {
                 buttons: buttons
                     .into_iter()
                     .map(|(name, action)| Terminating {
-                        child: Button::simple(name, action),
+                        child: Button::simple(name, OnClick::from(action)),
                         popup: info.this(),
                     })
                     .collect(),
@@ -174,16 +174,16 @@ impl Widget for Popup {
 
         match self {
             Popup::Buttons(buttons) => {
-                Bordered::plain(title, buttons.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, buttons.to_widget()).render(area, buffer, mouse_position);
             }
             Popup::Error(message) => {
-                Bordered::plain(title, message.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, message.to_widget()).render(area, buffer, mouse_position);
             }
             Popup::Explorer(explorer) => {
-                Bordered::plain(title, explorer.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, explorer.to_widget()).render(area, buffer, mouse_position);
             }
             Popup::KeySelector(selector) => {
-                Bordered::plain(title, selector.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, selector.to_widget()).render(area, buffer, mouse_position);
             }
         }
     }
@@ -200,16 +200,18 @@ impl Widget for Popup {
 
         match self {
             Popup::Buttons(buttons) => {
-                Bordered::plain(title, buttons.to_widget()).click(area, button, position, actions);
+                Bordered::titled(title, buttons.to_widget()).click(area, button, position, actions);
             }
             Popup::Error(message) => {
-                Bordered::plain(title, message.to_widget()).click(area, button, position, actions);
+                Bordered::titled(title, message.to_widget()).click(area, button, position, actions);
             }
             Popup::Explorer(explorer) => {
-                Bordered::plain(title, explorer.to_widget()).click(area, button, position, actions);
+                Bordered::titled(title, explorer.to_widget())
+                    .click(area, button, position, actions);
             }
             Popup::KeySelector(selector) => {
-                Bordered::plain(title, selector.to_widget()).click(area, button, position, actions);
+                Bordered::titled(title, selector.to_widget())
+                    .click(area, button, position, actions);
             }
         }
     }

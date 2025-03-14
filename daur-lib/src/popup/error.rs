@@ -4,7 +4,7 @@ use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
 use crate::ui::Length;
 use crate::widget::heterogeneous::ThreeStack;
-use crate::widget::{Bordered, Button, HasSize as _, Text, ToWidget};
+use crate::widget::{Bordered, HasSize as _, Text, ToWidget};
 use crate::{Action, Cell};
 use arcstr::{format, literal, ArcStr};
 use crossterm::event::KeyCode;
@@ -58,11 +58,11 @@ impl ErrorPopup {
 }
 
 impl ToWidget for ErrorPopup {
-    type Widget<'ignore> = ThreeStack<Text, Text, Terminating<Bordered<Button>>>;
+    type Widget<'ignore> = ThreeStack<Text, Text, Terminating<Bordered<Text>>>;
 
     fn to_widget(&self) -> Self::Widget<'_> {
         let acknowledge_button =
-            Button::standard(ACKNOWLEDGE, Action::None).thickness(self.selected.get());
+            Bordered::plain(Text::centred(ACKNOWLEDGE)).thickness(self.selected.get());
         // TODO: favour buttons (by means of size-informed?)
         let constraints = [
             Length::string_height(&self.display).constraint(),

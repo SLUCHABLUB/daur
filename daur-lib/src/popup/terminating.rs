@@ -7,7 +7,7 @@ use educe::Educe;
 use ratatui::buffer::Buffer;
 use std::sync::Weak;
 
-/// A simple button
+/// A button that also closes the containing popup
 #[derive(Clone, Debug, Educe)]
 #[educe(Eq, PartialEq)]
 pub struct Terminating<Child> {

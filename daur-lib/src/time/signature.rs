@@ -1,6 +1,5 @@
-use crate::project::changing::Changing;
 use crate::time::{Bar, Instant, NonZeroDuration};
-use crate::NonZeroRatio;
+use crate::{Changing, NonZeroRatio};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
@@ -56,7 +55,7 @@ impl Display for Signature {
 }
 
 impl Changing<Signature> {
-    pub fn bars(&self) -> impl Iterator<Item = Bar> + use<'_> {
+    pub(crate) fn bars(&self) -> impl Iterator<Item = Bar> + use<'_> {
         let mut start = Instant::START;
 
         from_fn(move || {
@@ -71,7 +70,7 @@ impl Changing<Signature> {
         })
     }
 
-    pub fn bar_n(&self, index: usize) -> Bar {
+    pub(crate) fn bar_n(&self, index: usize) -> Bar {
         #[expect(clippy::unwrap_used, reason = "`bars()` never returns `None`")]
         self.bars().nth(index).unwrap()
     }

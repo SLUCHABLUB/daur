@@ -20,12 +20,17 @@ impl App {
         or_popup!(
             terminal.draw(|frame| {
                 let area = Rectangle::from_rect(frame.area());
-                let buf = frame.buffer_mut();
+                let buffer = frame.buffer_mut();
                 let mouse_position = self.las_mouse_position.get();
 
                 self.last_size.set(area.size);
 
-                self.render(area, buf, mouse_position);
+                self.render(area, buffer, mouse_position);
+
+                for popup in self.popups.to_stack() {
+                    let area = popup.area_in_window(area);
+                    popup.render(area, buffer, mouse_position);
+                }
             }),
             self
         );
