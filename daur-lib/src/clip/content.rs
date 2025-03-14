@@ -10,11 +10,12 @@ use ratatui::widgets::canvas::{Context, Points};
 pub enum ClipContent {
     /// An audio clip
     Audio(Audio),
-    // TODO: linked audio file
-    // TODO: linked clip
     /// A notes clip
     Notes(Notes),
-    // TODO: drums
+    // TODO:
+    //  - linked audio file
+    //  - linked clip
+    //  - drums
 }
 
 impl ClipContent {

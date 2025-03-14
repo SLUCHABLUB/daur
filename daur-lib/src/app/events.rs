@@ -88,8 +88,9 @@ impl App {
                         }
                     }
                     MouseEventKind::Up(_) => {
-                        // TODO: drop held item
-                        // TODO: stop selection
+                        // TODO:
+                        //  - drop held item
+                        //  - stop selection
                     }
                     MouseEventKind::Moved | MouseEventKind::Drag(_) => (),
                     MouseEventKind::ScrollDown => {

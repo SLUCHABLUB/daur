@@ -16,9 +16,10 @@ pub struct Row {
 
 impl Widget for Row {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        // TODO: draw notes
-        // TODO: draw grid
-        // TODO: highlight key based on settings
+        // TODO:
+        //  - draw notes
+        //  - draw grid
+        //  - highlight key based on settings
         let colour = if (self.pitch - Pitch::A440).semitones() % 2 == 0 {
             Color::Gray
         } else {
@@ -29,9 +30,10 @@ impl Widget for Row {
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
-        // TODO: add notes
-        // TODO: select notes
-        // TODO: move cursor
+        // TODO:
+        //  - add notes
+        //  - select notes
+        //  - move cursor
         let _ = &self.clip;
     }
 }

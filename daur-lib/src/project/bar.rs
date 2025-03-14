@@ -37,12 +37,13 @@ pub struct Bar {
     pub playing: bool,
 }
 
-// TODO: window controls (opening instrument rack, piano roll, et.c)
-
-// TODO: record, loop, metronome
-// TODO: cursor fine positioning
-// TODO: grid size
-// TODO: master volume
+// TODO:
+//  - window controls (opening instrument rack, piano roll, et.c)
+//  -
+//  - record, loop, metronome
+//  - cursor fine positioning
+//  - grid size
+//  - master volume
 impl ToWidget for Bar {
     type Widget<'widget> = Bordered<
         ThreeStack<

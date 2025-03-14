@@ -15,9 +15,9 @@ pub struct PianoKey {
 
 impl ToWidget for PianoKey {
     // TODO: use `Button` for:
-    //       - resizing the piano
-    //       - plinking the key
-    //       - selecting all notes with the keys pitch
+    //  - resizing the piano
+    //  - plinking the key
+    //  - selecting all notes with the keys pitch
     type Widget<'widget> = TwoStack<Solid, Layers<(Solid, Text)>>;
 
     fn to_widget(&self) -> Self::Widget<'_> {
