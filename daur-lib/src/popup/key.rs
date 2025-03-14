@@ -4,8 +4,8 @@ use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::popup::Popup;
 use crate::sign::Sign;
-use crate::widget::heterogeneous::{FourStack, TwoStack};
-use crate::widget::{multi, single, Bordered, Button, OnClick, Text, ToWidget};
+use crate::view::heterogeneous::{FourStack, TwoStack};
+use crate::view::{multi, single, Bordered, Button, Composition, OnClick, Text};
 use crate::{keyboard, project, Action, Cell};
 use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
@@ -124,15 +124,15 @@ impl KeySelector {
     }
 }
 
-impl ToWidget for KeySelector {
-    type Widget<'cell> = FourStack<
+impl Composition for KeySelector {
+    type Body<'cell> = FourStack<
         single::Selector<'cell, Chroma>,
         single::Selector<'cell, Sign>,
         multi::Selector<'cell, KeyInterval>,
         TwoStack<Terminating<Bordered<Text>>, Terminating<Button<'static, Bordered<Text>>>>,
     >;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let buttons = TwoStack::horizontal_sized((
             Terminating {
                 content: Bordered::plain(Text::centred(CANCEL)),

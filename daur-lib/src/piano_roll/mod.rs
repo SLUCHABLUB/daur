@@ -10,8 +10,8 @@ use crate::piano_roll::key::PianoKey;
 use crate::piano_roll::row::Row;
 use crate::pitch::Pitch;
 use crate::ui::{Mapping, Offset};
-use crate::widget::heterogeneous::TwoStack;
-use crate::widget::{Direction, Feed, Ruler, Solid, Text, ToWidget};
+use crate::view::heterogeneous::TwoStack;
+use crate::view::{Composition, Direction, Feed, Ruler, Solid, Text};
 use crate::{Changing, Clip};
 use arcstr::{literal, ArcStr};
 use ratatui::layout::Constraint;
@@ -33,11 +33,11 @@ pub struct PianoRoll {
     pub key: Arc<Changing<Key>>,
 }
 
-impl ToWidget for PianoRoll {
-    type Widget<'widget> =
-        Result<TwoStack<TwoStack<Solid, Ruler>, Feed<'widget, TwoStack<PianoKey, Row>>>, Text>;
+impl Composition for PianoRoll {
+    type Body<'view> =
+        Result<TwoStack<TwoStack<Solid, Ruler>, Feed<'view, TwoStack<PianoKey, Row>>>, Text>;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let Some(clip) = self.clip.as_ref().map(Arc::clone) else {
             return Err(Text::centred(NO_CLIP_SELECTED));
         };

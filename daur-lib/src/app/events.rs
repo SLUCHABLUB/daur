@@ -1,7 +1,7 @@
 use crate::app::{or_popup, App};
 use crate::keyboard::Key;
 use crate::ui::{Length, Offset, Point, Size, Vector};
-use crate::widget::Widget as _;
+use crate::view::View as _;
 use crate::Action;
 use crossterm::event;
 use crossterm::event::{Event, MouseEventKind};

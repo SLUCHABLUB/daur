@@ -1,20 +1,20 @@
 use crate::app::Action;
 use crate::ui::{Length, Offset, Point, Rectangle, Size};
-use crate::widget::heterogeneous::tuple::Tuple;
-use crate::widget::{Direction, HasSize, Widget};
+use crate::view::heterogeneous::tuple::Tuple;
+use crate::view::{Direction, HasSize, View};
 use crossterm::event::MouseButton;
 use itertools::Itertools as _;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Flex, Spacing};
 
-/// A stack of two widgets
+/// A stack of two views
 pub type TwoStack<A, B> = Stack<(A, B)>;
-/// A stack of three widgets
+/// A stack of three views
 pub type ThreeStack<A, B, C> = Stack<(A, B, C)>;
-/// A stack of four widgets
+/// A stack of four views
 pub type FourStack<A, B, C, D> = Stack<(A, B, C, D)>;
 
-/// A heterogeneous stack of widgets
+/// A heterogeneous stack of views
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Stack<Children: Tuple> {
     direction: Direction,
@@ -161,7 +161,7 @@ macro_rules! impl_stack {
             }
         }
 
-        impl<$($generic: Widget),*> Widget for Stack<($($generic),*)> {
+        impl<$($generic: View),*> View for Stack<($($generic),*)> {
             fn render(&self, area: Rectangle, buf: &mut Buffer, mouse_position: Point) {
                 let areas = self.areas(area);
                 $(

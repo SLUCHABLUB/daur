@@ -1,8 +1,8 @@
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::NonZeroLength;
-use crate::widget::heterogeneous::{Layers, TwoStack};
-use crate::widget::{Solid, Text, ToWidget};
+use crate::view::heterogeneous::{Layers, TwoStack};
+use crate::view::{Composition, Solid, Text};
 use arcstr::ArcStr;
 use ratatui::layout::Constraint;
 
@@ -13,14 +13,14 @@ pub struct PianoKey {
     pub black_key_depth: NonZeroLength,
 }
 
-impl ToWidget for PianoKey {
+impl Composition for PianoKey {
     // TODO: use `Button` for:
     //  - resizing the piano
     //  - plinking the key
     //  - selecting all notes with the keys pitch
-    type Widget<'widget> = TwoStack<Solid, Layers<(Solid, Text)>>;
+    type Body<'view> = TwoStack<Solid, Layers<(Solid, Text)>>;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let top = if self.pitch.chroma().is_black_key() {
             Solid::BLACK
         } else {

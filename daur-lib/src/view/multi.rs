@@ -1,8 +1,8 @@
-//! A simple multi-selection widget
+//! A simple multi-selection view
 
 use crate::ui::Size;
-use crate::widget::homogenous::Stack;
-use crate::widget::{Bordered, Button, HasSize, OnClick, Text, ToWidget};
+use crate::view::homogenous::Stack;
+use crate::view::{Bordered, Button, Composition, HasSize, OnClick, Text};
 use crate::{Cell, ToArcStr};
 use arcstr::ArcStr;
 use bitbag::{BitBag, Flags};
@@ -11,7 +11,7 @@ use crossterm::event::MouseButton;
 /// The type returned by [`selector`]
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
-/// A simple multi-selection widget
+/// A simple multi-selection view
 pub fn selector<T: Copy + Flags + ToArcStr + Send + Sync>(cell: &Cell<BitBag<T>>) -> Selector<T>
 where
     T::Repr: Send + Sync,
@@ -36,16 +36,16 @@ pub struct Option<'cell, T: Flags> {
     cell: &'cell Cell<BitBag<T>>,
 }
 
-impl<T: Copy + Flags + Send + Sync> ToWidget for Option<'_, T>
+impl<T: Copy + Flags + Send + Sync> Composition for Option<'_, T>
 where
     T::Repr: Send + Sync,
 {
-    type Widget<'widget>
-        = Button<'widget, Bordered<Text>>
+    type Body<'view>
+        = Button<'view, Bordered<Text>>
     where
-        Self: 'widget;
+        Self: 'view;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let is_set = self.cell.get().is_set(self.value);
         let name = ArcStr::clone(&self.name);
 
@@ -74,6 +74,6 @@ where
     T::Repr: Send + Sync,
 {
     fn size(&self) -> Size {
-        self.to_widget().size()
+        self.body().size()
     }
 }

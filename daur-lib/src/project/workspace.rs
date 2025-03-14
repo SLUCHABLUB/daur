@@ -2,9 +2,9 @@ use crate::project::{Action, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::time::Instant;
 use crate::track::{Overview, Track};
 use crate::ui::{Length, Offset};
-use crate::widget::heterogeneous::TwoStack;
-use crate::widget::homogenous::Stack;
-use crate::widget::{Bordered, Button, Hoverable, OnClick, Ruler, Text, ToWidget};
+use crate::view::heterogeneous::TwoStack;
+use crate::view::homogenous::Stack;
+use crate::view::{Bordered, Button, Composition, Hoverable, OnClick, Ruler, Text};
 use crate::{time, track, ui};
 use arcstr::literal;
 use ratatui::layout::Constraint;
@@ -32,8 +32,8 @@ pub struct Workspace {
     pub cursor: Instant,
 }
 
-impl ToWidget for Workspace {
-    type Widget<'widget> = TwoStack<
+impl Composition for Workspace {
+    type Body<'view> = TwoStack<
         TwoStack<Text, Ruler>,
         TwoStack<
             TwoStack<Stack<track::Settings>, Button<'static, Hoverable<Bordered<Text>>>>,
@@ -41,7 +41,7 @@ impl ToWidget for Workspace {
         >,
     >;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let track_count = self.tracks.len().saturating_cast();
 
         let horizontal_constraints = [self.track_settings_width.constraint(), Constraint::Fill(1)];

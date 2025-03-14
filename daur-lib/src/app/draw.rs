@@ -1,6 +1,6 @@
 use crate::app::{or_popup, App};
 use crate::ui::Rectangle;
-use crate::widget::Widget as _;
+use crate::view::View as _;
 use never::Never;
 use ratatui::DefaultTerminal;
 use std::sync::Arc;

@@ -1,7 +1,7 @@
 use crate::clip::Painter;
 use crate::time::{NonZeroDuration, Period};
 use crate::ui::{Point, Rectangle};
-use crate::widget::Widget;
+use crate::view::View;
 use crate::{Action, Clip};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -9,7 +9,7 @@ use ratatui::layout::Alignment;
 use ratatui::prelude::Style;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::widgets::canvas::Canvas;
-use ratatui::widgets::{Block, Borders};
+use ratatui::widgets::{Block, Borders, Widget as _};
 use std::sync::Arc;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -22,8 +22,8 @@ pub struct Overview {
     pub visible_period: Period,
 }
 
-impl Widget for Overview {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+impl View for Overview {
+    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
         let set = if self.selected { THICK } else { PLAIN };
 
         let painter: Painter = Box::new(|context| self.clip.content.paint_overview(context));
@@ -60,7 +60,7 @@ impl Widget for Overview {
             )
             .x_bounds(x)
             .y_bounds(y)
-            .render(area, buffer, mouse_position);
+            .render(area.to_rect(), buffer);
     }
 
     fn click(

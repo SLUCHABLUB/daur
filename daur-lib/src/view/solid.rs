@@ -1,11 +1,11 @@
 use crate::app::Action;
 use crate::ui::{Point, Rectangle};
-use crate::widget::Widget;
+use crate::view::View;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::style::Color;
-use ratatui::widgets;
 use ratatui::widgets::canvas::{Canvas, Context};
+use ratatui::widgets::Widget;
 
 /// A solid colour
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -15,25 +15,25 @@ pub struct Solid {
 }
 
 impl Solid {
-    /// An empty widget
+    /// An empty view
     pub const EMPTY: Solid = Solid {
         colour: Color::Reset,
     };
 
-    /// A solid black widget
+    /// A solid black view
     pub const BLACK: Solid = Solid {
         colour: Color::Black,
     };
 
-    /// A solid white widget
+    /// A solid white view
     pub const WHITE: Solid = Solid {
         colour: Color::White,
     };
 }
 
-impl Widget for Solid {
+impl View for Solid {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        widgets::Widget::render(
+        Widget::render(
             Canvas::<fn(&mut Context)>::default().background_color(self.colour),
             area.to_rect(),
             buffer,

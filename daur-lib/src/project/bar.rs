@@ -2,8 +2,8 @@ use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::{Signature, Tempo};
-use crate::widget::heterogeneous::{ThreeStack, TwoStack};
-use crate::widget::{Bordered, Button, Hoverable, OnClick, Text, ToWidget};
+use crate::view::heterogeneous::{ThreeStack, TwoStack};
+use crate::view::{Bordered, Button, Composition, Hoverable, OnClick, Text};
 use crate::ToArcStr as _;
 use arcstr::{literal, ArcStr};
 use ratatui::layout::{Constraint, Flex};
@@ -44,8 +44,8 @@ pub struct Bar {
 //  - cursor fine positioning
 //  - grid size
 //  - master volume
-impl ToWidget for Bar {
-    type Widget<'widget> = Bordered<
+impl Composition for Bar {
+    type Body<'view> = Bordered<
         ThreeStack<
             TwoStack<
                 Text,
@@ -60,7 +60,7 @@ impl ToWidget for Bar {
         >,
     >;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let playback_button = if self.playing {
             Button::described(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
         } else {

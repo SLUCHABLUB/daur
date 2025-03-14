@@ -1,5 +1,5 @@
 use crate::ui::{Length, Offset};
-use crate::widget::Direction;
+use crate::view::Direction;
 use std::ops::Neg;
 
 /// A vector

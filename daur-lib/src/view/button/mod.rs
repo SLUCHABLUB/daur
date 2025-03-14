@@ -4,9 +4,9 @@ pub use on_click::OnClick;
 
 use crate::app::Action;
 use crate::ui::{Point, Rectangle, Size};
-use crate::widget::has_size::HasSize;
-use crate::widget::hoverable::Hoverable;
-use crate::widget::{Bordered, Text, Widget};
+use crate::view::has_size::HasSize;
+use crate::view::hoverable::Hoverable;
+use crate::view::{Bordered, Text, View};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -63,7 +63,7 @@ impl<'on_click> Button<'on_click, Hoverable<Bordered<Text>>> {
     }
 }
 
-impl<Content: Widget> Widget for Button<'_, Content> {
+impl<Content: View> View for Button<'_, Content> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         self.content.render(area, buffer, mouse_position);
     }

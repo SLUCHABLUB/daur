@@ -10,7 +10,7 @@ macro_rules! or_popup {
     ($result:expr, $actions:ident) => {
         match $result {
             Ok(ok) => ok,
-            Err(error) => crate::widget::popup_error!(error, $actions),
+            Err(error) => crate::view::popup_error!(error, $actions),
         }
     };
 }

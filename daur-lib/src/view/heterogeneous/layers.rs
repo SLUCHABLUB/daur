@@ -1,13 +1,13 @@
 use crate::app::Action;
 use crate::ui::{Point, Rectangle};
-use crate::widget::Widget;
+use crate::view::View;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 
-/// Layers of heterogeneous widgets
+/// Layers of heterogeneous views
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Layers<Children> {
-    /// The layered widgets
+    /// The layered views
     pub children: Children,
 }
 
@@ -21,7 +21,7 @@ impl<Children> Layers<Children> {
 
 macro_rules! impl_layers {
     ($len:literal; $($generic:ident),*; $($index:tt),*) => {
-        impl<$($generic: Widget),*> Widget for Layers<($($generic),*)> {
+        impl<$($generic: View),*> View for Layers<($($generic),*)> {
             fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
                 $(
                     self.children.$index.render(area, buffer, mouse_position);

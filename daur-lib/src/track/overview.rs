@@ -3,8 +3,8 @@ use crate::popup::Popup;
 use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
-use crate::widget::heterogeneous::Layers;
-use crate::widget::{Button, CursorWindow, Direction, Feed, OnClick, SizeInformed, ToWidget};
+use crate::view::heterogeneous::Layers;
+use crate::view::{Button, Composition, CursorWindow, Direction, Feed, OnClick, SizeInformed};
 use crate::{clip, project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
@@ -41,13 +41,13 @@ pub struct Overview {
     pub index: usize,
 }
 
-impl ToWidget for Overview {
-    type Widget<'widget> = Button<
-        'widget,
-        SizeInformed<'widget, Layers<(Feed<'widget, Option<clip::Overview>>, CursorWindow)>>,
+impl Composition for Overview {
+    type Body<'view> = Button<
+        'view,
+        SizeInformed<'view, Layers<(Feed<'view, Option<clip::Overview>>, CursorWindow)>>,
     >;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         Button {
             on_click: OnClick::new(|button, _, position, actions| {
                 // TODO: move, select or open clips

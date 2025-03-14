@@ -1,13 +1,13 @@
 use crate::app::Action;
 use crate::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use crate::widget::has_size::HasSize;
-use crate::widget::{Alignment, Widget};
+use crate::view::has_size::HasSize;
+use crate::view::{Alignment, View};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
+use ratatui::layout;
 use ratatui::text::Line;
-use ratatui::widgets::Paragraph;
-use ratatui::{layout, widgets};
+use ratatui::widgets::{Paragraph, Widget};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 
@@ -21,7 +21,7 @@ pub struct Text {
 }
 
 impl Text {
-    /// Constructs a top-left aligned text widget
+    /// Constructs a top-left aligned text view
     #[must_use]
     pub fn top_left(string: ArcStr) -> Text {
         Text {
@@ -30,7 +30,7 @@ impl Text {
         }
     }
 
-    /// Constructs a top-right aligned text widget
+    /// Constructs a top-right aligned text view
     #[must_use]
     pub fn top_right(string: ArcStr) -> Text {
         Text {
@@ -39,7 +39,7 @@ impl Text {
         }
     }
 
-    /// Constructs a centered text widget
+    /// Constructs a centered text view
     #[must_use]
     pub fn centred(string: ArcStr) -> Text {
         Text {
@@ -48,7 +48,7 @@ impl Text {
         }
     }
 
-    /// Constructs a bottom-right aligned text widget
+    /// Constructs a bottom-right aligned text view
     #[must_use]
     pub fn bottom_right(string: ArcStr) -> Text {
         Text {
@@ -90,9 +90,9 @@ impl Text {
     }
 }
 
-impl Widget for Text {
+impl View for Text {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        widgets::Widget::render(self.paragraph(area.size.height), area.to_rect(), buffer);
+        Widget::render(self.paragraph(area.size.height), area.to_rect(), buffer);
     }
 
     fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}

@@ -1,16 +1,16 @@
-//! Homogenous stacks of widgets
+//! Homogenous stacks of views
 
 use crate::app::Action;
 use crate::ui::{Length, Offset, Point, Rectangle, Size};
-use crate::widget::has_size::HasSize;
-use crate::widget::{Direction, Widget};
+use crate::view::has_size::HasSize;
+use crate::view::{Direction, View};
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::{Constraint, Flex, Spacing};
 use saturating_cast::SaturatingCast as _;
 use std::iter::zip;
 
-/// A homogenous stack of widgets
+/// A homogenous stack of views
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Stack<Child> {
     direction: Direction,
@@ -20,7 +20,7 @@ pub struct Stack<Child> {
 }
 
 impl<Child> Stack<Child> {
-    /// Constructs a new stack
+    /// Constructs a new stack.
     #[must_use]
     pub fn new<Children: IntoIterator<Item = (Child, Constraint)>>(
         direction: Direction,
@@ -34,7 +34,7 @@ impl<Child> Stack<Child> {
         }
     }
 
-    /// Constructs a horizontal stack
+    /// Constructs a horizontal stack.
     #[must_use]
     pub fn horizontal<Children: IntoIterator<Item = (Child, Constraint)>>(
         children: Children,
@@ -50,7 +50,7 @@ impl<Child> Stack<Child> {
         Stack::new(Direction::Down, children)
     }
 
-    /// Constructs a horizontal stack where all widgets have a _"canonical"_ size
+    /// Constructs a horizontal stack where all views have a _"canonical"_ size.
     #[must_use]
     pub fn horizontal_sized<Children: IntoIterator<Item = Child>>(children: Children) -> Self
     where
@@ -62,7 +62,7 @@ impl<Child> Stack<Child> {
         }))
     }
 
-    /// Constructs a vertical stack where all widgets have a _"canonical"_ size
+    /// Constructs a vertical stack where all views have a _"canonical"_ size.
     #[must_use]
     pub fn vertical_sized<Children: IntoIterator<Item = Child>>(children: Children) -> Self
     where
@@ -74,7 +74,7 @@ impl<Child> Stack<Child> {
         }))
     }
 
-    /// Constructs a horizontal stack of widgets that all have the same size
+    /// Constructs a horizontal stack of views that all have the same size.
     #[must_use]
     pub fn equisized_horizontal<Children>(children: Children) -> Self
     where
@@ -87,7 +87,7 @@ impl<Child> Stack<Child> {
         Stack::horizontal(children.map(|child| (child, Constraint::Ratio(1, length))))
     }
 
-    /// Constructs a vertical stack of widgets that all have the same size
+    /// Constructs a vertical stack of views that all have the same size.
     #[must_use]
     pub fn equisized_vertical<Children>(children: Children) -> Self
     where
@@ -100,14 +100,14 @@ impl<Child> Stack<Child> {
         Stack::vertical(children.map(|child| (child, Constraint::Ratio(1, length))))
     }
 
-    /// Sets the flex between widgets
+    /// Sets the flex between views.
     #[must_use]
     pub fn flex(mut self, flex: Flex) -> Self {
         self.flex = flex;
         self
     }
 
-    /// Sets the spacing between widgets
+    /// Sets the spacing between views.
     #[must_use]
     pub fn spacing<S: Into<Spacing>>(mut self, spacing: S) -> Self {
         self.spacing = spacing.into();
@@ -130,7 +130,7 @@ impl<Child> Stack<Child> {
     }
 }
 
-impl<Child: Widget> Widget for Stack<Child> {
+impl<Child: View> View for Stack<Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let (children, constraints) = self.unzip_children();
         let areas = self.areas(area, constraints);

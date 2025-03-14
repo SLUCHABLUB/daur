@@ -18,8 +18,8 @@ use crate::popup::Popups;
 use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset, Point, Rectangle, Size};
-use crate::widget::heterogeneous::ThreeStack;
-use crate::widget::ToWidget;
+use crate::view::heterogeneous::ThreeStack;
+use crate::view::Composition;
 use crate::{project, ui, Cell, PianoRollSettings};
 use educe::Educe;
 use ratatui::layout::Constraint;
@@ -184,10 +184,10 @@ impl Default for App {
 }
 
 /// Popups are not included here
-impl ToWidget for App {
-    type Widget<'widget> = ThreeStack<project::Bar, project::Workspace, PianoRoll>;
+impl Composition for App {
+    type Body<'view> = ThreeStack<project::Bar, project::Workspace, PianoRoll>;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         ThreeStack::vertical(
             (
                 self.project.bar(self.is_playing()),

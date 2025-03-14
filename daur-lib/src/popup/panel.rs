@@ -2,8 +2,8 @@ use crate::keyboard::Key;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Point, Rectangle};
-use crate::widget::homogenous::Stack;
-use crate::widget::{Button, Ref, Text, ToWidget, Widget as _};
+use crate::view::homogenous::Stack;
+use crate::view::{Button, Composition, Ref, Text, View as _};
 use crate::{Action, Cell};
 use crossterm::event::{KeyCode, MouseButton};
 
@@ -53,10 +53,10 @@ impl ButtonPanel {
     }
 }
 
-impl ToWidget for ButtonPanel {
-    type Widget<'buttons> = Stack<Ref<'buttons, Terminating<Button<'static, Text>>>>;
+impl Composition for ButtonPanel {
+    type Body<'buttons> = Stack<Ref<'buttons, Terminating<Button<'static, Text>>>>;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         Stack::equisized_vertical(self.buttons.iter().map(Ref::from))
     }
 }

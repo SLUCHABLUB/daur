@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::popup::Popup;
 use crate::ui::Size;
-use crate::widget::{Button, HasSize, OnClick, Ref, ToWidget, Widget};
+use crate::view::{Button, Composition, HasSize, OnClick, Ref, View};
 use educe::Educe;
 use std::sync::Weak;
 
@@ -21,13 +21,13 @@ impl<Child> Terminating<Child> {
     }
 }
 
-impl<Content: Widget> ToWidget for Terminating<Content> {
-    type Widget<'widget>
-        = Button<'static, Ref<'widget, Content>>
+impl<Content: View> Composition for Terminating<Content> {
+    type Body<'view>
+        = Button<'static, Ref<'view, Content>>
     where
-        Content: 'widget;
+        Content: 'view;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         Button {
             on_click: OnClick::from(Action::ClosePopup(self.popup())),
             content: Ref::from(&self.content),

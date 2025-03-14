@@ -1,21 +1,21 @@
 use crate::app::Action;
 use crate::ui::{Point, Rectangle, Size};
-use crate::widget::Widget;
+use crate::view::View;
 use crossterm::event::MouseButton;
 use educe::Educe;
 use ratatui::buffer::Buffer;
 
-/// A size-informed widget, i.e. one that need information about its size before rendering
+/// A size-informed view, i.e. one that need information about its size before rendering
 #[derive(Educe)]
 #[educe(Debug)]
 pub struct SizeInformed<'generator, Child> {
     #[educe(Debug(ignore))]
-    /// The function for generating the widget
+    /// The function for generating the view
     pub generator: Box<dyn Fn(Size) -> Child + 'generator>,
 }
 
 impl<Child> SizeInformed<'_, Child> {
-    /// Constructs a new size-informed widget
+    /// Constructs a new size-informed view
     pub fn new<'generator, F: Fn(Size) -> Child + 'generator>(
         f: F,
     ) -> SizeInformed<'generator, Child> {
@@ -25,7 +25,7 @@ impl<Child> SizeInformed<'_, Child> {
     }
 }
 
-impl<Child: Widget> Widget for SizeInformed<'_, Child> {
+impl<Child: View> View for SizeInformed<'_, Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         (self.generator)(area.size).render(area, buffer, mouse_position);
     }

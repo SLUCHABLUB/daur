@@ -16,13 +16,12 @@ use crate::popup::key::KeySelector;
 use crate::popup::panel::ButtonPanel;
 use crate::popup::terminating::Terminating;
 use crate::ui::{Length, Point, Rectangle, Size};
-use crate::widget::{Bordered, Button, HasSize as _, OnClick, ToWidget as _, Widget};
+use crate::view::{Bordered, Button, Composition as _, HasSize as _, OnClick, View};
 use crate::{keyboard, Action, Cell, Ratio};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
-use ratatui::widgets;
-use ratatui::widgets::Clear;
+use ratatui::widgets::{Clear, Widget};
 use ratatui_explorer::{File, FileExplorer};
 use std::error::Error;
 use std::sync::{Arc, Weak};
@@ -149,10 +148,10 @@ impl Popup {
 
     fn preferred_inner_size(&self) -> Size {
         match self {
-            Popup::Buttons(buttons) => buttons.to_widget().size(),
-            Popup::Error(message) => message.to_widget().size(),
-            Popup::Explorer(explorer) => explorer.to_widget().size(),
-            Popup::KeySelector(selector) => selector.to_widget().size(),
+            Popup::Buttons(buttons) => buttons.body().size(),
+            Popup::Error(message) => message.body().size(),
+            Popup::Explorer(explorer) => explorer.body().size(),
+            Popup::KeySelector(selector) => selector.body().size(),
         }
     }
 
@@ -167,23 +166,23 @@ impl Popup {
     }
 }
 
-impl Widget for Popup {
+impl View for Popup {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        widgets::Widget::render(Clear, area.to_rect(), buffer);
+        Widget::render(Clear, area.to_rect(), buffer);
         let title = self.info().title.clone();
 
         match self {
             Popup::Buttons(buttons) => {
-                Bordered::titled(title, buttons.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, buttons.body()).render(area, buffer, mouse_position);
             }
             Popup::Error(message) => {
-                Bordered::titled(title, message.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, message.body()).render(area, buffer, mouse_position);
             }
             Popup::Explorer(explorer) => {
-                Bordered::titled(title, explorer.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, explorer.body()).render(area, buffer, mouse_position);
             }
             Popup::KeySelector(selector) => {
-                Bordered::titled(title, selector.to_widget()).render(area, buffer, mouse_position);
+                Bordered::titled(title, selector.body()).render(area, buffer, mouse_position);
             }
         }
     }
@@ -200,18 +199,16 @@ impl Widget for Popup {
 
         match self {
             Popup::Buttons(buttons) => {
-                Bordered::titled(title, buttons.to_widget()).click(area, button, position, actions);
+                Bordered::titled(title, buttons.body()).click(area, button, position, actions);
             }
             Popup::Error(message) => {
-                Bordered::titled(title, message.to_widget()).click(area, button, position, actions);
+                Bordered::titled(title, message.body()).click(area, button, position, actions);
             }
             Popup::Explorer(explorer) => {
-                Bordered::titled(title, explorer.to_widget())
-                    .click(area, button, position, actions);
+                Bordered::titled(title, explorer.body()).click(area, button, position, actions);
             }
             Popup::KeySelector(selector) => {
-                Bordered::titled(title, selector.to_widget())
-                    .click(area, button, position, actions);
+                Bordered::titled(title, selector.body()).click(area, button, position, actions);
             }
         }
     }

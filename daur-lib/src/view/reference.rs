@@ -1,12 +1,12 @@
 use crate::ui::{Point, Rectangle, Size};
-use crate::widget::{HasSize, Widget};
+use crate::view::{HasSize, View};
 use crate::Action;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use std::ops::Deref;
 
 // TODO: document why we cant use &T
-/// A reference to a widget.
+/// A reference to a view.
 #[derive(Copy, Clone, Debug)]
 pub struct Ref<'lifetime, T> {
     reference: &'lifetime T,
@@ -26,7 +26,7 @@ impl<T> Deref for Ref<'_, T> {
     }
 }
 
-impl<T: Widget> Widget for Ref<'_, T> {
+impl<T: View> View for Ref<'_, T> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         self.reference.render(area, buffer, mouse_position);
     }

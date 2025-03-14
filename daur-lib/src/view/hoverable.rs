@@ -1,19 +1,19 @@
 use crate::ui::{Length, Point, Rectangle, Size};
-use crate::widget::{HasSize, Widget};
+use crate::view::{HasSize, View};
 use crate::Action;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 
-/// A widget that whose appearance changes when hovered.
+/// A view that whose appearance changes when hovered.
 #[derive(Debug)]
 pub struct Hoverable<Default, Hovered = Default> {
-    /// The widget to use when not hovered.
+    /// The view to use when not hovered.
     pub default: Default,
-    /// The widget to use when hovered.
+    /// The view to use when hovered.
     pub hovered: Hovered,
 }
 
-impl<Default: Widget, Hovered: Widget> Widget for Hoverable<Default, Hovered> {
+impl<Default: View, Hovered: View> View for Hoverable<Default, Hovered> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         if area.contains(mouse_position) {
             self.hovered.render(area, buffer, mouse_position);

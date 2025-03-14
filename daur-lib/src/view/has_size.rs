@@ -1,11 +1,11 @@
 use crate::lock::Lock;
 use crate::ui::{Length, Size};
-use crate::widget::Widget;
+use crate::view::View;
 use ratatui_explorer::FileExplorer;
 
-/// A widget with a _"canonical"_ size
-pub trait HasSize: Widget {
-    /// Returns the widget's _"canonical"_ size
+/// A view with a _"canonical"_ size
+pub trait HasSize: View {
+    /// Returns the view's _"canonical"_ size
     fn size(&self) -> Size;
 }
 

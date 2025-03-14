@@ -1,4 +1,4 @@
-//! Heterogeneous layouts of widgets
+//! Heterogeneous layouts of views
 
 mod layers;
 mod stack;

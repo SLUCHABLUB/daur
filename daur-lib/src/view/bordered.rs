@@ -1,16 +1,15 @@
 use crate::app::Action;
 use crate::ui::{Length, Point, Rectangle, Size};
-use crate::widget::has_size::HasSize;
-use crate::widget::Widget;
+use crate::view::has_size::HasSize;
+use crate::view::View;
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Alignment;
 use ratatui::symbols::border::{PLAIN, THICK};
-use ratatui::widgets;
-use ratatui::widgets::Block;
+use ratatui::widgets::{Block, Widget};
 
-/// A simpler version of [`Block`](widgets::Block)
+/// A bordered view.
 #[derive(Debug)]
 pub struct Bordered<Content> {
     /// The title to display on the borders top edge.
@@ -59,10 +58,10 @@ impl<Content> Bordered<Content> {
     }
 }
 
-impl<Child: Widget> Widget for Bordered<Child> {
+impl<Child: View> View for Bordered<Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let block = self.to_block();
-        widgets::Widget::render(block, area.to_rect(), buffer);
+        Widget::render(block, area.to_rect(), buffer);
         self.content
             .render(self.inner(area), buffer, mouse_position);
     }

@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::pitch::Pitch;
 use crate::ui::{Point, Rectangle};
-use crate::widget::{Solid, Widget};
+use crate::view::{Solid, View};
 use crate::Clip;
 use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
@@ -14,7 +14,7 @@ pub struct Row {
     pub pitch: Pitch,
 }
 
-impl Widget for Row {
+impl View for Row {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         // TODO:
         //  - draw notes

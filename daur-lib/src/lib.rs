@@ -23,7 +23,7 @@ mod track;
 pub mod project;
 pub mod time;
 pub mod ui;
-pub mod widget;
+pub mod view;
 
 mod receiver;
 #[cfg(test)]

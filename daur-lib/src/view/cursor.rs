@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::time::Instant;
 use crate::ui::{Length, Mapping, NonZeroLength, Offset, Point, Rectangle, Size};
-use crate::widget::{Text, Widget};
+use crate::view::{Text, View};
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use itertools::Itertools as _;
@@ -21,7 +21,7 @@ pub struct CursorWindow {
     pub instant: Instant,
 }
 
-impl Widget for CursorWindow {
+impl View for CursorWindow {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let cursor_offset = self.mapping.offset(self.instant);
         let cursor_offset = Offset::from(cursor_offset) + self.offset;

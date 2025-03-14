@@ -26,7 +26,7 @@ impl Length {
     /// 0
     pub const ZERO: Length = Length::new(0);
 
-    /// Double the border-thickness of a bordered widget
+    /// Double the border-thickness of a bordered view
     pub const DOUBLE_BORDER: Length = Length::new(2);
 
     /// The width of the musical cursor

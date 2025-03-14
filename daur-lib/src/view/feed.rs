@@ -1,8 +1,8 @@
 use crate::app::Action;
 use crate::ui::{Length, Offset, Point, Rectangle};
-use crate::widget::heterogeneous::ThreeStack;
-use crate::widget::homogenous::Stack;
-use crate::widget::{Direction, Widget};
+use crate::view::heterogeneous::ThreeStack;
+use crate::view::homogenous::Stack;
+use crate::view::{Direction, View};
 use crossterm::event::MouseButton;
 use educe::Educe;
 use ratatui::buffer::Buffer;
@@ -14,11 +14,11 @@ use std::iter::from_fn;
 #[derive(Educe)]
 #[educe(Debug)]
 pub struct Feed<'generator, Child> {
-    /// The direction in which the widgets are laid out
+    /// The direction in which the views are laid out
     pub direction: Direction,
     /// How far the feed has been scrolled
     pub offset: Offset,
-    /// The functions used for generating the widgets
+    /// The functions used for generating the views
     #[educe(Debug(ignore))]
     pub generator: Box<dyn Fn(isize) -> (Child, Length) + 'generator>,
 }
@@ -39,7 +39,7 @@ impl<'generator, Child> Feed<'generator, Child> {
     }
 }
 
-impl<Child: Widget> Widget for Feed<'_, Child> {
+impl<Child: View> View for Feed<'_, Child> {
     fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
         let mut offset = self.offset;
 

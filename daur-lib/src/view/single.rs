@@ -1,11 +1,11 @@
-//! A simple single-selection widget
+//! A simple single-selection view
 
 use crate::cell::Cell;
 use crate::ui::Size;
-use crate::widget::bordered::Bordered;
-use crate::widget::homogenous::Stack;
-use crate::widget::text::Text;
-use crate::widget::{Button, HasSize, OnClick, ToWidget};
+use crate::view::bordered::Bordered;
+use crate::view::homogenous::Stack;
+use crate::view::text::Text;
+use crate::view::{Button, Composition, HasSize, OnClick};
 use crate::ToArcStr;
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
@@ -15,14 +15,14 @@ use strum::VariantArray;
 /// The type returned by [`selector`]
 pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
-/// A simple single-selection widget
+/// A simple single-selection view
 pub fn selector<T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
     cell: &Cell<T>,
 ) -> Selector<T> {
     selector_with_formatter(cell, ToArcStr::to_arc_str)
 }
 
-/// A simple single-selection widget that uses a custom formatter rather than [`Display`]
+/// A simple single-selection view that uses a custom formatter rather than [`Display`]
 pub fn selector_with_formatter<
     T: Copy + PartialEq + VariantArray + Send + Sync,
     F: FnMut(&T) -> ArcStr,
@@ -46,13 +46,13 @@ pub struct Option<'cell, T: Copy> {
     cell: &'cell Cell<T>,
 }
 
-impl<T: Copy + PartialEq + Send + Sync> ToWidget for Option<'_, T> {
-    type Widget<'widget>
-        = Button<'widget, Bordered<Text>>
+impl<T: Copy + PartialEq + Send + Sync> Composition for Option<'_, T> {
+    type Body<'view>
+        = Button<'view, Bordered<Text>>
     where
-        Self: 'widget;
+        Self: 'view;
 
-    fn to_widget(&self) -> Self::Widget<'_> {
+    fn body(&self) -> Self::Body<'_> {
         let is_set = self.cell.get() == self.value;
         let name = ArcStr::clone(&self.name);
 
@@ -73,6 +73,6 @@ impl<T: Copy + PartialEq + Send + Sync> ToWidget for Option<'_, T> {
 
 impl<T: Copy + PartialEq + Send + Sync> HasSize for Option<'_, T> {
     fn size(&self) -> Size {
-        self.to_widget().size()
+        self.body().size()
     }
 }
