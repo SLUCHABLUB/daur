@@ -11,7 +11,7 @@ pub trait Tuple {
 
     // TODO: remove when inlining `EquisizedCopyArray`
     type EquisizedHomogenous<T>: HomogeneousTuple<Item = T>;
-    // TODO: inline to `[T; Self::LEN]` when `const_generics` gets stabilised
+    // TODO: inline to `[T; Self::LEN]` when `generic_const_exprs` gets stabilised
     type EquisizedCopyArray<T: Copy>: Copy + AsMut<[T]> + From<Self::EquisizedHomogenous<T>>;
 }
 
