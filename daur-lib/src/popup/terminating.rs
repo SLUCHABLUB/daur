@@ -2,16 +2,13 @@ use crate::app::Action;
 use crate::popup::Popup;
 use crate::ui::Size;
 use crate::view::{Button, Composition, HasSize, OnClick, Ref, View};
-use educe::Educe;
 use std::sync::Weak;
 
 /// A button that also closes the containing popup
-#[derive(Clone, Debug, Educe)]
-#[educe(Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Terminating<Content> {
     pub content: Content,
     /// The id of the containing popup
-    #[educe(Eq(ignore))]
     pub popup: Weak<Popup>,
 }
 

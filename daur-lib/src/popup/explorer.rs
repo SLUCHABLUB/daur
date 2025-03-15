@@ -8,7 +8,7 @@ use crate::view::heterogeneous::TwoStack;
 use crate::view::{or_popup, Bordered, Button, Composition, OnClick, Ref, Text};
 use arcstr::{literal, ArcStr};
 use crossterm::event::KeyCode;
-use educe::Educe;
+use derive_more::Debug;
 use ratatui::layout::{Constraint, Flex};
 use ratatui::widgets::Block;
 use ratatui_explorer::{File, FileExplorer, Input, Theme};
@@ -24,13 +24,11 @@ fn theme() -> Theme {
         .with_highlight_symbol("> ")
 }
 
-#[derive(Clone, Educe)]
-#[educe(Eq, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub struct ExplorerPopup {
     pub info: PopupInfo,
-    #[educe(Eq(ignore))]
     pub explorer: Lock<FileExplorer>,
-    #[educe(Eq(ignore), Debug(ignore))]
+    #[debug(ignore)]
     pub action: Arc<dyn Fn(&File) -> Action + Send + Sync>,
 }
 

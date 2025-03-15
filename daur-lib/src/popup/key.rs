@@ -10,7 +10,6 @@ use crate::{keyboard, project, Action, Cell};
 use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
 use crossterm::event::{KeyCode, KeyModifiers};
-use educe::Educe;
 use ratatui::layout::{Constraint, Flex};
 use std::sync::Weak;
 
@@ -18,16 +17,12 @@ const TITLE: ArcStr = literal!("select key");
 const CANCEL: ArcStr = literal!("cancel");
 const CONFIRM: ArcStr = literal!("confirm");
 
-#[derive(Clone, Debug, Educe)]
-#[educe(Eq, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct KeySelector {
     pub info: PopupInfo,
 
-    #[educe(Eq(ignore))]
     tonic: Cell<Chroma>,
-    #[educe(Eq(ignore))]
     sign: Cell<Sign>,
-    #[educe(Eq(ignore))]
     intervals: Cell<BitBag<KeyInterval>>,
 }
 

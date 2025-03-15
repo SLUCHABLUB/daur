@@ -7,19 +7,18 @@ use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
 use crate::{project, App, Ratio};
-use educe::Educe;
+use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
 use std::sync::{Arc, Weak};
 
 /// An action to take on the app
-#[derive(Clone, Educe)]
-#[educe(Debug)]
+#[derive(Clone, Debug)]
 pub enum Action {
     /// Opens the popup
     OpenPopup(Arc<Popup>),
     /// Closes the popup
-    ClosePopup(Weak<Popup>),
+    ClosePopup(#[debug(skip)] Weak<Popup>),
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
@@ -54,7 +53,7 @@ pub enum Action {
     Project(project::Action),
 
     /// Sets the audio output device
-    SetDevice(#[educe(Debug(ignore))] Device),
+    SetDevice(#[debug(ignore)] Device),
 
     /// Saves and exits the program
     Exit,

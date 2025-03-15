@@ -4,22 +4,21 @@ use crate::view::heterogeneous::ThreeStack;
 use crate::view::homogenous::Stack;
 use crate::view::{Direction, View};
 use crossterm::event::MouseButton;
-use educe::Educe;
+use derive_more::Debug;
 use ratatui::buffer::Buffer;
 use ratatui::layout::Constraint;
 use std::cmp::Ordering;
 use std::iter::from_fn;
 
 /// A window into an infinite and scrollable stack
-#[derive(Educe)]
-#[educe(Debug)]
+#[derive(Debug)]
 pub struct Feed<'generator, Child> {
     /// The direction in which the views are laid out
     pub direction: Direction,
     /// How far the feed has been scrolled
     pub offset: Offset,
     /// The functions used for generating the views
-    #[educe(Debug(ignore))]
+    #[debug(ignore)]
     pub generator: Box<dyn Fn(isize) -> (Child, Length) + 'generator>,
 }
 

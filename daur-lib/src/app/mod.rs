@@ -21,7 +21,7 @@ use crate::ui::{Grid, Length, Offset, Point, Rectangle, Size};
 use crate::view::heterogeneous::ThreeStack;
 use crate::view::Composition;
 use crate::{project, ui, Cell, PianoRollSettings};
-use educe::Educe;
+use derive_more::Debug;
 use ratatui::layout::Constraint;
 use ratatui::DefaultTerminal;
 use rodio::cpal::traits::HostTrait as _;
@@ -34,8 +34,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 /// A running instance of the DAW
-#[derive(Educe)]
-#[educe(Debug)]
+#[derive(Debug)]
 pub struct App {
     controls: HashMap<Key, Action>,
     project: Manager,
@@ -44,9 +43,9 @@ pub struct App {
     /// `None` means that playback is paused.
     playback_start: Cell<Option<SystemTime>>,
     // TODO: allow changing
-    #[educe(Debug(ignore))]
+    #[debug(ignore)]
     host: Host,
-    #[educe(Debug(ignore))]
+    #[debug(ignore)]
     device: Cell<Option<Device>>,
 
     popups: Popups,

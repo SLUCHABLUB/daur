@@ -2,14 +2,13 @@ use crate::app::Action;
 use crate::ui::{Point, Rectangle, Size};
 use crate::view::View;
 use crossterm::event::MouseButton;
-use educe::Educe;
+use derive_more::Debug;
 use ratatui::buffer::Buffer;
 
 /// A size-informed view, i.e. one that need information about its size before rendering
-#[derive(Educe)]
-#[educe(Debug)]
+#[derive(Debug)]
 pub struct SizeInformed<'generator, Child> {
-    #[educe(Debug(ignore))]
+    #[debug(ignore)]
     /// The function for generating the view
     pub generator: Box<dyn Fn(Size) -> Child + 'generator>,
 }
