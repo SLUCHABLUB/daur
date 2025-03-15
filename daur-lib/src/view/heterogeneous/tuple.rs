@@ -9,8 +9,9 @@ macro_rules! first {
 pub trait Tuple {
     const LEN: usize;
 
+    // TODO: remove when inlining `EquisizedCopyArray`
     type EquisizedHomogenous<T>: HomogeneousTuple<Item = T>;
-    // TODO: inline to `[T; Self::LEN]` when it gets stabilised
+    // TODO: inline to `[T; Self::LEN]` when `const_generics` gets stabilised
     type EquisizedCopyArray<T: Copy>: Copy + AsMut<[T]> + From<Self::EquisizedHomogenous<T>>;
 }
 

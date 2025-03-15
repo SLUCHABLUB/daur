@@ -5,7 +5,7 @@ use crossterm::event::MouseButton;
 use ratatui::buffer::Buffer;
 use std::ops::Deref;
 
-// TODO: document why we cant use &T
+// TODO: remove in favour of &T
 /// A reference to a view.
 #[derive(Copy, Clone, Debug)]
 pub struct Ref<'lifetime, T> {

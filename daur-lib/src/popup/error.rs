@@ -63,7 +63,6 @@ impl Composition for ErrorPopup {
     fn body(&self) -> Self::Body<'_> {
         let acknowledge_button =
             Bordered::plain(Text::centred(ACKNOWLEDGE)).thickness(self.selected.get());
-        // TODO: favour buttons (by means of size-informed?)
         let constraints = [
             Length::string_height(&self.display).constraint(),
             Constraint::Fill(1),
