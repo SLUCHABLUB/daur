@@ -1,7 +1,7 @@
 use arcstr::ArcStr;
 use std::fmt::Display;
 
-/// Like [`std::string::ToString`] but for [`ArcStr`]
+/// Like [`ToString`] but for [`ArcStr`]
 pub trait ToArcStr {
     /// Converts `self` to an [`ArcStr`]
     fn to_arc_str(&self) -> ArcStr;

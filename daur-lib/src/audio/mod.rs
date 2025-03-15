@@ -68,7 +68,7 @@ impl Audio {
         mapping.period(start, self.duration())
     }
 
-    /// Returns a [`Source`](rodio::source::Source) for the audio
+    /// Returns a [`Source`](source::Source) for the audio
     pub fn to_source(&self, offset: usize) -> AudioSource {
         AudioSource::new(self.clone(), offset)
     }

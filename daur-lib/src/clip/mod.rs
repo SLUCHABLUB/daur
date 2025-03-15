@@ -31,7 +31,7 @@ impl Clip {
         self.content.period(start, mapping)
     }
 
-    /// Returns a [`Source`](rodio::source::Source) for the clip
+    /// Returns a [`Source`](source::Source) for the clip
     pub fn to_source(&self, offset: usize) -> ClipSource {
         match &self.content {
             ClipContent::Audio(audio) => ClipSource::Audio(audio.to_source(offset)),

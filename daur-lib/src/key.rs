@@ -39,7 +39,7 @@ impl Display for Key {
 /// Intervals less than an octave and greater than a perfect unison
 #[expect(
     non_camel_case_types,
-    reason = "the (standardised?) short names for intervals reqire case for distinction"
+    reason = "the (standardised?) short names for intervals require case for distinction"
 )]
 #[derive(Flags)]
 #[repr(u16)]
