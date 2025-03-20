@@ -10,19 +10,18 @@ bitbag = "0.3.0"
 const-str = "0.6.1"
 crossbeam = "0.8.4"
 derive_more = { version = "2.0.1", features = ["debug", "from", "full"] }
+dirs = "6.0.0"
 hound = "3.5.1"
 itertools = "0.14.0"
-# TODO: remove when `!` gets sabilised
-never = "0.1.0"
 num = "0.4.3"
 ordered-float = "5.0.0"
-rodio = "0.20.1"
 saturating_cast = "0.1.0"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.11"
 
+# TODO: remove so that different UIs can use their own audio (but maybe provide a feature for an implementation)
+rodio = "0.20.1"
+
 # TODO: remove these and make this crate UI agnostic
 crossterm = { version = "0.28.1", features = ["serde"] }
-ratatui = { version = "0.30.0-alpha.1" }
-# TODO: use the official version when thread-safing pr makes it into production
-ratatui-explorer = { git = "https://github.com/SLUCHABLUB/ratatui-explorer" }
+ratatui = { version = "0.29.0" }

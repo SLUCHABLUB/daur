@@ -1,8 +1,7 @@
 use crate::note::Note;
 use crate::pitch::Pitch;
 use crate::time::{Duration, Instant};
-use ratatui::style::Color;
-use ratatui::widgets::canvas::{Context, Rectangle};
+use crate::view::Context;
 use std::collections::BTreeMap;
 use std::ops::RangeInclusive;
 
@@ -47,21 +46,9 @@ impl Notes {
         Some(RangeInclusive::new(lowest, highest))
     }
 
-    pub fn draw_overview(&self, context: &mut Context) {
-        for (start, note) in &self.notes {
-            let x = start.since_start.whole_notes.to_float();
-            let width = note.duration.whole_notes.to_float();
+    pub fn draw_overview(&self, context: &mut dyn Context) {
+        // TODO: draw the notes
 
-            // - 0.5 so we can give rectangle some thickness
-            let y = f64::from((note.pitch - Pitch::A440).semitones()) - 0.5;
-
-            context.draw(&Rectangle {
-                x,
-                y,
-                width,
-                height: 1.0,
-                color: Color::Reset,
-            });
-        }
+        let _ = (self, context);
     }
 }

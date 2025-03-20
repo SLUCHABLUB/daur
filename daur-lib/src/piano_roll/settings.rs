@@ -24,7 +24,7 @@ impl Default for PianoRollSettings {
             x_offset: Length::ZERO,
             y_offset: Offset::ZERO,
             height: Length::ZERO,
-            key_width: NonZeroLength::CHAR_HEIGHT,
+            key_width: NonZeroLength::DEFAULT_KEY_WIDTH,
             piano_depth: NonZeroLength::DEFAULT_PIANO_DEPTH,
             black_key_depth: NonZeroLength::DEFAULT_BLACK_KEY_DEPTH,
         }

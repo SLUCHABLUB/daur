@@ -1,5 +1,7 @@
 [target.'cfg(all())']
 rustflags = [
+    "--allow", "unstable_name_collisions",
+
     "--deny", "absolute_paths_not_starting_with_crate",
     "--deny", "ambiguous_negative_literals",
     "--deny", "deprecated_safe_2024",

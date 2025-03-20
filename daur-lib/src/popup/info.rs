@@ -6,7 +6,7 @@ use std::sync::Weak;
 
 #[derive(Clone, Debug)]
 pub struct PopupInfo {
-    pub title: ArcStr,
+    title: ArcStr,
     pub position: Cell<Option<Point>>,
     /// Whether the popup may close when unfocused
     pub unimportant: bool,
@@ -23,6 +23,12 @@ impl PopupInfo {
         }
     }
 
+    // TODO: derive
+    pub fn title(&self) -> ArcStr {
+        ArcStr::clone(&self.title)
+    }
+
+    // TODO: derive
     pub fn this(&self) -> Weak<Popup> {
         Weak::clone(&self.this)
     }

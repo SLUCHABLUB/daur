@@ -11,7 +11,7 @@ pub struct Cell<T> {
 impl<T> Cell<T> {
     /// Constructs a new [`Cell`]
     #[must_use]
-    pub fn new(value: T) -> Self {
+    pub const fn new(value: T) -> Self {
         Cell {
             inner: AtomicCell::new(value),
         }

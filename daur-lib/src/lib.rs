@@ -8,7 +8,6 @@ mod chroma;
 mod clip;
 mod interval;
 mod key;
-mod keyboard;
 mod lock;
 mod note;
 mod notes;
@@ -18,13 +17,14 @@ mod popup;
 mod ratio;
 mod sign;
 mod string;
-mod track;
 
 pub mod project;
 pub mod time;
+pub mod track;
 pub mod ui;
 pub mod view;
 
+mod clone_cell;
 mod receiver;
 #[cfg(test)]
 mod test;
@@ -35,6 +35,7 @@ pub use cell::Cell;
 pub use changing::Changing;
 pub use clip::{Clip, ClipContent, ClipSource};
 pub use piano_roll::PianoRollSettings;
+pub use popup::{Popup, Popups};
 #[doc(inline)]
 pub use project::Project;
 pub use ratio::{NonZeroRatio, Ratio};

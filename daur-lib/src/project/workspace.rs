@@ -1,104 +1,84 @@
 use crate::project::{Action, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::time::Instant;
-use crate::track::{Overview, Track};
+use crate::track::{overview, settings, Track};
 use crate::ui::{Length, Offset};
-use crate::view::heterogeneous::TwoStack;
-use crate::view::homogenous::Stack;
-use crate::view::{Bordered, Button, Composition, Hoverable, OnClick, Ruler, Text};
-use crate::{time, track, ui};
+use crate::view::{ruler, Direction, OnClick, View};
+use crate::{time, ui};
 use arcstr::literal;
-use ratatui::layout::Constraint;
-use saturating_cast::SaturatingCast as _;
 use std::sync::Arc;
 
-/// An overview of all the tracks in a project.
-#[derive(Debug)]
-pub struct Workspace {
-    /// How much the overview if offset to the right.
-    pub overview_offset: Offset,
-    /// The index of the selected track.
-    pub selected_track_index: usize,
-    /// The index of the selected clip.
-    pub selected_clip_index: usize,
-    /// The width of the track settings area.
-    pub track_settings_width: Length,
-    /// The tracks in the project.
-    pub tracks: Vec<Arc<Track>>,
-    /// The ui mapping used for the overview.
-    pub ui_mapping: ui::Mapping,
-    /// The time mapping used for the overview.
-    pub time_mapping: time::Mapping,
-    /// The position of the musical cursor.
-    pub cursor: Instant,
-}
+// TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
+#[expect(clippy::too_many_arguments, reason = "todo")]
+pub(crate) fn workspace(
+    overview_offset: Offset,
+    selected_track_index: usize,
+    selected_clip_index: usize,
+    track_settings_width: Length,
+    tracks: Vec<Arc<Track>>,
+    time_mapping: time::Mapping,
+    ui_mapping: ui::Mapping,
+    cursor: Instant,
+) -> View {
+    let mut track_settings = Vec::new();
+    let mut track_overviews = Vec::new();
 
-impl Composition for Workspace {
-    type Body<'view> = TwoStack<
-        TwoStack<Text, Ruler>,
-        TwoStack<
-            TwoStack<Stack<track::Settings>, Button<'static, Hoverable<Bordered<Text>>>>,
-            Stack<Overview>,
-        >,
-    >;
+    for (track_index, track) in tracks.into_iter().enumerate() {
+        let selected = track_index == selected_track_index;
+        track_settings.push(settings(&track, track_index, selected));
+        track_overviews.push(overview(
+            track,
+            track_index,
+            selected_clip_index,
+            time_mapping.clone(),
+            ui_mapping.clone(),
+            overview_offset,
+            cursor,
+        ));
+    }
 
-    fn body(&self) -> Self::Body<'_> {
-        let track_count = self.tracks.len().saturating_cast();
+    // The "add track" button
+    track_settings.push(View::described_button(
+        ADD_TRACK_LABEL,
+        ADD_TRACK_DESCRIPTION,
+        OnClick::from(Action::AddTrack),
+    ));
 
-        let horizontal_constraints = [self.track_settings_width.constraint(), Constraint::Fill(1)];
-        let ruler_constraints = [Constraint::Length(2), Constraint::Fill(1)];
+    // A "dummy-track" for the row with the add track button
+    track_overviews.push(overview(
+        Arc::new(Track::new()),
+        usize::MAX,
+        selected_clip_index,
+        time_mapping,
+        ui_mapping.clone(),
+        overview_offset,
+        cursor,
+    ));
 
-        // TODO: put something here?
-        let empty_space = Text::centred(literal!(":)"));
+    // TODO: put something here?
+    let empty_space = View::centred(literal!(":)"));
 
-        let ruler = Ruler {
-            mapping: self.ui_mapping.clone(),
-            offset: self.overview_offset,
-        };
-        let ruler_row = TwoStack::horizontal((empty_space, ruler), horizontal_constraints);
+    let ruler = ruler(ui_mapping, overview_offset);
+    let ruler_row = View::Stack {
+        direction: Direction::Right,
+        elements: vec![
+            empty_space.quotated(track_settings_width),
+            ruler.fill_remaining(),
+        ],
+    };
 
-        let mut track_settings = Vec::new();
-        let mut track_overviews = Vec::new();
+    let settings_column = View::balanced_stack(Direction::Down, track_settings);
+    let overview_column = View::balanced_stack(Direction::Down, track_overviews);
 
-        for (index, track) in self.tracks.iter().map(Arc::clone).enumerate() {
-            let selected = index == self.selected_track_index;
-            track_settings.push(track.settings(selected, index));
-            track_overviews.push(Overview {
-                track,
-                selected_clip_index: self.selected_clip_index,
-                time_mapping: self.time_mapping.clone(),
-                ui_mapping: self.ui_mapping.clone(),
-                offset: self.overview_offset,
-                cursor: self.cursor,
-                index,
-            });
-        }
+    let track_area = View::Stack {
+        direction: Direction::Right,
+        elements: vec![
+            settings_column.quotated(track_settings_width),
+            overview_column.fill_remaining(),
+        ],
+    };
 
-        // A "dummy-track" for the row with the add track button
-        track_overviews.push(Overview {
-            track: Arc::new(Track::new()),
-            selected_clip_index: self.selected_clip_index,
-            time_mapping: self.time_mapping.clone(),
-            ui_mapping: self.ui_mapping.clone(),
-            offset: self.overview_offset,
-            cursor: self.cursor,
-            index: usize::MAX,
-        });
-
-        let add_track_button = Button::described(
-            ADD_TRACK_LABEL,
-            ADD_TRACK_DESCRIPTION,
-            OnClick::from(Action::AddTrack),
-        );
-
-        let settings_column = TwoStack::vertical(
-            (Stack::equisized_vertical(track_settings), add_track_button),
-            [Constraint::Fill(track_count), Constraint::Fill(1)],
-        );
-        let overview_column = Stack::equisized_vertical(track_overviews);
-
-        let track_area =
-            TwoStack::horizontal((settings_column, overview_column), horizontal_constraints);
-
-        TwoStack::vertical((ruler_row, track_area), ruler_constraints)
+    View::Stack {
+        direction: Direction::Down,
+        elements: vec![ruler_row.quotated_minimally(), track_area.fill_remaining()],
     }
 }

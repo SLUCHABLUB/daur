@@ -1,4 +1,6 @@
+avoid-breaking-exported-api = false
 arithmetic-side-effects-allowed = [
+    # daur internal type names
     "pitch::Pitch",
     "ui::length::Length",
     "ui::offset::Offset",
@@ -9,6 +11,11 @@ arithmetic-side-effects-allowed = [
     "time::duration::Duration",
     "time::duration::non_zero::NonZeroDuration",
     "time::instant::Instant",
+
+    # type names for other crates
+    "daur::ui::Length",
+    "daur::ui::Offset",
+    "daur::ui::Vector",
 ]
 # `f` is used in Display::fmt 
 allowed-idents-below-min-chars = ["f", "x", "y"]

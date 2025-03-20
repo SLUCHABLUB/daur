@@ -1,79 +1,52 @@
-use crate::app::Action;
-use crate::ui::{Length, Offset, Point, Rectangle};
-use crate::view::heterogeneous::ThreeStack;
-use crate::view::homogenous::Stack;
-use crate::view::{Direction, View};
-use crossterm::event::MouseButton;
-use derive_more::Debug;
-use ratatui::buffer::Buffer;
-use ratatui::layout::Constraint;
+use crate::ui::{Length, Offset};
+use crate::view::{Direction, Quotated, View};
 use std::cmp::Ordering;
-use std::iter::from_fn;
 
 /// A window into an infinite and scrollable stack
-#[derive(Debug)]
-pub struct Feed<'generator, Child> {
-    /// The direction in which the views are laid out
-    pub direction: Direction,
-    /// How far the feed has been scrolled
-    pub offset: Offset,
-    /// The functions used for generating the views
-    #[debug(ignore)]
-    pub generator: Box<dyn Fn(isize) -> (Child, Length) + 'generator>,
-}
+pub fn feed<Generator>(direction: Direction, offset: Offset, generator: Generator) -> View
+where
+    Generator: Fn(isize) -> Quotated + Send + Sync + 'static,
+{
+    View::size_informed(move |size| {
+        let mut offset = offset;
 
-// Whilst you could remove the trait bound, since it is not needed for the constructor,
-// it helps with type inference. The struct initializer can always be used.
-impl<'generator, Child> Feed<'generator, Child> {
-    /// Constructs a new feed
-    pub fn new<Generator>(direction: Direction, offset: Offset, generator: Generator) -> Self
-    where
-        Generator: Fn(isize) -> (Child, Length) + 'generator,
-    {
-        Feed {
-            direction,
-            offset,
-            generator: Box::new(generator),
-        }
-    }
-}
+        let full_size = size.parallel_to(direction);
 
-impl<Child: View> View for Feed<'_, Child> {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        let mut offset = self.offset;
-
-        let first_size;
         let first;
 
         let mut index = 0;
 
         match offset.cmp(&Offset::ZERO) {
             Ordering::Less => loop {
-                let (child, size) = (self.generator)(index);
-                offset += size;
+                let quotated = generator(index);
+                offset += quotated
+                    .quotum
+                    .size_parallel_to(direction)
+                    .unwrap_or(Length::MAX);
                 index = index.saturating_add(1);
 
                 if Offset::ZERO < offset {
-                    first = child;
-                    first_size = offset.saturate();
+                    first = quotated.view.quotated(offset.saturate());
                     break;
                 }
             },
             Ordering::Equal => {
-                let (child, size) = (self.generator)(0);
-                first = child;
-                first_size = size;
+                first = generator(0);
                 index = 1;
             }
             Ordering::Greater => loop {
                 let new = index.saturating_sub(1);
 
-                let (child, size) = (self.generator)(new);
-                offset -= size;
+                let Quotated { quotum, view } = generator(new);
+                let quotum_size = quotum.size_parallel_to(direction);
+                offset -= quotum_size.unwrap_or(Length::MAX);
 
                 if offset < Offset::ZERO {
-                    first = child;
-                    first_size = (offset + size).saturate();
+                    first = if let Some(size) = quotum_size {
+                        view.quotated((offset + size).saturate())
+                    } else {
+                        view.fill_remaining()
+                    };
                     break;
                 }
 
@@ -81,40 +54,33 @@ impl<Child: View> View for Feed<'_, Child> {
             },
         }
 
-        let mut last_size = area.size.parallel_to(self.direction) - first_size;
+        let used_size = first
+            .quotum
+            .size_parallel_to(direction)
+            .unwrap_or(full_size);
 
-        let homogeneous = Stack::new(
-            self.direction,
-            from_fn(|| {
-                let (child, size) = (self.generator)(index);
+        let mut remaining = full_size - used_size;
 
-                let new_last_size = last_size - size;
+        let mut elements = vec![first];
 
-                if new_last_size == Length::ZERO {
-                    return None;
-                }
+        while remaining != Length::ZERO {
+            let quotated = generator(index);
 
-                index = index.saturating_add(1);
-                last_size = new_last_size;
+            let new_remaining = remaining
+                - quotated
+                    .quotum
+                    .size_parallel_to(direction)
+                    .unwrap_or(Length::MAX);
 
-                Some((child, size.constraint()))
-            }),
-        );
+            index = index.saturating_add(1);
+            remaining = new_remaining;
 
-        let (last, _) = (self.generator)(index);
+            elements.push(quotated);
+        }
 
-        let constraints = [
-            first_size.constraint(),
-            Constraint::Fill(1),
-            last_size.constraint(),
-        ];
-
-        ThreeStack::new(self.direction, (first, homogeneous, last), constraints).render(
-            area,
-            buffer,
-            mouse_position,
-        );
-    }
-
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
+        View::Stack {
+            direction,
+            elements,
+        }
+    })
 }

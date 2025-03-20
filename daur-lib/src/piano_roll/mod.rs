@@ -1,3 +1,5 @@
+// TODO: move this module to view
+
 mod key;
 mod row;
 mod settings;
@@ -6,85 +8,61 @@ pub use settings::PianoRollSettings;
 
 use crate::interval::Interval;
 use crate::key::Key;
-use crate::piano_roll::key::PianoKey;
-use crate::piano_roll::row::Row;
+use crate::piano_roll::key::piano_key;
+use crate::piano_roll::row::row;
 use crate::pitch::Pitch;
 use crate::ui::{Mapping, Offset};
-use crate::view::heterogeneous::TwoStack;
-use crate::view::{Composition, Direction, Feed, Ruler, Solid, Text};
+use crate::view::{feed, ruler, Direction, View};
 use crate::{Changing, Clip};
 use arcstr::{literal, ArcStr};
-use ratatui::layout::Constraint;
 use saturating_cast::SaturatingCast as _;
-use std::sync::Arc;
 
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
 // The piano roll has a fixed lower pitch.
 // Resizing it will thus cause the bottom to be fixed.
 // Since the top is the thing you move this seems intuitive.
-#[derive(Debug)]
-pub struct PianoRoll {
-    pub clip: Option<Arc<Clip>>,
+pub fn piano_roll(
+    clip: Option<&Clip>,
+    mapping: Mapping,
+    settings: PianoRollSettings,
+    key: &Changing<Key>,
+) -> View {
+    let Some(_clip) = clip else {
+        return View::centred(NO_CLIP_SELECTED);
+    };
 
-    pub mapping: Mapping,
-    pub settings: PianoRollSettings,
+    let roll_start = mapping.instant(settings.piano_depth.get());
+    let piano_key_key = key.get(roll_start);
 
-    pub key: Arc<Changing<Key>>,
-}
+    let ruler = View::Stack {
+        direction: Direction::Right,
+        elements: vec![
+            View::EMPTY.quotated(settings.piano_depth.get()),
+            ruler(mapping, Offset::negative(settings.x_offset)).fill_remaining(),
+        ],
+    };
 
-impl Composition for PianoRoll {
-    type Body<'view> =
-        Result<TwoStack<TwoStack<Solid, Ruler>, Feed<'view, TwoStack<PianoKey, Row>>>, Text>;
+    let workspace = feed(Direction::Up, -settings.y_offset, move |index| {
+        let interval = Interval::from_semitones(index.saturating_cast());
+        let pitch = Pitch::A440 + interval;
 
-    fn body(&self) -> Self::Body<'_> {
-        let Some(clip) = self.clip.as_ref().map(Arc::clone) else {
-            return Err(Text::centred(NO_CLIP_SELECTED));
+        let key = piano_key(pitch, piano_key_key, settings.black_key_depth);
+        let row = row(pitch);
+
+        let stack = View::Stack {
+            direction: Direction::Right,
+            elements: vec![
+                key.quotated(settings.piano_depth.get()),
+                row.fill_remaining(),
+            ],
         };
 
-        let horizontal_constraints = [
-            self.settings.piano_depth.get().constraint(),
-            Constraint::Fill(1),
-        ];
-        let vertical_constraints = [Constraint::Length(2), Constraint::Fill(1)];
+        stack.quotated(settings.key_width.get())
+    });
 
-        let ruler = TwoStack::horizontal(
-            (
-                Solid::EMPTY,
-                Ruler {
-                    mapping: self.mapping.clone(),
-                    offset: Offset::negative(self.settings.x_offset),
-                },
-            ),
-            horizontal_constraints,
-        );
-
-        let roll_start = self.mapping.instant(self.settings.piano_depth.get());
-        let piano_key_key = self.key.get(roll_start);
-
-        Ok(TwoStack::vertical(
-            (
-                ruler,
-                Feed::new(Direction::Up, -self.settings.y_offset, move |index| {
-                    let interval = Interval::from_semitones(index.saturating_cast());
-                    let pitch = Pitch::A440 + interval;
-
-                    let key = PianoKey {
-                        key: piano_key_key,
-                        pitch,
-                        black_key_depth: self.settings.black_key_depth,
-                    };
-                    let row = Row {
-                        clip: Arc::clone(&clip),
-                        pitch,
-                    };
-
-                    let stack = TwoStack::horizontal((key, row), horizontal_constraints);
-
-                    (stack, self.settings.key_width.get())
-                }),
-            ),
-            vertical_constraints,
-        ))
+    View::Stack {
+        direction: Direction::Right,
+        elements: vec![ruler.quotated_minimally(), workspace.fill_remaining()],
     }
 }

@@ -1,94 +1,65 @@
 use crate::app::Action;
-use crate::keyboard::Key;
-use crate::lock::Lock;
+use crate::clone_cell::ArcCell;
 use crate::popup::info::PopupInfo;
-use crate::popup::terminating::Terminating;
+use crate::popup::terminating::terminating;
 use crate::popup::Popup;
-use crate::view::heterogeneous::TwoStack;
-use crate::view::{or_popup, Bordered, Button, Composition, OnClick, Ref, Text};
+use crate::view::{Direction, OnClick, View};
 use arcstr::{literal, ArcStr};
-use crossterm::event::KeyCode;
 use derive_more::Debug;
-use ratatui::layout::{Constraint, Flex};
-use ratatui::widgets::Block;
-use ratatui_explorer::{File, FileExplorer, Input, Theme};
+use std::path::Path;
 use std::sync::{Arc, Weak};
 
 const CANCEL: ArcStr = literal!("cancel");
 const CONFIRM: ArcStr = literal!("confirm");
 
-fn theme() -> Theme {
-    Theme::new()
-        .with_block(Block::bordered())
-        .add_default_title()
-        .with_highlight_symbol("> ")
-}
-
 #[derive(Clone, Debug)]
 pub struct ExplorerPopup {
     pub info: PopupInfo,
-    pub explorer: Lock<FileExplorer>,
+    pub selected_file: Arc<ArcCell<Path>>,
     #[debug(ignore)]
-    pub action: Arc<dyn Fn(&File) -> Action + Send + Sync>,
+    pub action: Arc<dyn Fn(&Path) -> Action + Send + Sync>,
 }
 
 impl ExplorerPopup {
-    pub fn new<A: Fn(&File) -> Action + Send + Sync + 'static>(
+    pub fn new<A: Fn(&Path) -> Action + Send + Sync + 'static>(
         title: ArcStr,
         this: Weak<Popup>,
-        mut explorer: FileExplorer,
+        selected_file: Arc<Path>,
         action: A,
     ) -> ExplorerPopup {
-        explorer.set_theme(theme());
         ExplorerPopup {
             info: PopupInfo::new(title, this),
-            explorer: Lock::new(explorer),
+            selected_file: Arc::new(ArcCell::new(selected_file)),
             action: Arc::new(action),
         }
     }
 
-    pub fn handle_key(&self, key: Key, actions: &mut Vec<Action>) -> bool {
-        if key.code == KeyCode::Enter {
-            let action = (self.action)(self.explorer.read().current());
-            actions.push(action);
-            true
-        } else {
-            let input = Input::from(&key.to_event());
+    pub fn view(&self) -> View {
+        let current_file = Arc::clone(&self.selected_file);
+        let action = Arc::clone(&self.action);
+        let selected_file = Arc::clone(&self.selected_file);
 
-            or_popup!(self.explorer.write().handle(input), actions);
+        let confirm = terminating(
+            View::standard_button(
+                CONFIRM,
+                OnClick::new(move |_, _, _, actions| {
+                    let path = current_file.get();
+                    let action = action(&path);
+                    actions.send(action);
+                }),
+            ),
+            self.info.this(),
+        );
+        let cancel = terminating(View::centred(CANCEL).bordered(), self.info.this());
 
-            input != Input::None
+        let buttons = View::spaced_stack(Direction::Right, vec![cancel, confirm]);
+
+        View::Stack {
+            direction: Direction::Down,
+            elements: vec![
+                View::FileSelector { selected_file }.fill_remaining(),
+                buttons.quotated_minimally(),
+            ],
         }
-    }
-
-    fn vertical_constraints() -> [Constraint; 2] {
-        [Constraint::Fill(1), Constraint::Length(3)]
-    }
-}
-
-impl Composition for ExplorerPopup {
-    type Body<'lock> = TwoStack<
-        Ref<'lock, Lock<FileExplorer>>,
-        TwoStack<Terminating<Bordered<Text>>, Terminating<Button<'static, Bordered<Text>>>>,
-    >;
-
-    fn body(&self) -> Self::Body<'_> {
-        let action = (self.action)(self.explorer.read().current());
-
-        let confirm = Terminating {
-            content: Button::standard(CONFIRM, OnClick::from(action)),
-            popup: self.info.this(),
-        };
-        let cancel = Terminating {
-            content: Bordered::plain(Text::centred(CANCEL)),
-            popup: self.info.this(),
-        };
-
-        let buttons = TwoStack::horizontal_sized((cancel, confirm)).flex(Flex::SpaceBetween);
-
-        TwoStack::vertical(
-            (Ref::from(&self.explorer), buttons),
-            Self::vertical_constraints(),
-        )
     }
 }

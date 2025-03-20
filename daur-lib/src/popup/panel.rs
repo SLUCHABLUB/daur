@@ -1,62 +1,27 @@
-use crate::keyboard::Key;
 use crate::popup::info::PopupInfo;
-use crate::popup::terminating::Terminating;
-use crate::ui::{Point, Rectangle};
-use crate::view::homogenous::Stack;
-use crate::view::{Button, Composition, Ref, Text, View as _};
+use crate::popup::terminating;
+use crate::view::{Direction, OnClick, View};
 use crate::{Action, Cell};
-use crossterm::event::{KeyCode, MouseButton};
+use arcstr::ArcStr;
 
 #[derive(Debug)]
 pub struct ButtonPanel {
     pub info: PopupInfo,
-    pub buttons: Vec<Terminating<Button<'static, Text>>>,
+    pub buttons: Vec<(ArcStr, Action)>,
     // TODO: display
     pub selected: Cell<Option<usize>>,
 }
 
 impl ButtonPanel {
-    pub fn handle_key(&self, event: Key, actions: &mut Vec<Action>) -> bool {
-        #[expect(clippy::wildcard_enum_match_arm, reason = "we only care about these")]
-        match event.code {
-            KeyCode::Enter => {
-                if let Some(index) = self.selected.get() {
-                    if let Some(button) = self.buttons.get(index) {
-                        button.click(
-                            Rectangle::default(),
-                            MouseButton::Left,
-                            Point::default(),
-                            actions,
-                        );
-                        return true;
-                    }
-                }
-
-                false
-            }
-            KeyCode::Left | KeyCode::Up | KeyCode::BackTab => {
-                self.selected.set(match self.selected.get() {
-                    Some(0) | None => self.buttons.len().checked_sub(1),
-                    Some(index) => index.checked_sub(1),
-                });
-                true
-            }
-            KeyCode::Right | KeyCode::Down | KeyCode::Tab => {
-                self.selected.set(match self.selected.get() {
-                    None => Some(0),
-                    Some(index) => index.wrapping_add(1).checked_rem(self.buttons.len()),
-                });
-                true
-            }
-            _ => false,
-        }
-    }
-}
-
-impl Composition for ButtonPanel {
-    type Body<'buttons> = Stack<Ref<'buttons, Terminating<Button<'static, Text>>>>;
-
-    fn body(&self) -> Self::Body<'_> {
-        Stack::equisized_vertical(self.buttons.iter().map(Ref::from))
+    pub fn view(&self) -> View {
+        View::balanced_stack(
+            Direction::Down,
+            self.buttons.iter().map(|(label, action)| {
+                terminating(
+                    View::simple_button(ArcStr::clone(label), OnClick::from(action.clone())),
+                    self.info.this(),
+                )
+            }),
+        )
     }
 }

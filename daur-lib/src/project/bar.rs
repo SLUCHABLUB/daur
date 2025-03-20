@@ -2,11 +2,10 @@ use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::{Signature, Tempo};
-use crate::view::heterogeneous::{ThreeStack, TwoStack};
-use crate::view::{Bordered, Button, Composition, Hoverable, OnClick, Text};
+use crate::ui::Length;
+use crate::view::{Direction, OnClick, View};
 use crate::ToArcStr as _;
 use arcstr::{literal, ArcStr};
-use ratatui::layout::{Constraint, Flex};
 
 const PLAY: ArcStr = literal!("\u{25B6}");
 const PAUSE: ArcStr = literal!("\u{23F8}");
@@ -18,23 +17,8 @@ const KEY_DESCRIPTION: ArcStr = literal!("key");
 const TIME_SIGNATURE_DESCRIPTION: ArcStr = literal!("time sig.");
 const TEMPO_DESCRIPTION: ArcStr = literal!("tempo");
 
-fn select_key(key: Key) -> OnClick<'static> {
+fn select_key(key: Key) -> OnClick {
     OnClick::from(Action::OpenPopup(Popup::key_selector(key)))
-}
-
-/// The bar att the top of the app window.
-#[derive(Debug)]
-pub struct Bar {
-    /// The title of the project.
-    pub title: ArcStr,
-    /// The default tempo of the project.
-    pub tempo: Tempo,
-    /// The default time signature of the project.
-    pub time_signature: Signature,
-    /// The default key of the project.
-    pub key: Key,
-    /// Whether the audio is playing.
-    pub playing: bool,
 }
 
 // TODO:
@@ -44,59 +28,48 @@ pub struct Bar {
 //  - cursor fine positioning
 //  - grid size
 //  - master volume
-impl Composition for Bar {
-    type Body<'view> = Bordered<
-        ThreeStack<
-            TwoStack<
-                Text,
-                ThreeStack<
-                    Button<'static, Hoverable<Bordered<Text>>>,
-                    Button<'static, Hoverable<Bordered<Text>>>,
-                    Button<'static, Hoverable<Bordered<Text>>>,
-                >,
-            >,
-            Button<'static, Hoverable<Bordered<Text>>>,
-            Text,
-        >,
-    >;
+/// The bar att the top of the app window.
+pub fn bar(
+    title: ArcStr,
+    tempo: Tempo,
+    time_signature: Signature,
+    key: Key,
+    playing: bool,
+) -> View {
+    let playback_button = if playing {
+        View::described_button(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
+    } else {
+        View::described_button(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
+    };
 
-    fn body(&self) -> Self::Body<'_> {
-        let playback_button = if self.playing {
-            Button::described(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
-        } else {
-            Button::described(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
-        };
-
-        let fallbacks = ThreeStack::equisized_horizontal((
-            Button::described(self.key.to_arc_str(), KEY_DESCRIPTION, select_key(self.key)),
-            Button::described(
-                self.time_signature.to_arc_str(),
+    let fallbacks = View::balanced_stack(
+        Direction::Right,
+        [
+            View::described_button(key.to_arc_str(), KEY_DESCRIPTION, select_key(key)),
+            View::described_button(
+                time_signature.to_arc_str(),
                 TIME_SIGNATURE_DESCRIPTION,
                 OnClick::default(),
             ),
-            Button::described(
-                self.tempo.to_arc_str(),
-                TEMPO_DESCRIPTION,
-                OnClick::default(),
-            ),
-        ));
+            View::described_button(tempo.to_arc_str(), TEMPO_DESCRIPTION, OnClick::default()),
+        ],
+    );
 
-        let left_side =
-            TwoStack::equisized_horizontal((Text::centred(literal!("TODO")), fallbacks))
-                .flex(Flex::SpaceBetween);
+    let left_side = View::spaced_stack(
+        Direction::Right,
+        vec![View::centred(literal!("TODO")), fallbacks],
+    );
 
-        Bordered::titled(
-            ArcStr::clone(&self.title),
-            ThreeStack::horizontal(
-                (left_side, playback_button, Text::centred(literal!("TODO"))),
-                [
-                    Constraint::Fill(1),
-                    Constraint::Length(7),
-                    Constraint::Fill(1),
-                ],
-            )
-            .flex(Flex::Center),
-        )
-        .thickness(true)
+    let right_side = View::centred(literal!("TODO"));
+
+    View::Stack {
+        direction: Direction::Right,
+        elements: vec![
+            left_side.fill_remaining(),
+            playback_button.quotated(Length::PLAYBACK_BUTTON_WIDTH),
+            right_side.fill_remaining(),
+        ],
     }
+    .titled(title)
+    .with_thickness(true)
 }

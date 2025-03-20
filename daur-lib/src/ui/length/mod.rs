@@ -2,46 +2,55 @@ mod non_zero;
 
 pub use non_zero::NonZeroLength;
 
+use crate::view::Quotum;
 use crate::Ratio;
-use ratatui::layout::{Constraint, Spacing};
+use ratatui::layout::Spacing;
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU32;
-use std::ops::{Add, AddAssign, Div, Mul, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, SubAssign};
 
 /// An orthogonal distance between two points
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Length {
+    // TODO: use cfg to abstract over inner values
     inner: u16,
 }
 
 impl Length {
-    pub(super) const fn new(value: u16) -> Length {
+    /// Constructs a new length value from its underlying representation.
+    #[must_use]
+    pub const fn new(value: u16) -> Length {
         Length { inner: value }
     }
 
-    pub(super) const fn inner(self) -> u16 {
+    /// Returns the underlying value of the length.
+    #[must_use]
+    pub const fn inner(self) -> u16 {
         self.inner
     }
 
     /// 0
     pub const ZERO: Length = Length::new(0);
 
-    /// Double the border-thickness of a bordered view
+    /// Double the border-thickness of a bordered view.
     pub const DOUBLE_BORDER: Length = Length::new(2);
 
-    /// The width of the musical cursor
+    /// The width of the musical cursor.
     pub const CURSOR_WIDTH: Length = Length::CHAR_WIDTH;
 
-    /// The width of a character
+    /// The width of a character.
     pub const CHAR_WIDTH: Length = Length::new(1);
 
-    /// The height of a character
+    /// The height of a character.
     pub const CHAR_HEIGHT: Length = Length::new(1);
 
-    /// The minimum height of the project bar
-    pub const PROJECT_BAR_MINIMUM: Length = Length::new(5);
+    /// The height of the project bar.
+    pub const PROJECT_BAR_HEIGHT: Length = Length::new(5);
 
-    /// The default width of the track-settings sidebar
+    /// The width of the playback button.
+    pub const PLAYBACK_BUTTON_WIDTH: Length = Length::new(7);
+
+    /// The default width of the track-settings sidebar.
     pub const TRACK_SETTINGS_DEFAULT: Length = Length::new(20);
 
     pub(crate) const MAX: Length = Length::new(u16::MAX);
@@ -63,10 +72,10 @@ impl Length {
         Length::new(length)
     }
 
-    /// Converts `self` to a `Constraint`
+    /// Converts `self` to a `Quota`
     #[must_use]
-    pub fn constraint(self) -> Constraint {
-        Constraint::Length(self.inner)
+    pub fn quotum(self) -> Quotum {
+        Quotum::Exact(self)
     }
 }
 
@@ -95,6 +104,12 @@ impl Sub for Length {
 
     fn sub(self, rhs: Length) -> Self::Output {
         Length::new(self.inner.saturating_sub(rhs.inner))
+    }
+}
+
+impl SubAssign for Length {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = *self - rhs;
     }
 }
 
@@ -142,5 +157,11 @@ impl Div<NonZeroU32> for Length {
             reason = "we multiply by the reciprocal"
         )]
         self * Ratio::new(1, rhs)
+    }
+}
+
+impl DivAssign<NonZeroU32> for Length {
+    fn div_assign(&mut self, rhs: NonZeroU32) {
+        *self = *self / rhs;
     }
 }

@@ -1,137 +1,285 @@
 //! The UI of daur is based on views, based on the system used by the `ratatui` crate
 
 mod alignment;
-mod bordered;
 mod button;
-mod composition;
+mod canvas;
 mod cursor;
 mod direction;
 mod feed;
-mod has_size;
-mod hoverable;
-mod macros;
+mod quotum;
 mod ruler;
-mod solid;
 mod text;
 
-pub mod heterogeneous;
-pub mod homogenous;
 pub mod multi;
-mod reference;
 pub mod single;
-mod size_informed;
 
 pub use alignment::Alignment;
-pub use bordered::Bordered;
-pub use button::{Button, OnClick};
-pub use composition::Composition;
-pub use cursor::CursorWindow;
+pub use button::OnClick;
+pub use canvas::Context;
+pub use cursor::cursor_window;
 pub use direction::Direction;
-pub use feed::Feed;
-pub use has_size::HasSize;
-pub use hoverable::Hoverable;
-pub(crate) use macros::{or_popup, popup_error};
-pub use reference::Ref;
-pub use ruler::Ruler;
-pub use size_informed::SizeInformed;
-pub use solid::Solid;
-pub use text::Text;
+pub use feed::feed;
+pub use quotum::{Quotated, Quotum};
+pub use ruler::ruler;
 
-use crate::app::Action;
-use crate::lock::Lock;
-use crate::ui::{Point, Rectangle};
-use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
-use ratatui::widgets::{Block, Widget};
-use ratatui_explorer::{FileExplorer, Input};
+use crate::clone_cell::ArcCell;
+use crate::ui::{Length, Size};
+use arcstr::ArcStr;
+use derive_more::Debug;
+use itertools::Itertools as _;
+use ratatui::style::Color;
+use std::cmp::max;
+use std::num::NonZeroU32;
+use std::path::Path;
+use std::sync::Arc;
+
+type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 
 /// A UI element.
-#[must_use]
-pub trait View {
-    /// Render the view in the given area in `buffer`
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point);
-
-    /// Click the view
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    );
+#[must_use = "A view must be processed in some way"]
+#[derive(Debug)]
+pub enum View {
+    /// A view with a border and optional title.
+    Bordered {
+        /// The title.
+        title: ArcStr,
+        /// Whether the border is **thick**.
+        thick: bool,
+        /// The bordered view.
+        content: Box<Self>,
+    },
+    /// A clickable view.
+    Button {
+        /// The action to take when the button is clicked
+        on_click: OnClick,
+        /// The default label for the button
+        content: Box<Self>,
+    },
+    /// A canvas on which stuff can be drawn.
+    /// See [`Context`].
+    Canvas {
+        /// The background colour.
+        background: Color,
+        /// The function that paints the canvas.
+        #[debug(skip)]
+        painter: Box<Painter>,
+    },
+    /// A view with a musical context.
+    CursorWindow {
+        /// How far from the left the cursor is positioned.
+        offset: Length,
+    },
+    /// A view into the file system.
+    FileSelector {
+        /// The currently selected file.
+        selected_file: Arc<ArcCell<Path>>,
+    },
+    /// A function that generates a view.
+    Generator(#[debug(skip)] Box<dyn Fn() -> View + Send + Sync>),
+    /// A view that whose appearance changes when hovered.
+    Hoverable {
+        /// The view to use when not hovered.
+        default: Box<Self>,
+        /// The view to use when hovered.
+        hovered: Box<Self>,
+    },
+    /// Multiple views layered on each other.
+    Layers(Vec<Self>),
+    /// A rule of a ruler.
+    Rule {
+        /// The display-index of the rule.
+        index: isize,
+        /// The number of cells (the number of markings - 1).
+        cells: NonZeroU32,
+    },
+    /// A view that needs to know its containers size.
+    SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
+    /// A solid colour.
+    Solid(Color),
+    /// A stack of views.
+    Stack {
+        /// The direction in which the elements are laid out.
+        direction: Direction,
+        /// The stacked views.
+        elements: Vec<Quotated>,
+    },
+    /// Some text.
+    Text {
+        /// The text.
+        string: ArcStr,
+        /// How the text should be aligned.
+        alignment: Alignment,
+    },
 }
 
-impl<T: View> View for Option<T> {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        if let Some(view) = self {
-            view.render(area, buffer, mouse_position);
+impl View {
+    /// An empty (transparent) view.
+    pub const EMPTY: View = View::Solid(Color::Reset);
+
+    /// Puts a border around `self`.
+    pub fn bordered(self) -> Self {
+        self.titled(ArcStr::new())
+    }
+
+    /// Puts a titled border around `self`.
+    pub fn titled(self, title: ArcStr) -> Self {
+        View::Bordered {
+            title,
+            thick: false,
+            content: Box::new(self),
         }
     }
 
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        if let Some(view) = self {
-            view.click(area, button, position, actions);
+    /// Sets the thickness if `self` matches [`View::Bordered`].
+    pub fn with_thickness(self, thickness: bool) -> Self {
+        if let View::Bordered {
+            title,
+            thick: _,
+            content,
+        } = self
+        {
+            View::Bordered {
+                title,
+                thick: thickness,
+                content,
+            }
+        } else {
+            self
         }
     }
-}
 
-impl<T: View, E: View> View for Result<T, E> {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
+    /// Constructs a [`View::Canvas`].
+    pub fn canvas<Painter>(background: Color, painter: Painter) -> View
+    where
+        Painter: Fn(&mut dyn Context) + Send + Sync + 'static,
+    {
+        View::Canvas {
+            background,
+            painter: Box::new(painter),
+        }
+    }
+
+    /// Constructs a [`View::Hoverable`].
+    pub fn hoverable(default: View, hovered: View) -> Self {
+        View::Hoverable {
+            default: Box::new(default),
+            hovered: Box::new(hovered),
+        }
+    }
+
+    /// Constructs a [`View::Generator`].
+    pub fn generator<F: Fn() -> View + Send + Sync + 'static>(generator: F) -> Self {
+        View::Generator(Box::new(generator))
+    }
+
+    /// Constructs a [`View::SizeInformed`].
+    pub fn size_informed<F: Fn(Size) -> View + Send + Sync + 'static>(generator: F) -> Self {
+        View::SizeInformed(Box::new(generator))
+    }
+
+    /// Constructs a stack where all views are quotated equally.
+    pub fn balanced_stack<E>(direction: Direction, elements: E) -> Self
+    where
+        E: IntoIterator<Item = Self>,
+    {
+        View::Stack {
+            direction,
+            elements: elements.into_iter().map(View::fill_remaining).collect(),
+        }
+    }
+
+    /// A stack where elements are quotated with their minimum size and spread out evenly.
+    pub fn spaced_stack<E>(direction: Direction, elements: E) -> Self
+    where
+        E: IntoIterator<Item = Self>,
+    {
+        View::Stack {
+            direction,
+            elements: elements
+                .into_iter()
+                .map(View::quotated_minimally)
+                .intersperse_with(|| View::EMPTY.fill_remaining())
+                .collect(),
+        }
+    }
+
+    /// Returns the minimum size required to fit the entire view.
+    #[must_use]
+    pub fn minimum_size(&self) -> Size {
         match self {
-            Ok(ok) => ok.render(area, buffer, mouse_position),
-            Err(err) => err.render(area, buffer, mouse_position),
-        }
-    }
+            // TODO: this may depend on thickness
+            View::Bordered {
+                title: _,
+                thick: _,
+                content,
+            } => {
+                let mut size = content.minimum_size();
+                size.height += Length::DOUBLE_BORDER;
+                size.width += Length::DOUBLE_BORDER;
+                size
+            }
+            View::Button {
+                on_click: _,
+                content,
+            } => content.minimum_size(),
+            View::Canvas { .. }
+            | View::CursorWindow { .. }
+            | View::FileSelector { .. }
+            | View::SizeInformed(_)
+            | View::Solid(_) => Size::ZERO,
+            View::Generator(generator) => generator().minimum_size(),
+            View::Hoverable { default, hovered } => {
+                let default = default.minimum_size();
+                let hovered = hovered.minimum_size();
 
-    fn click(
-        &self,
-        area: Rectangle,
-        button: MouseButton,
-        position: Point,
-        actions: &mut Vec<Action>,
-    ) {
-        match self {
-            Ok(ok) => ok.click(area, button, position, actions),
-            Err(err) => err.click(area, button, position, actions),
-        }
-    }
-}
+                Size {
+                    width: max(default.width, hovered.width),
+                    height: max(default.height, hovered.height),
+                }
+            }
+            View::Layers(layers) => {
+                let mut size = Size::ZERO;
 
-impl View for Lock<FileExplorer> {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        Widget::render(self.read().widget(), area.to_rect(), buffer);
-    }
+                for layer in layers {
+                    let layer_size = layer.minimum_size();
+                    size.width = max(size.width, layer_size.width);
+                    size.height = max(size.height, layer_size.height);
+                }
 
-    fn click(&self, area: Rectangle, _: MouseButton, position: Point, actions: &mut Vec<Action>) {
-        let area = area.to_rect();
-        let position = position.to_position();
-        let mut explorer = self.write();
+                size
+            }
+            View::Rule { .. } => Size {
+                width: Length::ZERO,
+                height: Length::new(2),
+            },
+            View::Stack {
+                direction,
+                elements,
+            } => {
+                let mut parallel = Length::ZERO;
+                let mut orthogonal = Length::ZERO;
 
-        let inner_area = explorer
-            .theme()
-            .block()
-            .unwrap_or(&Block::new())
-            .inner(area);
+                for quoted in elements {
+                    let child = quoted.view.minimum_size();
+                    parallel += child.parallel_to(*direction);
+                    orthogonal = max(orthogonal, child.orthogonal_to(*direction));
+                }
 
-        if inner_area.contains(position) {
-            #[expect(
-                clippy::arithmetic_side_effects,
-                reason = "checked in the if statement"
-            )]
-            let index = usize::from(position.y - inner_area.y);
+                Size::from_parallel_orthogonal(parallel, orthogonal, *direction)
+            }
+            View::Text {
+                string,
+                alignment: _,
+            } => {
+                let mut size = Size::ZERO;
 
-            if explorer.selected_idx() == index {
-                or_popup!(explorer.handle(Input::Right), actions);
-            } else if index < explorer.files().len() {
-                explorer.set_selected_idx(index);
-            } else {
-                // clicked on padding
+                for line in string.lines() {
+                    size.width = max(size.width, Length::string_width(line));
+                }
+
+                size.height = Length::string_height(string);
+
+                size
             }
         }
     }

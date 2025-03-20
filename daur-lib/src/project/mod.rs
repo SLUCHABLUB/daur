@@ -1,4 +1,4 @@
-//! Types relating to [`Project`]
+//! Types relating to [`Project`].
 
 mod action;
 mod bar;
@@ -8,9 +8,9 @@ mod source;
 mod workspace;
 
 pub use action::Action;
-pub use bar::Bar;
+pub use bar::bar;
 pub use manager::Manager;
-pub use workspace::Workspace;
+pub(crate) use workspace::workspace;
 
 use crate::key::Key;
 use crate::time::{Signature, Tempo};

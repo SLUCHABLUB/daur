@@ -1,10 +1,12 @@
+//! Types relating to [`Track`].
+
 mod overview;
 mod settings;
 mod source;
 
-pub use overview::{open_import_audio_popup, Overview};
-pub use settings::Settings;
-pub use source::TrackSource;
+pub use overview::{open_import_audio_popup, overview};
+pub use settings::settings;
+pub use source::Source;
 
 use crate::time::{Instant, Mapping};
 use crate::Clip;
@@ -14,13 +16,18 @@ use std::sync::Arc;
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 
+/// A musical track.
 #[derive(Clone, Debug)]
 pub struct Track {
+    /// The name of the track.
     pub name: ArcStr,
+    /// The clips in the track.
     pub clips: BTreeMap<Instant, Arc<Clip>>,
 }
 
 impl Track {
+    /// Constructs a new, empty, track.
+    #[must_use]
     pub fn new() -> Track {
         Track {
             name: DEFAULT_TITLE,
@@ -28,16 +35,10 @@ impl Track {
         }
     }
 
-    pub fn settings(self: &Arc<Self>, selected: bool, index: usize) -> Settings {
-        Settings {
-            track: Arc::clone(self),
-            selected,
-            index,
-        }
-    }
-
-    pub fn to_source(&self, mapping: &Mapping, sample_rate: u32, offset: usize) -> TrackSource {
-        TrackSource::new(
+    /// Returns the audio source for the track.
+    #[must_use]
+    pub fn to_source(&self, mapping: &Mapping, sample_rate: u32, offset: usize) -> Source {
+        Source::new(
             sample_rate,
             self.clips
                 .iter()

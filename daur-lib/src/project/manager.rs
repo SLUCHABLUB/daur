@@ -5,9 +5,10 @@ use crate::popup::Popup;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
-use crate::project::{Bar, Project, Workspace};
+use crate::project::{bar, workspace, Project};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, Length, Offset};
+use crate::view::View;
 use crate::Changing;
 use std::sync::Arc;
 use thiserror::Error;
@@ -84,15 +85,15 @@ impl Manager {
         }
     }
 
-    pub(crate) fn bar(&self, playing: bool) -> Bar {
+    pub(crate) fn bar(&self, playing: bool) -> View {
         let project = self.project.read();
-        Bar {
-            title: project.title(),
-            tempo: project.tempo.start,
-            time_signature: project.time_signature.start,
-            key: project.key.start,
+        bar(
+            project.title(),
+            project.tempo.start,
+            project.time_signature.start,
+            project.key.start,
             playing,
-        }
+        )
     }
 
     pub(crate) fn workspace(
@@ -103,18 +104,19 @@ impl Manager {
         selected_track_index: usize,
         selected_clip_index: usize,
         cursor: Instant,
-    ) -> Workspace {
+    ) -> View {
         let project = self.project.read();
-        Workspace {
+
+        workspace(
             overview_offset,
             selected_track_index,
             selected_clip_index,
-            track_settings_width: track_settings_size,
-            tracks: project.tracks.clone(),
-            ui_mapping: project.ui_mapping(grid),
-            time_mapping: project.time_mapping(),
+            track_settings_size,
+            project.tracks.clone(),
+            project.time_mapping(),
+            project.ui_mapping(grid),
             cursor,
-        }
+        )
     }
 
     /// Take an action on the project.

@@ -13,11 +13,14 @@ pub struct NonZeroLength {
 }
 
 impl NonZeroLength {
-    /// The width of a character
-    pub const CHAR_WIDTH: NonZeroLength = NonZeroLength::new(ONE);
+    /// The minimum non-zero horizontal distance.
+    pub const X_MINIMUM: Option<NonZeroLength> = Some(NonZeroLength::new(ONE));
 
-    /// The height of a character
-    pub const CHAR_HEIGHT: NonZeroLength = NonZeroLength::new(ONE);
+    /// The minimum non-zero vertical distance.
+    pub const Y_MINIMUM: Option<NonZeroLength> = Some(NonZeroLength::new(ONE));
+
+    /// The default with of a key in the piano roll.
+    pub const DEFAULT_KEY_WIDTH: NonZeroLength = NonZeroLength::new(ONE);
 
     /// The default width of a grid cell
     pub const DEFAULT_CELL_WIDTH: NonZeroLength = NonZeroLength::new(FOUR);

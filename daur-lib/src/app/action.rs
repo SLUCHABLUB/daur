@@ -6,7 +6,7 @@
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
-use crate::{project, App, Ratio};
+use crate::{project, App};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
@@ -67,12 +67,12 @@ impl Action {
     }
 
     /// Take the action on the app
-    pub fn take(self, app: &App) {
+    pub fn take<Exit: FnOnce()>(self, app: &App, exit: Exit) {
         match self {
             Action::ClosePopup(popup) => {
                 app.popups.close(&popup);
             }
-            Action::Exit => app.should_exit.set(true),
+            Action::Exit => exit(),
             Action::MoveCursor(instant) => {
                 app.cursor.set(instant);
 
@@ -91,7 +91,8 @@ impl Action {
             }
 
             Action::OpenPianoRoll => {
-                Action::SetPianoRollHeight(app.last_size.get().height * Ratio::HALF).take(app);
+                // TODO: do this more cleanly
+                Action::SetPianoRollHeight(Length::PROJECT_BAR_HEIGHT).take(app, exit);
             }
             Action::SetPianoRollHeight(height) => {
                 let mut settings = app.piano_roll_settings.get();
@@ -132,7 +133,7 @@ impl Action {
                 app.selected_clip_index.set(index);
             }
             Action::SetDevice(device) => {
-                app.device.set(Some(device));
+                app.device.set_value(Some(device));
             }
         }
     }

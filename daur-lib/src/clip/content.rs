@@ -1,9 +1,7 @@
 use crate::audio::Audio;
 use crate::notes::Notes;
-use crate::pitch::Pitch;
 use crate::time::{Instant, Mapping, Period};
-use ratatui::style::Color;
-use ratatui::widgets::canvas::{Context, Points};
+use crate::view::Context;
 
 /// The content of a [`Clip`](crate::Clip)
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -31,41 +29,16 @@ impl ClipContent {
         }
     }
 
-    /// The full viewport of the overview.
-    /// This is used if the whole clip overview is visible.
-    pub(crate) fn full_overview_viewport(&self) -> [[f64; 2]; 2] {
+    pub(super) fn paint_overview(
+        &self,
+        context: &mut dyn Context,
+        full_period: Period,
+        visible_period: Period,
+        mapping: &Mapping,
+    ) {
         match self {
             ClipContent::Audio(audio) => {
-                #[expect(clippy::cast_precision_loss, reason = "We are just drawing")]
-                let viewport_end = audio.sample_count() as f64;
-                [[0.0, viewport_end], [-1.0, 1.0]]
-            }
-            ClipContent::Notes(notes) => {
-                if let Some(range) = notes.pitch_range() {
-                    let low = f64::from((*range.start() - Pitch::A440).semitones());
-                    let high = f64::from((*range.start() - Pitch::A440).semitones());
-                    [[0.0, notes.duration().whole_notes.to_float()], [low, high]]
-                } else {
-                    [[0.0; 2]; 2]
-                }
-            }
-        }
-    }
-
-    pub(super) fn paint_overview(&self, context: &mut Context) {
-        match self {
-            ClipContent::Audio(audio) => {
-                #[expect(clippy::cast_precision_loss, reason = "We are just drawing")]
-                let points: Vec<(f64, f64)> = audio
-                    .mono_samples()
-                    .enumerate()
-                    .map(|(index, sample)| (index as f64, sample))
-                    .collect();
-
-                context.draw(&Points {
-                    coords: &points,
-                    color: Color::Reset,
-                });
+                audio.draw_overview(context, full_period, visible_period, mapping);
             }
             ClipContent::Notes(notes) => notes.draw_overview(context),
         }

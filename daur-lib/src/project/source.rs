@@ -1,11 +1,10 @@
-use crate::track::TrackSource;
-use rodio::Source;
+use crate::track::Source;
 use std::time::Duration;
 
 #[derive(Debug)]
 pub struct ProjectSource {
     pub sample_rate: u32,
-    pub tracks: Vec<TrackSource>,
+    pub tracks: Vec<Source>,
 }
 
 impl Iterator for ProjectSource {
@@ -31,7 +30,7 @@ impl Iterator for ProjectSource {
     }
 }
 
-impl Source for ProjectSource {
+impl rodio::Source for ProjectSource {
     fn current_frame_len(&self) -> Option<usize> {
         None
     }

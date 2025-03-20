@@ -3,13 +3,12 @@ mod overview;
 mod source;
 
 pub use content::ClipContent;
-pub use overview::Overview;
+pub use overview::overview;
 pub use source::ClipSource;
 
 use crate::time::{Instant, Mapping, Period};
 use arcstr::ArcStr;
 use ratatui::style::Color;
-use ratatui::widgets::canvas::Context;
 
 /// A clip inside a [`Track`]
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -21,8 +20,6 @@ pub struct Clip {
     /// The content of the clip
     pub content: ClipContent,
 }
-
-pub(crate) type Painter<'clip> = Box<dyn Fn(&mut Context) + 'clip>;
 
 impl Clip {
     /// The [`Period`] of the clip

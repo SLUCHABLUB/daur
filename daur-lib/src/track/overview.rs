@@ -3,21 +3,22 @@ use crate::popup::Popup;
 use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
-use crate::view::heterogeneous::Layers;
-use crate::view::{Button, Composition, CursorWindow, Direction, Feed, OnClick, SizeInformed};
+use crate::view::{cursor_window, feed, Direction, OnClick, View};
 use crate::{clip, project, time, ui};
 use arcstr::{literal, ArcStr};
 use crossterm::event::MouseButton;
 use num::Integer as _;
-use ratatui_explorer::File;
+use std::path::Path;
 use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");
 const OPEN_PIANO_ROLL: ArcStr = literal!("open piano roll");
 
+/// Opens a popup for importing audio.
+#[must_use]
 pub fn open_import_audio_popup() -> Action {
-    let action = move |file: &File| Action::import_audio(file.path());
+    let action = move |file: &Path| Action::import_audio(file);
 
     Action::OpenPopup(Popup::explorer(IMPORT_AUDIO, action))
 }
@@ -30,106 +31,91 @@ fn right_click_menu() -> Arc<Popup> {
     ])
 }
 
-#[derive(Debug)]
-pub struct Overview {
-    pub track: Arc<Track>,
-    pub selected_clip_index: usize,
-    pub time_mapping: time::Mapping,
-    pub ui_mapping: ui::Mapping,
-    pub offset: Offset,
-    pub cursor: Instant,
-    pub index: usize,
-}
+/// Returns the track overview.
+pub fn overview(
+    track: Arc<Track>,
+    index: usize,
+    selected_clip_index: usize,
+    time_mapping: time::Mapping,
+    ui_mapping: ui::Mapping,
+    offset: Offset,
+    cursor: Instant,
+) -> View {
+    View::size_informed(move |size| {
+        let overview_period = ui_mapping.period((-offset).saturate(), size.width);
 
-impl Composition for Overview {
-    type Body<'view> = Button<
-        'view,
-        SizeInformed<'view, Layers<(Feed<'view, Option<clip::Overview>>, CursorWindow)>>,
-    >;
+        let track = Arc::clone(&track);
+        let time_mapping = time_mapping.clone();
+        let cursor_mapping = ui_mapping.clone();
+        let ui_mapping = ui_mapping.clone();
+        View::Layers(vec![
+            feed(Direction::Right, offset, move |index| {
+                let Ok(index) = usize::try_from(index) else {
+                    return View::EMPTY.quotated(offset.abs());
+                };
 
-    fn body(&self) -> Self::Body<'_> {
-        Button {
-            on_click: OnClick::new(|button, _, position, actions| {
-                // TODO: move, select or open clips
-                if button == MouseButton::Left {
-                    actions.send(Action::SelectTrack(self.index));
+                let (clip_index, parity) = index.div_rem(&2);
+
+                // if index is even
+                if parity == 0 {
+                    // Return the space between clips
+
+                    let last_clip_end = clip_index
+                        .checked_sub(1)
+                        .and_then(|index| {
+                            let (start, clip) = track.clips.iter().nth(index)?;
+                            let end = clip.period(*start, &time_mapping).end();
+                            Some(ui_mapping.offset(end))
+                        })
+                        .unwrap_or(Length::ZERO);
+
+                    let next_clip_start = track
+                        .clips
+                        .keys()
+                        .nth(clip_index)
+                        .map_or(Length::MAX, |instant| ui_mapping.offset(*instant));
+
+                    let size = next_clip_start - last_clip_end;
+
+                    return View::EMPTY.quotated(size);
                 }
 
-                if button == MouseButton::Right {
-                    actions.send(Action::OpenPopup(right_click_menu().at(position)));
-                }
+                let Some((start, clip)) = track.clips.iter().nth(clip_index) else {
+                    return View::EMPTY.fill_remaining();
+                };
+
+                let clip_period = clip.period(*start, &time_mapping);
+                let clip_width = ui_mapping.width_of(clip_period);
+
+                let Some(visible_period) = Period::intersection(overview_period, clip_period)
+                else {
+                    return View::EMPTY.quotated(clip_width);
+                };
+
+                let selected = selected_clip_index == clip_index;
+
+                clip::overview(
+                    Arc::clone(clip),
+                    index,
+                    index,
+                    selected,
+                    clip_period,
+                    visible_period,
+                    time_mapping.clone(),
+                )
+                .quotated(clip_width)
             }),
-            content: SizeInformed::new(move |size| {
-                let overview_period = self
-                    .ui_mapping
-                    .period((-self.offset).saturate(), size.width);
-
-                Layers::new((
-                    Feed::new(Direction::Right, self.offset, move |index| {
-                        let Ok(index) = usize::try_from(index) else {
-                            return (None, self.offset.abs());
-                        };
-
-                        let (clip_index, parity) = index.div_rem(&2);
-
-                        // if index is even
-                        if parity == 0 {
-                            // Return the space between clips
-
-                            let last_clip_end = clip_index
-                                .checked_sub(1)
-                                .and_then(|index| {
-                                    let (start, clip) = self.track.clips.iter().nth(index)?;
-                                    let end = clip.period(*start, &self.time_mapping).end();
-                                    Some(self.ui_mapping.offset(end))
-                                })
-                                .unwrap_or(Length::ZERO);
-
-                            let next_clip_start = self
-                                .track
-                                .clips
-                                .keys()
-                                .nth(clip_index)
-                                .map_or(Length::MAX, |instant| self.ui_mapping.offset(*instant));
-
-                            let size = next_clip_start - last_clip_end;
-
-                            return (None, size);
-                        }
-
-                        let Some((start, clip)) = self.track.clips.iter().nth(clip_index) else {
-                            return (None, Length::MAX);
-                        };
-
-                        let clip_period = clip.period(*start, &self.time_mapping);
-                        let clip_width = self.ui_mapping.width_of(clip_period);
-
-                        let Some(visible_period) =
-                            Period::intersection(overview_period, clip_period)
-                        else {
-                            return (None, clip_width);
-                        };
-
-                        let selected = self.selected_clip_index == clip_index;
-
-                        let overview = clip::Overview {
-                            clip: Arc::clone(clip),
-                            selected,
-                            track_index: self.index,
-                            index,
-                            period: clip_period,
-                            visible_period,
-                        };
-
-                        (Some(overview), clip_width)
-                    }),
-                    CursorWindow {
-                        mapping: self.ui_mapping.clone(),
-                        offset: self.offset,
-                        instant: self.cursor,
-                    },
-                ))
-            }),
+            cursor_window(cursor, cursor_mapping, offset),
+        ])
+    })
+    .on_click(OnClick::new(move |button, _, position, actions| {
+        // TODO: move, select or open clips
+        if button == MouseButton::Left {
+            actions.send(Action::SelectTrack(index));
         }
-    }
+
+        if button == MouseButton::Right {
+            actions.send(Action::OpenPopup(right_click_menu().at(position)));
+        }
+    }))
 }

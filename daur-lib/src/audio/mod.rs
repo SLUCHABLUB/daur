@@ -1,13 +1,19 @@
 mod source;
 
 pub use source::AudioSource;
+use std::cmp::max;
 
 use crate::time::{Instant, Mapping, Period};
+use crate::ui::{Length, NonZeroLength, Point};
+use crate::view::Context;
+use crate::Ratio;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{rational, Integer as _};
+use ratatui::prelude::Color;
+use saturating_cast::SaturatingCast as _;
 use std::io::Read;
-use std::num::FpCategory;
+use std::num::{FpCategory, NonZeroU16, NonZeroU32};
 use std::time::Duration;
 
 /// Some stereo 64-bit floating point audio
@@ -23,7 +29,7 @@ impl Audio {
     /// Returns the number of stereo sample-pairs
     #[must_use]
     pub fn sample_count(&self) -> usize {
-        usize::max(self.channels[0].len(), self.channels[1].len())
+        max(self.channels[0].len(), self.channels[1].len())
     }
 
     /// Returns the audio's duration
@@ -66,6 +72,80 @@ impl Audio {
     #[must_use]
     pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
         mapping.period(start, self.duration())
+    }
+
+    /// Draws an overview of the audio.
+    pub fn draw_overview(
+        &self,
+        context: &mut dyn Context,
+        full_period: Period,
+        visible_period: Period,
+        mapping: &Mapping,
+    ) {
+        #![expect(
+            clippy::cast_sign_loss,
+            reason = "we are working with durations (unsigned)"
+        )]
+        #![expect(
+            clippy::cast_possible_truncation,
+            reason = "saturating is fine when counting samples"
+        )]
+
+        let sample_rate = f64::from(self.sample_rate);
+
+        let left_cutoff = Period::from_endpoints(full_period.start, visible_period.start)
+            .map_or(Duration::ZERO, |period| mapping.real_time_duration(period));
+        let skipped_samples = sample_rate * left_cutoff.as_secs_f64();
+        let skipped_samples = skipped_samples.round() as usize;
+
+        let visible_samples =
+            sample_rate * mapping.real_time_duration(visible_period).as_secs_f64();
+        let visible_samples = visible_samples.round() as usize;
+
+        let samples = self
+            .mono_samples()
+            .skip(skipped_samples)
+            .take(visible_samples.saturating_cast());
+
+        let Some(visible_samples) = NonZeroU32::new(visible_samples as u32) else {
+            return;
+        };
+
+        let context_size = context.size();
+
+        let Some(context_width) = NonZeroU16::new(context_size.width.inner()) else {
+            return;
+        };
+
+        let sample_length = context_size.width / visible_samples;
+
+        if sample_length == Length::ZERO {
+            // since the numerator isn't zero this resulted from a rounding
+
+            let Some(epsilon) = NonZeroLength::X_MINIMUM else {
+                // TODO: we have a really small context or really many samples
+                return;
+            };
+
+            let samples_per_epsilon = visible_samples.get() / NonZeroU32::from(context_width);
+
+            samples
+                .chunks(samples_per_epsilon.saturating_cast())
+                .into_iter()
+                .enumerate()
+                .for_each(|(x, samples)| {
+                    let x = epsilon.get() * x.saturating_cast::<u32>();
+
+                    let average = samples.sum::<f64>() / f64::from(samples_per_epsilon);
+                    let ratio = Ratio::approximate(-0.5 * (average - 1.0));
+
+                    let y = context_size.height * ratio;
+
+                    context.draw_point(Point { x, y }, Color::Reset);
+                });
+        } else {
+            // TODO: float lengths
+        }
     }
 
     /// Returns a [`Source`](source::Source) for the audio

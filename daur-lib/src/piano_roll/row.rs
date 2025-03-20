@@ -1,39 +1,21 @@
-use crate::app::Action;
 use crate::pitch::Pitch;
-use crate::ui::{Point, Rectangle};
-use crate::view::{Solid, View};
-use crate::Clip;
-use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
+use crate::view::View;
 use ratatui::style::Color;
-use std::sync::Arc;
 
-#[derive(Debug)]
-pub struct Row {
-    pub clip: Arc<Clip>,
-    pub pitch: Pitch,
-}
+pub fn row(pitch: Pitch) -> View {
+    // TODO:
+    //  - draw notes
+    //  - draw grid
+    //  - highlight key based on settings
+    let colour = if (pitch - Pitch::A440).semitones() % 2 == 0 {
+        Color::Gray
+    } else {
+        Color::DarkGray
+    };
 
-impl View for Row {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        // TODO:
-        //  - draw notes
-        //  - draw grid
-        //  - highlight key based on settings
-        let colour = if (self.pitch - Pitch::A440).semitones() % 2 == 0 {
-            Color::Gray
-        } else {
-            Color::DarkGray
-        };
-
-        Solid { colour }.render(area, buffer, mouse_position);
-    }
-
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
-        // TODO:
-        //  - add notes
-        //  - select notes
-        //  - move cursor
-        let _ = &self.clip;
-    }
+    // TODO: use `Button` for
+    //  - adding notes
+    //  - selecting notes
+    //  - moving the cursor
+    View::Solid(colour)
 }

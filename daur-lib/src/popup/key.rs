@@ -1,17 +1,14 @@
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
 use crate::popup::info::PopupInfo;
-use crate::popup::terminating::Terminating;
+use crate::popup::terminating::terminating;
 use crate::popup::Popup;
 use crate::sign::Sign;
-use crate::view::heterogeneous::{FourStack, TwoStack};
-use crate::view::{multi, single, Bordered, Button, Composition, OnClick, Text};
-use crate::{keyboard, project, Action, Cell};
+use crate::view::{multi, single, Direction, OnClick, View};
+use crate::{project, Action, Cell};
 use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
-use crossterm::event::{KeyCode, KeyModifiers};
-use ratatui::layout::{Constraint, Flex};
-use std::sync::Weak;
+use std::sync::{Arc, Weak};
 
 const TITLE: ArcStr = literal!("select key");
 const CANCEL: ArcStr = literal!("cancel");
@@ -21,92 +18,18 @@ const CONFIRM: ArcStr = literal!("confirm");
 pub struct KeySelector {
     pub info: PopupInfo,
 
-    tonic: Cell<Chroma>,
-    sign: Cell<Sign>,
-    intervals: Cell<BitBag<KeyInterval>>,
+    tonic: Arc<Cell<Chroma>>,
+    sign: Arc<Cell<Sign>>,
+    intervals: Arc<Cell<BitBag<KeyInterval>>>,
 }
 
 impl KeySelector {
     pub fn new(key: Key, this: Weak<Popup>) -> KeySelector {
         KeySelector {
             info: PopupInfo::new(TITLE, this),
-            tonic: Cell::new(key.tonic),
-            sign: Cell::new(key.sign),
-            intervals: Cell::new(key.intervals),
-        }
-    }
-
-    pub fn handle_key(&self, key: keyboard::Key, actions: &mut Vec<Action>) -> bool {
-        #[expect(clippy::wildcard_enum_match_arm, reason = "we only care about these")]
-        match key.code {
-            KeyCode::Enter => {
-                actions.push(Action::ClosePopup(self.info.this()));
-                actions.push(Action::Project(project::Action::SetDefaultKey(self.key())));
-                true
-            }
-            KeyCode::Tab | KeyCode::BackTab => {
-                self.sign.set(!self.sign.get());
-                true
-            }
-            KeyCode::Char(char) => {
-                let set_tonic = |chroma| {
-                    self.tonic.set(chroma);
-                    true
-                };
-
-                let invert_interval = |interval| {
-                    let mut bag = self.intervals.get();
-                    if bag.is_set(interval) {
-                        bag.unset(interval);
-                    } else {
-                        bag.set(interval);
-                    }
-                    self.intervals.set(bag);
-                    true
-                };
-
-                // TODO: make the controls changeable in the settings
-
-                if !matches!(key.modifiers, KeyModifiers::SHIFT | KeyModifiers::NONE) {
-                    return false;
-                }
-
-                match char {
-                    '"' => invert_interval(KeyInterval::M2),
-                    '#' => invert_interval(KeyInterval::M3),
-                    '&' => invert_interval(KeyInterval::M6),
-                    '/' => invert_interval(KeyInterval::M7),
-
-                    '2' => invert_interval(KeyInterval::m2),
-                    '3' => invert_interval(KeyInterval::m3),
-                    '6' => invert_interval(KeyInterval::m6),
-                    '7' => invert_interval(KeyInterval::m7),
-
-                    '4' => invert_interval(KeyInterval::P4),
-                    '5' => invert_interval(KeyInterval::P5),
-
-                    't' => invert_interval(KeyInterval::TT),
-
-                    'A' => set_tonic(Chroma::A.with_sign(self.sign.get())),
-                    'B' => set_tonic(Chroma::B.with_sign(self.sign.get())),
-                    'C' => set_tonic(Chroma::C.with_sign(self.sign.get())),
-                    'D' => set_tonic(Chroma::D.with_sign(self.sign.get())),
-                    'E' => set_tonic(Chroma::E.with_sign(self.sign.get())),
-                    'F' => set_tonic(Chroma::F.with_sign(self.sign.get())),
-                    'G' => set_tonic(Chroma::G.with_sign(self.sign.get())),
-
-                    'a' => set_tonic(Chroma::A),
-                    'b' => set_tonic(Chroma::B),
-                    'c' => set_tonic(Chroma::C),
-                    'd' => set_tonic(Chroma::D),
-                    'e' => set_tonic(Chroma::E),
-                    'f' => set_tonic(Chroma::F),
-                    'g' => set_tonic(Chroma::G),
-
-                    _ => false,
-                }
-            }
-            _ => false,
+            tonic: Arc::new(Cell::new(key.tonic)),
+            sign: Arc::new(Cell::new(key.sign)),
+            intervals: Arc::new(Cell::new(key.intervals)),
         }
     }
 
@@ -117,40 +40,32 @@ impl KeySelector {
             intervals: self.intervals.get(),
         }
     }
-}
 
-impl Composition for KeySelector {
-    type Body<'cell> = FourStack<
-        single::Selector<'cell, Chroma>,
-        single::Selector<'cell, Sign>,
-        multi::Selector<'cell, KeyInterval>,
-        TwoStack<Terminating<Bordered<Text>>, Terminating<Button<'static, Bordered<Text>>>>,
-    >;
-
-    fn body(&self) -> Self::Body<'_> {
-        let buttons = TwoStack::horizontal_sized((
-            Terminating {
-                content: Bordered::plain(Text::centred(CANCEL)),
-                popup: self.info.this(),
-            },
-            Terminating {
-                content: Button::standard(
-                    CONFIRM,
-                    OnClick::from(Action::Project(project::Action::SetDefaultKey(self.key()))),
+    pub fn view(&self) -> View {
+        let buttons = View::spaced_stack(
+            Direction::Right,
+            vec![
+                terminating(View::centred(CANCEL).bordered(), self.info.this()),
+                terminating(
+                    View::standard_button(
+                        CONFIRM,
+                        OnClick::from(Action::Project(project::Action::SetDefaultKey(self.key()))),
+                    ),
+                    self.info.this(),
                 ),
-                popup: self.info.this(),
-            },
-        ))
-        .flex(Flex::SpaceBetween);
+            ],
+        );
 
-        FourStack::vertical(
-            (
-                single::selector_with_formatter(&self.tonic, |chroma| chroma.name(self.sign.get())),
-                single::selector(&self.sign).flex(Flex::Center),
-                multi::selector(&self.intervals),
+        View::spaced_stack(
+            Direction::Down,
+            vec![
+                single::selector_with_formatter(&self.tonic, Direction::Right, |chroma| {
+                    chroma.name(self.sign.get())
+                }),
+                single::selector(&self.sign, Direction::Right),
+                multi::selector(&self.intervals, Direction::Right),
                 buttons,
-            ),
-            [Constraint::Length(3); 4],
+            ],
         )
     }
 }

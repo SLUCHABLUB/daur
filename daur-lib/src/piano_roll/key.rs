@@ -1,42 +1,31 @@
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::NonZeroLength;
-use crate::view::heterogeneous::{Layers, TwoStack};
-use crate::view::{Composition, Solid, Text};
+use crate::view::{Direction, View};
 use arcstr::ArcStr;
-use ratatui::layout::Constraint;
+use ratatui::style::Color;
 
-#[derive(Copy, Clone, Debug)]
-pub struct PianoKey {
-    pub key: Key,
-    pub pitch: Pitch,
-    pub black_key_depth: NonZeroLength,
-}
+// TODO: use `Button` for:
+//  - resizing the piano
+//  - plinking the key
+//  - selecting all notes with the keys pitch
+pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View {
+    let top = View::Solid(if pitch.chroma().is_black_key() {
+        Color::Black
+    } else {
+        Color::White
+    });
 
-impl Composition for PianoKey {
-    // TODO: use `Button` for:
-    //  - resizing the piano
-    //  - plinking the key
-    //  - selecting all notes with the keys pitch
-    type Body<'view> = TwoStack<Solid, Layers<(Solid, Text)>>;
+    let text = View::bottom_right(if pitch.chroma() == key.tonic {
+        ArcStr::from(pitch.name(key.sign))
+    } else {
+        ArcStr::new()
+    });
 
-    fn body(&self) -> Self::Body<'_> {
-        let top = if self.pitch.chroma().is_black_key() {
-            Solid::BLACK
-        } else {
-            Solid::WHITE
-        };
+    let bottom = View::Layers(vec![View::Solid(Color::White), text]);
 
-        let text = Text::bottom_right(if self.pitch.chroma() == self.key.tonic {
-            ArcStr::from(self.pitch.name(self.key.sign))
-        } else {
-            ArcStr::new()
-        });
-
-        let bottom = Layers::new((Solid::WHITE, text));
-
-        let constraints = [self.black_key_depth.get().constraint(), Constraint::Fill(1)];
-
-        TwoStack::horizontal((top, bottom), constraints)
+    View::Stack {
+        direction: Direction::Right,
+        elements: vec![top.quotated(black_key_depth.get()), bottom.fill_remaining()],
     }
 }

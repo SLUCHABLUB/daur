@@ -1,76 +1,31 @@
-use crate::app::Action;
-use crate::ui::{Length, Mapping, NonZeroLength, Offset, Point, Rectangle};
-use crate::view::{Direction, Feed, Text, View};
-use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
-use saturating_cast::SaturatingCast as _;
+use crate::ui::{Mapping, Offset};
+use crate::view::{feed, Direction, View};
+use std::num::NonZeroU32;
 
+// TODO: use `Button` for moving and scaling the overview
 /// A ruler of musical time
-#[derive(Clone, Debug)]
-pub struct Ruler {
-    /// The ui mapping used by the ruler
-    pub mapping: Mapping,
-    /// How far along the overview has been scrolled
-    pub offset: Offset,
-}
+pub fn ruler(mapping: Mapping, offset: Offset) -> View {
+    feed(Direction::Right, offset, move |index| {
+        if let Ok(bar_index) = usize::try_from(index) {
+            let bar = mapping.time_signature.bar_n(bar_index);
+            let bar_width = mapping.bar_width(bar);
+            let cell_width = mapping.grid.cell_width;
 
-impl View for Ruler {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, mouse_position: Point) {
-        Feed::new(Direction::Right, self.offset, |index| {
-            let Ok(index) = usize::try_from(index) else {
-                let first = self.mapping.time_signature.bar_n(0);
-                let width = self.mapping.bar_width(first);
-                let rule = negative_rule(index, width);
-                return (rule, width);
+            let cells = (bar_width / cell_width).ceil();
+            let Some(cells) = NonZeroU32::new(cells) else {
+                return View::EMPTY.quotated(bar_width);
             };
 
-            let bar = self.mapping.time_signature.bar_n(index);
+            View::Rule { index, cells }.quotated(bar_width)
+        } else {
+            let first = mapping.time_signature.bar_n(0);
+            let bar_width = mapping.bar_width(first);
 
-            let width = self.mapping.bar_width(bar);
-
-            let rule = rule(index, self.mapping.grid.cell_width, width);
-
-            (rule, width)
-        })
-        .render(area, buffer, mouse_position);
-    }
-
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {
-        // TODO: move or scale overview
-    }
-}
-
-type Rule = Text;
-
-fn rule(index: usize, cell_width: NonZeroLength, bar_width: Length) -> Rule {
-    let full_width = (bar_width / NonZeroLength::CHAR_WIDTH)
-        .round()
-        .saturating_cast();
-
-    let cell_count = (bar_width / cell_width).ceil() as usize;
-    let spaces_per_cell = cell_width.get() / NonZeroLength::CHAR_WIDTH;
-    let spaces_per_cell = spaces_per_cell.round().saturating_cast();
-
-    let mut cell = vec![b' '; spaces_per_cell];
-    if let Some(first) = cell.first_mut() {
-        *first = b'.';
-    }
-    let mut cells = cell.repeat(cell_count);
-    if let Some(first) = cells.first_mut() {
-        *first = b'|';
-    }
-
-    Text::top_right(arcstr::format!(
-        "{index:<1$}\n{}",
-        String::from_utf8_lossy(&cells),
-        full_width
-    ))
-}
-
-fn negative_rule(index: isize, bar_width: Length) -> Rule {
-    let width = (bar_width / NonZeroLength::CHAR_WIDTH)
-        .round()
-        .saturating_cast();
-
-    Text::top_right(arcstr::format!("{index:<1$}\n{:><1$}", "|", width))
+            View::Rule {
+                index,
+                cells: NonZeroU32::MIN,
+            }
+            .quotated(bar_width)
+        }
+    })
 }

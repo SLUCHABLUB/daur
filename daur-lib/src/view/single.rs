@@ -1,25 +1,20 @@
 //! A simple single-selection view
 
 use crate::cell::Cell;
-use crate::ui::Size;
-use crate::view::bordered::Bordered;
-use crate::view::homogenous::Stack;
-use crate::view::text::Text;
-use crate::view::{Button, Composition, HasSize, OnClick};
+use crate::view::{Direction, OnClick, View};
 use crate::ToArcStr;
 use arcstr::ArcStr;
 use crossterm::event::MouseButton;
 use std::fmt::Display;
+use std::sync::Arc;
 use strum::VariantArray;
-
-/// The type returned by [`selector`]
-pub type Selector<'cell, T> = Stack<Option<'cell, T>>;
 
 /// A simple single-selection view
 pub fn selector<T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
-    cell: &Cell<T>,
-) -> Selector<T> {
-    selector_with_formatter(cell, ToArcStr::to_arc_str)
+    cell: &Arc<Cell<T>>,
+    direction: Direction,
+) -> View {
+    selector_with_formatter(cell, direction, ToArcStr::to_arc_str)
 }
 
 /// A simple single-selection view that uses a custom formatter rather than [`Display`]
@@ -27,52 +22,30 @@ pub fn selector_with_formatter<
     T: Copy + PartialEq + VariantArray + Send + Sync,
     F: FnMut(&T) -> ArcStr,
 >(
-    cell: &Cell<T>,
+    cell: &Arc<Cell<T>>,
+    direction: Direction,
     mut formatter: F,
-) -> Selector<T> {
-    Stack::horizontal_sized(T::VARIANTS.iter().map(|variant| Option {
-        name: formatter(variant),
-        value: *variant,
-        cell,
-    }))
-    .spacing(1)
-}
+) -> View {
+    View::balanced_stack(
+        direction,
+        T::VARIANTS.iter().map(|variant| {
+            let name = formatter(variant);
 
-/// A selection option
-#[derive(Debug)]
-pub struct Option<'cell, T: Copy> {
-    name: ArcStr,
-    value: T,
-    cell: &'cell Cell<T>,
-}
+            let cell = Arc::clone(cell);
+            View::generator(move || {
+                let is_set = cell.get() == *variant;
 
-impl<T: Copy + PartialEq + Send + Sync> Composition for Option<'_, T> {
-    type Body<'view>
-        = Button<'view, Bordered<Text>>
-    where
-        Self: 'view;
+                let cell = Arc::clone(&cell);
+                let on_click = OnClick::new(move |button, _, _, _| {
+                    if button != MouseButton::Left {
+                        return;
+                    }
 
-    fn body(&self) -> Self::Body<'_> {
-        let is_set = self.cell.get() == self.value;
-        let name = ArcStr::clone(&self.name);
+                    cell.set(*variant);
+                });
 
-        let on_click = OnClick::new(|button, _, _, _| {
-            if button != MouseButton::Left {
-                return;
-            }
-
-            self.cell.set(self.value);
-        });
-
-        Button {
-            on_click,
-            content: Bordered::plain(Text::centred(name)).thickness(is_set),
-        }
-    }
-}
-
-impl<T: Copy + PartialEq + Send + Sync> HasSize for Option<'_, T> {
-    fn size(&self) -> Size {
-        self.body().size()
-    }
+                View::standard_button(name.clone(), on_click).with_thickness(is_set)
+            })
+        }),
+    )
 }

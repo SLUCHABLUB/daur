@@ -1,25 +1,23 @@
-use crate::keyboard::Key;
 use crate::popup::info::PopupInfo;
-use crate::popup::terminating::Terminating;
+use crate::popup::terminating::terminating;
 use crate::popup::Popup;
-use crate::ui::Length;
-use crate::view::heterogeneous::ThreeStack;
-use crate::view::{Bordered, Composition, HasSize as _, Text};
-use crate::{Action, Cell};
+use crate::view::{Direction, View};
+use crate::Cell;
 use arcstr::{format, literal, ArcStr};
-use crossterm::event::KeyCode;
-use ratatui::layout::{Constraint, Flex};
 use std::error::Error;
 use std::sync::Weak;
 
 const ACKNOWLEDGE: ArcStr = literal!("ok");
-const PADDING: Length = Length::CHAR_HEIGHT;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct ErrorPopup {
+    /// Info about the popup.
     pub info: PopupInfo,
+    /// The display representation of the error.
     pub display: ArcStr,
+    /// The debug representation of the error.
     pub debug: ArcStr,
+    /// Whether the acknowledge button is selected.
     pub selected: Cell<bool>,
 }
 
@@ -41,46 +39,18 @@ impl ErrorPopup {
         ArcStr::clone(&self.debug)
     }
 
-    pub fn handle_key(&self, key: Key, actions: &mut Vec<Action>) -> bool {
-        #[expect(clippy::wildcard_enum_match_arm, reason = "we only care about these")]
-        match key.code {
-            KeyCode::Enter if self.selected.get() => {
-                actions.push(Action::ClosePopup(self.info.this()));
-                true
-            }
-            KeyCode::Enter | KeyCode::Tab | KeyCode::BackTab => {
-                self.selected.set(!self.selected.get());
-                true
-            }
-            _ => false,
-        }
-    }
-}
+    pub fn view(&self) -> View {
+        let acknowledge_button = View::centred(ACKNOWLEDGE)
+            .bordered()
+            .with_thickness(self.selected.get());
 
-impl Composition for ErrorPopup {
-    type Body<'ignore> = ThreeStack<Text, Text, Terminating<Bordered<Text>>>;
-
-    fn body(&self) -> Self::Body<'_> {
-        let acknowledge_button =
-            Bordered::plain(Text::centred(ACKNOWLEDGE)).thickness(self.selected.get());
-        let constraints = [
-            Length::string_height(&self.display).constraint(),
-            Constraint::Fill(1),
-            acknowledge_button.size().height.constraint(),
-        ];
-
-        ThreeStack::vertical(
-            (
-                Text::top_left(self.display()),
-                Text::top_left(self.debug()),
-                Terminating {
-                    content: acknowledge_button,
-                    popup: self.info.this(),
-                },
-            ),
-            constraints,
+        View::spaced_stack(
+            Direction::Down,
+            [
+                View::top_left(self.display()),
+                View::top_left(self.debug()),
+                terminating(acknowledge_button, self.info.this()),
+            ],
         )
-        .flex(Flex::SpaceBetween)
-        .spacing(PADDING)
     }
 }

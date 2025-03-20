@@ -1,22 +1,20 @@
 use crate::clip::ClipSource;
-use rodio::Source;
 use std::collections::VecDeque;
 use std::time::Duration;
 
+/// The audio source of a track.
 #[derive(Debug)]
-pub struct TrackSource {
+pub struct Source {
     sample_rate: u32,
     sample: usize,
     clips: VecDeque<(usize, ClipSource)>,
 }
 
-impl TrackSource {
-    pub fn new(
-        sample_rate: u32,
-        clips: VecDeque<(usize, ClipSource)>,
-        sample: usize,
-    ) -> TrackSource {
-        TrackSource {
+impl Source {
+    /// Constructs a new source.
+    #[must_use]
+    pub fn new(sample_rate: u32, clips: VecDeque<(usize, ClipSource)>, sample: usize) -> Source {
+        Source {
             sample_rate,
             sample,
             clips,
@@ -24,7 +22,7 @@ impl TrackSource {
     }
 }
 
-impl Iterator for TrackSource {
+impl Iterator for Source {
     type Item = f32;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -49,7 +47,7 @@ impl Iterator for TrackSource {
     }
 }
 
-impl Source for TrackSource {
+impl rodio::Source for Source {
     fn current_frame_len(&self) -> Option<usize> {
         None
     }

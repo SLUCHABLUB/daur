@@ -1,62 +1,41 @@
-use crate::app::Action;
-use crate::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use crate::view::has_size::HasSize;
 use crate::view::{Alignment, View};
 use arcstr::ArcStr;
-use crossterm::event::MouseButton;
-use ratatui::buffer::Buffer;
-use ratatui::layout;
-use ratatui::text::Line;
-use ratatui::widgets::{Paragraph, Widget};
-use saturating_cast::SaturatingCast as _;
-use std::cmp::max;
 
-/// Some text
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct Text {
-    /// The text
-    pub string: ArcStr,
-    /// How the text should be aligned
-    pub alignment: Alignment,
-}
-
-impl Text {
+// TODO: replace with extension trait on ArcStr
+impl View {
     /// Constructs a top-left aligned text view
-    #[must_use]
-    pub fn top_left(string: ArcStr) -> Text {
-        Text {
+    pub fn top_left(string: ArcStr) -> Self {
+        View::Text {
             string,
             alignment: Alignment::TopLeft,
         }
     }
 
     /// Constructs a top-right aligned text view
-    #[must_use]
-    pub fn top_right(string: ArcStr) -> Text {
-        Text {
+    pub fn top_right(string: ArcStr) -> Self {
+        View::Text {
             string,
             alignment: Alignment::TopRight,
         }
     }
 
     /// Constructs a centered text view
-    #[must_use]
-    pub fn centred(string: ArcStr) -> Text {
-        Text {
+    pub fn centred(string: ArcStr) -> Self {
+        View::Text {
             string,
             alignment: Alignment::Centre,
         }
     }
 
     /// Constructs a bottom-right aligned text view
-    #[must_use]
-    pub fn bottom_right(string: ArcStr) -> Text {
-        Text {
+    pub fn bottom_right(string: ArcStr) -> Self {
+        View::Text {
             string,
             alignment: Alignment::BottomRight,
         }
     }
 
+    /* TODO: move to daur-tui
     fn paragraph(&self, height: Length) -> Paragraph {
         let alignment = match self.alignment {
             Alignment::TopLeft | Alignment::Left | Alignment::BottomLeft => layout::Alignment::Left,
@@ -88,26 +67,5 @@ impl Text {
 
         Paragraph::new(lines).alignment(alignment)
     }
-}
-
-impl View for Text {
-    fn render(&self, area: Rectangle, buffer: &mut Buffer, _: Point) {
-        Widget::render(self.paragraph(area.size.height), area.to_rect(), buffer);
-    }
-
-    fn click(&self, _: Rectangle, _: MouseButton, _: Point, _: &mut Vec<Action>) {}
-}
-
-impl HasSize for Text {
-    fn size(&self) -> Size {
-        let mut size = Size::ZERO;
-
-        for line in self.string.lines() {
-            size.width = max(size.width, Length::string_width(line));
-        }
-
-        size.height = Length::string_height(&self.string);
-
-        size
-    }
+     */
 }

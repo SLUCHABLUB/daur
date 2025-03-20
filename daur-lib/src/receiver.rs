@@ -20,10 +20,9 @@ impl<T> Receiver<T> for Vec<T> {
 
 impl<T> Receiver<T> for Sender<T> {
     fn send(&mut self, value: T) {
-        match Sender::send(self, value) {
-            Ok(()) => (),
+        if let Err(error) = Sender::send(self, value) {
             // The other end has been disconnected
-            Err(error) => drop(error.0),
+            drop(error.0);
         }
     }
 }
