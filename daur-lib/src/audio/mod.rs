@@ -3,11 +3,10 @@ mod source;
 pub use source::AudioSource;
 use std::cmp::max;
 
-use crate::colour::Colour;
 use crate::time::{Instant, Mapping, Period};
 use crate::ui::{Length, NonZeroLength, Point};
 use crate::view::Context;
-use crate::Ratio;
+use crate::{Colour, Ratio};
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{rational, Integer as _};

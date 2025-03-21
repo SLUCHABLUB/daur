@@ -1,8 +1,8 @@
-use crate::colour::Colour;
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::NonZeroLength;
 use crate::view::{Direction, View};
+use crate::Colour;
 use arcstr::ArcStr;
 
 // TODO: use `Button` for:

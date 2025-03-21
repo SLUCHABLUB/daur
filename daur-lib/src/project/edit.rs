@@ -1,6 +1,5 @@
 use crate::audio::Audio;
 use crate::clip::{Clip, ClipContent};
-use crate::colour::Colour;
 use crate::key::Key;
 use crate::notes::Notes;
 use crate::popup::Popup;
@@ -8,6 +7,7 @@ use crate::project::Action;
 use crate::ratio::Ratio;
 use crate::time::{Duration, Instant};
 use crate::track::Track;
+use crate::Colour;
 use arcstr::{literal, ArcStr};
 use hound::WavReader;
 use std::ffi::{OsStr, OsString};

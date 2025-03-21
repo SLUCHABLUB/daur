@@ -1,8 +1,7 @@
 //! A simple single-selection view
 
-use crate::cell::Cell;
 use crate::view::{Direction, OnClick, View};
-use crate::ToArcStr;
+use crate::{Cell, ToArcStr};
 use arcstr::ArcStr;
 use std::fmt::Display;
 use std::sync::Arc;

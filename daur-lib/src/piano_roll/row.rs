@@ -1,6 +1,6 @@
-use crate::colour::Colour;
 use crate::pitch::Pitch;
 use crate::view::View;
+use crate::Colour;
 
 pub fn row(pitch: Pitch) -> View {
     // TODO:

@@ -22,10 +22,9 @@ pub use feed::feed;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 
-use crate::colour::Colour;
 use crate::context::Menu;
 use crate::ui::{Length, Size};
-use crate::ArcCell;
+use crate::{ArcCell, Colour};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use itertools::Itertools as _;
