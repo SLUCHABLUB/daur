@@ -4,7 +4,7 @@ use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
 use crate::popup::Popup;
 use crate::sign::Sign;
-use crate::view::{multi, single, Direction, OnClick, View};
+use crate::view::{multi, single, Direction, OnClick, ToText as _, View};
 use crate::{project, Action, Cell};
 use arcstr::{literal, ArcStr};
 use bitbag::BitBag;
@@ -45,7 +45,7 @@ impl KeySelector {
         let buttons = View::spaced_stack(
             Direction::Right,
             vec![
-                terminating(View::centred(CANCEL).bordered(), self.info.this()),
+                terminating(CANCEL.centred().bordered(), self.info.this()),
                 terminating(
                     View::standard_button(
                         CONFIRM,

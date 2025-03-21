@@ -2,7 +2,7 @@ use crate::app::Action;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
 use crate::popup::Popup;
-use crate::view::{Direction, OnClick, View};
+use crate::view::{Direction, OnClick, ToText as _, View};
 use crate::ArcCell;
 use arcstr::{literal, ArcStr};
 use derive_more::Debug;
@@ -50,7 +50,7 @@ impl ExplorerPopup {
             ),
             self.info.this(),
         );
-        let cancel = terminating(View::centred(CANCEL).bordered(), self.info.this());
+        let cancel = terminating(CANCEL.centred().bordered(), self.info.this());
 
         let buttons = View::spaced_stack(Direction::Right, vec![cancel, confirm]);
 

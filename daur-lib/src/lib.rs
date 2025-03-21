@@ -41,3 +41,4 @@ pub use project::Project;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
 pub use string::ToArcStr;
+pub use view::ToText;
