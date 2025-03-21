@@ -2,14 +2,13 @@ mod action;
 
 pub use action::Action;
 
-use crate::arc_cell::ArcCell;
 use crate::piano_roll::piano_roll;
 use crate::popup::Popups;
 use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::{Direction, View};
-use crate::{ui, Cell, OptionArcCell, PianoRollSettings};
+use crate::{ui, ArcCell, Cell, OptionArcCell, PianoRollSettings};
 use derive_more::Debug;
 use rodio::cpal::traits::HostTrait as _;
 use rodio::cpal::{default_host, Host};

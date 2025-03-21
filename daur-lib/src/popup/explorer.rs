@@ -1,9 +1,9 @@
 use crate::app::Action;
-use crate::arc_cell::ArcCell;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
 use crate::popup::Popup;
 use crate::view::{Direction, OnClick, View};
+use crate::ArcCell;
 use arcstr::{literal, ArcStr};
 use derive_more::Debug;
 use std::path::Path;
