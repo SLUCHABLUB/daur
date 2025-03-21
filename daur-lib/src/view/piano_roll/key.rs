@@ -9,6 +9,7 @@ use arcstr::ArcStr;
 //  - resizing the piano
 //  - plinking the key
 //  - selecting all notes with the key's pitch
+/// Return the view for a key on the piano-roll piano.
 pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View {
     let top = View::Solid(if pitch.chroma().is_black_key() {
         Colour::BLACK

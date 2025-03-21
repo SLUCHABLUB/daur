@@ -11,6 +11,7 @@ mod ruler;
 mod text;
 
 pub mod multi;
+pub mod piano_roll;
 pub mod single;
 
 pub use alignment::Alignment;

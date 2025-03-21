@@ -12,7 +12,6 @@ mod key;
 mod lock;
 mod note;
 mod notes;
-mod piano_roll;
 mod pitch;
 mod popup;
 mod ratio;
@@ -36,7 +35,6 @@ pub use cell::{ArcCell, Cell, OptionArcCell};
 pub use changing::Changing;
 pub use clip::{Clip, ClipContent, ClipSource};
 pub use colour::Colour;
-pub use piano_roll::PianoRollSettings;
 pub use popup::{Popup, Popups};
 #[doc(inline)]
 pub use project::Project;

@@ -1,15 +1,15 @@
-// TODO: move this module to view
+//! Items pertaining to the piano roll.
 
 mod key;
 mod row;
 mod settings;
 
-pub use settings::PianoRollSettings;
+pub use key::piano_key;
+pub use row::row;
+pub use settings::Settings;
 
 use crate::interval::Interval;
 use crate::key::Key;
-use crate::piano_roll::key::piano_key;
-use crate::piano_roll::row::row;
 use crate::pitch::Pitch;
 use crate::ui::{Mapping, Offset};
 use crate::view::{feed, ruler, Direction, View};
@@ -22,10 +22,11 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 // The piano roll has a fixed lower pitch.
 // Resizing it will thus cause the bottom to be fixed.
 // Since the top is the thing you move this seems intuitive.
-pub fn piano_roll(
+/// Return the view for the piano roll.
+pub fn view(
     clip: Option<&Clip>,
     mapping: Mapping,
-    settings: PianoRollSettings,
+    settings: Settings,
     key: &Changing<Key>,
 ) -> View {
     let Some(_clip) = clip else {

@@ -2,13 +2,13 @@ mod action;
 
 pub use action::Action;
 
-use crate::piano_roll::piano_roll;
 use crate::popup::Popups;
 use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
-use crate::view::{Direction, View};
-use crate::{ui, ArcCell, Cell, OptionArcCell, PianoRollSettings};
+use crate::view::piano_roll::Settings;
+use crate::view::{piano_roll, Direction, View};
+use crate::{ui, ArcCell, Cell, OptionArcCell};
 use derive_more::Debug;
 use rodio::cpal::traits::HostTrait as _;
 use rodio::cpal::{default_host, Host};
@@ -59,7 +59,7 @@ pub struct App {
     /// How far to the right the overview is offset.
     pub overview_offset: Cell<Offset>,
     /// The settings regarding the piano roll.
-    pub piano_roll_settings: Cell<PianoRollSettings>,
+    pub piano_roll_settings: Cell<Settings>,
 }
 
 impl App {
@@ -89,7 +89,7 @@ impl App {
 
             grid: Grid::default(),
             overview_offset: Cell::new(Offset::ZERO),
-            piano_roll_settings: Cell::new(PianoRollSettings::default()),
+            piano_roll_settings: Cell::new(Settings::default()),
         }
     }
 
@@ -146,7 +146,7 @@ impl App {
                         self.playback_position(),
                     )
                     .fill_remaining(),
-                piano_roll(
+                piano_roll::view(
                     self.project
                         .clip(
                             self.selected_track_index.get(),
