@@ -9,7 +9,7 @@ use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
 use ratatui::widgets::canvas::Canvas;
-use ratatui::widgets::{Block, Paragraph, Widget as _};
+use ratatui::widgets::{Block, Clear, Paragraph, Widget as _};
 use ratatui::{layout, DefaultTerminal};
 use ratatui_explorer::{FileExplorer, Theme};
 use saturating_cast::SaturatingCast as _;
@@ -43,12 +43,14 @@ pub fn spawn_draw_thread(app: Arc<App>, mut terminal: DefaultTerminal) -> JoinHa
             for popup in app.popups.to_stack() {
                 let area = rectangle_to_rect(popup.area_in_window(rect_to_rectangle(area)));
 
+                Clear.render(area, buffer);
                 render(&popup.view(), area, buffer);
             }
 
             if let Some(menu) = CONTEXT_MENU.get() {
                 let (area, view) = &*menu;
 
+                Clear.render(*area, buffer);
                 render(view, *area, buffer);
             }
         });
