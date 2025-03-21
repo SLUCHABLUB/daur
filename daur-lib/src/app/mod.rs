@@ -28,10 +28,9 @@ pub struct App {
     /// When playback started.
     /// `None` means that playback is paused.
     pub playback_start: Cell<Option<SystemTime>>,
-    // TODO: allow changing
     /// The playback-audio host.
     #[debug(ignore)]
-    pub host: Host,
+    pub host: ArcCell<Host>,
     /// The playback-audio device.
     #[debug(ignore)]
     pub device: OptionArcCell<Device>,
@@ -69,6 +68,7 @@ impl App {
     pub fn new() -> App {
         let host = default_host();
         let device = OptionArcCell::from_value(host.default_output_device());
+        let host = ArcCell::from_value(host);
 
         App {
             controls: ArcCell::from_value(HashMap::new()),
