@@ -3,7 +3,7 @@ use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::{Signature, Tempo};
 use crate::ui::Length;
-use crate::view::{Direction, OnClick, View};
+use crate::view::{Direction, OnClick, ToText as _, View};
 use crate::ToArcStr as _;
 use arcstr::{literal, ArcStr};
 
@@ -57,10 +57,10 @@ pub fn bar(
 
     let left_side = View::spaced_stack(
         Direction::Right,
-        vec![View::centred(literal!("TODO")), fallbacks],
+        vec![literal!("TODO").centred(), fallbacks],
     );
 
-    let right_side = View::centred(literal!("TODO"));
+    let right_side = literal!("TODO").centred();
 
     View::Stack {
         direction: Direction::Right,

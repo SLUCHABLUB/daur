@@ -1,7 +1,7 @@
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::NonZeroLength;
-use crate::view::{Direction, View};
+use crate::view::{Alignment, Direction, ToText as _, View};
 use crate::Colour;
 use arcstr::ArcStr;
 
@@ -17,11 +17,12 @@ pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View
         Colour::WHITE
     });
 
-    let text = View::bottom_right(if pitch.chroma() == key.tonic {
+    let text = if pitch.chroma() == key.tonic {
         ArcStr::from(pitch.name(key.sign))
     } else {
         ArcStr::new()
-    });
+    }
+    .aligned_to(Alignment::BottomRight);
 
     let bottom = View::Layers(vec![View::Solid(Colour::WHITE), text]);
 

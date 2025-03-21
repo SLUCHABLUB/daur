@@ -1,7 +1,7 @@
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
 use crate::popup::Popup;
-use crate::view::{Direction, View};
+use crate::view::{Alignment, Direction, ToText as _, View};
 use crate::Cell;
 use arcstr::{format, literal, ArcStr};
 use std::error::Error;
@@ -40,15 +40,16 @@ impl ErrorPopup {
     }
 
     pub fn view(&self) -> View {
-        let acknowledge_button = View::centred(ACKNOWLEDGE)
+        let acknowledge_button = ACKNOWLEDGE
+            .centred()
             .bordered()
             .with_thickness(self.selected.get());
 
         View::spaced_stack(
             Direction::Down,
             [
-                View::top_left(self.display()),
-                View::top_left(self.debug()),
+                self.display().aligned_to(Alignment::TopLeft),
+                self.debug().aligned_to(Alignment::TopLeft),
                 terminating(acknowledge_button, self.info.this()),
             ],
         )

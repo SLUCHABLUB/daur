@@ -12,7 +12,7 @@ use crate::interval::Interval;
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::{Mapping, Offset};
-use crate::view::{feed, ruler, Direction, View};
+use crate::view::{feed, ruler, Direction, ToText as _, View};
 use crate::{Changing, Clip};
 use arcstr::{literal, ArcStr};
 use saturating_cast::SaturatingCast as _;
@@ -30,7 +30,7 @@ pub fn view(
     key: &Changing<Key>,
 ) -> View {
     let Some(_clip) = clip else {
-        return View::centred(NO_CLIP_SELECTED);
+        return NO_CLIP_SELECTED.centred();
     };
 
     let roll_start = mapping.instant(settings.piano_depth.get());

@@ -22,6 +22,7 @@ pub use direction::Direction;
 pub use feed::feed;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
+pub use text::ToText;
 
 use crate::context::Menu;
 use crate::ui::{Length, Size};

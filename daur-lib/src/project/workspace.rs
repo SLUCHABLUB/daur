@@ -2,7 +2,7 @@ use crate::project::{Action, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::time::Instant;
 use crate::track::{overview, settings, Track};
 use crate::ui::{Length, Offset};
-use crate::view::{ruler, Direction, OnClick, View};
+use crate::view::{ruler, Direction, OnClick, ToText as _, View};
 use crate::{time, ui};
 use arcstr::literal;
 use std::sync::Arc;
@@ -55,7 +55,7 @@ pub(crate) fn workspace(
     ));
 
     // TODO: put something here?
-    let empty_space = View::centred(literal!(":)"));
+    let empty_space = literal!(":)").centred();
 
     let ruler = ruler(ui_mapping, overview_offset);
     let ruler_row = View::Stack {
