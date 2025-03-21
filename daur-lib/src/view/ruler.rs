@@ -13,7 +13,7 @@ pub fn ruler(mapping: Mapping, offset: Offset) -> View {
 
             let cells = (bar_width / cell_width).ceil();
             let Some(cells) = NonZeroU32::new(cells) else {
-                return View::EMPTY.quotated(bar_width);
+                return View::Empty.quotated(bar_width);
             };
 
             View::Rule { index, cells }.quotated(bar_width)

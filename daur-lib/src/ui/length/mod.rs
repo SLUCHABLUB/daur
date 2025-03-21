@@ -4,7 +4,6 @@ pub use non_zero::NonZeroLength;
 
 use crate::view::Quotum;
 use crate::Ratio;
-use ratatui::layout::Spacing;
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU32;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, SubAssign};
@@ -76,12 +75,6 @@ impl Length {
     #[must_use]
     pub fn quotum(self) -> Quotum {
         Quotum::Exact(self)
-    }
-}
-
-impl From<Length> for Spacing {
-    fn from(length: Length) -> Self {
-        Spacing::Space(length.inner)
     }
 }
 

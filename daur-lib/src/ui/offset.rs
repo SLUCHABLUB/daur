@@ -1,5 +1,4 @@
 use crate::ui::Length;
-use ratatui::layout::Spacing;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
@@ -61,15 +60,6 @@ impl Offset {
 impl From<Length> for Offset {
     fn from(length: Length) -> Self {
         Offset::new(i32::from(length.inner()))
-    }
-}
-
-impl From<&Spacing> for Offset {
-    fn from(spacing: &Spacing) -> Self {
-        match spacing {
-            Spacing::Space(space) => Offset::new(i32::from(*space)),
-            Spacing::Overlap(overlap) => -Offset::new(i32::from(*overlap)),
-        }
     }
 }
 

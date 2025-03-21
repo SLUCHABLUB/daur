@@ -1,5 +1,7 @@
 use daur::ui::{Length, Point, Rectangle, Size};
+use daur::Colour;
 use ratatui::layout::{Position, Rect, Size as RatatuiSize};
+use ratatui::style::Color;
 
 pub fn position_to_point(position: Position) -> Point {
     Point {
@@ -12,6 +14,13 @@ pub fn ratatui_to_size(size: RatatuiSize) -> Size {
     Size {
         width: Length::new(size.width),
         height: Length::new(size.height),
+    }
+}
+
+pub fn size_to_ratatui(size: Size) -> RatatuiSize {
+    RatatuiSize {
+        width: size.width.inner(),
+        height: size.height.inner(),
     }
 }
 
@@ -29,4 +38,9 @@ pub fn rectangle_to_rect(rectangle: Rectangle) -> Rect {
         width: rectangle.size.width.inner(),
         height: rectangle.size.height.inner(),
     }
+}
+
+pub fn approximate_colour(colour: Colour) -> Color {
+    // TODO: support lower bit-depth colours
+    Color::Rgb(colour.red, colour.green, colour.blue)
 }

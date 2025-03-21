@@ -2,14 +2,14 @@ mod action;
 
 pub use action::Action;
 
-use crate::clone_cell::ArcCell;
+use crate::arc_cell::ArcCell;
 use crate::piano_roll::piano_roll;
 use crate::popup::Popups;
 use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::{Direction, View};
-use crate::{ui, Cell, PianoRollSettings};
+use crate::{ui, Cell, OptionArcCell, PianoRollSettings};
 use derive_more::Debug;
 use rodio::cpal::traits::HostTrait as _;
 use rodio::cpal::{default_host, Host};
@@ -35,7 +35,7 @@ pub struct App {
     pub host: Host,
     /// The playback-audio device.
     #[debug(ignore)]
-    pub device: ArcCell<Option<Device>>,
+    pub device: OptionArcCell<Device>,
 
     /// The popups manager.
     pub popups: Popups,
@@ -69,7 +69,7 @@ impl App {
     #[must_use]
     pub fn new() -> App {
         let host = default_host();
-        let device = ArcCell::from_value(host.default_output_device());
+        let device = OptionArcCell::from_value(host.default_output_device());
 
         App {
             controls: ArcCell::from_value(HashMap::new()),

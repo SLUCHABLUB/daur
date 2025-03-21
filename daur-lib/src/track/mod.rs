@@ -4,7 +4,7 @@ mod overview;
 mod settings;
 mod source;
 
-pub use overview::{open_import_audio_popup, overview};
+pub use overview::overview;
 pub use settings::settings;
 pub use source::Source;
 

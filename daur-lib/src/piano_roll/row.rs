@@ -1,6 +1,6 @@
+use crate::colour::Colour;
 use crate::pitch::Pitch;
 use crate::view::View;
-use ratatui::style::Color;
 
 pub fn row(pitch: Pitch) -> View {
     // TODO:
@@ -8,9 +8,9 @@ pub fn row(pitch: Pitch) -> View {
     //  - draw grid
     //  - highlight key based on settings
     let colour = if (pitch - Pitch::A440).semitones() % 2 == 0 {
-        Color::Gray
+        Colour::gray_scale(0xAA)
     } else {
-        Color::DarkGray
+        Colour::gray_scale(0x55)
     };
 
     // TODO: use `Button` for

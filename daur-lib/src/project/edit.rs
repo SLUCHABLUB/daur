@@ -1,5 +1,6 @@
 use crate::audio::Audio;
 use crate::clip::{Clip, ClipContent};
+use crate::colour::Colour;
 use crate::key::Key;
 use crate::notes::Notes;
 use crate::popup::Popup;
@@ -9,19 +10,26 @@ use crate::time::{Duration, Instant};
 use crate::track::Track;
 use arcstr::{literal, ArcStr};
 use hound::WavReader;
-use ratatui::style::Color;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 use std::sync::Arc;
 use thiserror::Error;
 
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
-const DEFAULT_NOTES_COLOUR: Color = Color::Magenta;
+const DEFAULT_NOTES_COLOUR: Colour = Colour {
+    red: 255,
+    green: 0,
+    blue: 255,
+};
 const DEFAULT_NOTES_DURATION: Duration = Duration {
     whole_notes: Ratio::integer(4),
 };
 
-const DEFAULT_AUDIO_COLOUR: Color = Color::Green;
+const DEFAULT_AUDIO_COLOUR: Colour = Colour {
+    red: 0,
+    green: 255,
+    blue: 0,
+};
 
 #[derive(Debug, Error)]
 #[error("The format `{}` is not (yet) supported", format.to_string_lossy())]

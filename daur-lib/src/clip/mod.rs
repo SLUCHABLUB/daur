@@ -6,9 +6,9 @@ pub use content::ClipContent;
 pub use overview::overview;
 pub use source::ClipSource;
 
+use crate::colour::Colour;
 use crate::time::{Instant, Mapping, Period};
 use arcstr::ArcStr;
-use ratatui::style::Color;
 
 /// A clip inside a [`Track`]
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -16,7 +16,7 @@ pub struct Clip {
     /// The name of the clip
     pub name: ArcStr,
     /// The colour of the clip
-    pub colour: Color,
+    pub colour: Colour,
     /// The content of the clip
     pub content: ClipContent,
 }

@@ -3,6 +3,7 @@ mod source;
 pub use source::AudioSource;
 use std::cmp::max;
 
+use crate::colour::Colour;
 use crate::time::{Instant, Mapping, Period};
 use crate::ui::{Length, NonZeroLength, Point};
 use crate::view::Context;
@@ -10,7 +11,6 @@ use crate::Ratio;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{rational, Integer as _};
-use ratatui::prelude::Color;
 use saturating_cast::SaturatingCast as _;
 use std::io::Read;
 use std::num::{FpCategory, NonZeroU16, NonZeroU32};
@@ -141,7 +141,7 @@ impl Audio {
 
                     let y = context_size.height * ratio;
 
-                    context.draw_point(Point { x, y }, Color::Reset);
+                    context.draw_point(Point { x, y }, Colour::WHITE);
                 });
         } else {
             // TODO: float lengths

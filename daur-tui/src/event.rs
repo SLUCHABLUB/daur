@@ -1,4 +1,6 @@
-use crate::convert::{position_to_point, ratatui_to_size, rect_to_rectangle, rectangle_to_rect};
+use crate::convert::{
+    position_to_point, ratatui_to_size, rect_to_rectangle, rectangle_to_rect, size_to_ratatui,
+};
 use crate::draw::{SHOULD_REDRAW, WINDOW_AREA};
 use crate::SHOULD_EXIT;
 use crossterm::event::{
@@ -6,7 +8,7 @@ use crossterm::event::{
 };
 use daur::ui::{Length, Vector};
 use daur::view::{Direction, View};
-use daur::{Action, App, Cell};
+use daur::{Action, App, Cell, OptionArcCell};
 use ratatui::layout::{Position, Rect};
 use ratatui::widgets::Block;
 use ratatui_explorer::FileExplorer;
@@ -16,6 +18,7 @@ use std::sync::Arc;
 use std::thread::{spawn, JoinHandle};
 
 pub static MOUSE_POSITION: Cell<Position> = Cell::new(Position::ORIGIN);
+pub static CONTEXT_MENU: OptionArcCell<(Rect, View)> = OptionArcCell::none();
 
 pub fn spawn_events_thread(app: Arc<App>) -> JoinHandle<io::Error> {
     spawn(move || loop {
@@ -75,31 +78,43 @@ fn handle_mouse_event(
         MouseEventKind::Down(button) => {
             let mut actions = Vec::new();
 
-            let mut broke = false;
+            let mut consumed = false;
+
+            if let Some(menu) = CONTEXT_MENU.get() {
+                let (area, view) = &*menu;
+
+                if area.contains(MOUSE_POSITION.get()) {
+                    click(view, button, *area, MOUSE_POSITION.get(), &mut actions);
+                    consumed = true;
+                } else {
+                    CONTEXT_MENU.set(None);
+                }
+            }
 
             for popup in app.popups.to_stack().into_iter().rev() {
+                if consumed {
+                    break;
+                }
+
                 let area =
                     rectangle_to_rect(popup.area_in_window(rect_to_rectangle(WINDOW_AREA.get())));
+
                 if area.contains(MOUSE_POSITION.get()) {
                     click(
-                        popup.view(),
+                        &popup.view(),
                         button,
                         area,
                         MOUSE_POSITION.get(),
                         &mut actions,
                     );
-                    broke = true;
-                    break;
-                }
 
-                if popup.info().unimportant {
-                    actions.push(Action::ClosePopup(popup.info().this()));
+                    consumed = true;
                 }
             }
 
-            if !broke {
+            if !consumed {
                 click(
-                    app.main_view(),
+                    &app.main_view(),
                     button,
                     WINDOW_AREA.get(),
                     MOUSE_POSITION.get(),
@@ -133,7 +148,7 @@ fn handle_mouse_event(
 }
 
 fn click(
-    view: View,
+    view: &View,
     button: MouseButton,
     area: Rect,
     position: Position,
@@ -146,7 +161,7 @@ fn click(
             thick: _,
             content,
         } => click(
-            *content,
+            content,
             button,
             Block::bordered().inner(area),
             position,
@@ -157,20 +172,35 @@ fn click(
                 x: position.x.saturating_sub(area.x),
                 y: position.y.saturating_sub(area.y),
             };
-            on_click.run(
-                button,
-                ratatui_to_size(area.as_size()),
-                position_to_point(relative_position),
-                actions,
-            );
 
-            click(*content, button, area, position, actions);
+            if button == MouseButton::Left {
+                on_click.run(
+                    ratatui_to_size(area.as_size()),
+                    position_to_point(relative_position),
+                    actions,
+                );
+            }
+
+            click(content, button, area, position, actions);
         }
         View::Canvas { .. }
         | View::CursorWindow { .. }
+        | View::Empty
         | View::Rule { .. }
         | View::Solid(_)
         | View::Text { .. } => (),
+        View::Contextual { menu, view } => {
+            if button == MouseButton::Right {
+                let view = menu.view();
+
+                let size = size_to_ratatui(view.minimum_size());
+                let area = Rect::from((position, size));
+
+                CONTEXT_MENU.set_some_value((area, menu.view()));
+            }
+
+            click(view, button, area, position, actions);
+        }
         View::FileSelector { selected_file } => {
             let Ok(mut explorer) = FileExplorer::new() else {
                 return;
@@ -188,12 +218,12 @@ fn click(
 
             selected_file.set(Arc::from(file.path().as_path()));
         }
-        View::Generator(generator) => click(generator(), button, area, position, actions),
+        View::Generator(generator) => click(&generator(), button, area, position, actions),
         View::Hoverable { default, hovered } => click(
             if area.contains(position) {
-                *hovered
+                hovered
             } else {
-                *default
+                default
             },
             button,
             area,
@@ -202,11 +232,11 @@ fn click(
         ),
         // .rev() so that the outermost layers get clicked first
         View::Layers(layers) => layers
-            .into_iter()
+            .iter()
             .rev()
             .for_each(|layer| click(layer, button, area, position, actions)),
         View::SizeInformed(generator) => click(
-            generator(ratatui_to_size(area.as_size())),
+            &generator(ratatui_to_size(area.as_size())),
             button,
             area,
             position,
@@ -218,12 +248,12 @@ fn click(
         } => {
             let quota: Vec<_> = elements.iter().map(|quotated| quotated.quotum).collect();
             let rectangles = rect_to_rectangle(area)
-                .split(direction, &quota)
+                .split(*direction, &quota)
                 .map(rectangle_to_rect);
 
             for (area, quoted) in zip(rectangles, elements) {
                 if area.contains(position) {
-                    click(quoted.view, button, area, position, actions);
+                    click(&quoted.view, button, area, position, actions);
                     // Stack elements are non-overlapping
                     break;
                 }

@@ -64,10 +64,9 @@ impl Display for NoSelectedDevice {
 impl Error for NoSelectedDevice {}
 
 fn get_sink(app: &App) -> Result<(Sink, OutputStream), Arc<Popup>> {
-    let device = &*app.device.get();
-    let device = device.as_ref().ok_or(Popup::error(NoSelectedDevice))?;
+    let device = app.device.get().ok_or(Popup::error(NoSelectedDevice))?;
 
-    let (output_stream, handle) = OutputStream::try_from_device(device).map_err(Popup::error)?;
+    let (output_stream, handle) = OutputStream::try_from_device(&device).map_err(Popup::error)?;
     let sink = Sink::try_new(&handle).map_err(Popup::error)?;
 
     Ok((sink, output_stream))

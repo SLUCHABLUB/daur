@@ -38,7 +38,7 @@ pub fn piano_roll(
     let ruler = View::Stack {
         direction: Direction::Right,
         elements: vec![
-            View::EMPTY.quotated(settings.piano_depth.get()),
+            View::Empty.quotated(settings.piano_depth.get()),
             ruler(mapping, Offset::negative(settings.x_offset)).fill_remaining(),
         ],
     };

@@ -22,12 +22,13 @@ pub use feed::feed;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 
-use crate::clone_cell::ArcCell;
+use crate::arc_cell::ArcCell;
+use crate::colour::Colour;
+use crate::context::Menu;
 use crate::ui::{Length, Size};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use itertools::Itertools as _;
-use ratatui::style::Color;
 use std::cmp::max;
 use std::num::NonZeroU32;
 use std::path::Path;
@@ -37,7 +38,7 @@ type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 
 /// A UI element.
 #[must_use = "A view must be processed in some way"]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum View {
     /// A view with a border and optional title.
     Bordered {
@@ -59,16 +60,26 @@ pub enum View {
     /// See [`Context`].
     Canvas {
         /// The background colour.
-        background: Color,
+        background: Colour,
         /// The function that paints the canvas.
         #[debug(skip)]
         painter: Box<Painter>,
+    },
+    /// A view with a custom context-menu.
+    Contextual {
+        /// The context menu.
+        menu: Menu,
+        /// The view.
+        view: Box<View>,
     },
     /// A view with a musical context.
     CursorWindow {
         /// How far from the left the cursor is positioned.
         offset: Length,
     },
+    /// An empty (transparent) view.
+    #[default]
+    Empty,
     /// A view into the file system.
     FileSelector {
         /// The currently selected file.
@@ -95,7 +106,7 @@ pub enum View {
     /// A view that needs to know its containers size.
     SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
     /// A solid colour.
-    Solid(Color),
+    Solid(Colour),
     /// A stack of views.
     Stack {
         /// The direction in which the elements are laid out.
@@ -113,9 +124,6 @@ pub enum View {
 }
 
 impl View {
-    /// An empty (transparent) view.
-    pub const EMPTY: View = View::Solid(Color::Reset);
-
     /// Puts a border around `self`.
     pub fn bordered(self) -> Self {
         self.titled(ArcStr::new())
@@ -149,13 +157,21 @@ impl View {
     }
 
     /// Constructs a [`View::Canvas`].
-    pub fn canvas<Painter>(background: Color, painter: Painter) -> View
+    pub fn canvas<Painter>(background: Colour, painter: Painter) -> View
     where
         Painter: Fn(&mut dyn Context) + Send + Sync + 'static,
     {
         View::Canvas {
             background,
             painter: Box::new(painter),
+        }
+    }
+
+    /// Adds a context menu to the widget.
+    pub fn context(self, menu: Menu) -> View {
+        View::Contextual {
+            menu,
+            view: Box::new(self),
         }
     }
 
@@ -198,7 +214,7 @@ impl View {
             elements: elements
                 .into_iter()
                 .map(View::quotated_minimally)
-                .intersperse_with(|| View::EMPTY.fill_remaining())
+                .intersperse_with(|| View::Empty.fill_remaining())
                 .collect(),
         }
     }
@@ -224,9 +240,11 @@ impl View {
             } => content.minimum_size(),
             View::Canvas { .. }
             | View::CursorWindow { .. }
+            | View::Empty
             | View::FileSelector { .. }
             | View::SizeInformed(_)
             | View::Solid(_) => Size::ZERO,
+            View::Contextual { menu: _, view } => view.minimum_size(),
             View::Generator(generator) => generator().minimum_size(),
             View::Hoverable { default, hovered } => {
                 let default = default.minimum_size();

@@ -4,7 +4,6 @@ use crate::cell::Cell;
 use crate::view::{Direction, OnClick, View};
 use crate::ToArcStr;
 use arcstr::ArcStr;
-use crossterm::event::MouseButton;
 use std::fmt::Display;
 use std::sync::Arc;
 use strum::VariantArray;
@@ -36,11 +35,7 @@ pub fn selector_with_formatter<
                 let is_set = cell.get() == *variant;
 
                 let cell = Arc::clone(&cell);
-                let on_click = OnClick::new(move |button, _, _, _| {
-                    if button != MouseButton::Left {
-                        return;
-                    }
-
+                let on_click = OnClick::new(move |_, _, _| {
                     cell.set(*variant);
                 });
 

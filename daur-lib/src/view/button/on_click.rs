@@ -1,13 +1,11 @@
 use crate::receiver::Receiver;
 use crate::ui::{Point, Size};
 use crate::{project, Action};
-use crossterm::event::MouseButton;
 use std::any::type_name;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
-type OnClickFunction =
-    dyn Fn(MouseButton, Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static;
+type OnClickFunction = dyn Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static;
 
 /// An action to take when a button is clicked
 #[derive(Default)]
@@ -17,9 +15,7 @@ pub struct OnClick {
 
 impl OnClick {
     /// Construct a new [`OnClick`] from a function.
-    pub fn new<
-        F: Fn(MouseButton, Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static,
-    >(
+    pub fn new<F: Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static>(
         function: F,
     ) -> Self {
         OnClick {
@@ -28,28 +24,22 @@ impl OnClick {
     }
 
     /// Runs the function.
-    pub fn run(
-        &self,
-        mouse_button: MouseButton,
-        size: Size,
-        position: Point,
-        receiver: &mut dyn Receiver<Action>,
-    ) {
+    pub fn run(&self, size: Size, position: Point, receiver: &mut dyn Receiver<Action>) {
         if let Some(function) = self.function.as_ref() {
-            function(mouse_button, size, position, receiver);
+            function(size, position, receiver);
         }
     }
 }
 
 impl From<Action> for OnClick {
     fn from(action: Action) -> Self {
-        OnClick::new(move |_, _, _, actions| actions.send(action.clone()))
+        OnClick::new(move |_, _, actions| actions.send(action.clone()))
     }
 }
 
 impl From<project::Action> for OnClick {
     fn from(action: project::Action) -> Self {
-        OnClick::new(move |_, _, _, actions| actions.send(Action::Project(action.clone())))
+        OnClick::new(move |_, _, actions| actions.send(Action::Project(action.clone())))
     }
 }
 

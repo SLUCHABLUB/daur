@@ -1,35 +1,12 @@
 use crate::app::Action;
-use crate::popup::Popup;
+use crate::context::Menu;
 use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
 use crate::view::{cursor_window, feed, Direction, OnClick, View};
-use crate::{clip, project, time, ui};
-use arcstr::{literal, ArcStr};
-use crossterm::event::MouseButton;
+use crate::{clip, time, ui};
 use num::Integer as _;
-use std::path::Path;
 use std::sync::Arc;
-
-const IMPORT_AUDIO: ArcStr = literal!("import audio");
-const ADD_NOTES: ArcStr = literal!("add notes");
-const OPEN_PIANO_ROLL: ArcStr = literal!("open piano roll");
-
-/// Opens a popup for importing audio.
-#[must_use]
-pub fn open_import_audio_popup() -> Action {
-    let action = move |file: &Path| Action::import_audio(file);
-
-    Action::OpenPopup(Popup::explorer(IMPORT_AUDIO, action))
-}
-
-fn right_click_menu() -> Arc<Popup> {
-    Popup::unimportant_buttons([
-        (IMPORT_AUDIO, open_import_audio_popup()),
-        (ADD_NOTES, Action::Project(project::Action::AddNotes)),
-        (OPEN_PIANO_ROLL, Action::OpenPianoRoll),
-    ])
-}
 
 /// Returns the track overview.
 pub fn overview(
@@ -51,7 +28,7 @@ pub fn overview(
         View::Layers(vec![
             feed(Direction::Right, offset, move |index| {
                 let Ok(index) = usize::try_from(index) else {
-                    return View::EMPTY.quotated(offset.abs());
+                    return View::Empty.quotated(offset.abs());
                 };
 
                 let (clip_index, parity) = index.div_rem(&2);
@@ -77,11 +54,11 @@ pub fn overview(
 
                     let size = next_clip_start - last_clip_end;
 
-                    return View::EMPTY.quotated(size);
+                    return View::Empty.quotated(size);
                 }
 
                 let Some((start, clip)) = track.clips.iter().nth(clip_index) else {
-                    return View::EMPTY.fill_remaining();
+                    return View::Empty.fill_remaining();
                 };
 
                 let clip_period = clip.period(*start, &time_mapping);
@@ -89,7 +66,7 @@ pub fn overview(
 
                 let Some(visible_period) = Period::intersection(overview_period, clip_period)
                 else {
-                    return View::EMPTY.quotated(clip_width);
+                    return View::Empty.quotated(clip_width);
                 };
 
                 let selected = selected_clip_index == clip_index;
@@ -108,14 +85,10 @@ pub fn overview(
             cursor_window(cursor, cursor_mapping, offset),
         ])
     })
-    .on_click(OnClick::new(move |button, _, position, actions| {
+    .on_click(OnClick::new(move |_, _, actions| {
         // TODO: move, select or open clips
-        if button == MouseButton::Left {
-            actions.send(Action::SelectTrack(index));
-        }
 
-        if button == MouseButton::Right {
-            actions.send(Action::OpenPopup(right_click_menu().at(position)));
-        }
+        actions.send(Action::SelectTrack(index));
     }))
+    .context(Menu::track_overview())
 }

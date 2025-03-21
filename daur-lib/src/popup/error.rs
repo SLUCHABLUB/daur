@@ -9,7 +9,7 @@ use std::sync::Weak;
 
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub struct ErrorPopup {
     /// Info about the popup.
     pub info: PopupInfo,

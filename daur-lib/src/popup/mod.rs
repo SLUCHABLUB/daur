@@ -44,27 +44,8 @@ impl Popup {
     where
         B: IntoIterator<Item = (ArcStr, Action)>,
     {
-        Self::_buttons(buttons, |this| PopupInfo::new(ArcStr::new(), this))
-    }
-
-    /// Constructs a new button panel that closes when unfocused.
-    pub fn unimportant_buttons<B>(buttons: B) -> Arc<Popup>
-    where
-        B: IntoIterator<Item = (ArcStr, Action)>,
-    {
-        Self::_buttons(buttons, |this| {
-            let mut info = PopupInfo::new(ArcStr::new(), this);
-            info.unimportant = true;
-            info
-        })
-    }
-
-    fn _buttons<B>(buttons: B, info: impl FnOnce(Weak<Popup>) -> PopupInfo) -> Arc<Popup>
-    where
-        B: IntoIterator<Item = (ArcStr, Action)>,
-    {
         Arc::new_cyclic(|this| {
-            let info = info(Weak::clone(this));
+            let info = PopupInfo::new(ArcStr::new(), Weak::clone(this));
 
             Popup::Buttons(ButtonPanel {
                 buttons: buttons.into_iter().collect(),

@@ -21,7 +21,3 @@ thiserror = "2.0.11"
 
 # TODO: remove so that different UIs can use their own audio (but maybe provide a feature for an implementation)
 rodio = "0.20.1"
-
-# TODO: remove these and make this crate UI agnostic
-crossterm = { version = "0.28.1", features = ["serde"] }
-ratatui = { version = "0.29.0" }

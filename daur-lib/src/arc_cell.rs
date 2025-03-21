@@ -3,31 +3,37 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 
+/// A cell containing an [atomically reference counted](Arc) value.
 pub struct ArcCell<T: ?Sized> {
     lock: Lock<Arc<T>>,
 }
 
 impl<T: ?Sized> ArcCell<T> {
+    /// Construct a new cell from a pointer.
     pub fn new(value: Arc<T>) -> ArcCell<T> {
         ArcCell {
             lock: Lock::new(value),
         }
     }
 
+    /// Return a pointer to the value.
     pub fn get(&self) -> Arc<T> {
         self.lock.read().clone()
     }
 
+    /// Sets the pointer to a new value.
     pub fn set(&self, value: Arc<T>) {
         *self.lock.write() = value;
     }
 }
 
 impl<T: Sized> ArcCell<T> {
+    /// Construct a new cell from a value.
     pub fn from_value(value: T) -> ArcCell<T> {
         ArcCell::new(Arc::new(value))
     }
 
+    /// Sets the value.
     pub fn set_value(&self, value: T) {
         self.set(Arc::new(value));
     }

@@ -1,6 +1,6 @@
 use crate::canvas::Context;
-use crate::convert::{ratatui_to_size, rect_to_rectangle, rectangle_to_rect};
-use crate::event::MOUSE_POSITION;
+use crate::convert::{approximate_colour, ratatui_to_size, rect_to_rectangle, rectangle_to_rect};
+use crate::event::{CONTEXT_MENU, MOUSE_POSITION};
 use daur::view::{Alignment, View};
 use daur::{App, Cell};
 use ratatui::buffer::Buffer;
@@ -38,12 +38,18 @@ pub fn spawn_draw_thread(app: Arc<App>, mut terminal: DefaultTerminal) -> JoinHa
 
             WINDOW_AREA.set(area);
 
-            render(app.main_view(), area, buffer);
+            render(&app.main_view(), area, buffer);
 
             for popup in app.popups.to_stack() {
                 let area = rectangle_to_rect(popup.area_in_window(rect_to_rectangle(area)));
 
-                render(popup.view(), area, buffer);
+                render(&popup.view(), area, buffer);
+            }
+
+            if let Some(menu) = CONTEXT_MENU.get() {
+                let (area, view) = &*menu;
+
+                render(view, *area, buffer);
             }
         });
 
@@ -55,14 +61,14 @@ pub fn spawn_draw_thread(app: Arc<App>, mut terminal: DefaultTerminal) -> JoinHa
 
 type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
-fn render(view: View, area: Rect, buffer: &mut Buffer) {
+fn render(view: &View, area: Rect, buffer: &mut Buffer) {
     match view {
         View::Bordered {
             title,
             thick,
             content,
         } => {
-            let set = if thick { THICK } else { PLAIN };
+            let set = if *thick { THICK } else { PLAIN };
 
             let block = Block::bordered().border_set(set).title(title.as_str());
 
@@ -70,12 +76,12 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
 
             block.render(area, buffer);
 
-            render(*content, inner, buffer);
+            render(content, inner, buffer);
         }
         View::Button {
             on_click: _,
             content,
-        } => render(*content, area, buffer),
+        } => render(content, area, buffer),
         View::Canvas {
             background,
             painter,
@@ -84,7 +90,7 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
             let height = f64::from(area.height);
 
             Canvas::default()
-                .background_color(background)
+                .background_color(approximate_colour(*background))
                 .x_bounds([0.0, width])
                 .y_bounds([0.0, height])
                 .paint(|context| {
@@ -95,6 +101,7 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
                 })
                 .render(area, buffer);
         }
+        View::Contextual { menu: _, view } => render(view, area, buffer),
         View::CursorWindow { offset } => {
             if area.width <= offset.inner() {
                 return;
@@ -111,6 +118,7 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
 
             Text::from(vec![Line::raw(VERTICAL); line_count]).render(cursor_area, buffer);
         }
+        View::Empty => (),
         View::FileSelector { selected_file } => {
             let theme = Theme::new()
                 .with_block(Block::bordered())
@@ -127,12 +135,12 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
 
             explorer.widget().render(area, buffer);
         }
-        View::Generator(generator) => render(generator(), area, buffer),
+        View::Generator(generator) => render(&generator(), area, buffer),
         View::Hoverable { default, hovered } => render(
             if area.contains(MOUSE_POSITION.get()) {
-                *hovered
+                hovered
             } else {
-                *default
+                default
             },
             area,
             buffer,
@@ -142,12 +150,12 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
                 render(layer, area, buffer);
             }
         }
-        View::Rule { index, cells } => render_rule(index, cells, area, buffer),
+        View::Rule { index, cells } => render_rule(*index, *cells, area, buffer),
         View::SizeInformed(generator) => {
-            render(generator(ratatui_to_size(area.as_size())), area, buffer);
+            render(&generator(ratatui_to_size(area.as_size())), area, buffer);
         }
         View::Solid(colour) => EmptyCanvas::default()
-            .background_color(colour)
+            .background_color(approximate_colour(*colour))
             .render(area, buffer),
         View::Stack {
             direction,
@@ -155,14 +163,14 @@ fn render(view: View, area: Rect, buffer: &mut Buffer) {
         } => {
             let quota: Vec<_> = elements.iter().map(|quotated| quotated.quotum).collect();
             let rectangles = rect_to_rectangle(area)
-                .split(direction, &quota)
+                .split(*direction, &quota)
                 .map(rectangle_to_rect);
 
             for (area, quoted) in zip(rectangles, elements) {
-                render(quoted.view, area, buffer);
+                render(&quoted.view, area, buffer);
             }
         }
-        View::Text { string, alignment } => render_text(&string, alignment, area, buffer),
+        View::Text { string, alignment } => render_text(string, *alignment, area, buffer),
     }
 }
 

@@ -1,5 +1,5 @@
 use crate::app::Action;
-use crate::clone_cell::ArcCell;
+use crate::arc_cell::ArcCell;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
 use crate::popup::Popup;
@@ -42,7 +42,7 @@ impl ExplorerPopup {
         let confirm = terminating(
             View::standard_button(
                 CONFIRM,
-                OnClick::new(move |_, _, _, actions| {
+                OnClick::new(move |_, _, actions| {
                     let path = current_file.get();
                     let action = action(&path);
                     actions.send(action);

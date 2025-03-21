@@ -1,9 +1,9 @@
+use crate::colour::Colour;
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::NonZeroLength;
 use crate::view::{Direction, View};
 use arcstr::ArcStr;
-use ratatui::style::Color;
 
 // TODO: use `Button` for:
 //  - resizing the piano
@@ -11,9 +11,9 @@ use ratatui::style::Color;
 //  - selecting all notes with the keys pitch
 pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View {
     let top = View::Solid(if pitch.chroma().is_black_key() {
-        Color::Black
+        Colour::BLACK
     } else {
-        Color::White
+        Colour::WHITE
     });
 
     let text = View::bottom_right(if pitch.chroma() == key.tonic {
@@ -22,7 +22,7 @@ pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View
         ArcStr::new()
     });
 
-    let bottom = View::Layers(vec![View::Solid(Color::White), text]);
+    let bottom = View::Layers(vec![View::Solid(Colour::WHITE), text]);
 
     View::Stack {
         direction: Direction::Right,
