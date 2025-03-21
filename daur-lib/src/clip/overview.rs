@@ -3,7 +3,6 @@ use crate::view::{OnClick, View};
 use crate::{Action, Clip};
 use std::sync::Arc;
 
-// TODO: button to select the clip
 pub fn overview(
     clip: Arc<Clip>,
     track_index: usize,
