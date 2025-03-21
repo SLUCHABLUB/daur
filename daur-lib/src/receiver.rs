@@ -1,4 +1,4 @@
-use std::sync::mpsc::Sender;
+use std::sync::mpsc::{SendError, Sender};
 
 /// A type that can receive values.
 pub trait Receiver<T> {
@@ -20,9 +20,9 @@ impl<T> Receiver<T> for Vec<T> {
 
 impl<T> Receiver<T> for Sender<T> {
     fn send(&mut self, value: T) {
-        if let Err(error) = Sender::send(self, value) {
+        if let Err(SendError(value)) = Sender::send(self, value) {
             // The other end has been disconnected
-            drop(error.0);
+            drop(value);
         }
     }
 }
