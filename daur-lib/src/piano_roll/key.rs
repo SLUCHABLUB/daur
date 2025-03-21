@@ -8,7 +8,7 @@ use arcstr::ArcStr;
 // TODO: use `Button` for:
 //  - resizing the piano
 //  - plinking the key
-//  - selecting all notes with the keys pitch
+//  - selecting all notes with the key's pitch
 pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View {
     let top = View::Solid(if pitch.chroma().is_black_key() {
         Colour::BLACK
