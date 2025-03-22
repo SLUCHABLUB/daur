@@ -6,11 +6,13 @@ mod controls;
 mod convert;
 mod draw;
 mod event;
+mod tui;
 
 use crate::audio::spawn_audio_thread;
 use crate::controls::controls;
 use crate::draw::spawn_draw_thread;
 use crate::event::spawn_events_thread;
+use crate::tui::Tui;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::execute;
 use daur::{App, Cell};
@@ -26,7 +28,7 @@ fn main() -> Result<()> {
     execute!(stdout(), EnableMouseCapture)?;
     let terminal = ratatui::init();
 
-    let app = &Arc::new(App::new());
+    let app = &Arc::new(App::new(Tui));
 
     app.controls.set_value(controls());
 

@@ -1,4 +1,4 @@
-//! Types for measuring UI things.
+//! Types pertaining to [`Ui`].
 
 mod grid;
 mod length;
@@ -17,3 +17,13 @@ pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
 pub use vector::Vector;
+
+/// A user interface for the DAW.
+#[doc(hidden)]
+pub trait Ui {
+    /// Exits the DAW.
+    ///
+    /// It is ok for implementations not to do anything or restart when this is run.
+    /// This may be the case if the application, for example, can't close itself.
+    fn exit(&self);
+}

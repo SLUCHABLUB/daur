@@ -1,8 +1,8 @@
-use crate::SHOULD_EXIT;
 use crate::convert::{
     position_to_point, ratatui_to_size, rect_to_rectangle, rectangle_to_rect, size_to_ratatui,
 };
 use crate::draw::{SHOULD_REDRAW, WINDOW_AREA};
+use crate::tui::Tui;
 use crossterm::event::{
     Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
@@ -20,7 +20,7 @@ use std::thread::{JoinHandle, spawn};
 pub static MOUSE_POSITION: Cell<Position> = Cell::new(Position::ORIGIN);
 pub static CONTEXT_MENU: OptionArcCell<(Rect, View)> = OptionArcCell::none();
 
-pub fn spawn_events_thread(app: Arc<App>) -> JoinHandle<io::Error> {
+pub fn spawn_events_thread(app: Arc<App<Tui>>) -> JoinHandle<io::Error> {
     spawn(move || {
         loop {
             let event = match read() {
@@ -52,7 +52,7 @@ fn handle_key_event(
         kind,
         state: _,
     }: KeyEvent,
-    app: &App,
+    app: &App<Tui>,
 ) {
     if kind != KeyEventKind::Press {
         return;
@@ -61,7 +61,7 @@ fn handle_key_event(
     let key_name = format!("{modifiers} + {code}");
 
     if let Some(action) = app.controls.get().get(&key_name) {
-        action.clone().take(app, || SHOULD_EXIT.set(true));
+        action.clone().take(app);
     }
 }
 
@@ -72,7 +72,7 @@ fn handle_mouse_event(
         row,
         modifiers: _,
     }: MouseEvent,
-    app: &App,
+    app: &App<Tui>,
 ) {
     MOUSE_POSITION.set(Position::new(column, row));
 
@@ -121,7 +121,7 @@ fn handle_mouse_event(
             }
 
             for action in actions {
-                action.take(app, || SHOULD_EXIT.set(true));
+                action.take(app);
             }
         }
         MouseEventKind::Up(_) => {
@@ -261,7 +261,7 @@ fn click(
 }
 
 // TODO: break into parts and move into the library
-fn scroll(app: &App, direction: Direction) {
+fn scroll(app: &App<Tui>, direction: Direction) {
     let offset = -Vector::directed(Length::new(1), direction);
 
     let mouse_position = position_to_point(MOUSE_POSITION.get());

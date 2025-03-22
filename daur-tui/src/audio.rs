@@ -1,3 +1,4 @@
+use crate::tui::Tui;
 use daur::{App, Popup};
 use never::Never;
 use rodio::{OutputStream, Sink};
@@ -11,7 +12,7 @@ use std::thread::{JoinHandle, spawn};
 // TODO: base on the device
 const SAMPLE_RATE: u32 = 44_100;
 
-pub fn spawn_audio_thread(app: Arc<App>) -> JoinHandle<Never> {
+pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
     spawn(move || {
         let mut cache = None;
 
@@ -63,7 +64,7 @@ impl Display for NoSelectedDevice {
 
 impl Error for NoSelectedDevice {}
 
-fn get_sink(app: &App) -> Result<(Sink, OutputStream), Arc<Popup>> {
+fn get_sink(app: &App<Tui>) -> Result<(Sink, OutputStream), Arc<Popup>> {
     let device = app.device.get().ok_or(Popup::error(NoSelectedDevice))?;
 
     let (output_stream, handle) = OutputStream::try_from_device(&device).map_err(Popup::error)?;

@@ -6,7 +6,7 @@ use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::piano_roll::Settings;
 use crate::view::{Direction, View, piano_roll};
-use crate::{ArcCell, Cell, OptionArcCell, Project, popup, project, ui};
+use crate::{ArcCell, Cell, OptionArcCell, Project, Ui, popup, project, ui};
 use derive_more::Debug;
 use rodio::Device;
 use rodio::cpal::traits::HostTrait as _;
@@ -16,7 +16,10 @@ use std::time::{Duration, SystemTime};
 
 /// A running instance of the DAW.
 #[derive(Debug)]
-pub struct App {
+pub struct App<Ui> {
+    /// The user interface.
+    pub ui: Ui,
+
     /// The keybinds.
     /// How the keys are interpreted is based on the UI implementation.
     pub controls: ArcCell<HashMap<String, Action>>,
@@ -60,15 +63,17 @@ pub struct App {
     pub piano_roll_settings: Cell<Settings>,
 }
 
-impl App {
+impl<U: Ui> App<U> {
     /// Creates a new instance
     #[must_use]
-    pub fn new() -> App {
+    pub fn new(ui: U) -> App<U> {
         let host = default_host();
         let device = OptionArcCell::from_value(host.default_output_device());
         let host = ArcCell::from_value(host);
 
         App {
+            ui,
+
             controls: ArcCell::from_value(HashMap::new()),
             project: project::Manager::new(Project::default()),
 
@@ -161,11 +166,5 @@ impl App {
                 .quotated(self.piano_roll_settings.get().height),
             ],
         }
-    }
-}
-
-impl Default for App {
-    fn default() -> Self {
-        App::new()
     }
 }

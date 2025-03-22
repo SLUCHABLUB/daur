@@ -6,7 +6,7 @@
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
-use crate::{App, project};
+use crate::{App, Ui, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
@@ -67,12 +67,12 @@ impl Action {
     }
 
     /// Take the action on the app
-    pub fn take<Exit: FnOnce()>(self, app: &App, exit: Exit) {
+    pub fn take<U: Ui>(self, app: &App<U>) {
         match self {
             Action::ClosePopup(popup) => {
                 app.popups.close(&popup);
             }
-            Action::Exit => exit(),
+            Action::Exit => app.ui.exit(),
             Action::MoveCursor(instant) => {
                 app.cursor.set(instant);
 
@@ -92,7 +92,7 @@ impl Action {
 
             Action::OpenPianoRoll => {
                 // TODO: do this more cleanly
-                Action::SetPianoRollHeight(Length::PROJECT_BAR_HEIGHT).take(app, exit);
+                Action::SetPianoRollHeight(Length::PROJECT_BAR_HEIGHT).take(app);
             }
             Action::SetPianoRollHeight(height) => {
                 let mut settings = app.piano_roll_settings.get();

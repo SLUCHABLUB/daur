@@ -3,6 +3,7 @@ use crate::convert::{
     approximate_colour, ratatui_to_size, rect_to_rectangle, rectangle_to_rect, size_to_ratatui,
 };
 use crate::event::{CONTEXT_MENU, MOUSE_POSITION};
+use crate::tui::Tui;
 use daur::view::{Alignment, View};
 use daur::{App, Cell};
 use ratatui::buffer::Buffer;
@@ -26,7 +27,10 @@ use std::thread::{JoinHandle, spawn};
 pub static SHOULD_REDRAW: Cell<bool> = Cell::new(true);
 pub static WINDOW_AREA: Cell<Rect> = Cell::new(Rect::ZERO);
 
-pub fn spawn_draw_thread(app: Arc<App>, mut terminal: DefaultTerminal) -> JoinHandle<io::Error> {
+pub fn spawn_draw_thread(
+    app: Arc<App<Tui>>,
+    mut terminal: DefaultTerminal,
+) -> JoinHandle<io::Error> {
     spawn(move || {
         loop {
             while !SHOULD_REDRAW.get() {

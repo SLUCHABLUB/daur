@@ -48,6 +48,8 @@ pub use project::Project;
 #[doc(inline)]
 pub use track::Track;
 #[doc(inline)]
+pub use ui::Ui;
+#[doc(inline)]
 pub use view::View;
 
 pub use arcstr;
