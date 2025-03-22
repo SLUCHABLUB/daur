@@ -2,8 +2,8 @@ mod non_zero;
 
 pub use non_zero::NonZeroLength;
 
-use crate::view::Quotum;
 use crate::Ratio;
+use crate::view::Quotum;
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU32;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, SubAssign};

@@ -16,8 +16,8 @@ use crate::key::Key;
 use crate::time::{Signature, Tempo};
 use crate::track::Track;
 use crate::ui::Grid;
-use crate::{time, ui, Changing};
-use arcstr::{literal, ArcStr};
+use crate::{Changing, time, ui};
+use arcstr::{ArcStr, literal};
 use std::sync::Arc;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");

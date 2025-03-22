@@ -1,6 +1,6 @@
+use crate::Colour;
 use crate::pitch::Pitch;
 use crate::view::View;
-use crate::Colour;
 
 /// Return the view for a (non-piano) row of the piano roll.
 pub fn row(pitch: Pitch) -> View {

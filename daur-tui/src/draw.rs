@@ -10,7 +10,7 @@ use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
 use ratatui::widgets::canvas::Canvas;
 use ratatui::widgets::{Block, Clear, Paragraph, Widget as _};
-use ratatui::{layout, DefaultTerminal};
+use ratatui::{DefaultTerminal, layout};
 use ratatui_explorer::{FileExplorer, Theme};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
@@ -19,44 +19,46 @@ use std::io;
 use std::iter::zip;
 use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::Arc;
-use std::thread::{spawn, JoinHandle};
+use std::thread::{JoinHandle, spawn};
 
 pub static SHOULD_REDRAW: Cell<bool> = Cell::new(true);
 pub static WINDOW_AREA: Cell<Rect> = Cell::new(Rect::ZERO);
 
 pub fn spawn_draw_thread(app: Arc<App>, mut terminal: DefaultTerminal) -> JoinHandle<io::Error> {
-    spawn(move || loop {
-        while !SHOULD_REDRAW.get() {
-            spin_loop();
-        }
-
-        SHOULD_REDRAW.set(app.is_playing());
-
-        let result = terminal.draw(|frame| {
-            let area = frame.area();
-            let buffer = frame.buffer_mut();
-
-            WINDOW_AREA.set(area);
-
-            render(&app.main_view(), area, buffer);
-
-            for popup in app.popups.to_stack() {
-                let area = rectangle_to_rect(popup.area_in_window(rect_to_rectangle(area)));
-
-                Clear.render(area, buffer);
-                render(&popup.view(), area, buffer);
+    spawn(move || {
+        loop {
+            while !SHOULD_REDRAW.get() {
+                spin_loop();
             }
 
-            if let Some(menu) = CONTEXT_MENU.get() {
-                let (area, view) = &*menu;
+            SHOULD_REDRAW.set(app.is_playing());
 
-                Clear.render(*area, buffer);
-                render(view, *area, buffer);
+            let result = terminal.draw(|frame| {
+                let area = frame.area();
+                let buffer = frame.buffer_mut();
+
+                WINDOW_AREA.set(area);
+
+                render(&app.main_view(), area, buffer);
+
+                for popup in app.popups.to_stack() {
+                    let area = rectangle_to_rect(popup.area_in_window(rect_to_rectangle(area)));
+
+                    Clear.render(area, buffer);
+                    render(&popup.view(), area, buffer);
+                }
+
+                if let Some(menu) = CONTEXT_MENU.get() {
+                    let (area, view) = &*menu;
+
+                    Clear.render(*area, buffer);
+                    render(view, *area, buffer);
+                }
+            });
+
+            if let Err(error) = result {
+                return error;
             }
-        });
-
-        if let Err(error) = result {
-            return error;
         }
     })
 }

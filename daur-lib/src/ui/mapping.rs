@@ -1,6 +1,6 @@
+use crate::Changing;
 use crate::time::{Bar, Instant, Period, Signature};
 use crate::ui::{Grid, Length};
-use crate::Changing;
 use std::sync::Arc;
 
 /// A mapping between screen (x-)coordinates and musical time

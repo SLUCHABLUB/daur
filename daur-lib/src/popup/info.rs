@@ -1,6 +1,6 @@
+use crate::Cell;
 use crate::popup::Popup;
 use crate::ui::Point;
-use crate::Cell;
 use arcstr::ArcStr;
 use std::sync::Weak;
 

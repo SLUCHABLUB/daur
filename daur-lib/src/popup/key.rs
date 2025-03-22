@@ -1,12 +1,12 @@
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
+use crate::popup::Popup;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
-use crate::popup::Popup;
 use crate::sign::Sign;
-use crate::view::{multi, single, Direction, OnClick, ToText as _, View};
-use crate::{project, Action, Cell};
-use arcstr::{literal, ArcStr};
+use crate::view::{Direction, OnClick, ToText as _, View, multi, single};
+use crate::{Action, Cell, project};
+use arcstr::{ArcStr, literal};
 use bitbag::BitBag;
 use std::sync::{Arc, Weak};
 

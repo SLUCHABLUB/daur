@@ -1,7 +1,7 @@
 #![expect(clippy::min_ident_chars, reason = "we are doing math")]
 
 use num::Integer;
-use std::num::{NonZeroU128, NonZeroU32};
+use std::num::{NonZeroU32, NonZeroU128};
 
 const ONE: NonZeroU32 = NonZeroU32::MIN;
 

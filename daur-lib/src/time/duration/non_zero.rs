@@ -1,5 +1,5 @@
-use crate::time::Duration;
 use crate::NonZeroRatio;
+use crate::time::Duration;
 use std::ops::{Div, DivAssign};
 
 /// A non-zero `Duration`

@@ -1,10 +1,10 @@
+use crate::ArcCell;
 use crate::app::Action;
+use crate::popup::Popup;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
-use crate::popup::Popup;
 use crate::view::{Direction, OnClick, ToText as _, View};
-use crate::ArcCell;
-use arcstr::{literal, ArcStr};
+use arcstr::{ArcStr, literal};
 use derive_more::Debug;
 use std::path::Path;
 use std::sync::{Arc, Weak};

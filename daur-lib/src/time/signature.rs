@@ -3,7 +3,7 @@ use crate::{Changing, NonZeroRatio};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
-use std::num::{NonZeroU32, NonZeroU8};
+use std::num::{NonZeroU8, NonZeroU32};
 
 #[expect(clippy::unwrap_used, reason = "4 is not 0")]
 const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();

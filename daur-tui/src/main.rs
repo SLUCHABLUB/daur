@@ -15,7 +15,7 @@ use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::execute;
 use daur::{App, Cell};
 use std::hint::spin_loop;
-use std::io::{stdout, Result};
+use std::io::{Result, stdout};
 use std::panic::resume_unwind;
 use std::sync::Arc;
 

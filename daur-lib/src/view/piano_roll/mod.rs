@@ -12,9 +12,9 @@ use crate::interval::Interval;
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::{Mapping, Offset};
-use crate::view::{feed, ruler, Direction, ToText as _, View};
+use crate::view::{Direction, ToText as _, View, feed, ruler};
 use crate::{Changing, Clip};
-use arcstr::{literal, ArcStr};
+use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");

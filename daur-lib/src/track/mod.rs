@@ -8,9 +8,9 @@ pub use overview::overview;
 pub use settings::settings;
 pub use source::Source;
 
-use crate::time::{Instant, Mapping};
 use crate::Clip;
-use arcstr::{literal, ArcStr};
+use crate::time::{Instant, Mapping};
+use arcstr::{ArcStr, literal};
 use std::collections::BTreeMap;
 use std::sync::Arc;
 

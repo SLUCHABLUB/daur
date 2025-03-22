@@ -1,10 +1,10 @@
+use crate::SHOULD_EXIT;
 use crate::convert::{
     position_to_point, ratatui_to_size, rect_to_rectangle, rectangle_to_rect, size_to_ratatui,
 };
 use crate::draw::{SHOULD_REDRAW, WINDOW_AREA};
-use crate::SHOULD_EXIT;
 use crossterm::event::{
-    read, Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind,
+    Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
 use daur::ui::{Length, Vector};
 use daur::view::{Direction, View};
@@ -15,31 +15,33 @@ use ratatui_explorer::FileExplorer;
 use std::io;
 use std::iter::zip;
 use std::sync::Arc;
-use std::thread::{spawn, JoinHandle};
+use std::thread::{JoinHandle, spawn};
 
 pub static MOUSE_POSITION: Cell<Position> = Cell::new(Position::ORIGIN);
 pub static CONTEXT_MENU: OptionArcCell<(Rect, View)> = OptionArcCell::none();
 
 pub fn spawn_events_thread(app: Arc<App>) -> JoinHandle<io::Error> {
-    spawn(move || loop {
-        let event = match read() {
-            Ok(event) => event,
-            Err(error) => return error,
-        };
+    spawn(move || {
+        loop {
+            let event = match read() {
+                Ok(event) => event,
+                Err(error) => return error,
+            };
 
-        match event {
-            Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
-            Event::Key(event) => handle_key_event(event, &app),
-            Event::Mouse(event) => handle_mouse_event(event, &app),
-            Event::Resize(width, height) => WINDOW_AREA.set(Rect {
-                x: 0,
-                y: 0,
-                width,
-                height,
-            }),
+            match event {
+                Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
+                Event::Key(event) => handle_key_event(event, &app),
+                Event::Mouse(event) => handle_mouse_event(event, &app),
+                Event::Resize(width, height) => WINDOW_AREA.set(Rect {
+                    x: 0,
+                    y: 0,
+                    width,
+                    height,
+                }),
+            }
+
+            SHOULD_REDRAW.set(true);
         }
-
-        SHOULD_REDRAW.set(true);
     })
 }
 

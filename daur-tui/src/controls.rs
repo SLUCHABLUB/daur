@@ -1,6 +1,6 @@
 use crossterm::event::{KeyCode, KeyModifiers};
 use daur::context::open_import_audio_popup;
-use daur::{project, Action};
+use daur::{Action, project};
 use std::collections::HashMap;
 
 pub fn controls() -> HashMap<String, Action> {

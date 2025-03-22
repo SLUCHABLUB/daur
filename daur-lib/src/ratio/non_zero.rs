@@ -1,7 +1,7 @@
 use crate::ratio::util::make_coprime;
-use crate::ratio::{Ratio, FOUR, ONE};
+use crate::ratio::{FOUR, ONE, Ratio};
 use std::cmp::Ordering;
-use std::num::{NonZeroU128, NonZeroU32};
+use std::num::{NonZeroU32, NonZeroU128};
 use std::ops::{Div, DivAssign};
 
 /// A non-zero `Ratio`

@@ -1,11 +1,11 @@
+use crate::ToArcStr as _;
 use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::{Signature, Tempo};
 use crate::ui::Length;
 use crate::view::{Direction, OnClick, ToText as _, View};
-use crate::ToArcStr as _;
-use arcstr::{literal, ArcStr};
+use arcstr::{ArcStr, literal};
 
 const PLAY: ArcStr = literal!("\u{25B6}");
 const PAUSE: ArcStr = literal!("\u{23F8}");

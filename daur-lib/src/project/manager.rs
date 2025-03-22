@@ -1,3 +1,4 @@
+use crate::Changing;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::lock::Lock;
@@ -5,11 +6,10 @@ use crate::popup::Popup;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
-use crate::project::{bar, workspace, Project};
+use crate::project::{Project, bar, workspace};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::View;
-use crate::Changing;
 use std::sync::Arc;
 use thiserror::Error;
 

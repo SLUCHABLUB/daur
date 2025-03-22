@@ -1,5 +1,5 @@
 use crate::ui::{Point, Size};
-use crate::{project, Action, Receiver};
+use crate::{Action, Receiver, project};
 use std::any::type_name;
 use std::fmt;
 use std::fmt::{Debug, Formatter};

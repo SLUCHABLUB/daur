@@ -3,7 +3,7 @@ use crate::context::Menu;
 use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
-use crate::view::{cursor_window, feed, Direction, OnClick, View};
+use crate::view::{Direction, OnClick, View, cursor_window, feed};
 use crate::{clip, time, ui};
 use num::Integer as _;
 use std::sync::Arc;

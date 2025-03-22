@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::track::Track;
 use crate::view::{OnClick, ToText as _, View};
-use arcstr::{literal, ArcStr};
+use arcstr::{ArcStr, literal};
 
 /// Returns the track settings.
 pub fn settings(track: &Track, index: usize, selected: bool) -> View {

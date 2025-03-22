@@ -7,7 +7,7 @@ use std::cmp::Ordering;
 use crate::ratio::util::lcm;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::num::{FpCategory, NonZeroU128, NonZeroU32};
+use std::num::{FpCategory, NonZeroU32, NonZeroU128};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 const ONE: NonZeroU32 = NonZeroU32::MIN;

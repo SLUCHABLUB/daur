@@ -2,7 +2,7 @@
 name = "daur-tui"
 version = "0.1.0"
 authors = ["SLUCHABLUB"]
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 crossterm = { version = "0.28.1", features = ["serde"] }

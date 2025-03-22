@@ -9,7 +9,7 @@ use crate::view::Context;
 use crate::{Colour, Ratio};
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
-use num::{rational, Integer as _};
+use num::{Integer as _, rational};
 use saturating_cast::SaturatingCast as _;
 use std::io::Read;
 use std::num::{FpCategory, NonZeroU16, NonZeroU32};

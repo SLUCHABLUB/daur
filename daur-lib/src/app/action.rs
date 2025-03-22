@@ -6,7 +6,7 @@
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
-use crate::{project, App};
+use crate::{App, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;

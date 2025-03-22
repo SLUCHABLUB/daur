@@ -1,5 +1,5 @@
 use crate::ui::{Mapping, Offset};
-use crate::view::{feed, Direction, View};
+use crate::view::{Direction, View, feed};
 use std::num::NonZeroU32;
 
 // TODO: use `Button` for moving and scaling the overview

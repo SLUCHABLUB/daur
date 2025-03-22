@@ -1,9 +1,9 @@
+use crate::Cell;
+use crate::popup::Popup;
 use crate::popup::info::PopupInfo;
 use crate::popup::terminating::terminating;
-use crate::popup::Popup;
 use crate::view::{Alignment, Direction, ToText as _, View};
-use crate::Cell;
-use arcstr::{format, literal, ArcStr};
+use arcstr::{ArcStr, format, literal};
 use std::error::Error;
 use std::sync::Weak;
 

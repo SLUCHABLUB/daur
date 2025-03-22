@@ -6,8 +6,8 @@ pub use content::ClipContent;
 pub use overview::overview;
 pub use source::ClipSource;
 
-use crate::time::{Instant, Mapping, Period};
 use crate::Colour;
+use crate::time::{Instant, Mapping, Period};
 use arcstr::ArcStr;
 
 /// A clip inside a [`Track`]

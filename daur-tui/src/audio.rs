@@ -6,7 +6,7 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hint::spin_loop;
 use std::sync::Arc;
-use std::thread::{spawn, JoinHandle};
+use std::thread::{JoinHandle, spawn};
 
 // TODO: base on the device
 const SAMPLE_RATE: u32 = 44_100;

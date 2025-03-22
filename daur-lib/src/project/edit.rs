@@ -1,3 +1,4 @@
+use crate::Colour;
 use crate::audio::Audio;
 use crate::clip::{Clip, ClipContent};
 use crate::key::Key;
@@ -7,8 +8,7 @@ use crate::project::Action;
 use crate::ratio::Ratio;
 use crate::time::{Duration, Instant};
 use crate::track::Track;
-use crate::Colour;
-use arcstr::{literal, ArcStr};
+use arcstr::{ArcStr, literal};
 use hound::WavReader;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
@@ -90,7 +90,7 @@ impl Edit {
                     _ => {
                         return Err(Popup::error(UnsupportedFormatError {
                             format: extension.to_owned(),
-                        }))
+                        }));
                     }
                 };
 

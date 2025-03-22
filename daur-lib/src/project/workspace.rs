@@ -1,8 +1,8 @@
-use crate::project::{Action, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
+use crate::project::{ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Action};
 use crate::time::Instant;
-use crate::track::{overview, settings, Track};
+use crate::track::{Track, overview, settings};
 use crate::ui::{Length, Offset};
-use crate::view::{ruler, Direction, OnClick, ToText as _, View};
+use crate::view::{Direction, OnClick, ToText as _, View, ruler};
 use crate::{time, ui};
 use arcstr::literal;
 use std::sync::Arc;

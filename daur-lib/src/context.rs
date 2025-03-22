@@ -1,8 +1,8 @@
 //! Types pertaining to [`Menu`].
 
 use crate::view::{Direction, OnClick, View};
-use crate::{project, Action, Popup};
-use arcstr::{literal, ArcStr};
+use crate::{Action, Popup, project};
+use arcstr::{ArcStr, literal};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::path::Path;

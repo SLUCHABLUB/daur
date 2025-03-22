@@ -7,12 +7,12 @@ use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::piano_roll::Settings;
-use crate::view::{piano_roll, Direction, View};
-use crate::{ui, ArcCell, Cell, OptionArcCell};
+use crate::view::{Direction, View, piano_roll};
+use crate::{ArcCell, Cell, OptionArcCell, ui};
 use derive_more::Debug;
-use rodio::cpal::traits::HostTrait as _;
-use rodio::cpal::{default_host, Host};
 use rodio::Device;
+use rodio::cpal::traits::HostTrait as _;
+use rodio::cpal::{Host, default_host};
 use std::collections::HashMap;
 use std::time::{Duration, SystemTime};
 
