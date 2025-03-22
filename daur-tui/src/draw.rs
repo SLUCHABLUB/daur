@@ -1,10 +1,12 @@
 use crate::canvas::Context;
-use crate::convert::{approximate_colour, ratatui_to_size, rect_to_rectangle, rectangle_to_rect};
+use crate::convert::{
+    approximate_colour, ratatui_to_size, rect_to_rectangle, rectangle_to_rect, size_to_ratatui,
+};
 use crate::event::{CONTEXT_MENU, MOUSE_POSITION};
 use daur::view::{Alignment, View};
 use daur::{App, Cell};
 use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
+use ratatui::layout::{Position, Rect};
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
@@ -42,10 +44,13 @@ pub fn spawn_draw_thread(app: Arc<App>, mut terminal: DefaultTerminal) -> JoinHa
                 render(&app.main_view(), area, buffer);
 
                 for popup in app.popups.to_stack() {
-                    let area = rectangle_to_rect(popup.area_in_window(rect_to_rectangle(area)));
+                    let view = popup.view();
+
+                    // TODO: fix popup positions
+                    let area = Rect::from((Position::ORIGIN, size_to_ratatui(view.minimum_size())));
 
                     Clear.render(area, buffer);
-                    render(&popup.view(), area, buffer);
+                    render(&view, area, buffer);
                 }
 
                 if let Some(menu) = CONTEXT_MENU.get() {

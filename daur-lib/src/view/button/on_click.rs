@@ -6,14 +6,14 @@ use std::fmt::{Debug, Formatter};
 
 type OnClickFunction = dyn Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static;
 
-/// An action to take when a button is clicked
+/// A function to run when a button is (left) clicked.
 #[derive(Default)]
 pub struct OnClick {
     function: Option<Box<OnClickFunction>>,
 }
 
 impl OnClick {
-    /// Construct a new [`OnClick`] from a function.
+    /// Construct a new function.
     pub fn new<F: Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static>(
         function: F,
     ) -> Self {

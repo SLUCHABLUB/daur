@@ -1,4 +1,4 @@
-//! Types for measuring UI things
+//! Types for measuring UI things.
 
 mod grid;
 mod length;

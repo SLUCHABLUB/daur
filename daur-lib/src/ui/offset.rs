@@ -2,7 +2,7 @@ use crate::ui::Length;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
-/// A signed [`Length`]
+/// A signed [length](Length).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
     inner: i32,
@@ -13,7 +13,7 @@ impl Offset {
         Offset { inner: value }
     }
 
-    /// Constructs a positive [`Offset`]
+    /// Constructs a positive offset.
     #[must_use]
     pub const fn positive(length: Length) -> Offset {
         Offset {
@@ -21,7 +21,7 @@ impl Offset {
         }
     }
 
-    /// Constructs a negative [`Offset`]
+    /// Constructs a negative offset.
     #[must_use]
     pub const fn negative(length: Length) -> Offset {
         #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in i32")]
@@ -33,7 +33,7 @@ impl Offset {
     /// 0
     pub const ZERO: Offset = Offset::new(0);
 
-    /// Returns the absolute value of self
+    /// Returns the absolute value of the offset.
     #[must_use]
     pub fn abs(self) -> Length {
         if self.inner.is_negative() {
@@ -44,16 +44,10 @@ impl Offset {
         .saturate()
     }
 
-    /// Convert `self` to a [`Length`] by saturating
+    /// Convert the offset to a [length](Length) by saturating
     #[must_use]
     pub fn saturate(self) -> Length {
         Length::new(self.inner.saturating_cast())
-    }
-
-    /// Converts self to a [`Length`] if it fits
-    #[must_use]
-    pub fn to_length(self) -> Option<Length> {
-        Some(Length::new(u16::try_from(self.inner).ok()?))
     }
 }
 

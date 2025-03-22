@@ -2,14 +2,14 @@ use crossbeam::atomic::AtomicCell;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
-/// A thread-safe version of [`Cell`](std::cell::Cell)
+/// A thread-safe version of [`Cell`](std::cell::Cell).
 #[derive(Default)]
 pub struct Cell<T> {
     inner: AtomicCell<T>,
 }
 
 impl<T> Cell<T> {
-    /// Constructs a new [`Cell`]
+    /// Constructs a new cell.
     #[must_use]
     pub const fn new(value: T) -> Self {
         Cell {
@@ -17,14 +17,14 @@ impl<T> Cell<T> {
         }
     }
 
-    /// Replaces the value in `self`
+    /// Replaces the value in the cell.
     pub fn set(&self, value: T) {
         self.inner.store(value);
     }
 }
 
 impl<T: Copy> Cell<T> {
-    /// Copies the value out of `self`
+    /// Copies the value out of the cell.
     #[must_use]
     pub fn get(&self) -> T {
         self.inner.load()
@@ -32,7 +32,7 @@ impl<T: Copy> Cell<T> {
 }
 
 impl<T: Default> Cell<T> {
-    /// Takes the value out of `self` leaving `Default::default()` in its place
+    /// Takes the value out of the cell leaving [`Default::default()`] in its place
     #[must_use]
     pub fn take(&self) -> T {
         self.inner.take()

@@ -22,18 +22,18 @@ impl Quotum {
     }
 }
 
-/// A [`View`] with a [`Quotum`].
+/// A [view](View) with a [quotum](Quotum).
 #[must_use = "the inner View must be used"]
 #[derive(Debug)]
 pub struct Quotated {
-    /// The [`Quotum`] of the view.
+    /// The [quotum](Quotum) of the view.
     pub quotum: Quotum,
-    /// The quotated [`View`]
+    /// The quotated [view](View).
     pub view: View,
 }
 
 impl View {
-    /// Adds a [`Quotum`] to the view.
+    /// Adds a [quotum](Quotum) to the view.
     pub fn with_quotum(self, quotum: Quotum) -> Quotated {
         Quotated { quotum, view: self }
     }
@@ -43,7 +43,7 @@ impl View {
         self.with_quotum(Quotum::Remaining)
     }
 
-    /// Makes the view take up the specified [`Length`] of space.
+    /// Makes the view take up the specified [amount of space](Length).
     pub fn quotated(self, size: Length) -> Quotated {
         self.with_quotum(size.quotum())
     }

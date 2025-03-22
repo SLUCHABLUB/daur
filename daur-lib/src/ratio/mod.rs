@@ -40,7 +40,7 @@ impl Ratio {
     const EPSILON: Ratio = Ratio::reciprocal_of(NonZeroU32::MAX);
     const MAX: Ratio = Ratio::integer(u32::MAX);
 
-    /// Creates a new `Ratio` representing `numerator` / `denominator`
+    /// Creates a new ratio from a numerator and denominator.
     #[must_use]
     pub fn new(numerator: u32, denominator: NonZeroU32) -> Ratio {
         let Some(numerator) = NonZeroU32::new(numerator) else {
@@ -50,7 +50,7 @@ impl Ratio {
         NonZeroRatio::new(numerator, denominator).get()
     }
 
-    /// Converts an integer to a `Ratio`
+    /// Converts an integer to a ratio.
     #[must_use]
     pub const fn integer(integer: u32) -> Ratio {
         Ratio {
@@ -59,7 +59,7 @@ impl Ratio {
         }
     }
 
-    /// Constructs the ratio 1 / `integer`
+    /// Constructs the ratio from an integer by taking its reciprocal.
     #[must_use]
     pub const fn reciprocal_of(integer: NonZeroU32) -> Ratio {
         Ratio {
@@ -81,7 +81,7 @@ impl Ratio {
         }
     }
 
-    /// Returns the ratio representing the ceiling of `self`
+    /// Returns a ratio representing the ceiling of the ratio
     #[must_use]
     pub fn ceiled(self) -> Ratio {
         Ratio::integer(self.ceil())
@@ -93,13 +93,13 @@ impl Ratio {
         self.numerator / self.denominator
     }
 
-    /// Returns the ratio representing the floor of `self`
+    /// Returns a ratio representing the floor of the ratio.
     #[must_use]
     pub fn floored(self) -> Ratio {
         Ratio::integer(self.floor())
     }
 
-    /// Rounds `self` to an integer
+    /// Rounds the ratio to an integer.
     #[must_use]
     pub fn round(self) -> u32 {
         let quotient = self.numerator / self.denominator;
@@ -114,13 +114,13 @@ impl Ratio {
         }
     }
 
-    /// Rounds `self`
+    /// Rounds the ratio.
     #[must_use]
     pub fn rounded(self) -> Ratio {
         Ratio::integer(self.round())
     }
 
-    /// Approximates a float as a `Ratio`
+    /// Approximates a float as a ratio.
     #[must_use]
     pub fn approximate(float: f64) -> Ratio {
         #![expect(clippy::cast_sign_loss, reason = "we check sign")]
@@ -167,7 +167,7 @@ impl Ratio {
         }
     }
 
-    /// Approximates `self` as a float
+    /// Approximates the ratio as a float
     #[must_use]
     pub const fn to_float(self) -> f64 {
         self.numerator as f64 / self.denominator.get() as f64

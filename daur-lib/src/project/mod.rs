@@ -1,4 +1,4 @@
-//! Types relating to [`Project`].
+//! Items pertaining to [`Project`].
 
 mod action;
 mod bar;
@@ -23,7 +23,7 @@ use std::sync::Arc;
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 
-/// A musical piece consisting of multiple [`Track`]s
+/// A musical piece consisting of multiple [tracks](Track).
 #[doc(hidden)]
 #[derive(Clone, Debug, Default)]
 pub struct Project {

@@ -22,20 +22,20 @@ impl NonZeroLength {
     /// The default with of a key in the piano roll.
     pub const DEFAULT_KEY_WIDTH: NonZeroLength = NonZeroLength::new(ONE);
 
-    /// The default width of a grid cell
+    /// The default width of a grid cell.
     pub const DEFAULT_CELL_WIDTH: NonZeroLength = NonZeroLength::new(FOUR);
 
-    /// The default depth of a black key on the piano-roll piano
+    /// The default depth of a black key on the piano-roll piano.
     pub const DEFAULT_BLACK_KEY_DEPTH: NonZeroLength = NonZeroLength::new(SIX);
 
-    /// The default depth of the piano-roll piano
+    /// The default depth of the piano-roll piano.
     pub const DEFAULT_PIANO_DEPTH: NonZeroLength = NonZeroLength::new(TEN);
 
     const fn new(value: NonZeroU16) -> NonZeroLength {
         NonZeroLength { inner: value }
     }
 
-    /// Construct a `NonZeroLength` from a `Length` if it is not 0
+    /// Construct a length from a [zeroable one](Length) if it is not 0.
     #[must_use]
     pub fn from_length(length: Length) -> Option<NonZeroLength> {
         Some(NonZeroLength {
@@ -47,7 +47,7 @@ impl NonZeroLength {
         self.inner
     }
 
-    /// Converts `self` to a [`Length`]
+    /// Converts the length to a [zeroable one](Length).
     #[must_use]
     pub fn get(self) -> Length {
         Length::new(self.inner.get())

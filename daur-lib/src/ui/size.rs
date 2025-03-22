@@ -17,7 +17,7 @@ impl Size {
         height: Length::ZERO,
     };
 
-    /// Returns the length parallel to `direction`
+    /// Returns the length parallel to a direction.
     #[must_use]
     pub fn parallel_to(self, direction: Direction) -> Length {
         match direction {
@@ -26,7 +26,7 @@ impl Size {
         }
     }
 
-    /// Returns the length orthogonal to `direction`
+    /// Returns the length orthogonal to a direction.
     #[must_use]
     pub fn orthogonal_to(self, direction: Direction) -> Length {
         match direction {
@@ -35,8 +35,8 @@ impl Size {
         }
     }
 
-    /// Construct a `Size` from two distances,
-    /// one parallel and one orthogonal to `direction`.
+    /// Construct a size from two lengths,
+    /// one parallel and one orthogonal to a direction.
     #[must_use]
     pub fn from_parallel_orthogonal(
         parallel: Length,

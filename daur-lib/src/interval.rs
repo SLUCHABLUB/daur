@@ -1,8 +1,8 @@
 /// An interval between two pitches.
 ///
-/// Note: No `Eq` or `PartialEq` implementation is provided.
+/// Note: No [`Eq`] or [`PartialEq`] implementation is provided.
 /// This is due to "equality"/"equivalence" is not semantically ubiquitous.
-/// To compare intervals, the `semitones` and `kind` methods may be used.
+/// To compare intervals, the [`semitones`](Interval::semitones) and [`kind`](todo) methods may be used.
 #[derive(Copy, Clone, Debug)]
 pub struct Interval {
     semitones: i16,

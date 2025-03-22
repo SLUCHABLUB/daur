@@ -1,34 +1,33 @@
-use crate::audio::AudioSource;
-use rodio::Source;
+use crate::audio;
 use std::time::Duration;
 
-/// A [`Source`] for a [`Clip`](crate::Clip)
+/// An [audio source](rodio::Source) for a [clip](crate::Clip)
 #[derive(Debug)]
 #[must_use]
-pub enum ClipSource {
+pub enum Source {
     /// A source from an audio clip
-    Audio(AudioSource),
+    Audio(audio::Source),
     // TODO: add plugins that can render the notes
     /// A source from a notes clip
     Notes,
 }
 
-impl Iterator for ClipSource {
+impl Iterator for Source {
     type Item = f32;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            ClipSource::Audio(source) => source.next(),
-            ClipSource::Notes => None,
+            Source::Audio(source) => source.next(),
+            Source::Notes => None,
         }
     }
 }
 
-impl Source for ClipSource {
+impl rodio::Source for Source {
     fn current_frame_len(&self) -> Option<usize> {
         match self {
-            ClipSource::Audio(source) => source.current_frame_len(),
-            ClipSource::Notes => None,
+            Source::Audio(source) => source.current_frame_len(),
+            Source::Notes => None,
         }
     }
 
@@ -38,16 +37,16 @@ impl Source for ClipSource {
 
     fn sample_rate(&self) -> u32 {
         match self {
-            ClipSource::Audio(source) => source.sample_rate(),
+            Source::Audio(source) => source.sample_rate(),
             // TODO: take from plugin?
-            ClipSource::Notes => 44_100,
+            Source::Notes => 44_100,
         }
     }
 
     fn total_duration(&self) -> Option<Duration> {
         match self {
-            ClipSource::Audio(source) => source.total_duration(),
-            ClipSource::Notes => None,
+            Source::Audio(source) => source.total_duration(),
+            Source::Notes => None,
         }
     }
 }

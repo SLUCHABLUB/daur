@@ -1,19 +1,19 @@
-use crate::clip::ClipSource;
+use crate::clip;
 use std::collections::VecDeque;
 use std::time::Duration;
 
-/// The audio source of a track.
+/// An [audio source](rodio::Source) of a [track](crate::Track).
 #[derive(Debug)]
 pub struct Source {
     sample_rate: u32,
     sample: usize,
-    clips: VecDeque<(usize, ClipSource)>,
+    clips: VecDeque<(usize, clip::Source)>,
 }
 
 impl Source {
     /// Constructs a new source.
     #[must_use]
-    pub fn new(sample_rate: u32, clips: VecDeque<(usize, ClipSource)>, sample: usize) -> Source {
+    pub fn new(sample_rate: u32, clips: VecDeque<(usize, clip::Source)>, sample: usize) -> Source {
         Source {
             sample_rate,
             sample,

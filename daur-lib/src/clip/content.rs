@@ -3,9 +3,9 @@ use crate::notes::Notes;
 use crate::time::{Instant, Mapping, Period};
 use crate::view::Context;
 
-/// The content of a [`Clip`](crate::Clip)
+/// The content of a [clip](crate::Clip).
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub enum ClipContent {
+pub enum Content {
     /// An audio clip
     Audio(Audio),
     /// A notes clip
@@ -16,13 +16,13 @@ pub enum ClipContent {
     //  - drums
 }
 
-impl ClipContent {
-    /// Returns the period of the content
+impl Content {
+    /// Calculates the period of the content.
     #[must_use]
     pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
         match self {
-            ClipContent::Audio(audio) => audio.period(start, mapping),
-            ClipContent::Notes(notes) => Period {
+            Content::Audio(audio) => audio.period(start, mapping),
+            Content::Notes(notes) => Period {
                 start,
                 duration: notes.duration(),
             },
@@ -37,10 +37,10 @@ impl ClipContent {
         mapping: &Mapping,
     ) {
         match self {
-            ClipContent::Audio(audio) => {
+            Content::Audio(audio) => {
                 audio.draw_overview(context, full_period, visible_period, mapping);
             }
-            ClipContent::Notes(notes) => notes.draw_overview(context),
+            Content::Notes(notes) => notes.draw_overview(context),
         }
     }
 }

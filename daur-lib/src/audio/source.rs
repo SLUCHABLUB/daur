@@ -1,20 +1,19 @@
 use crate::audio::Audio;
-use rodio::Source;
 use std::time::Duration;
 
-/// A [`Source`] for an audio
+/// An [audio source](rodio::Source) for an [audio](Audio).
 #[derive(Debug)]
 #[must_use = "AudioSource is an iterator"]
-pub struct AudioSource {
+pub struct Source {
     audio: Audio,
     right: bool,
     /// The current sample that the iterator is on, from the beginning
     sample: usize,
 }
 
-impl AudioSource {
-    pub(super) fn new(audio: Audio, sample: usize) -> AudioSource {
-        AudioSource {
+impl Source {
+    pub(super) fn new(audio: Audio, sample: usize) -> Source {
+        Source {
             audio,
             right: false,
             sample,
@@ -22,7 +21,7 @@ impl AudioSource {
     }
 }
 
-impl Iterator for AudioSource {
+impl Iterator for Source {
     type Item = f32;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -46,7 +45,7 @@ impl Iterator for AudioSource {
     }
 }
 
-impl Source for AudioSource {
+impl rodio::Source for Source {
     fn current_frame_len(&self) -> Option<usize> {
         Some(self.audio.sample_count().saturating_sub(self.sample))
     }

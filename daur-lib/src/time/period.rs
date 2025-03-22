@@ -18,8 +18,8 @@ impl Period {
         self.start + self.duration
     }
 
-    /// Constructs a new `Period` from a `start` and `end` point.
-    /// If `end` is before `start`, `None` is returned.
+    /// Constructs a new period from a starting and an ending point.
+    /// If the ending point is before the starting one, [`None`] is returned.
     #[must_use]
     pub fn from_endpoints(start: Instant, end: Instant) -> Option<Period> {
         if end < start {
@@ -33,7 +33,7 @@ impl Period {
     }
 
     /// Returns the intersection between the two periods.
-    /// If the periods do not intersect, `None` is returned
+    /// If the periods do not intersect, [`None`] is returned
     #[must_use]
     pub fn intersection(first: Period, second: Period) -> Option<Period> {
         Period::from_endpoints(

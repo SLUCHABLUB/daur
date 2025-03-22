@@ -1,39 +1,39 @@
-mod error;
-mod explorer;
-mod info;
-mod key;
-mod panel;
-mod popups;
-mod terminating;
+//! Types pertaining to [`Popup`].
 
-pub use popups::Popups;
-use std::env::current_dir;
-pub use terminating::terminating;
+mod button_panel;
+mod error_message;
+mod file_selector;
+mod info;
+mod key_selector;
+mod popups;
+
+pub use button_panel::ButtonPanel;
+pub use error_message::ErrorMessage;
+pub use file_selector::FileSelector;
+pub use info::Info;
+pub use key_selector::KeySelector;
+pub use popups::Manager;
 
 use crate::key::Key;
-use crate::popup::error::ErrorPopup;
-use crate::popup::explorer::ExplorerPopup;
-use crate::popup::info::PopupInfo;
-use crate::popup::key::KeySelector;
-use crate::popup::panel::ButtonPanel;
-use crate::ui::{Point, Rectangle};
-use crate::view::View;
-use crate::{Action, Cell, Ratio};
+use crate::view::OnClick;
+use crate::{Action, Cell, View};
 use arcstr::ArcStr;
 use dirs::home_dir;
+use std::env::current_dir;
 use std::error::Error;
 use std::path::Path;
 use std::sync::{Arc, Weak};
 
 /// A popup window.
+#[doc(hidden)]
 #[derive(Debug)]
 pub enum Popup {
     /// A panel of buttons.
     Buttons(ButtonPanel),
     /// An error message.
-    Error(ErrorPopup),
+    Error(ErrorMessage),
     /// A file selector.
-    Explorer(ExplorerPopup),
+    FileSelector(FileSelector),
     /// A window for selecting a key.
     KeySelector(KeySelector),
 }
@@ -45,7 +45,7 @@ impl Popup {
         B: IntoIterator<Item = (ArcStr, Action)>,
     {
         Arc::new_cyclic(|this| {
-            let info = PopupInfo::new(ArcStr::new(), Weak::clone(this));
+            let info = Info::new(ArcStr::new(), Weak::clone(this));
 
             Popup::Buttons(ButtonPanel {
                 buttons: buttons.into_iter().collect(),
@@ -59,11 +59,11 @@ impl Popup {
     pub fn error<E: Error>(error: E) -> Arc<Popup> {
         Arc::new_cyclic(|this| {
             let this = Weak::clone(this);
-            Popup::Error(ErrorPopup::from_error(error, this))
+            Popup::Error(ErrorMessage::from_error(error, this))
         })
     }
 
-    /// Constructs a new [file-explorer popup](Popup::Explorer).
+    /// Constructs a new [file-explorer popup](Popup::FileSelector).
     pub fn explorer<A: Fn(&Path) -> Action + Send + Sync + 'static>(
         title: ArcStr,
         action: A,
@@ -73,7 +73,7 @@ impl Popup {
 
             let path = current_dir().ok().or_else(home_dir).unwrap_or_default();
 
-            Popup::Explorer(ExplorerPopup::new(title, this, Arc::from(path), action))
+            Popup::FileSelector(FileSelector::new(title, this, Arc::from(path), action))
         })
     }
 
@@ -86,43 +86,14 @@ impl Popup {
         })
     }
 
-    /// Sets the position of the popup.
-    pub fn at(self: Arc<Self>, position: Point) -> Arc<Self> {
-        self.info().position.set(Some(position));
-        self
-    }
-
-    /// Returns the [popup info](PopupInfo).
-    pub fn info(&self) -> &PopupInfo {
+    /// Returns the [popup info](Info).
+    pub fn info(&self) -> &Info {
         match self {
             Popup::Error(message) => &message.info,
-            Popup::Explorer(explorer) => &explorer.info,
+            Popup::FileSelector(explorer) => &explorer.info,
             Popup::Buttons(buttons) => &buttons.info,
             Popup::KeySelector(selector) => &selector.info,
         }
-    }
-
-    /// Calculates the rectangle encompassing the popup.
-    pub fn area_in_window(&self, area: Rectangle) -> Rectangle {
-        let size = self.view().minimum_size();
-
-        let position = if let Some(position) = self.info().position.get() {
-            if area.contains(position) {
-                position
-            } else {
-                Point {
-                    x: area.position.x + area.size.width - size.width,
-                    y: area.position.y + area.size.height - size.height,
-                }
-            }
-        } else {
-            Point {
-                x: area.position.x + area.size.width * Ratio::HALF - size.width * Ratio::HALF,
-                y: area.position.y + area.size.height * Ratio::HALF - size.height * Ratio::HALF,
-            }
-        };
-
-        Rectangle { position, size }
     }
 
     /// Returns the popups [view](View).
@@ -132,8 +103,15 @@ impl Popup {
         match self {
             Popup::Buttons(buttons) => buttons.view().titled(title),
             Popup::Error(message) => message.view().titled(title),
-            Popup::Explorer(explorer) => explorer.view().titled(title),
+            Popup::FileSelector(explorer) => explorer.view().titled(title),
             Popup::KeySelector(selector) => selector.view().titled(title),
         }
+    }
+}
+
+impl View {
+    /// Makes the view close a popup when clicked.
+    fn terminating(self, popup: Weak<Popup>) -> View {
+        self.on_click(OnClick::from(Action::ClosePopup(popup)))
     }
 }

@@ -71,7 +71,7 @@ impl Length {
         Length::new(length)
     }
 
-    /// Converts `self` to a `Quota`
+    /// Converts the length to a [quotum](Quotum).
     #[must_use]
     pub fn quotum(self) -> Quotum {
         Quotum::Exact(self)

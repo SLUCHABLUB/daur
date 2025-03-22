@@ -1,31 +1,31 @@
-use crate::Cell;
 use crate::popup::Popup;
-use crate::ui::Point;
 use arcstr::ArcStr;
 use std::sync::Weak;
 
+/// Info about a popup.
 #[derive(Clone, Debug)]
-pub struct PopupInfo {
+pub struct Info {
     title: ArcStr,
-    pub position: Cell<Option<Point>>,
     this: Weak<Popup>,
 }
 
-impl PopupInfo {
-    pub fn new(title: ArcStr, this: Weak<Popup>) -> PopupInfo {
-        PopupInfo {
-            title,
-            position: Cell::new(None),
-            this,
-        }
+impl Info {
+    /// Construct a new popup info.
+    #[must_use]
+    pub fn new(title: ArcStr, this: Weak<Popup>) -> Info {
+        Info { title, this }
     }
 
     // TODO: derive
+    /// Returns the title of the popup.
+    #[must_use]
     pub fn title(&self) -> ArcStr {
         ArcStr::clone(&self.title)
     }
 
     // TODO: derive
+    /// Returns a pointer to the popup.
+    #[must_use]
     pub fn this(&self) -> Weak<Popup> {
         Weak::clone(&self.this)
     }

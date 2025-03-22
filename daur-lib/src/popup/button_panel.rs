@@ -1,26 +1,27 @@
-use crate::popup::info::PopupInfo;
-use crate::popup::terminating;
+use crate::popup::info::Info;
 use crate::view::{Direction, OnClick, View};
 use crate::{Action, Cell};
 use arcstr::ArcStr;
 
+/// A panel of buttons.
 #[derive(Debug)]
 pub struct ButtonPanel {
-    pub info: PopupInfo,
+    /// The popup info.
+    pub info: Info,
+    /// The buttons.
     pub buttons: Vec<(ArcStr, Action)>,
     // TODO: display
+    /// The index of the currently selected button.
     pub selected: Cell<Option<usize>>,
 }
 
 impl ButtonPanel {
-    pub fn view(&self) -> View {
+    pub(super) fn view(&self) -> View {
         View::balanced_stack(
             Direction::Down,
             self.buttons.iter().map(|(label, action)| {
-                terminating(
-                    View::simple_button(ArcStr::clone(label), OnClick::from(action.clone())),
-                    self.info.this(),
-                )
+                View::simple_button(ArcStr::clone(label), OnClick::from(action.clone()))
+                    .terminating(self.info.this())
             }),
         )
     }

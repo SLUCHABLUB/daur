@@ -1,9 +1,9 @@
 use arcstr::ArcStr;
 use std::fmt::Display;
 
-/// Like [`ToString`] but for [`ArcStr`]
+/// Like [`ToString`] but for [`ArcStr`].
 pub trait ToArcStr {
-    /// Converts `self` to an [`ArcStr`]
+    /// Converts the value to an [`ArcStr`].
     fn to_arc_str(&self) -> ArcStr;
 }
 

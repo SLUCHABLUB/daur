@@ -1,8 +1,7 @@
 use crate::chroma::Chroma;
 use crate::key::{Key, KeyInterval};
 use crate::popup::Popup;
-use crate::popup::info::PopupInfo;
-use crate::popup::terminating::terminating;
+use crate::popup::info::Info;
 use crate::sign::Sign;
 use crate::view::{Direction, OnClick, ToText as _, View, multi, single};
 use crate::{Action, Cell, project};
@@ -14,19 +13,26 @@ const TITLE: ArcStr = literal!("select key");
 const CANCEL: ArcStr = literal!("cancel");
 const CONFIRM: ArcStr = literal!("confirm");
 
+/// A key selector.
 #[derive(Clone, Debug)]
 pub struct KeySelector {
-    pub info: PopupInfo,
+    /// The popup info.
+    pub info: Info,
 
-    tonic: Arc<Cell<Chroma>>,
-    sign: Arc<Cell<Sign>>,
-    intervals: Arc<Cell<BitBag<KeyInterval>>>,
+    /// The currently selected tonic.
+    pub tonic: Arc<Cell<Chroma>>,
+    /// The currently selected sign.
+    pub sign: Arc<Cell<Sign>>,
+    /// The currently selected intervals.
+    pub intervals: Arc<Cell<BitBag<KeyInterval>>>,
 }
 
 impl KeySelector {
+    /// Constructs a new key selector.
+    #[must_use]
     pub fn new(key: Key, this: Weak<Popup>) -> KeySelector {
         KeySelector {
-            info: PopupInfo::new(TITLE, this),
+            info: Info::new(TITLE, this),
             tonic: Arc::new(Cell::new(key.tonic)),
             sign: Arc::new(Cell::new(key.sign)),
             intervals: Arc::new(Cell::new(key.intervals)),
@@ -41,18 +47,16 @@ impl KeySelector {
         }
     }
 
-    pub fn view(&self) -> View {
+    pub(super) fn view(&self) -> View {
         let buttons = View::spaced_stack(
             Direction::Right,
             vec![
-                terminating(CANCEL.centred().bordered(), self.info.this()),
-                terminating(
-                    View::standard_button(
-                        CONFIRM,
-                        OnClick::from(Action::Project(project::Action::SetDefaultKey(self.key()))),
-                    ),
-                    self.info.this(),
-                ),
+                CANCEL.centred().bordered().terminating(self.info.this()),
+                View::standard_button(
+                    CONFIRM,
+                    OnClick::from(Action::Project(project::Action::SetDefaultKey(self.key()))),
+                )
+                .terminating(self.info.this()),
             ],
         );
 

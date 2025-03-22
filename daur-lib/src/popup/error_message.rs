@@ -1,7 +1,6 @@
 use crate::Cell;
 use crate::popup::Popup;
-use crate::popup::info::PopupInfo;
-use crate::popup::terminating::terminating;
+use crate::popup::info::Info;
 use crate::view::{Alignment, Direction, ToText as _, View};
 use arcstr::{ArcStr, format, literal};
 use std::error::Error;
@@ -9,10 +8,11 @@ use std::sync::Weak;
 
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 
+/// An error message.
 #[derive(Clone, Debug)]
-pub struct ErrorPopup {
-    /// Info about the popup.
-    pub info: PopupInfo,
+pub struct ErrorMessage {
+    /// The popup info.
+    pub info: Info,
     /// The display representation of the error.
     pub display: ArcStr,
     /// The debug representation of the error.
@@ -21,25 +21,28 @@ pub struct ErrorPopup {
     pub selected: Cell<bool>,
 }
 
-impl ErrorPopup {
+impl ErrorMessage {
+    /// Construct a new error message from an error.
     pub fn from_error<E: Error>(error: E, this: Weak<Popup>) -> Self {
-        ErrorPopup {
-            info: PopupInfo::new(literal!("error"), this),
+        ErrorMessage {
+            info: Info::new(literal!("error"), this),
             display: format!("{error}"),
             debug: format!("{error:?}"),
             selected: Cell::new(false),
         }
     }
 
-    pub fn display(&self) -> ArcStr {
+    // TODO: derive
+    fn display(&self) -> ArcStr {
         ArcStr::clone(&self.display)
     }
 
-    pub fn debug(&self) -> ArcStr {
+    // TODO: derive
+    fn debug(&self) -> ArcStr {
         ArcStr::clone(&self.debug)
     }
 
-    pub fn view(&self) -> View {
+    pub(super) fn view(&self) -> View {
         let acknowledge_button = ACKNOWLEDGE
             .centred()
             .bordered()
@@ -50,7 +53,7 @@ impl ErrorPopup {
             [
                 self.display().aligned_to(Alignment::TopLeft),
                 self.debug().aligned_to(Alignment::TopLeft),
-                terminating(acknowledge_button, self.info.this()),
+                acknowledge_button.terminating(self.info.this()),
             ],
         )
     }

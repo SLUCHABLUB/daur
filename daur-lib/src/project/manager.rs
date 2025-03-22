@@ -17,7 +17,7 @@ use thiserror::Error;
 #[error("No track is selected")]
 struct NoTrackSelected;
 
-/// Manages mutation of a [`Project`].
+/// Manages mutation of a [project](Project).
 #[derive(Debug)]
 pub struct Manager {
     project: Lock<Project>,
@@ -26,7 +26,7 @@ pub struct Manager {
 }
 
 impl Manager {
-    /// Constructs a new manager for `project`.
+    /// Wraps a project in a new manage.
     #[must_use]
     pub fn new(project: Project) -> Manager {
         Manager {

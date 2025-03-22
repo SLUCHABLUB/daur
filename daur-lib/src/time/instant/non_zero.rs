@@ -1,6 +1,6 @@
 use crate::time::{Instant, NonZeroDuration};
 
-/// An `Instant` distinct from  the starting point
+/// An instant that is strictly after the starting point.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub struct NonZeroInstant {
     /// The duration since the starting point
@@ -8,7 +8,7 @@ pub struct NonZeroInstant {
 }
 
 impl NonZeroInstant {
-    /// Converts `self` to an `Instant`
+    /// Converts the instant to a [zeroable one](Instant).
     #[must_use]
     pub fn get(self) -> Instant {
         Instant {
@@ -16,7 +16,7 @@ impl NonZeroInstant {
         }
     }
 
-    /// Converts an `Instant` to a `NonZeroInstant` if it is not the starting point
+    /// Converts an instant to a non-zero one if it is not the starting point.
     #[must_use]
     pub fn from_instant(instant: Instant) -> Option<NonZeroInstant> {
         Some(NonZeroInstant {

@@ -13,7 +13,7 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
-    /// Returns whether the rectangle contains `point`.
+    /// Returns whether the rectangle contains a point.
     #[must_use]
     pub fn contains(self, point: Point) -> bool {
         let bottom_right = self.bottom_right();
@@ -46,7 +46,7 @@ impl Rectangle {
         })
     }
 
-    /// Returns the intersection between `self` and `other`.
+    /// Calculates the intersection between two rectangles.
     #[must_use]
     pub fn intersection(self, other: Rectangle) -> Option<Rectangle> {
         let position = Point {

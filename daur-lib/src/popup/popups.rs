@@ -4,15 +4,15 @@ use std::sync::{Arc, Weak};
 
 /// A manager for the open [popups](Popup).
 #[derive(Debug)]
-pub struct Popups {
+pub struct Manager {
     list: Lock<Vec<Arc<Popup>>>,
 }
 
-impl Popups {
-    /// Constructs a new [popup manager](Popups).
+impl Manager {
+    /// Constructs a new manager with no popups.
     #[must_use]
-    pub fn new() -> Popups {
-        Popups {
+    pub fn new() -> Manager {
+        Manager {
             list: Lock::new(Vec::new()),
         }
     }
@@ -48,7 +48,7 @@ impl Popups {
     }
 }
 
-impl Default for Popups {
+impl Default for Manager {
     fn default() -> Self {
         Self::new()
     }

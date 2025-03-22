@@ -46,7 +46,7 @@ pub enum Action {
     Pause,
     /// Start playing
     Play,
-    /// `Play` or `Pause`
+    /// Inverts the playback state.
     PlayPause,
 
     /// Takes a project action

@@ -1,4 +1,4 @@
-//! Types relating to [`Track`].
+//! Items pertaining to [`Track`].
 
 mod overview;
 mod settings;

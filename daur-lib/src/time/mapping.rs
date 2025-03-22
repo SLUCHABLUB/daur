@@ -15,7 +15,7 @@ pub struct Mapping {
 }
 
 impl Mapping {
-    /// The real time duration between [`Instant::START`] and `instant`
+    /// Calculates the real time duration that has elapsed since [the start](Instant::START).
     #[must_use]
     pub fn real_time_offset(&self, instant: Instant) -> time::Duration {
         self.real_time_duration(Period {
@@ -24,7 +24,7 @@ impl Mapping {
         })
     }
 
-    /// The real time duration of `period`
+    /// Calculates the real time duration of a period.
     #[must_use]
     pub fn real_time_duration(&self, period: Period) -> time::Duration {
         let mut duration = time::Duration::ZERO;
@@ -43,7 +43,7 @@ impl Mapping {
         duration
     }
 
-    /// A period starting at `start` with a duration of `duration`
+    /// Calculates a period from a starting point and a real-time duration.
     #[must_use]
     pub fn period(&self, start: Instant, duration: time::Duration) -> Period {
         let mut remaining = duration;

@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::num::{NonZeroU32, NonZeroU128};
 use std::ops::{Div, DivAssign};
 
-/// A non-zero `Ratio`
+/// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct NonZeroRatio {
     numerator: NonZeroU32,
@@ -21,7 +21,7 @@ impl NonZeroRatio {
     const MIN: NonZeroRatio = NonZeroRatio::reciprocal_of(NonZeroU32::MAX);
     const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU32::MAX);
 
-    /// Creates a new `NonZeroRatio` representing `numerator` / `denominator`
+    /// Creates a new ratio from a numerator and a denominator.
     #[must_use]
     pub fn new(numerator: NonZeroU32, denominator: NonZeroU32) -> NonZeroRatio {
         // The non-zero types don't implement `num::Integer`.
@@ -36,7 +36,7 @@ impl NonZeroRatio {
         }
     }
 
-    /// Converts an integer to a `NonZeroRatio`
+    /// Converts an integer to a ratio.
     #[must_use]
     pub const fn integer(integer: NonZeroU32) -> NonZeroRatio {
         NonZeroRatio {
@@ -45,7 +45,7 @@ impl NonZeroRatio {
         }
     }
 
-    /// Constructs the ratio 1 / `integer`
+    /// Constructs a ratio from an integer by taking its reciprocal.
     #[must_use]
     pub const fn reciprocal_of(integer: NonZeroU32) -> NonZeroRatio {
         NonZeroRatio {
@@ -54,7 +54,7 @@ impl NonZeroRatio {
         }
     }
 
-    /// Returns the reciprocal of `self`
+    /// Returns the reciprocal of the ratio.
     #[must_use]
     pub const fn reciprocal(self) -> NonZeroRatio {
         NonZeroRatio {
@@ -63,7 +63,7 @@ impl NonZeroRatio {
         }
     }
 
-    /// Converts `self` to a `Ratio`
+    /// Converts the ratio to a [zeroable one](Ratio).
     #[must_use]
     pub fn get(self) -> Ratio {
         Ratio {
@@ -72,7 +72,7 @@ impl NonZeroRatio {
         }
     }
 
-    /// Converts a `Ratio` to a `NonZeroRatio` if it is not zero
+    /// Converts a ratio to a non-zero one if it is not zero.
     #[must_use]
     pub fn from_ratio(ratio: Ratio) -> Option<NonZeroRatio> {
         Some(NonZeroRatio {

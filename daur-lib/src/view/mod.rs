@@ -1,4 +1,4 @@
-//! The UI of daur is based on views, based on the system used by the `ratatui` crate
+//! Types pertaining to [`View`].
 
 mod alignment;
 mod button;
@@ -126,12 +126,12 @@ pub enum View {
 }
 
 impl View {
-    /// Puts a border around `self`.
+    /// Puts a border around the view.
     pub fn bordered(self) -> Self {
         self.titled(ArcStr::new())
     }
 
-    /// Puts a titled border around `self`.
+    /// Puts a titled border around the view.
     pub fn titled(self, title: ArcStr) -> Self {
         View::Bordered {
             title,
@@ -140,7 +140,7 @@ impl View {
         }
     }
 
-    /// Sets the thickness if `self` matches [`View::Bordered`].
+    /// Sets the border thickness if the view is [bordered](View::Bordered).
     pub fn with_thickness(self, thickness: bool) -> Self {
         if let View::Bordered {
             title,
@@ -158,7 +158,7 @@ impl View {
         }
     }
 
-    /// Constructs a [`View::Canvas`].
+    /// Constructs a new [canvas](View::Canvas).
     pub fn canvas<Painter>(background: Colour, painter: Painter) -> View
     where
         Painter: Fn(&mut dyn Context) + Send + Sync + 'static,
@@ -177,7 +177,7 @@ impl View {
         }
     }
 
-    /// Constructs a [`View::Hoverable`].
+    /// Constructs a new [hoverable](View::Hoverable) view.
     pub fn hoverable(default: View, hovered: View) -> Self {
         View::Hoverable {
             default: Box::new(default),
@@ -185,17 +185,17 @@ impl View {
         }
     }
 
-    /// Constructs a [`View::Generator`].
+    /// Constructs a new view from a [generator](View::Generator).
     pub fn generator<F: Fn() -> View + Send + Sync + 'static>(generator: F) -> Self {
         View::Generator(Box::new(generator))
     }
 
-    /// Constructs a [`View::SizeInformed`].
+    /// Constructs a new [size-informed](View::SizeInformed) view.
     pub fn size_informed<F: Fn(Size) -> View + Send + Sync + 'static>(generator: F) -> Self {
         View::SizeInformed(Box::new(generator))
     }
 
-    /// Constructs a stack where all views are quotated equally.
+    /// Constructs a new [stack](View::Stack) where all views are quotated equally.
     pub fn balanced_stack<E>(direction: Direction, elements: E) -> Self
     where
         E: IntoIterator<Item = Self>,
@@ -206,7 +206,7 @@ impl View {
         }
     }
 
-    /// A stack where elements are quotated with their minimum size and spread out evenly.
+    /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size and spread out evenly.
     pub fn spaced_stack<E>(direction: Direction, elements: E) -> Self
     where
         E: IntoIterator<Item = Self>,

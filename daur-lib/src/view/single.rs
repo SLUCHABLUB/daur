@@ -15,7 +15,7 @@ pub fn selector<T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
     selector_with_formatter(cell, direction, ToArcStr::to_arc_str)
 }
 
-/// A simple single-selection view that uses a custom formatter rather than [`Display`]
+/// A simple single-selection view that uses a custom "formatter".
 pub fn selector_with_formatter<
     T: Copy + PartialEq + VariantArray + Send + Sync,
     F: FnMut(&T) -> ArcStr,

@@ -1,4 +1,4 @@
-//! Types related to musical time
+//! Types pertaining to [musical time](https://en.wikipedia.org/wiki/Metre_(music)).
 
 mod bar;
 mod duration;

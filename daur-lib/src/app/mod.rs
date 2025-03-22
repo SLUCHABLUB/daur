@@ -2,13 +2,11 @@ mod action;
 
 pub use action::Action;
 
-use crate::popup::Popups;
-use crate::project::{Manager, Project};
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::piano_roll::Settings;
 use crate::view::{Direction, View, piano_roll};
-use crate::{ArcCell, Cell, OptionArcCell, ui};
+use crate::{ArcCell, Cell, OptionArcCell, Project, popup, project, ui};
 use derive_more::Debug;
 use rodio::Device;
 use rodio::cpal::traits::HostTrait as _;
@@ -16,17 +14,17 @@ use rodio::cpal::{Host, default_host};
 use std::collections::HashMap;
 use std::time::{Duration, SystemTime};
 
-/// A running instance of the DAW
+/// A running instance of the DAW.
 #[derive(Debug)]
 pub struct App {
     /// The keybinds.
     /// How the keys are interpreted is based on the UI implementation.
     pub controls: ArcCell<HashMap<String, Action>>,
     /// The project manager.
-    pub project: Manager,
+    pub project: project::Manager,
 
     /// When playback started.
-    /// `None` means that playback is paused.
+    /// [`None`] means that playback is paused.
     pub playback_start: Cell<Option<SystemTime>>,
     /// The playback-audio host.
     #[debug(ignore)]
@@ -35,8 +33,8 @@ pub struct App {
     #[debug(ignore)]
     pub device: OptionArcCell<Device>,
 
-    /// The popups manager.
-    pub popups: Popups,
+    /// The popup manager.
+    pub popups: popup::Manager,
 
     /// The height of the project bar.
     pub project_bar_height: Length,
@@ -72,13 +70,13 @@ impl App {
 
         App {
             controls: ArcCell::from_value(HashMap::new()),
-            project: Manager::new(Project::default()),
+            project: project::Manager::new(Project::default()),
 
             playback_start: Cell::new(None),
             host,
             device,
 
-            popups: Popups::new(),
+            popups: popup::Manager::new(),
 
             project_bar_height: Length::PROJECT_BAR_HEIGHT,
             track_settings_width: Length::TRACK_SETTINGS_DEFAULT,

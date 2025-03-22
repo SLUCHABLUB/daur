@@ -1,7 +1,8 @@
+//! Type pertaining to [`Audio`].
+
 mod source;
 
-pub use source::AudioSource;
-use std::cmp::max;
+pub use source::Source;
 
 use crate::time::{Instant, Mapping, Period};
 use crate::ui::{Length, NonZeroLength, Point};
@@ -11,11 +12,13 @@ use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{Integer as _, rational};
 use saturating_cast::SaturatingCast as _;
+use std::cmp::max;
 use std::io::Read;
 use std::num::{FpCategory, NonZeroU16, NonZeroU32};
 use std::time::Duration;
 
-/// Some stereo 64-bit floating point audio
+/// Some stereo 64-bit floating point audio.
+#[doc(hidden)]
 #[derive(Clone, PartialEq, Debug)]
 pub struct Audio {
     sample_rate: u32,
@@ -147,9 +150,9 @@ impl Audio {
         }
     }
 
-    /// Returns a [`Source`](source::Source) for the audio
-    pub fn to_source(&self, offset: usize) -> AudioSource {
-        AudioSource::new(self.clone(), offset)
+    /// Returns an [audio source](rodio::Source) for the audio.
+    pub fn to_source(&self, offset: usize) -> Source {
+        Source::new(self.clone(), offset)
     }
 }
 

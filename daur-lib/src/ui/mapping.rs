@@ -13,7 +13,7 @@ pub struct Mapping {
 }
 
 impl Mapping {
-    /// Calculates the display-width of `bar`
+    /// Calculates the display-width of a bar.
     #[must_use]
     pub fn bar_width(&self, bar: Bar) -> Length {
         let cell_count = bar.period().duration / self.grid.cell_duration;
@@ -21,7 +21,7 @@ impl Mapping {
         self.grid.cell_width.get() * cell_count
     }
 
-    /// Maps an [`Instant`] to an offset from the left of the window
+    /// Maps an [instant](Instant) to an offset from the left of the window.
     #[must_use]
     pub fn offset(&self, instant: Instant) -> Length {
         let mut offset = Length::ZERO;
@@ -44,17 +44,17 @@ impl Mapping {
         offset
     }
 
-    /// Maps an offset from the left of the window to an [`Instant`] on the grid
+    /// Maps an offset from the left of the window to an [instant](Instant) on the grid.
     #[must_use]
     pub fn instant_on_grid(&self, offset: Length) -> Instant {
-        let cell = (offset / self.grid.cell_width).floored();
+        let cell = (offset / self.grid.cell_width).rounded();
         let duration = self.grid.cell_duration.get() * cell;
         Instant {
             since_start: duration,
         }
     }
 
-    /// Maps an offset from the left of the window to an [`Instant`]
+    /// Maps an offset from the left of the window to an [instant](Instant).
     #[must_use]
     pub fn instant(&self, offset: Length) -> Instant {
         let cell = offset / self.grid.cell_width;
@@ -64,7 +64,7 @@ impl Mapping {
         }
     }
 
-    /// Maps an offset from the left of the window and a width to a [`Period`]
+    /// Maps an offset from the left of the window and a width to a [period](Period).
     #[must_use]
     pub fn period(&self, x: Length, width: Length) -> Period {
         let end = x + width;
@@ -74,7 +74,7 @@ impl Mapping {
         Period { start, duration }
     }
 
-    /// Calculates the width of a `Period`
+    /// Calculates the width of a period.
     #[must_use]
     pub fn width_of(&self, period: Period) -> Length {
         let start = self.offset(period.start);

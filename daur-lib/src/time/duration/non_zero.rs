@@ -2,7 +2,7 @@ use crate::NonZeroRatio;
 use crate::time::Duration;
 use std::ops::{Div, DivAssign};
 
-/// A non-zero `Duration`
+/// A non-zero duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct NonZeroDuration {
     /// The number of whole-note durations
@@ -15,7 +15,7 @@ impl NonZeroDuration {
         whole_notes: NonZeroRatio::QUARTER,
     };
 
-    /// Converts `self` to a `Duration`
+    /// Converts the duration to a [zeroable one](Duration).
     #[must_use]
     pub fn get(self) -> Duration {
         Duration {
@@ -23,7 +23,7 @@ impl NonZeroDuration {
         }
     }
 
-    /// Converts a `Duration` to a `NonZeroDuration` is it is not zero
+    /// Converts a duration to a non-zero one is it is not zero.
     #[must_use]
     pub fn from_duration(duration: Duration) -> Option<NonZeroDuration> {
         Some(NonZeroDuration {

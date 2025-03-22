@@ -98,17 +98,13 @@ fn handle_mouse_event(
                     break;
                 }
 
-                let area =
-                    rectangle_to_rect(popup.area_in_window(rect_to_rectangle(WINDOW_AREA.get())));
+                let view = popup.view();
+
+                // TODO: fix popup positions
+                let area = Rect::from((Position::ORIGIN, size_to_ratatui(view.minimum_size())));
 
                 if area.contains(MOUSE_POSITION.get()) {
-                    click(
-                        &popup.view(),
-                        button,
-                        area,
-                        MOUSE_POSITION.get(),
-                        &mut actions,
-                    );
+                    click(&view, button, area, MOUSE_POSITION.get(), &mut actions);
 
                     consumed = true;
                 }
