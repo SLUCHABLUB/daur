@@ -17,6 +17,7 @@ use std::sync::Arc;
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 
 /// A musical track.
+#[doc(hidden)]
 #[derive(Clone, Debug)]
 pub struct Track {
     /// The name of the track.

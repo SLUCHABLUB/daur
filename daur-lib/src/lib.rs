@@ -36,9 +36,13 @@ pub use changing::Changing;
 pub use clip::{Clip, ClipContent, ClipSource};
 pub use colour::Colour;
 pub use popup::{Popup, Popups};
-#[doc(inline)]
-pub use project::Project;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
 pub use string::ToArcStr;
-pub use view::ToText;
+
+#[doc(inline)]
+pub use project::Project;
+#[doc(inline)]
+pub use track::Track;
+#[doc(inline)]
+pub use view::View;

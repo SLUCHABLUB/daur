@@ -38,6 +38,7 @@ use std::sync::Arc;
 type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 
 /// A UI element.
+#[doc(hidden)]
 #[must_use = "A view must be processed in some way"]
 #[derive(Debug, Default)]
 pub enum View {
