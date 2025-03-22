@@ -18,6 +18,7 @@ use crate::track::Track;
 use crate::ui::Grid;
 use crate::{Changing, time, ui};
 use arcstr::{ArcStr, literal};
+use getset::CloneGetters;
 use std::sync::Arc;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
@@ -25,17 +26,21 @@ const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 
 /// A musical piece consisting of multiple [tracks](Track).
 #[doc(hidden)]
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, CloneGetters)]
 pub struct Project {
     /// The name of the project
+    #[get_clone = "pub"]
     pub title: ArcStr,
 
     /// The key of the project
+    #[get_clone = "pub"]
     pub key: Arc<Changing<Key>>,
     /// The time signature of the project
+    #[get_clone = "pub"]
     pub time_signature: Arc<Changing<Signature>>,
     // TODO: continuous change
     /// The tempo of the project
+    #[get_clone = "pub"]
     pub tempo: Arc<Changing<Tempo>>,
 
     /// The tracks in the project
@@ -43,21 +48,6 @@ pub struct Project {
 }
 
 impl Project {
-    #[must_use]
-    pub fn title(&self) -> ArcStr {
-        ArcStr::clone(&self.title)
-    }
-
-    #[must_use]
-    pub fn time_signature(&self) -> Arc<Changing<Signature>> {
-        Arc::clone(&self.time_signature)
-    }
-
-    #[must_use]
-    pub fn tempo(&self) -> Arc<Changing<Tempo>> {
-        Arc::clone(&self.tempo)
-    }
-
     #[must_use]
     pub fn time_mapping(&self) -> time::Mapping {
         time::Mapping {

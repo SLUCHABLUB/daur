@@ -38,19 +38,19 @@ impl Manager {
     /// Returns the key of the project.
     #[must_use]
     pub fn key(&self) -> Arc<Changing<Key>> {
-        Arc::clone(&self.project.read().key)
+        self.project.read().key()
     }
 
     /// Returns the tempo of the project.
     #[must_use]
     pub fn tempo(&self) -> Arc<Changing<Tempo>> {
-        Arc::clone(&self.project.read().tempo)
+        self.project.read().tempo()
     }
 
     /// Returns the time signature of the project.
     #[must_use]
     pub fn time_signature(&self) -> Arc<Changing<Signature>> {
-        Arc::clone(&self.project.read().time_signature)
+        self.project.read().time_signature()
     }
 
     /// Returns a clip from its index.

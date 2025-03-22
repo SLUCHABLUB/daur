@@ -80,7 +80,7 @@ impl Popup {
             Popup::ButtonPanel { title: _, buttons } => View::balanced_stack(
                 Direction::Down,
                 buttons.iter().map(|(label, action)| {
-                    View::simple_button(ArcStr::clone(label), OnClick::from(action.clone()))
+                    View::simple_button(label.clone(), OnClick::from(action.clone()))
                         .terminating(id)
                 }),
             ),
