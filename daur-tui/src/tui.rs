@@ -1,18 +1,22 @@
-use crate::SHOULD_EXIT;
 use crate::convert::{point_to_position, rect_to_rectangle, size_to_ratatui};
-use crate::draw::WINDOW_AREA;
 use daur::arcstr::ArcStr;
 use daur::popup::Id;
-use daur::{Lock, Ratio, UserInterface, View};
-use ratatui::layout::Rect;
+use daur::{Cell, Lock, OptionArcCell, Ratio, UserInterface, View};
+use ratatui::layout::{Position, Rect};
 
 pub struct Tui {
     pub popups: Lock<Vec<(Id, Rect, View)>>,
+    pub context_menu: OptionArcCell<(Rect, View)>,
+
+    pub should_exit: Cell<bool>,
+    pub should_redraw: Cell<bool>,
+    pub mouse_position: Cell<Position>,
+    pub window_area: Cell<Rect>,
 }
 
 impl UserInterface for Tui {
     fn exit(&self) {
-        SHOULD_EXIT.set(true);
+        self.should_exit.set(true);
     }
 
     type PopupHandle = Id;
@@ -20,7 +24,7 @@ impl UserInterface for Tui {
     fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle {
         let view = view.titled(title);
 
-        let window_area = rect_to_rectangle(WINDOW_AREA.get());
+        let window_area = rect_to_rectangle(self.window_area.get());
 
         let size = view.minimum_size();
         let position = point_to_position(
@@ -49,6 +53,12 @@ impl Default for Tui {
     fn default() -> Self {
         Tui {
             popups: Lock::new(Vec::new()),
+            context_menu: OptionArcCell::none(),
+
+            should_exit: Cell::new(false),
+            should_redraw: Cell::new(true),
+            mouse_position: Cell::new(Position::ORIGIN),
+            window_area: Cell::new(Rect::ZERO),
         }
     }
 }

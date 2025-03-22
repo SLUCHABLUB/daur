@@ -1,14 +1,13 @@
 use crate::convert::{
     position_to_point, ratatui_to_size, rect_to_rectangle, rectangle_to_rect, size_to_ratatui,
 };
-use crate::draw::{SHOULD_REDRAW, WINDOW_AREA};
 use crate::tui::Tui;
 use crossterm::event::{
     Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
 use daur::ui::{Length, Vector};
 use daur::view::{Direction, View};
-use daur::{Action, App, Cell, OptionArcCell};
+use daur::{Action, App, OptionArcCell};
 use ratatui::layout::{Position, Rect};
 use ratatui::widgets::Block;
 use ratatui_explorer::FileExplorer;
@@ -16,9 +15,6 @@ use std::io;
 use std::iter::zip;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
-
-pub static MOUSE_POSITION: Cell<Position> = Cell::new(Position::ORIGIN);
-pub static CONTEXT_MENU: OptionArcCell<(Rect, View)> = OptionArcCell::none();
 
 pub fn spawn_events_thread(app: Arc<App<Tui>>) -> JoinHandle<io::Error> {
     spawn(move || {
@@ -32,7 +28,7 @@ pub fn spawn_events_thread(app: Arc<App<Tui>>) -> JoinHandle<io::Error> {
                 Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
                 Event::Key(event) => handle_key_event(event, &app),
                 Event::Mouse(event) => handle_mouse_event(event, &app),
-                Event::Resize(width, height) => WINDOW_AREA.set(Rect {
+                Event::Resize(width, height) => app.ui.window_area.set(Rect {
                     x: 0,
                     y: 0,
                     width,
@@ -40,7 +36,7 @@ pub fn spawn_events_thread(app: Arc<App<Tui>>) -> JoinHandle<io::Error> {
                 }),
             }
 
-            SHOULD_REDRAW.set(true);
+            app.ui.should_redraw.set(true);
         }
     })
 }
@@ -74,7 +70,7 @@ fn handle_mouse_event(
     }: MouseEvent,
     app: &App<Tui>,
 ) {
-    MOUSE_POSITION.set(Position::new(column, row));
+    app.ui.mouse_position.set(Position::new(column, row));
 
     match kind {
         MouseEventKind::Down(button) => {
@@ -82,14 +78,21 @@ fn handle_mouse_event(
 
             let mut consumed = false;
 
-            if let Some(menu) = CONTEXT_MENU.get() {
+            if let Some(menu) = app.ui.context_menu.get() {
                 let (area, view) = &*menu;
 
-                if area.contains(MOUSE_POSITION.get()) {
-                    click(view, button, *area, MOUSE_POSITION.get(), &mut actions);
+                if area.contains(app.ui.mouse_position.get()) {
+                    click(
+                        view,
+                        button,
+                        *area,
+                        app.ui.mouse_position.get(),
+                        &mut actions,
+                        &app.ui.context_menu,
+                    );
                     consumed = true;
                 } else {
-                    CONTEXT_MENU.set(None);
+                    app.ui.context_menu.set(None);
                 }
             }
 
@@ -100,8 +103,15 @@ fn handle_mouse_event(
                     break;
                 }
 
-                if area.contains(MOUSE_POSITION.get()) {
-                    click(view, button, *area, MOUSE_POSITION.get(), &mut actions);
+                if area.contains(app.ui.mouse_position.get()) {
+                    click(
+                        view,
+                        button,
+                        *area,
+                        app.ui.mouse_position.get(),
+                        &mut actions,
+                        &app.ui.context_menu,
+                    );
 
                     consumed = true;
                 }
@@ -113,9 +123,10 @@ fn handle_mouse_event(
                 click(
                     &app.main_view(),
                     button,
-                    WINDOW_AREA.get(),
-                    MOUSE_POSITION.get(),
+                    app.ui.window_area.get(),
+                    app.ui.mouse_position.get(),
                     &mut actions,
+                    &app.ui.context_menu,
                 );
             }
 
@@ -150,6 +161,7 @@ fn click(
     area: Rect,
     position: Position,
     actions: &mut Vec<Action>,
+    context_menu: &OptionArcCell<(Rect, View)>,
 ) {
     match view {
         // clicking the border counts as clicking the content
@@ -163,6 +175,7 @@ fn click(
             Block::bordered().inner(area),
             position,
             actions,
+            context_menu,
         ),
         View::Button { on_click, content } => {
             let relative_position = Position {
@@ -178,7 +191,7 @@ fn click(
                 );
             }
 
-            click(content, button, area, position, actions);
+            click(content, button, area, position, actions, context_menu);
         }
         View::Canvas { .. }
         | View::CursorWindow { .. }
@@ -193,10 +206,10 @@ fn click(
                 let size = size_to_ratatui(view.minimum_size());
                 let area = Rect::from((position, size));
 
-                CONTEXT_MENU.set_some_value((area, menu.view()));
+                context_menu.set_some_value((area, menu.view()));
             }
 
-            click(view, button, area, position, actions);
+            click(view, button, area, position, actions, context_menu);
         }
         View::FileSelector { selected_file } => {
             let Ok(mut explorer) = FileExplorer::new() else {
@@ -215,7 +228,9 @@ fn click(
 
             selected_file.set(Arc::from(file.path().as_path()));
         }
-        View::Generator(generator) => click(&generator(), button, area, position, actions),
+        View::Generator(generator) => {
+            click(&generator(), button, area, position, actions, context_menu);
+        }
         View::Hoverable { default, hovered } => click(
             if area.contains(position) {
                 hovered
@@ -226,18 +241,20 @@ fn click(
             area,
             position,
             actions,
+            context_menu,
         ),
         // .rev() so that the outermost layers get clicked first
         View::Layers(layers) => layers
             .iter()
             .rev()
-            .for_each(|layer| click(layer, button, area, position, actions)),
+            .for_each(|layer| click(layer, button, area, position, actions, context_menu)),
         View::SizeInformed(generator) => click(
             &generator(ratatui_to_size(area.as_size())),
             button,
             area,
             position,
             actions,
+            context_menu,
         ),
         View::Stack {
             direction,
@@ -250,7 +267,7 @@ fn click(
 
             for (area, quoted) in zip(rectangles, elements) {
                 if area.contains(position) {
-                    click(&quoted.view, button, area, position, actions);
+                    click(&quoted.view, button, area, position, actions, context_menu);
                     // Stack elements are non-overlapping
                     break;
                 }
@@ -263,8 +280,8 @@ fn click(
 fn scroll(app: &App<Tui>, direction: Direction) {
     let offset = -Vector::directed(Length::new(1), direction);
 
-    let mouse_position = position_to_point(MOUSE_POSITION.get());
-    let area = rect_to_rectangle(WINDOW_AREA.get());
+    let mouse_position = position_to_point(app.ui.mouse_position.get());
+    let area = rect_to_rectangle(app.ui.window_area.get());
 
     if mouse_position.y < app.project_bar_height {
         // scroll the project bar (do nothing)

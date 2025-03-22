@@ -35,7 +35,8 @@ use std::num::NonZeroU32;
 use std::path::Path;
 use std::sync::Arc;
 
-type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
+/// A function for painting a canvas.
+pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 
 /// A UI element.
 #[doc(hidden)]

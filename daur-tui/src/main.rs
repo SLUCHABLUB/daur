@@ -15,13 +15,11 @@ use crate::event::spawn_events_thread;
 use crate::tui::Tui;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::execute;
-use daur::{App, Cell};
+use daur::App;
 use std::hint::spin_loop;
 use std::io::{Result, stdout};
 use std::panic::resume_unwind;
 use std::sync::Arc;
-
-static SHOULD_EXIT: Cell<bool> = Cell::new(false);
 
 // TODO: use async instead of threading?
 fn main() -> Result<()> {
@@ -36,7 +34,7 @@ fn main() -> Result<()> {
     let draw_thread = spawn_draw_thread(Arc::clone(app), terminal);
     let events_thread = spawn_events_thread(Arc::clone(app));
 
-    while !SHOULD_EXIT.get() {
+    while !app.ui.should_exit.get() {
         spin_loop();
     }
 

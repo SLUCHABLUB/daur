@@ -1,11 +1,10 @@
 use crate::canvas::Context;
 use crate::convert::{approximate_colour, ratatui_to_size, rect_to_rectangle, rectangle_to_rect};
-use crate::event::{CONTEXT_MENU, MOUSE_POSITION};
 use crate::tui::Tui;
-use daur::view::{Alignment, View};
-use daur::{App, Cell};
+use daur::view::{Alignment, Painter, View};
+use daur::{App, Colour};
 use ratatui::buffer::Buffer;
-use ratatui::layout::Rect;
+use ratatui::layout::{Position, Rect};
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
@@ -22,43 +21,40 @@ use std::num::{NonZeroU32, NonZeroUsize};
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
-pub static SHOULD_REDRAW: Cell<bool> = Cell::new(true);
-pub static WINDOW_AREA: Cell<Rect> = Cell::new(Rect::ZERO);
-
 pub fn spawn_draw_thread(
     app: Arc<App<Tui>>,
     mut terminal: DefaultTerminal,
 ) -> JoinHandle<io::Error> {
     spawn(move || {
         loop {
-            while !SHOULD_REDRAW.get() {
+            while !app.ui.should_redraw.get() {
                 spin_loop();
             }
 
-            SHOULD_REDRAW.set(app.is_playing());
+            app.ui.should_redraw.set(app.is_playing());
 
             let result = terminal.draw(|frame| {
                 let area = frame.area();
                 let buffer = frame.buffer_mut();
 
-                WINDOW_AREA.set(area);
+                app.ui.window_area.set(area);
 
-                render(&app.main_view(), area, buffer);
+                render(&app.main_view(), area, buffer, app.ui.mouse_position.get());
 
                 let popups = app.ui.popups.read();
 
                 for (_id, area, view) in popups.iter() {
                     Clear.render(*area, buffer);
-                    render(view, *area, buffer);
+                    render(view, *area, buffer, app.ui.mouse_position.get());
                 }
 
                 drop(popups);
 
-                if let Some(menu) = CONTEXT_MENU.get() {
+                if let Some(menu) = app.ui.context_menu.get() {
                     let (area, view) = &*menu;
 
                     Clear.render(*area, buffer);
-                    render(view, *area, buffer);
+                    render(view, *area, buffer, app.ui.mouse_position.get());
                 }
             });
 
@@ -71,7 +67,7 @@ pub fn spawn_draw_thread(
 
 type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
-fn render(view: &View, area: Rect, buffer: &mut Buffer) {
+fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position) {
     match view {
         View::Bordered {
             title,
@@ -86,32 +82,19 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer) {
 
             block.render(area, buffer);
 
-            render(content, inner, buffer);
+            render(content, inner, buffer, mouse_position);
         }
         View::Button {
             on_click: _,
             content,
-        } => render(content, area, buffer),
+        } => render(content, area, buffer, mouse_position),
         View::Canvas {
             background,
             painter,
         } => {
-            let width = f64::from(area.width);
-            let height = f64::from(area.height);
-
-            Canvas::default()
-                .background_color(approximate_colour(*background))
-                .x_bounds([0.0, width])
-                .y_bounds([0.0, height])
-                .paint(|context| {
-                    painter(&mut Context {
-                        context,
-                        size: ratatui_to_size(area.as_size()),
-                    });
-                })
-                .render(area, buffer);
+            render_canvas(*background, painter, area, buffer);
         }
-        View::Contextual { menu: _, view } => render(view, area, buffer),
+        View::Contextual { menu: _, view } => render(view, area, buffer, mouse_position),
         View::CursorWindow { offset } => {
             if area.width <= offset.inner() {
                 return;
@@ -145,24 +128,30 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer) {
 
             explorer.widget().render(area, buffer);
         }
-        View::Generator(generator) => render(&generator(), area, buffer),
+        View::Generator(generator) => render(&generator(), area, buffer, mouse_position),
         View::Hoverable { default, hovered } => render(
-            if area.contains(MOUSE_POSITION.get()) {
+            if area.contains(mouse_position) {
                 hovered
             } else {
                 default
             },
             area,
             buffer,
+            mouse_position,
         ),
         View::Layers(layers) => {
             for layer in layers {
-                render(layer, area, buffer);
+                render(layer, area, buffer, mouse_position);
             }
         }
         View::Rule { index, cells } => render_rule(*index, *cells, area, buffer),
         View::SizeInformed(generator) => {
-            render(&generator(ratatui_to_size(area.as_size())), area, buffer);
+            render(
+                &generator(ratatui_to_size(area.as_size())),
+                area,
+                buffer,
+                mouse_position,
+            );
         }
         View::Solid(colour) => EmptyCanvas::default()
             .background_color(approximate_colour(*colour))
@@ -177,11 +166,28 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer) {
                 .map(rectangle_to_rect);
 
             for (area, quoted) in zip(rectangles, elements) {
-                render(&quoted.view, area, buffer);
+                render(&quoted.view, area, buffer, mouse_position);
             }
         }
         View::Text { string, alignment } => render_text(string, *alignment, area, buffer),
     }
+}
+
+fn render_canvas(background: Colour, painter: &Painter, area: Rect, buffer: &mut Buffer) {
+    let width = f64::from(area.width);
+    let height = f64::from(area.height);
+
+    Canvas::default()
+        .background_color(approximate_colour(background))
+        .x_bounds([0.0, width])
+        .y_bounds([0.0, height])
+        .paint(|context| {
+            painter(&mut Context {
+                context,
+                size: ratatui_to_size(area.as_size()),
+            });
+        })
+        .render(area, buffer);
 }
 
 fn render_rule(index: isize, cells: NonZeroU32, area: Rect, buffer: &mut Buffer) {
