@@ -10,6 +10,13 @@ pub fn position_to_point(position: Position) -> Point {
     }
 }
 
+pub fn point_to_position(point: Point) -> Position {
+    Position {
+        x: point.x.inner(),
+        y: point.y.inner(),
+    }
+}
+
 pub fn ratatui_to_size(size: RatatuiSize) -> Size {
     Size {
         width: Length::new(size.width),

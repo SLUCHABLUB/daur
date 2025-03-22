@@ -2,7 +2,7 @@ use crate::ToArcStr as _;
 use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
-use crate::time::{Signature, Tempo};
+use crate::time::{Instant, Signature, Tempo};
 use crate::ui::Length;
 use crate::view::{Direction, OnClick, ToText as _, View};
 use arcstr::{ArcStr, literal};
@@ -17,8 +17,8 @@ const KEY_DESCRIPTION: ArcStr = literal!("key");
 const TIME_SIGNATURE_DESCRIPTION: ArcStr = literal!("time sig.");
 const TEMPO_DESCRIPTION: ArcStr = literal!("tempo");
 
-fn select_key(key: Key) -> OnClick {
-    OnClick::from(Action::OpenPopup(Popup::key_selector(key)))
+fn open_key_selector(instant: Instant, key: Key) -> OnClick {
+    OnClick::from(Action::OpenPopup(Popup::KeySelector { instant, key }))
 }
 
 // TODO:
@@ -45,7 +45,11 @@ pub fn bar(
     let fallbacks = View::balanced_stack(
         Direction::Right,
         [
-            View::described_button(key.to_arc_str(), KEY_DESCRIPTION, select_key(key)),
+            View::described_button(
+                key.to_arc_str(),
+                KEY_DESCRIPTION,
+                open_key_selector(Instant::START, key),
+            ),
             View::described_button(
                 time_signature.to_arc_str(),
                 TIME_SIGNATURE_DESCRIPTION,

@@ -16,7 +16,7 @@ use std::time::{Duration, SystemTime};
 
 /// A running instance of the DAW.
 #[derive(Debug)]
-pub struct App<Ui> {
+pub struct App<Ui: UserInterface> {
     /// The user interface.
     pub ui: Ui,
 
@@ -37,7 +37,7 @@ pub struct App<Ui> {
     pub device: OptionArcCell<Device>,
 
     /// The popup manager.
-    pub popups: popup::Manager,
+    pub popups: popup::Manager<Ui>,
 
     /// The height of the project bar.
     pub project_bar_height: Length,

@@ -24,7 +24,11 @@ impl Rectangle {
         xs.contains(&point.x) && ys.contains(&point.y)
     }
 
-    fn bottom_right(self) -> Point {
+    /// Returns the bottom right corner of the rectangle.
+    ///
+    /// If discrete [lengths](Length) are used, this position is *not* within the rectangle.
+    #[must_use]
+    pub fn bottom_right(self) -> Point {
         Point {
             x: self.position.x + self.size.width,
             y: self.position.y + self.size.height,

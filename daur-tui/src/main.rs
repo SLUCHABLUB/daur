@@ -28,7 +28,7 @@ fn main() -> Result<()> {
     execute!(stdout(), EnableMouseCapture)?;
     let terminal = ratatui::init();
 
-    let app = &Arc::new(App::new(Tui));
+    let app = &Arc::new(App::new(Tui::default()));
 
     app.controls.set_value(controls());
 

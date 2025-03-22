@@ -1,3 +1,4 @@
+use crate::Ratio;
 use crate::ui::Length;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
@@ -83,6 +84,12 @@ impl Sub for Offset {
     }
 }
 
+impl SubAssign for Offset {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = *self - rhs;
+    }
+}
+
 impl Neg for Offset {
     type Output = Offset;
 
@@ -115,6 +122,20 @@ impl Mul<i32> for Offset {
     fn mul(self, rhs: i32) -> Self::Output {
         Offset {
             inner: self.inner.saturating_mul(rhs),
+        }
+    }
+}
+
+impl Mul<Ratio> for Offset {
+    type Output = Offset;
+
+    fn mul(self, rhs: Ratio) -> Self::Output {
+        let length = self.abs() * rhs;
+
+        if self.inner.is_negative() {
+            Offset::negative(length)
+        } else {
+            Offset::positive(length)
         }
     }
 }

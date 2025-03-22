@@ -1,9 +1,9 @@
-use crate::ui::{Length, Offset};
+use crate::ui::{Length, Offset, Point};
 use crate::view::Direction;
-use std::ops::Neg;
+use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
 
 /// A vector
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Add, Sub, Neg, AddAssign, SubAssign)]
 pub struct Vector {
     /// The x coordinate of the vector
     pub x: Offset,
@@ -40,23 +40,12 @@ impl Vector {
         Vector { x, y }
     }
 
-    /// Reflects the vector along the x = y line
+    /// Returns the (saturated) endpoint of the vector when placed at the origin.
     #[must_use]
-    pub const fn reflection(self) -> Vector {
-        Vector {
-            x: self.y,
-            y: self.x,
-        }
-    }
-}
-
-impl Neg for Vector {
-    type Output = Vector;
-
-    fn neg(self) -> Self::Output {
-        Vector {
-            x: -self.x,
-            y: -self.y,
+    pub fn point(self) -> Point {
+        Point {
+            x: self.x.saturate(),
+            y: self.y.saturate(),
         }
     }
 }

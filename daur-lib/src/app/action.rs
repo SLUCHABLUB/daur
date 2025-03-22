@@ -1,19 +1,18 @@
-use crate::popup::Popup;
+use crate::popup::{Id, Popup};
 use crate::time::Instant;
 use crate::ui::Length;
 use crate::{App, UserInterface, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
-use std::sync::{Arc, Weak};
 
 /// An action to take on the app
 #[derive(Clone, Debug)]
 pub enum Action {
     /// Opens the popup
-    OpenPopup(Arc<Popup>),
+    OpenPopup(Popup),
     /// Closes the popup
-    ClosePopup(#[debug(skip)] Weak<Popup>),
+    ClosePopup(Id),
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
@@ -65,7 +64,7 @@ impl Action {
     pub fn take<Ui: UserInterface>(self, app: &App<Ui>) {
         match self {
             Action::ClosePopup(popup) => {
-                app.popups.close(&popup);
+                app.popups.close(popup, &app.ui);
             }
             Action::Exit => app.ui.exit(),
             Action::MoveCursor(instant) => {
@@ -96,7 +95,7 @@ impl Action {
             }
 
             Action::OpenPopup(popup) => {
-                app.popups.open(popup);
+                app.popups.open(&popup, &app.ui);
             }
             Action::Pause => {
                 app.stop_playback();
@@ -117,7 +116,7 @@ impl Action {
                         .take(action, app.cursor.get(), app.selected_track_index.get());
 
                 if let Err(popup) = result {
-                    app.popups.open(popup);
+                    app.popups.open(&popup, &app.ui);
                 }
             }
             Action::SelectTrack(index) => {

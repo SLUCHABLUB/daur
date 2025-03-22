@@ -1,117 +1,184 @@
 //! Types pertaining to [`Popup`].
 
-mod button_panel;
-mod error_message;
-mod file_selector;
-mod info;
-mod key_selector;
-mod popups;
+mod id;
+mod manager;
 
-pub use button_panel::ButtonPanel;
-pub use error_message::ErrorMessage;
-pub use file_selector::FileSelector;
-pub use info::Info;
-pub use key_selector::KeySelector;
-pub use popups::Manager;
+pub use id::Id;
+pub use manager::Manager;
 
 use crate::key::Key;
-use crate::view::OnClick;
-use crate::{Action, Cell, View};
-use arcstr::ArcStr;
+use crate::time::Instant;
+use crate::view::{Alignment, Direction, OnClick, ToText as _, multi, single};
+use crate::{Action, ArcCell, Cell, ToArcStr as _, View, project};
+use arcstr::{ArcStr, format, literal};
+use derive_more::Debug;
 use dirs::home_dir;
 use std::env::current_dir;
 use std::error::Error;
 use std::path::Path;
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
-/// A popup window.
+const ACKNOWLEDGE: ArcStr = literal!("ok");
+const CANCEL: ArcStr = literal!("cancel");
+const CONFIRM: ArcStr = literal!("confirm");
+
+const ERROR_TITLE: ArcStr = literal!("error");
+const KEY_SELECTOR_TITLE: ArcStr = literal!("select key");
+
+// TODO: keyboard navigation of popups
+/// A specification for a popup window.
 #[doc(hidden)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum Popup {
     /// A panel of buttons.
-    Buttons(ButtonPanel),
+    ButtonPanel {
+        title: ArcStr,
+        buttons: Vec<(ArcStr, Action)>,
+    },
     /// An error message.
-    Error(ErrorMessage),
+    Error { display: ArcStr, debug: ArcStr },
     /// A file selector.
-    FileSelector(FileSelector),
+    FileSelector {
+        title: ArcStr,
+        path: Arc<Path>,
+        #[debug(skip)]
+        action: Arc<dyn Fn(&Path) -> Action + Send + Sync>,
+    },
     /// A window for selecting a key.
-    KeySelector(KeySelector),
+    KeySelector { instant: Instant, key: Key },
 }
 
 impl Popup {
-    /// Constructs a new button panel.
-    pub fn buttons<B>(buttons: B) -> Arc<Popup>
-    where
-        B: IntoIterator<Item = (ArcStr, Action)>,
-    {
-        Arc::new_cyclic(|this| {
-            let info = Info::new(ArcStr::new(), Weak::clone(this));
-
-            Popup::Buttons(ButtonPanel {
-                buttons: buttons.into_iter().collect(),
-                info,
-                selected: Cell::new(None),
-            })
-        })
-    }
-
-    /// Construct an [error-message popup](Popup::Error) from an [error](Error).
-    pub fn error<E: Error>(error: E) -> Arc<Popup> {
-        Arc::new_cyclic(|this| {
-            let this = Weak::clone(this);
-            Popup::Error(ErrorMessage::from_error(error, this))
-        })
-    }
-
-    /// Constructs a new [file-explorer popup](Popup::FileSelector).
+    /// Constructs a new [file-explorer popup](Popup::FileSelector) starting at the current dir.
     pub fn explorer<A: Fn(&Path) -> Action + Send + Sync + 'static>(
         title: ArcStr,
         action: A,
-    ) -> Arc<Popup> {
-        Arc::new_cyclic(|this| {
-            let this = Weak::clone(this);
+    ) -> Popup {
+        let path = current_dir().ok().or_else(home_dir).unwrap_or_default();
 
-            let path = current_dir().ok().or_else(home_dir).unwrap_or_default();
-
-            Popup::FileSelector(FileSelector::new(title, this, Arc::from(path), action))
-        })
+        Popup::FileSelector {
+            title,
+            path: Arc::from(path),
+            action: Arc::new(action),
+        }
     }
 
-    /// Constructs a new [key-selector popup](Popup::KeySelector).
+    /// Returns the title of the popup.
     #[must_use]
-    pub fn key_selector(key: Key) -> Arc<Popup> {
-        Arc::new_cyclic(|this| {
-            let this = Weak::clone(this);
-            Popup::KeySelector(KeySelector::new(key, this))
-        })
-    }
-
-    /// Returns the [popup info](Info).
-    pub fn info(&self) -> &Info {
+    pub fn title(&self) -> ArcStr {
         match self {
-            Popup::Error(message) => &message.info,
-            Popup::FileSelector(explorer) => &explorer.info,
-            Popup::Buttons(buttons) => &buttons.info,
-            Popup::KeySelector(selector) => &selector.info,
+            Popup::ButtonPanel { title, .. } | Popup::FileSelector { title, .. } => title.clone(),
+            Popup::Error { .. } => ERROR_TITLE,
+            // TODO: Display at what instant the key is being set.
+            Popup::KeySelector { .. } => KEY_SELECTOR_TITLE,
         }
     }
 
     /// Returns the popups [view](View).
-    pub fn view(&self) -> View {
-        let title = self.info().title();
-
+    pub fn view(&self, id: Id) -> View {
         match self {
-            Popup::Buttons(buttons) => buttons.view().titled(title),
-            Popup::Error(message) => message.view().titled(title),
-            Popup::FileSelector(explorer) => explorer.view().titled(title),
-            Popup::KeySelector(selector) => selector.view().titled(title),
+            Popup::ButtonPanel { title: _, buttons } => View::balanced_stack(
+                Direction::Down,
+                buttons.iter().map(|(label, action)| {
+                    View::simple_button(ArcStr::clone(label), OnClick::from(action.clone()))
+                        .terminating(id)
+                }),
+            ),
+            Popup::Error { display, debug } => {
+                let acknowledge_button = ACKNOWLEDGE.centred().bordered();
+
+                View::spaced_stack(
+                    Direction::Down,
+                    [
+                        display.clone().aligned_to(Alignment::TopLeft),
+                        debug.clone().aligned_to(Alignment::TopLeft),
+                        acknowledge_button.terminating(id),
+                    ],
+                )
+            }
+            Popup::FileSelector {
+                title: _,
+                path,
+                action,
+            } => {
+                let selected_file = Arc::new(ArcCell::new(Arc::clone(path)));
+
+                let path = Arc::clone(&selected_file);
+                let action = Arc::clone(action);
+
+                let confirm = View::standard_button(
+                    CONFIRM,
+                    OnClick::new(move |_, _, actions| {
+                        let path = path.get();
+                        let action = action(&path);
+                        actions.send(action);
+                    }),
+                )
+                .terminating(id);
+                let cancel = CANCEL.centred().bordered().terminating(id);
+
+                let buttons = View::spaced_stack(Direction::Right, vec![cancel, confirm]);
+
+                View::Stack {
+                    direction: Direction::Down,
+                    elements: vec![
+                        View::FileSelector { selected_file }.fill_remaining(),
+                        buttons.quotated_minimally(),
+                    ],
+                }
+            }
+            Popup::KeySelector { instant, key } => {
+                let tonic = Arc::new(Cell::new(key.tonic));
+                let sign = Arc::new(Cell::new(key.sign));
+                let intervals = Arc::new(Cell::new(key.intervals));
+
+                let buttons = View::spaced_stack(
+                    Direction::Right,
+                    vec![
+                        CANCEL.centred().bordered().terminating(id),
+                        View::standard_button(
+                            CONFIRM,
+                            OnClick::from(Action::Project(project::Action::SetKey {
+                                instant: *instant,
+                                key: Key {
+                                    tonic: tonic.get(),
+                                    sign: sign.get(),
+                                    intervals: intervals.get(),
+                                },
+                            })),
+                        )
+                        .terminating(id),
+                    ],
+                );
+
+                View::spaced_stack(
+                    Direction::Down,
+                    vec![
+                        single::selector_with_formatter(&tonic, Direction::Right, |chroma| {
+                            chroma.name(sign.get())
+                        }),
+                        single::selector(&sign, Direction::Right),
+                        multi::selector(&intervals, Direction::Right),
+                        buttons,
+                    ],
+                )
+            }
+        }
+    }
+}
+
+impl<E: Error> From<E> for Popup {
+    fn from(error: E) -> Self {
+        Popup::Error {
+            display: error.to_arc_str(),
+            debug: format!("{error:?}"),
         }
     }
 }
 
 impl View {
     /// Makes the view close a popup when clicked.
-    fn terminating(self, popup: Weak<Popup>) -> View {
+    fn terminating(self, popup: Id) -> View {
         self.on_click(OnClick::from(Action::ClosePopup(popup)))
     }
 }

@@ -129,11 +129,11 @@ impl Manager {
         action: Action,
         cursor: Instant,
         selected_track: usize,
-    ) -> Result<(), Arc<Popup>> {
+    ) -> Result<(), Popup> {
         self.edit(Edit::from_action(action, cursor, selected_track)?)
     }
 
-    fn edit(&self, edit: Edit) -> Result<(), Arc<Popup>> {
+    fn edit(&self, edit: Edit) -> Result<(), Popup> {
         self.history.write().push(edit.clone());
 
         let mut project = self.project.write();
@@ -144,14 +144,9 @@ impl Manager {
                 position,
                 clip,
             } => {
-                Arc::make_mut(
-                    project
-                        .tracks
-                        .get_mut(track)
-                        .ok_or(Popup::error(NoTrackSelected))?,
-                )
-                .clips
-                .insert(position, Arc::new(clip));
+                Arc::make_mut(project.tracks.get_mut(track).ok_or(NoTrackSelected)?)
+                    .clips
+                    .insert(position, Arc::new(clip));
             }
             Edit::AddTrack(track) => project.tracks.push(Arc::new(track)),
             Edit::ChangeKey { position, key } => {

@@ -1,4 +1,4 @@
-use crate::ui::Length;
+use crate::ui::{Length, Point, Vector};
 use crate::view::Direction;
 
 /// The size of something on the screen
@@ -53,5 +53,16 @@ impl Size {
                 height: parallel,
             },
         }
+    }
+
+    /// Returns the vector from the top-left corner to the bottom-right corner
+    /// of a rectangle with this size.
+    #[must_use]
+    pub fn diagonal(self) -> Vector {
+        Point {
+            x: self.width,
+            y: self.height,
+        }
+        .position()
     }
 }

@@ -12,7 +12,6 @@ use arcstr::{ArcStr, literal};
 use hound::WavReader;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
-use std::sync::Arc;
 use thiserror::Error;
 
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
@@ -64,7 +63,7 @@ impl Edit {
         action: Action,
         cursor: Instant,
         selected_track: usize,
-    ) -> Result<Edit, Arc<Popup>> {
+    ) -> Result<Edit, Popup> {
         Ok(match action {
             Action::AddNotes => Edit::AddClip {
                 track: selected_track,
@@ -78,17 +77,17 @@ impl Edit {
             Action::AddTrack => Edit::AddTrack(Track::new()),
             Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {
-                    return Err(Popup::error(NoExtensionError { file }));
+                    return Err(Popup::from(NoExtensionError { file }));
                 };
 
                 // TODO: look at the symphonia crate
                 let audio = match extension.to_string_lossy().as_ref() {
                     "wav" | "wave" => {
-                        let reader = WavReader::open(&file).map_err(Popup::error)?;
-                        Audio::try_from(reader).map_err(Popup::error)?
+                        let reader = WavReader::open(&file)?;
+                        Audio::try_from(reader)?
                     }
                     _ => {
-                        return Err(Popup::error(UnsupportedFormatError {
+                        return Err(Popup::from(UnsupportedFormatError {
                             format: extension.to_owned(),
                         }));
                     }
@@ -110,8 +109,8 @@ impl Edit {
                     },
                 }
             }
-            Action::SetDefaultKey(key) => Edit::ChangeKey {
-                position: Instant::START,
+            Action::SetKey { instant, key } => Edit::ChangeKey {
+                position: instant,
                 key,
             },
         })

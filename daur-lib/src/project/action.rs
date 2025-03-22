@@ -1,4 +1,5 @@
 use crate::key::Key;
+use crate::time::Instant;
 use std::path::PathBuf;
 
 /// An action to take on an [app](crate::App).
@@ -13,6 +14,11 @@ pub enum Action {
         /// The path to the file.
         file: PathBuf,
     },
-    /// Sets the key at the start of the project.
-    SetDefaultKey(Key),
+    /// Sets the key at an instant in the project.
+    SetKey {
+        /// The instant of the key change.
+        instant: Instant,
+        /// The new key.
+        key: Key,
+    },
 }

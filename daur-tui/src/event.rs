@@ -93,22 +93,21 @@ fn handle_mouse_event(
                 }
             }
 
-            for popup in app.popups.to_stack().into_iter().rev() {
+            let popups = app.ui.popups.read();
+
+            for (_id, area, view) in popups.iter().rev() {
                 if consumed {
                     break;
                 }
 
-                let view = popup.view();
-
-                // TODO: fix popup positions
-                let area = Rect::from((Position::ORIGIN, size_to_ratatui(view.minimum_size())));
-
                 if area.contains(MOUSE_POSITION.get()) {
-                    click(&view, button, area, MOUSE_POSITION.get(), &mut actions);
+                    click(view, button, *area, MOUSE_POSITION.get(), &mut actions);
 
                     consumed = true;
                 }
             }
+
+            drop(popups);
 
             if !consumed {
                 click(

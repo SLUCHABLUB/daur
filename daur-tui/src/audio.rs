@@ -34,7 +34,7 @@ pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
                         sink
                     }
                     Err(error) => {
-                        app.popups.open(error);
+                        app.popups.open(&error, &app.ui);
                         // Stop playback without moving the cursor
                         app.playback_start.set(None);
                         continue;
@@ -64,11 +64,11 @@ impl Display for NoSelectedDevice {
 
 impl Error for NoSelectedDevice {}
 
-fn get_sink(app: &App<Tui>) -> Result<(Sink, OutputStream), Arc<Popup>> {
-    let device = app.device.get().ok_or(Popup::error(NoSelectedDevice))?;
+fn get_sink(app: &App<Tui>) -> Result<(Sink, OutputStream), Popup> {
+    let device = app.device.get().ok_or(NoSelectedDevice)?;
 
-    let (output_stream, handle) = OutputStream::try_from_device(&device).map_err(Popup::error)?;
-    let sink = Sink::try_new(&handle).map_err(Popup::error)?;
+    let (output_stream, handle) = OutputStream::try_from_device(&device)?;
+    let sink = Sink::try_new(&handle)?;
 
     Ok((sink, output_stream))
 }

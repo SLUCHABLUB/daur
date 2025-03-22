@@ -9,6 +9,9 @@ mod rectangle;
 mod size;
 mod vector;
 
+use crate::View;
+use crate::popup::Id;
+use arcstr::ArcStr;
 pub use grid::Grid;
 pub use length::{Length, NonZeroLength};
 pub use mapping::Mapping;
@@ -26,4 +29,13 @@ pub trait UserInterface {
     /// It is OK for implementations not to do anything or restart when this is run.
     /// This may be the case if the application, for example, can't close itself.
     fn exit(&self);
+
+    /// A [RAII](wikipedia.org/wiki/RAII) handle to a popup.
+    type PopupHandle;
+
+    /// Opens a popup.
+    fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle;
+
+    /// Closes a popup.
+    fn close_popup(&self, handle: Self::PopupHandle);
 }

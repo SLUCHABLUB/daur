@@ -1,4 +1,4 @@
-//! The inner workings of the DAW
+//! The inner workings of the DAW.
 
 mod app;
 mod cell;
@@ -33,6 +33,7 @@ pub use app::{Action, App};
 pub use cell::{ArcCell, Cell, OptionArcCell};
 pub use changing::Changing;
 pub use colour::Colour;
+pub use lock::Lock;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
 pub use string::ToArcStr;

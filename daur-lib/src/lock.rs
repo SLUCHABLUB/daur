@@ -3,11 +3,13 @@ use std::fmt::{Debug, Formatter};
 use std::ops::{Deref, DerefMut};
 use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
+/// A lock.
 #[derive(Default)]
 pub struct Lock<T> {
     inner: RwLock<T>,
 }
 
+/// A read guard for [`Lock`] similar to [`RwLockReadGuard`].
 #[derive(Debug)]
 pub enum ReadGuard<'lock, T> {
     Guard(RwLockReadGuard<'lock, T>),
@@ -52,12 +54,14 @@ impl<T> DerefMut for WriteGuard<'_, T> {
 }
 
 impl<T> Lock<T> {
+    /// Wraps a value in a lock.
     pub const fn new(value: T) -> Self {
         Lock {
             inner: RwLock::new(value),
         }
     }
 
+    /// Locks the lock for reading.
     pub fn read(&self) -> ReadGuard<T> {
         match self.inner.read() {
             Ok(guard) => ReadGuard::Guard(guard),
@@ -65,6 +69,7 @@ impl<T> Lock<T> {
         }
     }
 
+    /// Locks the lock for writing.
     pub fn write(&self) -> WriteGuard<T> {
         match self.inner.write() {
             Ok(guard) => WriteGuard::Guard(guard),
