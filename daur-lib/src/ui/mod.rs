@@ -1,4 +1,4 @@
-//! Types pertaining to [`Ui`].
+//! Types pertaining to [`UserInterface`].
 
 mod grid;
 mod length;
@@ -20,7 +20,7 @@ pub use vector::Vector;
 
 /// A user interface for the DAW.
 #[doc(hidden)]
-pub trait Ui {
+pub trait UserInterface {
     /// Exits the DAW.
     ///
     /// It is OK for implementations not to do anything or restart when this is run.

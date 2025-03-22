@@ -48,7 +48,7 @@ pub use project::Project;
 #[doc(inline)]
 pub use track::Track;
 #[doc(inline)]
-pub use ui::Ui;
+pub use ui::UserInterface;
 #[doc(inline)]
 pub use view::View;
 

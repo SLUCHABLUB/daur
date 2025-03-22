@@ -6,7 +6,7 @@ use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::piano_roll::Settings;
 use crate::view::{Direction, View, piano_roll};
-use crate::{ArcCell, Cell, OptionArcCell, Project, Ui, popup, project, ui};
+use crate::{ArcCell, Cell, OptionArcCell, Project, UserInterface, popup, project, ui};
 use derive_more::Debug;
 use rodio::Device;
 use rodio::cpal::traits::HostTrait as _;
@@ -63,10 +63,10 @@ pub struct App<Ui> {
     pub piano_roll_settings: Cell<Settings>,
 }
 
-impl<U: Ui> App<U> {
+impl<Ui: UserInterface> App<Ui> {
     /// Creates a new instance
     #[must_use]
-    pub fn new(ui: U) -> App<U> {
+    pub fn new(ui: Ui) -> App<Ui> {
         let host = default_host();
         let device = OptionArcCell::from_value(host.default_output_device());
         let host = ArcCell::from_value(host);

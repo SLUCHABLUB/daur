@@ -6,7 +6,7 @@
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
-use crate::{App, Ui, project};
+use crate::{App, UserInterface, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
@@ -67,7 +67,7 @@ impl Action {
     }
 
     /// Take the action on the app
-    pub fn take<U: Ui>(self, app: &App<U>) {
+    pub fn take<Ui: UserInterface>(self, app: &App<Ui>) {
         match self {
             Action::ClosePopup(popup) => {
                 app.popups.close(&popup);
