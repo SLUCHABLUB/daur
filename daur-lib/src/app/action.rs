@@ -1,8 +1,3 @@
-#![allow(
-    clippy::used_underscore_binding,
-    reason = "educe generates code with underscore prefixes"
-)]
-
 use crate::popup::Popup;
 use crate::time::Instant;
 use crate::ui::Length;
