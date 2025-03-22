@@ -3,7 +3,7 @@ use crate::view::{OnClick, View};
 use crate::{Action, Clip};
 use std::sync::Arc;
 
-/// Returns a view of the overview of a clip.
+/// Returns a view of a clip's overview.
 pub fn overview(
     clip: Arc<Clip>,
     track_index: usize,

@@ -8,7 +8,7 @@ pub enum Source {
     /// A source from an audio clip
     Audio(audio::Source),
     // TODO: add plugins that can render the notes
-    /// A source from a notes clip
+    /// A source from a note clip
     Notes,
 }
 

@@ -36,7 +36,7 @@ impl Display for Key {
     }
 }
 
-/// Intervals less than an octave and greater than a perfect unison
+/// Intervals less than an octave and greater than a perfect unison.
 #[expect(
     non_camel_case_types,
     reason = "the (standardised?) short names for intervals require case for distinction"

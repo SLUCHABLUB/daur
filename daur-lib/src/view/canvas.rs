@@ -7,7 +7,7 @@ pub trait Context {
     fn size(&self) -> Size;
 
     /// Draws a single point / pixel on the canvas.
-    /// If the point is not within the bound of the canvas the call should be ignored.
+    /// If the point is not within the bound of the canvas, the call should be ignored.
     fn draw_point(&mut self, point: Point, colour: Colour);
 
     /// Draws a (filled in) rectangle on the canvas.

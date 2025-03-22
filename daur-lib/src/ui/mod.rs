@@ -23,7 +23,7 @@ pub use vector::Vector;
 pub trait Ui {
     /// Exits the DAW.
     ///
-    /// It is ok for implementations not to do anything or restart when this is run.
+    /// It is OK for implementations not to do anything or restart when this is run.
     /// This may be the case if the application, for example, can't close itself.
     fn exit(&self);
 }

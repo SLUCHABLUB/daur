@@ -46,10 +46,10 @@ pub struct App<Ui> {
 
     // TODO: find a semantically superior way to index tracks
     /// The index iof the currently selected track.
-    /// Note that this may not actually index a valid track.
+    /// Note that this may not index a valid track.
     pub selected_track_index: Cell<usize>,
     /// The index iof the currently selected clip.
-    /// Note that this may not actually index a valid clip.
+    /// Note that this may not index a valid clip.
     pub selected_clip_index: Cell<usize>,
 
     /// The position of the musical cursor.

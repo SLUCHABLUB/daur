@@ -12,10 +12,10 @@ const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Signature {
     /// The upper number of the time signature.
-    /// How many beats fit in a bar.
+    /// The number of beats that fit in a bar.
     pub beats_per_bar: NonZeroU8,
     /// The lower number of the time signature.
-    /// How many beats fit in a whole note.
+    /// The number of beats that fit in a whole note.
     pub beat_size: NonZeroU8,
 }
 

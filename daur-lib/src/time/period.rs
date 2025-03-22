@@ -5,7 +5,7 @@ use std::ops::Range;
 /// A period of musical time
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Period {
-    /// Ths start of the period
+    /// The start of the period
     pub start: Instant,
     /// The duration of the period
     pub duration: Duration,

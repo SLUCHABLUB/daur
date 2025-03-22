@@ -43,7 +43,7 @@ pub(crate) fn workspace(
         OnClick::from(Action::AddTrack),
     ));
 
-    // A "dummy-track" for the row with the add track button
+    // A "dummy-track" for the row with the add-track button
     track_overviews.push(overview(
         Arc::new(Track::new()),
         usize::MAX,

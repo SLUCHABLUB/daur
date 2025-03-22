@@ -25,7 +25,7 @@ impl NonZeroRatio {
     #[must_use]
     pub fn new(numerator: NonZeroU32, denominator: NonZeroU32) -> NonZeroRatio {
         // The non-zero types don't implement `num::Integer`.
-        // Therefore, `num::rational::Ratio`s thereof cannot be reduced
+        // Therefore, a `num::rational::Ratio` thereof cannot be reduced
         // since it requires comparison with zero.
 
         let [numerator, denominator] = make_coprime(numerator, denominator);

@@ -1,7 +1,7 @@
 use crate::ui::{Length, Size};
 use crate::view::{Direction, View};
 
-/// How much space is allocated to a view.
+/// The amount of space that is allocated to a view.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Quotum {
     /// All the remaining space, split equally across all views with this quotum.

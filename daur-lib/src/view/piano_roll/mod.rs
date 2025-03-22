@@ -21,7 +21,7 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
 // The piano roll has a fixed lower pitch.
 // Resizing it will thus cause the bottom to be fixed.
-// Since the top is the thing you move this seems intuitive.
+// Since the top is the thing you move, this seems intuitive.
 /// Return the view for the piano roll.
 pub fn view(
     clip: Option<&Clip>,

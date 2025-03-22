@@ -17,7 +17,7 @@ pub struct ErrorMessage {
     pub display: ArcStr,
     /// The debug representation of the error.
     pub debug: ArcStr,
-    /// Whether the acknowledge button is selected.
+    /// Whether the acknowledge-button is selected.
     pub selected: Cell<bool>,
 }
 

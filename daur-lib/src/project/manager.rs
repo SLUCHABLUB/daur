@@ -26,7 +26,7 @@ pub struct Manager {
 }
 
 impl Manager {
-    /// Wraps a project in a new manage.
+    /// Wraps a project in a new manager.
     #[must_use]
     pub fn new(project: Project) -> Manager {
         Manager {
@@ -123,7 +123,7 @@ impl Manager {
     ///
     /// # Errors
     ///
-    /// If the action can not be completed, a popup to open will be returned.
+    /// If the action cannot be completed, a popup to open will be returned.
     pub fn take(
         &self,
         action: Action,

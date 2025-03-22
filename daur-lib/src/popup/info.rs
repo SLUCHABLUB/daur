@@ -10,7 +10,7 @@ pub struct Info {
 }
 
 impl Info {
-    /// Construct a new popup info.
+    /// Construct a new popup info struct.
     #[must_use]
     pub fn new(title: ArcStr, this: Weak<Popup>) -> Info {
         Info { title, this }

@@ -105,7 +105,7 @@ pub enum View {
         /// The number of cells (the number of markings - 1).
         cells: NonZeroU32,
     },
-    /// A view that needs to know its containers size.
+    /// A view that needs to know its container's size.
     SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
     /// A solid colour.
     Solid(Colour),

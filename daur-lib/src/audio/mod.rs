@@ -34,7 +34,7 @@ impl Audio {
         max(self.channels[0].len(), self.channels[1].len())
     }
 
-    /// Returns the audio's duration
+    /// Returns the duration of the audio.
     #[must_use]
     pub fn duration(&self) -> Duration {
         const NANOS_PER_SEC: u64 = 1_000_000_000;
@@ -122,7 +122,7 @@ impl Audio {
         let sample_length = context_size.width / visible_samples;
 
         if sample_length == Length::ZERO {
-            // since the numerator isn't zero this resulted from a rounding
+            // since the numerator isn't zero, this resulted from a rounding
 
             let Some(epsilon) = NonZeroLength::X_MINIMUM else {
                 // TODO: we have a really small context or really many samples

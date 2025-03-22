@@ -19,7 +19,7 @@ pub fn open_import_audio_popup() -> Action {
     Action::OpenPopup(Popup::explorer(IMPORT_AUDIO, action))
 }
 
-/// A context (right click) menu.
+/// A context (right-click) menu.
 pub struct Menu {
     /// The buttons in the menu.
     pub buttons: Vec<(ArcStr, Action)>,

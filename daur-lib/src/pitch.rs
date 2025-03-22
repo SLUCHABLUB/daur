@@ -53,7 +53,7 @@ impl Add<Interval> for Pitch {
     type Output = Pitch;
 
     fn add(self, rhs: Interval) -> Self::Output {
-        // Saturating here is fine since it's like 3000 octaves outside of piano range
+        // Saturating here is fine since it's ca. 3000 octaves outside the range of the piano.
         let semitones = self.from_a440.semitones().saturating_add(rhs.semitones());
         Pitch {
             from_a440: Interval::from_semitones(semitones),
@@ -71,7 +71,7 @@ impl Sub for Pitch {
     type Output = Interval;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        // Saturating here is fine since it's like 3000 octaves outside of piano range
+        // Saturating here is fine since it's ca. 3000 octaves outside the range of the piano
         let semitones = self
             .from_a440
             .semitones()
