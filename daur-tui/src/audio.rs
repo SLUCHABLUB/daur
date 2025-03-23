@@ -1,7 +1,8 @@
 use crate::tui::Tui;
 use daur::{App, Popup};
 use never::Never;
-use rodio::{OutputStream, Sink};
+use rodio::cpal::SampleRate;
+use rodio::{DeviceTrait as _, OutputStream, Sink};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -9,29 +10,26 @@ use std::hint::spin_loop;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
-// TODO: base on the device
-const SAMPLE_RATE: u32 = 44_100;
-
 pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
     spawn(move || {
         let mut cache = None;
 
         loop {
-            // TODO: render the audio instead of just spinning
             let start = loop {
                 if let Some(start) = app.playback_start.get() {
                     break Some(start);
                 }
 
+                // TODO: render the audio instead of just spinning
                 spin_loop();
             };
 
-            let sink = match cache.as_ref() {
-                Some((sink, _output_stream)) => sink,
+            let (sink, sample_rate) = match cache.as_ref() {
+                Some((sink, sample_rate, _output_stream)) => (sink, *sample_rate),
                 None => match get_sink(&app) {
                     Ok(new) => {
-                        let (sink, _output_stream) = cache.insert(new);
-                        sink
+                        let (sink, sample_rate, _output_stream) = cache.insert(new);
+                        (&*sink, *sample_rate)
                     }
                     Err(error) => {
                         app.popups.open(&error, &app.ui);
@@ -43,7 +41,7 @@ pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
             };
 
             sink.clear();
-            sink.append(app.project.source(SAMPLE_RATE, app.cursor.get()));
+            sink.append(app.project.source(sample_rate, app.cursor.get()));
             sink.play();
 
             while app.playback_start.get() == start {
@@ -64,11 +62,13 @@ impl Display for NoSelectedDevice {
 
 impl Error for NoSelectedDevice {}
 
-fn get_sink(app: &App<Tui>) -> Result<(Sink, OutputStream), Popup> {
+fn get_sink(app: &App<Tui>) -> Result<(Sink, u32, OutputStream), Popup> {
     let device = app.device.get().ok_or(NoSelectedDevice)?;
+    let config = device.default_output_config()?;
+    let SampleRate(sample_rate) = config.sample_rate();
 
     let (output_stream, handle) = OutputStream::try_from_device(&device)?;
     let sink = Sink::try_new(&handle)?;
 
-    Ok((sink, output_stream))
+    Ok((sink, sample_rate, output_stream))
 }
