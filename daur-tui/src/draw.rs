@@ -14,7 +14,6 @@ use ratatui::{DefaultTerminal, layout};
 use ratatui_explorer::{FileExplorer, Theme};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
-use std::hint::spin_loop;
 use std::io;
 use std::iter::zip;
 use std::num::{NonZeroU32, NonZeroUsize};
@@ -27,9 +26,7 @@ pub fn spawn_draw_thread(
 ) -> JoinHandle<io::Error> {
     spawn(move || {
         loop {
-            while !app.ui.should_redraw.get() {
-                spin_loop();
-            }
+            app.ui.should_redraw.wait_until();
 
             app.ui.should_redraw.set(app.is_playing());
 

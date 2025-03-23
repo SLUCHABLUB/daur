@@ -2,6 +2,7 @@
 
 mod audio;
 mod canvas;
+mod condition;
 mod controls;
 mod convert;
 mod draw;
@@ -16,12 +17,10 @@ use crate::tui::Tui;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
 use crossterm::execute;
 use daur::App;
-use std::hint::spin_loop;
 use std::io::{Result, stdout};
 use std::panic::resume_unwind;
 use std::sync::Arc;
 
-// TODO: use async instead of threading?
 fn main() -> Result<()> {
     execute!(stdout(), EnableMouseCapture)?;
     let terminal = ratatui::init();
@@ -34,9 +33,7 @@ fn main() -> Result<()> {
     let draw_thread = spawn_draw_thread(Arc::clone(app), terminal);
     let events_thread = spawn_events_thread(Arc::clone(app));
 
-    while !app.ui.should_exit.get() {
-        spin_loop();
-    }
+    app.ui.should_exit.wait_until();
 
     // TODO: save
 
