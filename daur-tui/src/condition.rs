@@ -1,6 +1,4 @@
-#![expect(clippy::mutex_atomic, reason = "condvar needs a mutex guard")]
-
-use std::sync::{Condvar, Mutex, PoisonError};
+use parking_lot::{Condvar, Mutex};
 
 pub struct Condition {
     mutex: Mutex<bool>,
@@ -17,18 +15,15 @@ impl Condition {
 
     /// Waits until the condition becomes true.
     pub fn wait_until(&self) {
-        let mut guard = self.mutex.lock().unwrap_or_else(PoisonError::into_inner);
+        let mut guard = self.mutex.lock();
 
         while !*guard {
-            guard = self
-                .condvar
-                .wait(guard)
-                .unwrap_or_else(PoisonError::into_inner);
+            self.condvar.wait(&mut guard);
         }
     }
 
     pub fn set(&self, value: bool) {
-        *self.mutex.lock().unwrap_or_else(PoisonError::into_inner) = value;
+        *self.mutex.lock() = value;
         self.condvar.notify_all();
     }
 }
