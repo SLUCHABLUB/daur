@@ -2,6 +2,7 @@ mod action;
 
 pub use action::Action;
 
+use crate::observed::Observed;
 use crate::time::{Instant, Mapping};
 use crate::ui::{Grid, Length, Offset};
 use crate::view::piano_roll::Settings;
@@ -28,7 +29,7 @@ pub struct App<Ui: UserInterface> {
 
     /// When playback started.
     /// [`None`] means that playback is paused.
-    pub playback_start: Cell<Option<SystemTime>>,
+    pub playback_start: Observed<Option<SystemTime>>,
     /// The playback-audio host.
     #[debug(ignore)]
     pub host: ArcCell<Host>,
@@ -77,7 +78,7 @@ impl<Ui: UserInterface> App<Ui> {
             controls: ArcCell::from_value(HashMap::new()),
             project: project::Manager::new(Project::default()),
 
-            playback_start: Cell::new(None),
+            playback_start: Observed::new(None),
             host,
             device,
 

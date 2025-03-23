@@ -17,7 +17,7 @@ pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
         loop {
             let start = loop {
                 if let Some(start) = app.playback_start.get() {
-                    break Some(start);
+                    break start;
                 }
 
                 // TODO: render the audio instead of just spinning
@@ -44,9 +44,7 @@ pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
             sink.append(app.project.source(sample_rate, app.cursor.get()));
             sink.play();
 
-            while app.playback_start.get() == start {
-                spin_loop();
-            }
+            app.playback_start.wait_while(|new| *new == Some(start));
         }
     })
 }

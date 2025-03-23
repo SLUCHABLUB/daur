@@ -1,16 +1,15 @@
-use crate::condition::Condition;
 use crate::convert::{point_to_position, rect_to_rectangle, size_to_ratatui};
 use daur::arcstr::ArcStr;
 use daur::popup::Id;
-use daur::{Cell, Lock, OptionArcCell, Ratio, UserInterface, View};
+use daur::{Cell, Lock, Observed, OptionArcCell, Ratio, UserInterface, View};
 use ratatui::layout::{Position, Rect};
 
 pub struct Tui {
     pub popups: Lock<Vec<(Id, Rect, View)>>,
     pub context_menu: OptionArcCell<(Rect, View)>,
 
-    pub should_exit: Condition,
-    pub should_redraw: Condition,
+    pub should_exit: Observed<bool>,
+    pub should_redraw: Observed<bool>,
     pub mouse_position: Cell<Position>,
     pub window_area: Cell<Rect>,
 }
@@ -56,8 +55,8 @@ impl Default for Tui {
             popups: Lock::new(Vec::new()),
             context_menu: OptionArcCell::none(),
 
-            should_exit: Condition::new(false),
-            should_redraw: Condition::new(true),
+            should_exit: Observed::new(false),
+            should_redraw: Observed::new(true),
             mouse_position: Cell::new(Position::ORIGIN),
             window_area: Cell::new(Rect::ZERO),
         }
