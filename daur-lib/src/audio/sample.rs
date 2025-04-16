@@ -1,6 +1,9 @@
 use std::fmt::{self, Debug, Formatter};
 use std::ops::{Add, AddAssign, Div};
 
+/// 2^31
+const I32_ABS_MAX: f64 = i32::MAX as f64 + 1.0;
+
 /// A 64-bit float sample
 #[derive(Copy, Clone, PartialEq, Default)]
 #[repr(transparent)]
@@ -28,13 +31,21 @@ impl Sample {
     }
 
     /// Losslessly constructs a new float sample from a 32-bit integral sample.
-    // TODO: test
     #[must_use]
     pub fn from_i32(sample: i32) -> Sample {
-        Sample::new(f64::from(sample) / (f64::from(i32::MAX) + 1.0))
+        Sample::new(f64::from(sample) / I32_ABS_MAX)
     }
 
-    /// Constructs a new float sample from a 32-bit one.
+    /// Converts the float sample to a 32-bit integral one.
+    ///
+    /// This conversion may be lossy.
+    #[must_use]
+    pub fn to_i32(self) -> i32 {
+        #![expect(clippy::cast_possible_truncation, reason = "lossy conversion")]
+        (self.inner * I32_ABS_MAX) as i32
+    }
+
+    /// Losslessly constructs a new float sample from a 32-bit one.
     #[must_use]
     pub const fn from_f32(value: f32) -> Sample {
         Sample::new(value as f64)
@@ -42,7 +53,7 @@ impl Sample {
 
     /// Converts the float sample to a 32-bit one.
     ///
-    /// This conversion is lossy.
+    /// This conversion may be lossy.
     #[must_use]
     pub const fn to_f32(self) -> f32 {
         #![expect(clippy::cast_possible_truncation, reason = "lossy conversion")]
@@ -79,4 +90,37 @@ impl Div<i32> for Sample {
     fn div(self, rhs: i32) -> Sample {
         Sample::new(self.inner / f64::from(rhs))
     }
+}
+
+#[cfg(test)]
+#[test]
+fn test_losslessness() {
+    #![allow(clippy::unreadable_literal, reason = "the numbers are not important")]
+
+    use std::hint::black_box;
+
+    fn back_and_fourth(sample: i32) -> i32 {
+        let sample = Sample::from_i32(sample);
+        black_box(sample).to_i32()
+    }
+
+    fn assert_lossless(sample: i32) {
+        assert_eq!(sample, back_and_fourth(sample));
+    }
+
+    assert_lossless(0);
+    assert_lossless(i32::MIN);
+    assert_lossless(i32::MAX);
+
+    // some random samples
+    assert_lossless(937306913);
+    assert_lossless(414571583);
+    assert_lossless(-1656970901);
+    assert_lossless(1732022799);
+    assert_lossless(-529550899);
+    assert_lossless(-2142237014);
+    assert_lossless(2038762849);
+    assert_lossless(1339135784);
+    assert_lossless(-1988583575);
+    assert_lossless(-1579592110);
 }
