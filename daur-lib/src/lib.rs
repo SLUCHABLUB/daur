@@ -1,5 +1,18 @@
 //! The inner workings of the DAW.
 
+pub mod audio;
+pub mod clip;
+pub mod context;
+pub mod popup;
+pub mod project;
+pub mod time;
+pub mod track;
+pub mod ui;
+pub mod view;
+
+#[cfg(test)]
+mod test;
+
 mod app;
 mod cell;
 mod changing;
@@ -16,19 +29,6 @@ mod ratio;
 mod receiver;
 mod sign;
 mod string;
-
-pub mod audio;
-pub mod clip;
-pub mod context;
-pub mod popup;
-pub mod project;
-pub mod time;
-pub mod track;
-pub mod ui;
-pub mod view;
-
-#[cfg(test)]
-mod test;
 
 pub use app::{Action, App};
 pub use cell::{ArcCell, Cell, OptionArcCell};

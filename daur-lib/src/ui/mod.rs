@@ -1,14 +1,5 @@
 //! Types pertaining to [`UserInterface`].
 
-mod grid;
-mod length;
-mod mapping;
-mod offset;
-mod point;
-mod rectangle;
-mod size;
-mod vector;
-
 pub use grid::Grid;
 pub use length::{Length, NonZeroLength};
 pub use mapping::Mapping;
@@ -17,6 +8,15 @@ pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
 pub use vector::Vector;
+
+mod grid;
+mod length;
+mod mapping;
+mod offset;
+mod point;
+mod rectangle;
+mod size;
+mod vector;
 
 use crate::View;
 use crate::popup::Id;

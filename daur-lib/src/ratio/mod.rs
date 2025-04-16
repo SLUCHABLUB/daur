@@ -2,9 +2,9 @@ mod non_zero;
 mod util;
 
 pub use non_zero::NonZeroRatio;
-use std::cmp::Ordering;
 
 use crate::ratio::util::lcm;
+use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::num::{FpCategory, NonZeroU32, NonZeroU128};

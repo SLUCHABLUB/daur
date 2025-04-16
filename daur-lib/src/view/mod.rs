@@ -1,5 +1,9 @@
 //! Types pertaining to [`View`].
 
+pub mod multi;
+pub mod piano_roll;
+pub mod single;
+
 mod alignment;
 mod button;
 mod canvas;
@@ -9,10 +13,6 @@ mod feed;
 mod quotum;
 mod ruler;
 mod text;
-
-pub mod multi;
-pub mod piano_roll;
-pub mod single;
 
 pub use alignment::Alignment;
 pub use button::OnClick;
