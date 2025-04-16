@@ -15,7 +15,7 @@ impl view::Context for Context<'_, '_> {
     }
 
     fn draw_point(&mut self, point: Point, colour: Colour) {
-        let point = (f64::from(point.x.inner()), f64::from(point.y.inner()));
+        let point = (f64::from(point.x.pixels), f64::from(point.y.pixels));
         self.context.draw(&Points {
             coords: &[point],
             color: approximate_colour(colour),
@@ -25,10 +25,10 @@ impl view::Context for Context<'_, '_> {
     fn draw_rectangle(&mut self, rectangle: Rectangle, colour: Colour) {
         // TODO: does this fill the rectangle?
         self.context.draw(&canvas::Rectangle {
-            x: f64::from(rectangle.position.x.inner()),
-            y: f64::from(rectangle.position.y.inner()),
-            width: f64::from(rectangle.size.width.inner()),
-            height: f64::from(rectangle.size.height.inner()),
+            x: f64::from(rectangle.position.x.pixels),
+            y: f64::from(rectangle.position.y.pixels),
+            width: f64::from(rectangle.size.width.pixels),
+            height: f64::from(rectangle.size.height.pixels),
             color: approximate_colour(colour),
         });
     }

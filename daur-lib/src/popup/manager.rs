@@ -21,7 +21,7 @@ impl<Ui: UserInterface> Manager<Ui> {
     /// Opens a new [popup](Popup).
     pub fn open(&self, popup: &Popup, ui: &Ui) {
         let id = Id::generate();
-        let handle = ui.open_popup(popup.title(), popup.view(id), id);
+        let handle = ui.open_popup(popup.title(), popup.view::<Ui>(id), id);
         self.handles.write().insert(id, handle);
     }
 

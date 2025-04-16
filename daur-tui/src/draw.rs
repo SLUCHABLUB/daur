@@ -1,5 +1,7 @@
 use crate::canvas::Context;
-use crate::convert::{approximate_colour, ratatui_to_size, rect_to_rectangle, rectangle_to_rect};
+use crate::convert::{
+    approximate_colour, length_to_u16, ratatui_to_size, rect_to_rectangle, rectangle_to_rect,
+};
 use crate::tui::Tui;
 use daur::view::{Alignment, Painter, View};
 use daur::{App, Colour};
@@ -93,12 +95,14 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         }
         View::Contextual { menu: _, view } => render(view, area, buffer, mouse_position),
         View::CursorWindow { offset } => {
-            if area.width <= offset.inner() {
+            let offset = length_to_u16(*offset);
+
+            if area.width <= offset {
                 return;
             }
 
             let cursor_area = Rect {
-                x: area.x.saturating_add(offset.inner()),
+                x: area.x.saturating_add(offset),
                 y: area.y,
                 width: 1,
                 height: area.height,

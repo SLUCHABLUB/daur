@@ -9,12 +9,3 @@ pub struct Grid {
     /// The width of a grid cell
     pub cell_width: NonZeroLength,
 }
-
-impl Default for Grid {
-    fn default() -> Self {
-        Grid {
-            cell_duration: NonZeroDuration::QUARTER,
-            cell_width: NonZeroLength::DEFAULT_CELL_WIDTH,
-        }
-    }
-}

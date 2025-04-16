@@ -2,32 +2,43 @@ use daur::Colour;
 use daur::ui::{Length, Point, Rectangle, Size};
 use ratatui::layout::{Position, Rect, Size as RatatuiSize};
 use ratatui::style::Color;
+use saturating_cast::SaturatingCast as _;
+
+fn u16_to_length(chars: u16) -> Length {
+    Length {
+        pixels: u32::from(chars),
+    }
+}
+
+pub fn length_to_u16(length: Length) -> u16 {
+    length.pixels.saturating_cast()
+}
 
 pub fn position_to_point(position: Position) -> Point {
     Point {
-        x: Length::new(position.x),
-        y: Length::new(position.y),
+        x: u16_to_length(position.x),
+        y: u16_to_length(position.y),
     }
 }
 
 pub fn point_to_position(point: Point) -> Position {
     Position {
-        x: point.x.inner(),
-        y: point.y.inner(),
+        x: length_to_u16(point.x),
+        y: length_to_u16(point.y),
     }
 }
 
 pub fn ratatui_to_size(size: RatatuiSize) -> Size {
     Size {
-        width: Length::new(size.width),
-        height: Length::new(size.height),
+        width: u16_to_length(size.width),
+        height: u16_to_length(size.height),
     }
 }
 
 pub fn size_to_ratatui(size: Size) -> RatatuiSize {
     RatatuiSize {
-        width: size.width.inner(),
-        height: size.height.inner(),
+        width: length_to_u16(size.width),
+        height: length_to_u16(size.height),
     }
 }
 
@@ -40,10 +51,10 @@ pub fn rect_to_rectangle(rect: Rect) -> Rectangle {
 
 pub fn rectangle_to_rect(rectangle: Rectangle) -> Rect {
     Rect {
-        x: rectangle.position.x.inner(),
-        y: rectangle.position.y.inner(),
-        width: rectangle.size.width.inner(),
-        height: rectangle.size.height.inner(),
+        x: length_to_u16(rectangle.position.x),
+        y: length_to_u16(rectangle.position.y),
+        width: length_to_u16(rectangle.size.width),
+        height: length_to_u16(rectangle.size.height),
     }
 }
 

@@ -3,58 +3,59 @@ use crate::ui::Length;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
+// TODO: document the not-fully-saturating semantics on overflow.
 /// A signed [length](Length).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
-    inner: i32,
+    pixels: i64,
 }
 
 impl Offset {
-    const fn new(value: i32) -> Offset {
-        Offset { inner: value }
-    }
-
     /// Constructs a positive offset.
     #[must_use]
     pub const fn positive(length: Length) -> Offset {
         Offset {
-            inner: length.inner() as i32,
+            pixels: length.pixels as i64,
         }
     }
 
     /// Constructs a negative offset.
     #[must_use]
     pub const fn negative(length: Length) -> Offset {
-        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in i32")]
+        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in i64")]
         Offset {
-            inner: -(length.inner() as i32),
+            pixels: -(length.pixels as i64),
         }
     }
 
     /// 0
-    pub const ZERO: Offset = Offset::new(0);
+    pub const ZERO: Offset = Offset { pixels: 0 };
 
     /// Returns the absolute value of the offset.
     #[must_use]
     pub fn abs(self) -> Length {
-        if self.inner.is_negative() {
+        if self.pixels.is_negative() {
             -self
         } else {
             self
         }
-        .saturate()
+        .rectify()
     }
 
-    /// Convert the offset to a [length](Length) by saturating
+    /// Convert the offset to a [length](Length).
+    ///
+    /// Negative values are mapped to 0;
     #[must_use]
-    pub fn saturate(self) -> Length {
-        Length::new(self.inner.saturating_cast())
+    pub fn rectify(self) -> Length {
+        Length {
+            pixels: self.pixels.saturating_cast(),
+        }
     }
 }
 
 impl From<Length> for Offset {
     fn from(length: Length) -> Self {
-        Offset::new(i32::from(length.inner()))
+        Offset::positive(length)
     }
 }
 
@@ -63,7 +64,7 @@ impl Add for Offset {
 
     fn add(self, rhs: Self) -> Self::Output {
         Offset {
-            inner: self.inner.saturating_add(rhs.inner),
+            pixels: self.pixels.saturating_add(rhs.pixels),
         }
     }
 }
@@ -79,7 +80,7 @@ impl Sub for Offset {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Offset {
-            inner: self.inner.saturating_sub(rhs.inner),
+            pixels: self.pixels.saturating_sub(rhs.pixels),
         }
     }
 }
@@ -95,7 +96,7 @@ impl Neg for Offset {
 
     fn neg(self) -> Self::Output {
         Offset {
-            inner: self.inner.saturating_neg(),
+            pixels: self.pixels.saturating_neg(),
         }
     }
 }
@@ -116,35 +117,17 @@ impl Sub<Length> for Offset {
     }
 }
 
-impl Mul<i32> for Offset {
-    type Output = Offset;
-
-    fn mul(self, rhs: i32) -> Self::Output {
-        Offset {
-            inner: self.inner.saturating_mul(rhs),
-        }
-    }
-}
-
 impl Mul<Ratio> for Offset {
     type Output = Offset;
 
     fn mul(self, rhs: Ratio) -> Self::Output {
         let length = self.abs() * rhs;
 
-        if self.inner.is_negative() {
+        if self.pixels.is_negative() {
             Offset::negative(length)
         } else {
             Offset::positive(length)
         }
-    }
-}
-
-impl Mul<usize> for Offset {
-    type Output = Offset;
-
-    fn mul(self, rhs: usize) -> Self::Output {
-        self * rhs.saturating_cast::<i32>()
     }
 }
 
@@ -156,7 +139,7 @@ impl AddAssign<Length> for Offset {
 
 impl AddAssign<Offset> for Length {
     fn add_assign(&mut self, rhs: Offset) {
-        *self = (rhs + *self).saturate();
+        *self = (rhs + *self).rectify();
     }
 }
 
@@ -168,6 +151,6 @@ impl SubAssign<Length> for Offset {
 
 impl SubAssign<Offset> for Length {
     fn sub_assign(&mut self, rhs: Offset) {
-        *self = ((-rhs) + *self).saturate();
+        *self = ((-rhs) + *self).rectify();
     }
 }

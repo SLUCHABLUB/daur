@@ -1,4 +1,3 @@
-use crate::Changing;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::lock::Lock;
@@ -8,8 +7,9 @@ use crate::project::edit::Edit;
 use crate::project::source::ProjectSource;
 use crate::project::{Project, bar, workspace};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
-use crate::ui::{Grid, Length, Offset};
+use crate::ui::{Grid, NonZeroLength, Offset};
 use crate::view::View;
+use crate::{Changing, UserInterface};
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -85,9 +85,9 @@ impl Manager {
         }
     }
 
-    pub(crate) fn bar(&self, playing: bool) -> View {
+    pub(crate) fn bar<Ui: UserInterface>(&self, playing: bool) -> View {
         let project = self.project.read();
-        bar(
+        bar::<Ui>(
             project.title(),
             project.tempo.start,
             project.time_signature.start,
@@ -96,9 +96,9 @@ impl Manager {
         )
     }
 
-    pub(crate) fn workspace(
+    pub(crate) fn workspace<Ui: UserInterface>(
         &self,
-        track_settings_size: Length,
+        track_settings_size: NonZeroLength,
         grid: Grid,
         overview_offset: Offset,
         selected_track_index: usize,
@@ -107,7 +107,7 @@ impl Manager {
     ) -> View {
         let project = self.project.read();
 
-        workspace(
+        workspace::<Ui>(
             overview_offset,
             selected_track_index,
             selected_clip_index,

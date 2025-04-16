@@ -1,19 +1,19 @@
 use crate::project::{ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Action};
 use crate::time::Instant;
 use crate::track::{Track, overview, settings};
-use crate::ui::{Length, Offset};
+use crate::ui::{NonZeroLength, Offset};
 use crate::view::{Direction, OnClick, ToText as _, View, ruler};
-use crate::{time, ui};
+use crate::{UserInterface, time, ui};
 use arcstr::literal;
 use std::sync::Arc;
 
 // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
 #[expect(clippy::too_many_arguments, reason = "todo")]
-pub(crate) fn workspace(
+pub(crate) fn workspace<Ui: UserInterface>(
     overview_offset: Offset,
     selected_track_index: usize,
     selected_clip_index: usize,
-    track_settings_width: Length,
+    track_settings_width: NonZeroLength,
     tracks: Vec<Arc<Track>>,
     time_mapping: time::Mapping,
     ui_mapping: ui::Mapping,
@@ -61,7 +61,7 @@ pub(crate) fn workspace(
     let ruler_row = View::Stack {
         direction: Direction::Right,
         elements: vec![
-            empty_space.quotated(track_settings_width),
+            empty_space.quotated(track_settings_width.get()),
             ruler.fill_remaining(),
         ],
     };
@@ -72,13 +72,16 @@ pub(crate) fn workspace(
     let track_area = View::Stack {
         direction: Direction::Right,
         elements: vec![
-            settings_column.quotated(track_settings_width),
+            settings_column.quotated(track_settings_width.get()),
             overview_column.fill_remaining(),
         ],
     };
 
     View::Stack {
         direction: Direction::Down,
-        elements: vec![ruler_row.quotated_minimally(), track_area.fill_remaining()],
+        elements: vec![
+            ruler_row.quotated_minimally::<Ui>(),
+            track_area.fill_remaining(),
+        ],
     }
 }

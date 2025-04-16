@@ -5,7 +5,7 @@ use crate::tui::Tui;
 use crossterm::event::{
     Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
-use daur::ui::{Length, Vector};
+use daur::ui::{Length, NonZeroLength, Vector};
 use daur::view::{Direction, View};
 use daur::{Action, App, OptionArcCell};
 use ratatui::layout::{Position, Rect};
@@ -203,7 +203,7 @@ fn click(
             if button == MouseButton::Right {
                 let view = menu.view();
 
-                let size = size_to_ratatui(view.minimum_size());
+                let size = size_to_ratatui(view.minimum_size::<Tui>());
                 let area = Rect::from((position, size));
 
                 context_menu.set_some_value((area, menu.view()));
@@ -278,14 +278,21 @@ fn click(
 
 // TODO: break into parts and move into the library
 fn scroll(app: &App<Tui>, direction: Direction) {
-    let offset = -Vector::directed(Length::new(1), direction);
+    let offset = -Vector::directed(Length::PIXEL, direction);
 
     let mouse_position = position_to_point(app.ui.mouse_position.get());
     let area = rect_to_rectangle(app.ui.window_area.get());
 
-    if mouse_position.y < app.project_bar_height {
+    let piano_roll_start = area.size.height
+        - app
+            .piano_roll_settings
+            .get()
+            .height
+            .map_or(Length::ZERO, NonZeroLength::get);
+
+    if mouse_position.y < app.project_bar_height.get() {
         // scroll the project bar (do nothing)
-    } else if mouse_position.y < area.size.height - app.piano_roll_settings.get().height {
+    } else if mouse_position.y < piano_roll_start {
         // scroll the track overview
         let new_offset = app.overview_offset.get() + offset.x;
         app.overview_offset.set(new_offset);

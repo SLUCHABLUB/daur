@@ -19,8 +19,10 @@ pub fn overview(
     cursor: Instant,
 ) -> View {
     View::size_informed(move |size| {
-        let overview_period = ui_mapping.period((-offset).saturate(), size.width);
+        // FIXME
+        let overview_period = ui_mapping.period((-offset).rectify(), size.width);
 
+        // TODO: fix this 6-levels-of-indentation hell
         let track = Arc::clone(&track);
         let time_mapping = time_mapping.clone();
         let cursor_mapping = ui_mapping.clone();
@@ -33,6 +35,7 @@ pub fn overview(
 
                 let (clip_index, parity) = index.div_rem(&2);
 
+                // TODO: add spacing to feed
                 // if index is even
                 if parity == 0 {
                     // Return the space between clips
@@ -50,7 +53,7 @@ pub fn overview(
                         .clips
                         .keys()
                         .nth(clip_index)
-                        .map_or(Length::MAX, |instant| ui_mapping.offset(*instant));
+                        .map_or(size.width, |instant| ui_mapping.offset(*instant));
 
                     let size = next_clip_start - last_clip_end;
 

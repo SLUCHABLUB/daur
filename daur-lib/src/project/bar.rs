@@ -1,10 +1,9 @@
-use crate::ToArcStr as _;
 use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::{Instant, Signature, Tempo};
-use crate::ui::Length;
 use crate::view::{Direction, OnClick, ToText as _, View};
+use crate::{ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
 
 const PLAY: ArcStr = literal!("\u{25B6}");
@@ -29,7 +28,7 @@ fn open_key_selector(instant: Instant, key: Key) -> OnClick {
 //  - grid size
 //  - master volume
 /// The bar att the top of the app window.
-pub fn bar(
+pub fn bar<Ui: UserInterface>(
     title: ArcStr,
     tempo: Tempo,
     time_signature: Signature,
@@ -59,7 +58,7 @@ pub fn bar(
         ],
     );
 
-    let left_side = View::spaced_stack(
+    let left_side = View::spaced_stack::<Ui>(
         Direction::Right,
         vec![literal!("TODO").centred(), fallbacks],
     );
@@ -70,7 +69,7 @@ pub fn bar(
         direction: Direction::Right,
         elements: vec![
             left_side.fill_remaining(),
-            playback_button.quotated(Length::PLAYBACK_BUTTON_WIDTH),
+            playback_button.quotated(Ui::PLAYBACK_BUTTON_WIDTH.get()),
             right_side.fill_remaining(),
         ],
     }

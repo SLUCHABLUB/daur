@@ -22,11 +22,11 @@ where
                 offset += quotated
                     .quotum
                     .size_parallel_to(direction)
-                    .unwrap_or(Length::MAX);
+                    .unwrap_or(full_size);
                 index = index.saturating_add(1);
 
                 if Offset::ZERO < offset {
-                    first = quotated.view.quotated(offset.saturate());
+                    first = quotated.view.quotated(offset.rectify());
                     break;
                 }
             },
@@ -39,11 +39,11 @@ where
 
                 let Quotated { quotum, view } = generator(new);
                 let quotum_size = quotum.size_parallel_to(direction);
-                offset -= quotum_size.unwrap_or(Length::MAX);
+                offset -= quotum_size.unwrap_or(full_size);
 
                 if offset < Offset::ZERO {
                     first = if let Some(size) = quotum_size {
-                        view.quotated((offset + size).saturate())
+                        view.quotated((offset + size).rectify())
                     } else {
                         view.fill_remaining()
                     };
@@ -70,7 +70,7 @@ where
                 - quotated
                     .quotum
                     .size_parallel_to(direction)
-                    .unwrap_or(Length::MAX);
+                    .unwrap_or(full_size);
 
             index = index.saturating_add(1);
             remaining = new_remaining;

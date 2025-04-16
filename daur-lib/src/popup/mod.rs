@@ -9,7 +9,7 @@ pub use manager::Manager;
 use crate::key::Key;
 use crate::time::Instant;
 use crate::view::{Alignment, Direction, OnClick, ToText as _, multi, single};
-use crate::{Action, ArcCell, Cell, ToArcStr as _, View, project};
+use crate::{Action, ArcCell, Cell, ToArcStr as _, UserInterface, View, project};
 use arcstr::{ArcStr, format, literal};
 use derive_more::Debug;
 use dirs::home_dir;
@@ -75,7 +75,7 @@ impl Popup {
     }
 
     /// Returns the popups [view](View).
-    pub fn view(&self, id: Id) -> View {
+    pub fn view<Ui: UserInterface>(&self, id: Id) -> View {
         match self {
             Popup::ButtonPanel { title: _, buttons } => View::balanced_stack(
                 Direction::Down,
@@ -87,7 +87,7 @@ impl Popup {
             Popup::Error { display, debug } => {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
-                View::spaced_stack(
+                View::spaced_stack::<Ui>(
                     Direction::Down,
                     [
                         display.clone().aligned_to(Alignment::TopLeft),
@@ -117,13 +117,13 @@ impl Popup {
                 .terminating(id);
                 let cancel = CANCEL.centred().bordered().terminating(id);
 
-                let buttons = View::spaced_stack(Direction::Right, vec![cancel, confirm]);
+                let buttons = View::spaced_stack::<Ui>(Direction::Right, vec![cancel, confirm]);
 
                 View::Stack {
                     direction: Direction::Down,
                     elements: vec![
                         View::FileSelector { selected_file }.fill_remaining(),
-                        buttons.quotated_minimally(),
+                        buttons.quotated_minimally::<Ui>(),
                     ],
                 }
             }
@@ -132,7 +132,7 @@ impl Popup {
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
 
-                let buttons = View::spaced_stack(
+                let buttons = View::spaced_stack::<Ui>(
                     Direction::Right,
                     vec![
                         CANCEL.centred().bordered().terminating(id),
@@ -151,7 +151,7 @@ impl Popup {
                     ],
                 );
 
-                View::spaced_stack(
+                View::spaced_stack::<Ui>(
                     Direction::Down,
                     vec![
                         single::selector_with_formatter(&tonic, Direction::Right, |chroma| {

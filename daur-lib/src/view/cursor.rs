@@ -10,11 +10,11 @@ pub fn cursor_window(cursor_position: Instant, mapping: Mapping, window_offset: 
     if cursor_offset < Offset::ZERO {
         return View::Empty;
     }
-    let offset = cursor_offset.saturate();
+    let offset = cursor_offset.rectify();
 
     let on_click = OnClick::new(move |_, position, actions| {
         let ui_offset = Offset::from(position.x) - window_offset;
-        let instant = mapping.instant_on_grid(ui_offset.saturate());
+        let instant = mapping.instant_on_grid(ui_offset.rectify());
 
         actions.send(Action::MoveCursor(instant));
     });

@@ -13,7 +13,7 @@ use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::{Mapping, Offset};
 use crate::view::{Direction, ToText as _, View, feed, ruler};
-use crate::{Changing, Clip};
+use crate::{Changing, Clip, UserInterface};
 use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 
@@ -23,7 +23,7 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 // Resizing it will thus cause the bottom to be fixed.
 // Since the top is the thing you move, this seems intuitive.
 /// Return the view for the piano roll.
-pub fn view(
+pub fn view<Ui: UserInterface>(
     clip: Option<&Clip>,
     mapping: Mapping,
     settings: Settings,
@@ -64,6 +64,6 @@ pub fn view(
 
     View::Stack {
         direction: Direction::Right,
-        elements: vec![ruler.quotated_minimally(), workspace.fill_remaining()],
+        elements: vec![ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()],
     }
 }

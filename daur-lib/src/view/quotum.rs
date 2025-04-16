@@ -1,3 +1,4 @@
+use crate::UserInterface;
 use crate::ui::{Length, Size};
 use crate::view::{Direction, View};
 
@@ -32,6 +33,14 @@ pub struct Quotated {
     pub view: View,
 }
 
+impl Quotated {
+    /// An [empty view](View::Empty) with a zero quotum.
+    pub const EMPTY: Quotated = Quotated {
+        quotum: Quotum::Exact(Length::ZERO),
+        view: View::Empty,
+    };
+}
+
 impl View {
     /// Adds a [quotum](Quotum) to the view.
     pub fn with_quotum(self, quotum: Quotum) -> Quotated {
@@ -49,8 +58,8 @@ impl View {
     }
 
     /// Adds a quotum to the view using [`minimum_size`](View::minimum_size).
-    pub fn quotated_minimally(self) -> Quotated {
-        let size = self.minimum_size();
+    pub fn quotated_minimally<Ui: UserInterface>(self) -> Quotated {
+        let size = self.minimum_size::<Ui>();
         self.with_quotum(Quotum::DirectionDependent(size))
     }
 }

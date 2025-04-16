@@ -4,7 +4,7 @@ use crate::ui::{Grid, Length};
 use std::sync::Arc;
 
 /// A mapping between screen (x-)coordinates and musical time
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Mapping {
     /// The project's time signature
     pub time_signature: Arc<Changing<Signature>>,

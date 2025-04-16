@@ -44,8 +44,8 @@ impl Vector {
     #[must_use]
     pub fn point(self) -> Point {
         Point {
-            x: self.x.saturate(),
-            y: self.y.saturate(),
+            x: self.x.rectify(),
+            y: self.y.rectify(),
         }
     }
 }

@@ -3,10 +3,10 @@ mod action;
 pub use action::Action;
 
 use crate::observed::Observed;
-use crate::time::{Instant, Mapping};
-use crate::ui::{Grid, Length, Offset};
+use crate::time::{Instant, Mapping, NonZeroDuration};
+use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::piano_roll::Settings;
-use crate::view::{Direction, View, piano_roll};
+use crate::view::{Direction, Quotated, View, piano_roll};
 use crate::{ArcCell, Cell, OptionArcCell, Project, UserInterface, popup, project, ui};
 use derive_more::Debug;
 use rodio::Device;
@@ -41,9 +41,9 @@ pub struct App<Ui: UserInterface> {
     pub popups: popup::Manager<Ui>,
 
     /// The height of the project bar.
-    pub project_bar_height: Length,
+    pub project_bar_height: NonZeroLength,
     /// The width of the track settings.
-    pub track_settings_width: Length,
+    pub track_settings_width: NonZeroLength,
 
     // TODO: find a semantically superior way to index tracks
     /// The index iof the currently selected track.
@@ -84,16 +84,26 @@ impl<Ui: UserInterface> App<Ui> {
 
             popups: popup::Manager::new(),
 
-            project_bar_height: Length::PROJECT_BAR_HEIGHT,
-            track_settings_width: Length::TRACK_SETTINGS_DEFAULT,
+            project_bar_height: Ui::PROJECT_BAR_HEIGHT,
+            track_settings_width: Ui::TRACK_SETTINGS_WITH,
 
             selected_track_index: Cell::new(0),
             selected_clip_index: Cell::new(0),
             cursor: Cell::new(Instant::START),
 
-            grid: Grid::default(),
+            grid: Grid {
+                cell_duration: NonZeroDuration::QUARTER,
+                cell_width: Ui::CELL_WIDTH,
+            },
             overview_offset: Cell::new(Offset::ZERO),
-            piano_roll_settings: Cell::new(Settings::default()),
+            piano_roll_settings: Cell::new(Settings {
+                x_offset: Length::ZERO,
+                y_offset: Offset::ZERO,
+                height: None,
+                key_width: Ui::KEY_WIDTH,
+                piano_depth: Ui::PIANO_DEPTH,
+                black_key_depth: Ui::BLACK_KEY_DEPTH,
+            }),
         }
     }
 
@@ -138,10 +148,10 @@ impl<Ui: UserInterface> App<Ui> {
             direction: Direction::Down,
             elements: vec![
                 self.project
-                    .bar(self.is_playing())
-                    .quotated(self.project_bar_height),
+                    .bar::<Ui>(self.is_playing())
+                    .quotated(self.project_bar_height.get()),
                 self.project
-                    .workspace(
+                    .workspace::<Ui>(
                         self.track_settings_width,
                         self.grid,
                         self.overview_offset.get(),
@@ -150,21 +160,26 @@ impl<Ui: UserInterface> App<Ui> {
                         self.playback_position(),
                     )
                     .fill_remaining(),
-                piano_roll::view(
-                    self.project
-                        .clip(
-                            self.selected_track_index.get(),
-                            self.selected_clip_index.get(),
+                self.piano_roll_settings
+                    .get()
+                    .height
+                    .map_or(Quotated::EMPTY, |height| {
+                        piano_roll::view::<Ui>(
+                            self.project
+                                .clip(
+                                    self.selected_track_index.get(),
+                                    self.selected_clip_index.get(),
+                                )
+                                .as_deref(),
+                            ui::Mapping {
+                                time_signature: self.project.time_signature(),
+                                grid: self.grid,
+                            },
+                            self.piano_roll_settings.get(),
+                            &self.project.key(),
                         )
-                        .as_deref(),
-                    ui::Mapping {
-                        time_signature: self.project.time_signature(),
-                        grid: self.grid,
-                    },
-                    self.piano_roll_settings.get(),
-                    &self.project.key(),
-                )
-                .quotated(self.piano_roll_settings.get().height),
+                        .quotated(height.get())
+                    }),
             ],
         }
     }

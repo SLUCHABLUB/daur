@@ -5,16 +5,13 @@ mod source;
 pub use source::Source;
 
 use crate::time::{Instant, Mapping, Period};
-use crate::ui::{Length, NonZeroLength, Point};
 use crate::view::Context;
-use crate::{Colour, Ratio};
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use num::{Integer as _, rational};
-use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 use std::io::Read;
-use std::num::{FpCategory, NonZeroU16, NonZeroU32};
+use std::num::FpCategory;
 use std::time::Duration;
 
 /// Some stereo 64-bit floating point audio.
@@ -84,70 +81,8 @@ impl Audio {
         visible_period: Period,
         mapping: &Mapping,
     ) {
-        #![expect(
-            clippy::cast_sign_loss,
-            reason = "we are working with durations (unsigned)"
-        )]
-        #![expect(
-            clippy::cast_possible_truncation,
-            reason = "saturating is fine when counting samples"
-        )]
-
-        let sample_rate = f64::from(self.sample_rate);
-
-        let left_cutoff = Period::from_endpoints(full_period.start, visible_period.start)
-            .map_or(Duration::ZERO, |period| mapping.real_time_duration(period));
-        let skipped_samples = sample_rate * left_cutoff.as_secs_f64();
-        let skipped_samples = skipped_samples.round() as usize;
-
-        let visible_samples =
-            sample_rate * mapping.real_time_duration(visible_period).as_secs_f64();
-        let visible_samples = visible_samples.round() as usize;
-
-        let samples = self
-            .mono_samples()
-            .skip(skipped_samples)
-            .take(visible_samples.saturating_cast());
-
-        let Some(visible_samples) = NonZeroU32::new(visible_samples as u32) else {
-            return;
-        };
-
-        let context_size = context.size();
-
-        let Some(context_width) = NonZeroU16::new(context_size.width.inner()) else {
-            return;
-        };
-
-        let sample_length = context_size.width / visible_samples;
-
-        if sample_length == Length::ZERO {
-            // since the numerator isn't zero, this resulted from a rounding
-
-            let Some(epsilon) = NonZeroLength::X_MINIMUM else {
-                // TODO: we have a really small context or really many samples
-                return;
-            };
-
-            let samples_per_epsilon = visible_samples.get() / NonZeroU32::from(context_width);
-
-            samples
-                .chunks(samples_per_epsilon.saturating_cast())
-                .into_iter()
-                .enumerate()
-                .for_each(|(x, samples)| {
-                    let x = epsilon.get() * x.saturating_cast::<u32>();
-
-                    let average = samples.sum::<f64>() / f64::from(samples_per_epsilon);
-                    let ratio = Ratio::approximate(-0.5 * (average - 1.0));
-
-                    let y = context_size.height * ratio;
-
-                    context.draw_point(Point { x, y }, Colour::WHITE);
-                });
-        } else {
-            // TODO: float lengths
-        }
+        // TODO: draw loudness graph
+        let _ = (self, context, full_period, visible_period, mapping);
     }
 
     /// Returns an [audio source](rodio::Source) for the audio.

@@ -26,7 +26,7 @@ pub use text::ToText;
 
 use crate::context::Menu;
 use crate::ui::{Length, Size};
-use crate::{ArcCell, Colour};
+use crate::{ArcCell, Colour, UserInterface};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use itertools::Itertools as _;
@@ -208,15 +208,19 @@ impl View {
     }
 
     /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size and spread out evenly.
-    pub fn spaced_stack<E>(direction: Direction, elements: E) -> Self
-    where
-        E: IntoIterator<Item = Self>,
-    {
+    #[expect(
+        clippy::impl_trait_in_params,
+        reason = "this has been determined to aid readability since turbofishes will not need two arguments"
+    )]
+    pub fn spaced_stack<Ui: UserInterface>(
+        direction: Direction,
+        elements: impl IntoIterator<Item = Self>,
+    ) -> Self {
         View::Stack {
             direction,
             elements: elements
                 .into_iter()
-                .map(View::quotated_minimally)
+                .map(View::quotated_minimally::<Ui>)
                 .intersperse_with(|| View::Empty.fill_remaining())
                 .collect(),
         }
@@ -224,7 +228,7 @@ impl View {
 
     /// Returns the minimum size required to fit the entire view.
     #[must_use]
-    pub fn minimum_size(&self) -> Size {
+    pub fn minimum_size<Ui: UserInterface>(&self) -> Size {
         match self {
             // TODO: this may depend on thickness
             View::Bordered {
@@ -232,26 +236,26 @@ impl View {
                 thick: _,
                 content,
             } => {
-                let mut size = content.minimum_size();
-                size.height += Length::DOUBLE_BORDER;
-                size.width += Length::DOUBLE_BORDER;
+                let mut size = content.minimum_size::<Ui>();
+                size.height += Ui::DOUBLE_BORDER_THICKNESS;
+                size.width += Ui::DOUBLE_BORDER_THICKNESS;
                 size
             }
             View::Button {
                 on_click: _,
                 content,
-            } => content.minimum_size(),
+            } => content.minimum_size::<Ui>(),
             View::Canvas { .. }
             | View::CursorWindow { .. }
             | View::Empty
             | View::FileSelector { .. }
             | View::SizeInformed(_)
             | View::Solid(_) => Size::ZERO,
-            View::Contextual { menu: _, view } => view.minimum_size(),
-            View::Generator(generator) => generator().minimum_size(),
+            View::Contextual { menu: _, view } => view.minimum_size::<Ui>(),
+            View::Generator(generator) => generator().minimum_size::<Ui>(),
             View::Hoverable { default, hovered } => {
-                let default = default.minimum_size();
-                let hovered = hovered.minimum_size();
+                let default = default.minimum_size::<Ui>();
+                let hovered = hovered.minimum_size::<Ui>();
 
                 Size {
                     width: max(default.width, hovered.width),
@@ -262,7 +266,7 @@ impl View {
                 let mut size = Size::ZERO;
 
                 for layer in layers {
-                    let layer_size = layer.minimum_size();
+                    let layer_size = layer.minimum_size::<Ui>();
                     size.width = max(size.width, layer_size.width);
                     size.height = max(size.height, layer_size.height);
                 }
@@ -271,7 +275,7 @@ impl View {
             }
             View::Rule { .. } => Size {
                 width: Length::ZERO,
-                height: Length::new(2),
+                height: Ui::RULER_HEIGHT.get(),
             },
             View::Stack {
                 direction,
@@ -281,7 +285,7 @@ impl View {
                 let mut orthogonal = Length::ZERO;
 
                 for quoted in elements {
-                    let child = quoted.view.minimum_size();
+                    let child = quoted.view.minimum_size::<Ui>();
                     parallel += child.parallel_to(*direction);
                     orthogonal = max(orthogonal, child.orthogonal_to(*direction));
                 }
@@ -295,10 +299,10 @@ impl View {
                 let mut size = Size::ZERO;
 
                 for line in string.lines() {
-                    size.width = max(size.width, Length::string_width(line));
+                    size.width = max(size.width, Ui::string_width(line));
                 }
 
-                size.height = Length::string_height(string);
+                size.height = Ui::string_height(string);
 
                 size
             }
