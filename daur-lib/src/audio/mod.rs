@@ -1,7 +1,9 @@
 //! Type pertaining to [`Audio`].
 
+mod sample;
 mod source;
 
+pub use sample::Sample;
 pub use source::Source;
 
 use crate::time::{Instant, Mapping, Period};
@@ -11,17 +13,14 @@ use itertools::{EitherOrBoth, Itertools};
 use num::{Integer as _, rational};
 use std::cmp::max;
 use std::io::Read;
-use std::num::FpCategory;
 use std::time::Duration;
 
 /// Some stereo 64-bit floating point audio.
 #[doc(hidden)]
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
     sample_rate: u32,
-    // On the interval [-1; 1]
-    // TODO: use non nan type and derive Eq
-    channels: [Vec<f64>; 2],
+    channels: [Vec<Sample>; 2],
 }
 
 impl Audio {
@@ -58,10 +57,10 @@ impl Audio {
     }
 
     /// An iterator of the samples converted to mono
-    pub fn mono_samples(&self) -> impl Iterator<Item = f64> + use<'_> {
+    pub fn mono_samples(&self) -> impl Iterator<Item = Sample> + use<'_> {
         Itertools::zip_longest(self.channels[0].iter(), self.channels[1].iter()).map(|either| {
             match either {
-                EitherOrBoth::Both(left, right) => (left + right) / 2.0,
+                EitherOrBoth::Both(left, right) => (*left + *right) / 2,
                 EitherOrBoth::Left(sample) | EitherOrBoth::Right(sample) => *sample,
             }
         })
@@ -91,37 +90,19 @@ impl Audio {
     }
 }
 
-impl Eq for Audio {}
-
-// TODO: test
-/// Losslessly convert an i32 sample to a f64 sample
-fn int_to_float_sample(sample: i32) -> f64 {
-    f64::from(sample) / (f64::from(i32::MAX) + 1.0)
-}
-
-fn clamp_float_sample(sample: f32) -> f64 {
-    let sample = f64::from(sample);
-    match sample.classify() {
-        FpCategory::Nan => 0.0,
-        FpCategory::Infinite | FpCategory::Zero | FpCategory::Subnormal | FpCategory::Normal => {
-            sample.clamp(-1.0, 1.0)
-        }
-    }
-}
-
 impl<R: Read> TryFrom<WavReader<R>> for Audio {
     type Error = Error;
 
     fn try_from(mut reader: WavReader<R>) -> Result<Self, Self::Error> {
         let spec = reader.spec();
-        let samples: Vec<f64> = match spec.sample_format {
+        let samples: Vec<_> = match spec.sample_format {
             SampleFormat::Float => reader
                 .samples::<f32>()
-                .map_ok(clamp_float_sample)
+                .map_ok(Sample::from_f32)
                 .try_collect()?,
             SampleFormat::Int => reader
                 .samples::<i32>()
-                .map_ok(int_to_float_sample)
+                .map_ok(Sample::from_i32)
                 .try_collect()?,
         };
 

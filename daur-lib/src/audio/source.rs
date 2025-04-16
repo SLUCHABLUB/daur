@@ -37,11 +37,7 @@ impl Iterator for Source {
         }
         self.right = !self.right;
 
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "playback audio doesn't support f64 precision"
-        )]
-        Some(sample as f32)
+        Some(sample.to_f32())
     }
 }
 

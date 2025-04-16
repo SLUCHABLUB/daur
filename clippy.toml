@@ -1,6 +1,7 @@
 avoid-breaking-exported-api = false
 arithmetic-side-effects-allowed = [
     # daur internal type names
+    "audio::sample::Sample",
     "pitch::Pitch",
     "ui::length::Length",
     "ui::offset::Offset",
@@ -13,6 +14,7 @@ arithmetic-side-effects-allowed = [
     "time::instant::Instant",
 
     # type names for other crates
+    "daur::audio::Sample",
     "daur::ui::Length",
     "daur::ui::Offset",
     "daur::ui::Vector",
