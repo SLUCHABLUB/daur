@@ -20,6 +20,7 @@ use std::time::Duration;
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
     sample_rate: u32,
+    /// The left and right channels, in that order.
     channels: [Vec<Sample>; 2],
 }
 

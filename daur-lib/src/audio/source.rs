@@ -26,9 +26,9 @@ impl Iterator for Source {
 
     fn next(&mut self) -> Option<Self::Item> {
         let channel = if self.right {
-            &self.audio.channels[0]
-        } else {
             &self.audio.channels[1]
+        } else {
+            &self.audio.channels[0]
         };
         let sample = *channel.get(self.sample)?;
 
