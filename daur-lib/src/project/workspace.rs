@@ -80,7 +80,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     View::Stack {
         direction: Direction::Down,
         elements: vec![
-            ruler_row.quotated_minimally::<Ui>(),
+            ruler_row.quotated(Ui::RULER_HEIGHT.get()),
             track_area.fill_remaining(),
         ],
     }
