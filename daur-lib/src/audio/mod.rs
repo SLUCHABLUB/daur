@@ -13,13 +13,14 @@ use itertools::{EitherOrBoth, Itertools};
 use num::{Integer as _, rational};
 use std::cmp::max;
 use std::io::Read;
+use std::num::{NonZeroU32, NonZeroU64};
 use std::time::Duration;
 
 /// Some stereo 64-bit floating point audio.
 #[doc(hidden)]
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
-    sample_rate: u32,
+    sample_rate: NonZeroU32,
     /// The left and right channels, in that order.
     channels: [Vec<Sample>; 2],
 }
@@ -37,10 +38,10 @@ impl Audio {
         const NANOS_PER_SEC: u64 = 1_000_000_000;
 
         let sample_count = self.sample_count() as u64;
-        let sample_rate = u64::from(self.sample_rate);
-        let nano_sample_rate = rational::Ratio::new(sample_rate, NANOS_PER_SEC);
+        let sample_rate = NonZeroU64::from(self.sample_rate);
+        let nano_sample_rate = rational::Ratio::new(sample_rate.get(), NANOS_PER_SEC);
 
-        let (seconds, remainder) = sample_count.div_rem(&sample_rate);
+        let (seconds, remainder) = sample_count.div_rem(&sample_rate.get());
 
         #[expect(
             clippy::arithmetic_side_effects,
@@ -94,7 +95,7 @@ impl Audio {
 impl<R: Read> TryFrom<WavReader<R>> for Audio {
     type Error = Error;
 
-    fn try_from(mut reader: WavReader<R>) -> Result<Self, Self::Error> {
+    fn try_from(mut reader: WavReader<R>) -> Result<Audio, Error> {
         let spec = reader.spec();
         let samples: Vec<_> = match spec.sample_format {
             SampleFormat::Float => reader
@@ -122,8 +123,11 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
             _ => return Err(Error::Unsupported),
         };
 
+        let sample_rate = NonZeroU32::new(spec.sample_rate)
+            .ok_or(Error::FormatError("encountered a sample rate of zero"))?;
+
         Ok(Audio {
-            sample_rate: spec.sample_rate,
+            sample_rate,
             channels,
         })
     }

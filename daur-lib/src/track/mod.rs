@@ -12,6 +12,7 @@ use crate::Clip;
 use crate::time::{Instant, Mapping};
 use arcstr::{ArcStr, literal};
 use std::collections::BTreeMap;
+use std::num::NonZeroU32;
 use std::sync::Arc;
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
@@ -38,7 +39,7 @@ impl Track {
 
     /// Returns the audio source for the track.
     #[must_use]
-    pub fn to_source(&self, mapping: &Mapping, sample_rate: u32, offset: usize) -> Source {
+    pub fn to_source(&self, mapping: &Mapping, sample_rate: NonZeroU32, offset: usize) -> Source {
         Source::new(
             sample_rate,
             self.clips

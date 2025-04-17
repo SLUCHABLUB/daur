@@ -1,11 +1,12 @@
 use crate::clip;
 use std::collections::VecDeque;
+use std::num::NonZeroU32;
 use std::time::Duration;
 
 /// An [audio source](rodio::Source) of a [track](crate::Track).
 #[derive(Debug)]
 pub struct Source {
-    sample_rate: u32,
+    sample_rate: NonZeroU32,
     sample: usize,
     clips: VecDeque<(usize, clip::Source)>,
 }
@@ -13,7 +14,11 @@ pub struct Source {
 impl Source {
     /// Constructs a new source.
     #[must_use]
-    pub fn new(sample_rate: u32, clips: VecDeque<(usize, clip::Source)>, sample: usize) -> Source {
+    pub fn new(
+        sample_rate: NonZeroU32,
+        clips: VecDeque<(usize, clip::Source)>,
+        sample: usize,
+    ) -> Source {
         Source {
             sample_rate,
             sample,
@@ -57,7 +62,7 @@ impl rodio::Source for Source {
     }
 
     fn sample_rate(&self) -> u32 {
-        self.sample_rate
+        self.sample_rate.get()
     }
 
     fn total_duration(&self) -> Option<Duration> {

@@ -1,9 +1,10 @@
 use crate::track::Source;
+use std::num::NonZeroU32;
 use std::time::Duration;
 
 #[derive(Debug)]
 pub struct ProjectSource {
-    pub sample_rate: u32,
+    pub sample_rate: NonZeroU32,
     pub tracks: Vec<Source>,
 }
 
@@ -40,7 +41,7 @@ impl rodio::Source for ProjectSource {
     }
 
     fn sample_rate(&self) -> u32 {
-        self.sample_rate
+        self.sample_rate.get()
     }
 
     fn total_duration(&self) -> Option<Duration> {

@@ -1,6 +1,7 @@
 mod non_zero;
 
 pub use non_zero::NonZeroInstant;
+use std::num::{NonZeroU32, NonZeroU128};
 
 use crate::time::{Duration, Mapping};
 use num::Integer as _;
@@ -23,11 +24,11 @@ impl Instant {
     // TODO: move to its own mapping
     /// Gets the offset in samples from the staring point
     #[must_use]
-    pub fn to_sample(self, mapping: &Mapping, sample_rate: u32) -> usize {
+    pub fn to_sample(self, mapping: &Mapping, sample_rate: NonZeroU32) -> usize {
         const NANOS_PER_SECOND: u128 = 1_000_000_000;
         const HALF: u128 = 500_000_000;
 
-        let sample_rate = u128::from(sample_rate);
+        let sample_rate = NonZeroU128::from(sample_rate);
         let duration = mapping.real_time_offset(self);
 
         // < 2^64 * 10^9 < 2^94
@@ -38,7 +39,7 @@ impl Instant {
             clippy::arithmetic_side_effects,
             reason = "nanos < 2^94, sample_rate < 2^32 => nano_sample < 2^(94 + 32 + 1) < 2^128"
         )]
-        let nano_sample = nanos * sample_rate * 2;
+        let nano_sample = nanos * sample_rate.get() * 2;
 
         let (mut sample, remainder) = nano_sample.div_rem(&NANOS_PER_SECOND);
 

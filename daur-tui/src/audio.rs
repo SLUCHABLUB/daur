@@ -7,6 +7,7 @@ use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::hint::spin_loop;
+use std::num::NonZeroU32;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
@@ -60,10 +61,25 @@ impl Display for NoSelectedDevice {
 
 impl Error for NoSelectedDevice {}
 
-fn get_sink(app: &App<Tui>) -> Result<(Sink, u32, OutputStream), Popup> {
+#[derive(Debug)]
+struct ZeroSampleRateDevice;
+
+impl Display for ZeroSampleRateDevice {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "the selected audio output device requested a sample rate of zero"
+        )
+    }
+}
+
+impl Error for ZeroSampleRateDevice {}
+
+fn get_sink(app: &App<Tui>) -> Result<(Sink, NonZeroU32, OutputStream), Popup> {
     let device = app.device.get().ok_or(NoSelectedDevice)?;
     let config = device.default_output_config()?;
     let SampleRate(sample_rate) = config.sample_rate();
+    let sample_rate = NonZeroU32::new(sample_rate).ok_or(ZeroSampleRateDevice)?;
 
     let (output_stream, handle) = OutputStream::try_from_device(&device)?;
     let sink = Sink::try_new(&handle)?;

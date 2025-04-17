@@ -10,6 +10,7 @@ use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, NonZeroLength, Offset};
 use crate::view::View;
 use crate::{Changing, UserInterface};
+use std::num::NonZeroU32;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -72,7 +73,7 @@ impl Manager {
 
     /// Returns an audio source for the project
     #[must_use]
-    pub fn source(&self, sample_rate: u32, cursor: Instant) -> ProjectSource {
+    pub fn source(&self, sample_rate: NonZeroU32, cursor: Instant) -> ProjectSource {
         let tracks = self.project.read().tracks.clone();
         let mapping = self.project.read().time_mapping();
         let offset = cursor.to_sample(&mapping, sample_rate);
