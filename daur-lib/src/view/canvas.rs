@@ -1,5 +1,5 @@
 use crate::Colour;
-use crate::ui::{Point, Rectangle, Size};
+use crate::ui::{Length, Point, Rectangle, Size};
 
 /// A [canvas](crate::View::Canvas) context, used for drawing.
 pub trait Context {
@@ -13,5 +13,19 @@ pub trait Context {
     /// Draws a (filled in) rectangle on the canvas.
     /// If any part of the rectangle is not withing the bounds of the canvas,
     /// the rectangle should be cropped.
-    fn draw_rectangle(&mut self, rectangle: Rectangle, colour: Colour);
+    fn draw_rectangle(&mut self, rectangle: Rectangle, colour: Colour) {
+        let x_range =
+            rectangle.position.x.pixels..(rectangle.position.x + rectangle.size.width).pixels;
+        let y_range =
+            rectangle.position.y.pixels..(rectangle.position.y + rectangle.size.height).pixels;
+
+        for x in x_range {
+            for y in y_range.clone() {
+                let x = Length { pixels: x };
+                let y = Length { pixels: y };
+
+                self.draw_point(Point { x, y }, colour);
+            }
+        }
+    }
 }
