@@ -1,6 +1,8 @@
+use crate::Ratio;
 use crate::ui::{Length, Offset, Point};
 use crate::view::Direction;
 use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
+use std::ops::Mul;
 
 /// A vector
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Add, Sub, Neg, AddAssign, SubAssign)]
@@ -46,6 +48,18 @@ impl Vector {
         Point {
             x: self.x.rectify(),
             y: self.y.rectify(),
+        }
+    }
+}
+
+// TODO: derive
+impl Mul<Ratio> for Vector {
+    type Output = Vector;
+
+    fn mul(self, rhs: Ratio) -> Self::Output {
+        Vector {
+            x: self.x * rhs,
+            y: self.y * rhs,
         }
     }
 }

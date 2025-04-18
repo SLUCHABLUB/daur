@@ -19,6 +19,7 @@ impl Duration {
     };
 }
 
+// TODO: derive
 impl Add for Duration {
     type Output = Duration;
 
@@ -28,12 +29,14 @@ impl Add for Duration {
     }
 }
 
+// TODO: derive
 impl AddAssign for Duration {
     fn add_assign(&mut self, rhs: Duration) {
         self.whole_notes += rhs.whole_notes;
     }
 }
 
+// TODO: derive
 impl Sub for Duration {
     type Output = Duration;
 
@@ -43,12 +46,14 @@ impl Sub for Duration {
     }
 }
 
+// TODO: derive
 impl SubAssign for Duration {
     fn sub_assign(&mut self, rhs: Duration) {
         self.whole_notes -= rhs.whole_notes;
     }
 }
 
+// TODO: derive
 impl Mul<Ratio> for Duration {
     type Output = Duration;
 
@@ -58,12 +63,14 @@ impl Mul<Ratio> for Duration {
     }
 }
 
+// TODO: derive
 impl MulAssign<Ratio> for Duration {
     fn mul_assign(&mut self, rhs: Ratio) {
         self.whole_notes *= rhs;
     }
 }
 
+// TODO: derive
 impl Div<NonZeroDuration> for Duration {
     type Output = Ratio;
 
@@ -72,6 +79,7 @@ impl Div<NonZeroDuration> for Duration {
     }
 }
 
+// TODO: derive
 impl Div<NonZeroRatio> for Duration {
     type Output = Duration;
 

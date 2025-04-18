@@ -8,7 +8,7 @@ use num::Integer as _;
 use saturating_cast::SaturatingCast as _;
 use std::ops::{Add, AddAssign, Sub};
 
-/// An instant in musical time
+/// An instant in musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Instant {
     /// The duration since the starting point
@@ -16,7 +16,7 @@ pub struct Instant {
 }
 
 impl Instant {
-    /// The starting point
+    /// The starting point.
     pub const START: Instant = Instant {
         since_start: Duration::ZERO,
     };
@@ -51,6 +51,7 @@ impl Instant {
     }
 }
 
+// TODO: derive
 impl Add<Duration> for Instant {
     type Output = Instant;
 
@@ -60,12 +61,14 @@ impl Add<Duration> for Instant {
     }
 }
 
+// TODO: derive
 impl AddAssign<Duration> for Instant {
     fn add_assign(&mut self, rhs: Duration) {
         self.since_start += rhs;
     }
 }
 
+// TODO: derive
 impl Sub for Instant {
     type Output = Duration;
 

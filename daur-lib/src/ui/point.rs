@@ -1,6 +1,5 @@
-use crate::Ratio;
 use crate::ui::{Length, Offset, Vector};
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::{Add, AddAssign, Sub};
 
 /// A point on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
@@ -28,6 +27,7 @@ impl Point {
     }
 }
 
+// TODO: derive
 impl Add<Vector> for Point {
     type Output = Point;
 
@@ -48,20 +48,6 @@ impl Sub for Point {
     type Output = Vector;
 
     fn sub(self, rhs: Self) -> Self::Output {
-        Vector {
-            x: Offset::from(self.x) - Offset::from(rhs.x),
-            y: Offset::from(self.y) - Offset::from(rhs.y),
-        }
-    }
-}
-
-impl Mul<Ratio> for Vector {
-    type Output = Vector;
-
-    fn mul(self, rhs: Ratio) -> Self::Output {
-        Vector {
-            x: self.x * rhs,
-            y: self.y * rhs,
-        }
+        self.position() - rhs.position()
     }
 }

@@ -5,7 +5,7 @@ pub use non_zero::NonZeroLength;
 use crate::Ratio;
 use crate::view::Quotum;
 use std::num::NonZeroU32;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// An orthogonal distance between two points
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -38,12 +38,14 @@ impl Add for Length {
     }
 }
 
+// TODO: derive
 impl AddAssign for Length {
     fn add_assign(&mut self, rhs: Self) {
         *self = *self + rhs;
     }
 }
 
+// TODO: derive
 impl Sub for Length {
     type Output = Length;
 
@@ -54,6 +56,7 @@ impl Sub for Length {
     }
 }
 
+// TODO: derive
 impl SubAssign for Length {
     fn sub_assign(&mut self, rhs: Self) {
         *self = *self - rhs;
@@ -69,11 +72,19 @@ impl Mul<Ratio> for Length {
     }
 }
 
+// TODO: derive
 impl Mul<u32> for Length {
     type Output = Length;
 
-    fn mul(self, rhs: u32) -> Self::Output {
-        self * Ratio::integer(rhs)
+    fn mul(mut self, rhs: u32) -> Self::Output {
+        self *= rhs;
+        self
+    }
+}
+
+impl MulAssign<u32> for Length {
+    fn mul_assign(&mut self, rhs: u32) {
+        self.pixels = self.pixels.saturating_mul(rhs);
     }
 }
 
@@ -97,6 +108,7 @@ impl Div<NonZeroU32> for Length {
     }
 }
 
+// TODO: derive
 impl DivAssign<NonZeroU32> for Length {
     fn div_assign(&mut self, rhs: NonZeroU32) {
         *self = *self / rhs;

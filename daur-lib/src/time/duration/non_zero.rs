@@ -32,6 +32,7 @@ impl NonZeroDuration {
     }
 }
 
+// TODO: derive
 impl Div for NonZeroDuration {
     type Output = NonZeroRatio;
 
@@ -40,6 +41,7 @@ impl Div for NonZeroDuration {
     }
 }
 
+// TODO: derive
 impl Div<NonZeroRatio> for NonZeroDuration {
     type Output = NonZeroDuration;
 
@@ -49,6 +51,7 @@ impl Div<NonZeroRatio> for NonZeroDuration {
     }
 }
 
+// TODO: derive
 impl DivAssign<NonZeroRatio> for NonZeroDuration {
     fn div_assign(&mut self, rhs: NonZeroRatio) {
         self.whole_notes /= rhs;
