@@ -26,10 +26,8 @@ impl<Ui: UserInterface> Manager<Ui> {
     }
 
     /// Closes a [popup](Popup).
-    pub fn close(&self, popup: Id, ui: &Ui) {
-        if let Some(handle) = self.handles.write().remove(&popup) {
-            ui.close_popup(handle);
-        }
+    pub fn close(&self, popup: Id) {
+        self.handles.write().remove(&popup);
     }
 }
 

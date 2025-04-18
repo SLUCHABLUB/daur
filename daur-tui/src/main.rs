@@ -6,6 +6,7 @@ mod controls;
 mod convert;
 mod draw;
 mod event;
+mod popup_handle;
 mod tui;
 
 use crate::audio::spawn_audio_thread;

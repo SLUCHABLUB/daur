@@ -64,7 +64,7 @@ impl Action {
     pub fn take<Ui: UserInterface>(self, app: &App<Ui>) {
         match self {
             Action::ClosePopup(popup) => {
-                app.popups.close(popup, &app.ui);
+                app.popups.close(popup);
             }
             Action::Exit => app.ui.exit(),
             Action::MoveCursor(instant) => {

@@ -1,10 +1,12 @@
 use crate::convert::{point_to_position, rect_to_rectangle, size_to_ratatui};
+use crate::popup_handle::PopupHandle;
 use daur::arcstr::ArcStr;
 use daur::popup::Id;
 use daur::ui::{Length, NonZeroLength};
 use daur::{Cell, Lock, Observed, OptionArcCell, Ratio, UserInterface, View};
 use ratatui::layout::{Position, Rect};
 use saturating_cast::SaturatingCast as _;
+use std::sync::Arc;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 macro_rules! non_zero_length {
@@ -16,7 +18,7 @@ macro_rules! non_zero_length {
 }
 
 pub struct Tui {
-    pub popups: Lock<Vec<(Id, Rect, View)>>,
+    pub popups: Arc<Lock<Vec<(Id, Rect, View)>>>,
     pub context_menu: OptionArcCell<(Rect, View)>,
 
     pub should_exit: Observed<bool>,
@@ -58,7 +60,7 @@ impl UserInterface for Tui {
         }
     }
 
-    type PopupHandle = Id;
+    type PopupHandle = PopupHandle;
 
     fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle {
         let view = view.titled(title);
@@ -75,23 +77,14 @@ impl UserInterface for Tui {
 
         self.popups.write().push((id, area, view));
 
-        id
-    }
-
-    fn close_popup(&self, handle: Self::PopupHandle) {
-        let mut popups = self.popups.write();
-
-        if let Some(index) = popups.iter().position(|(id, _, _)| *id == handle) {
-            let popup = popups.remove(index);
-            drop(popup);
-        }
+        PopupHandle::new(Arc::clone(&self.popups), id)
     }
 }
 
 impl Default for Tui {
     fn default() -> Self {
         Tui {
-            popups: Lock::new(Vec::new()),
+            popups: Arc::new(Lock::new(Vec::new())),
             context_menu: OptionArcCell::none(),
 
             should_exit: Observed::new(false),

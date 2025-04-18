@@ -58,12 +58,10 @@ pub trait UserInterface {
     fn string_width(string: &str) -> Length;
 
     /// A [RAII](wikipedia.org/wiki/RAII) handle to a popup.
+    /// Dropping it should close the popup.
     type PopupHandle;
 
     /// Opens a popup.
     #[must_use]
     fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle;
-
-    /// Closes a popup.
-    fn close_popup(&self, handle: Self::PopupHandle);
 }
