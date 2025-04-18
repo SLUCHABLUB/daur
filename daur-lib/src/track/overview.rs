@@ -75,7 +75,7 @@ fn feed_generator(
                 .and_then(|index| {
                     let (start, clip) = track.clips.iter().nth(index)?;
                     let end = clip.period(*start, &time_mapping).end();
-                    Some(ui_mapping.offset(end))
+                    Some(ui_mapping.x_offset(end))
                 })
                 .unwrap_or(Length::ZERO);
 
@@ -83,7 +83,7 @@ fn feed_generator(
                 .clips
                 .keys()
                 .nth(clip_index)
-                .map_or(last_clip_end, |instant| ui_mapping.offset(*instant));
+                .map_or(last_clip_end, |instant| ui_mapping.x_offset(*instant));
 
             let size = next_clip_start - last_clip_end;
 
