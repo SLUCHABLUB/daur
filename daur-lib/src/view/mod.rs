@@ -31,7 +31,7 @@ use arcstr::ArcStr;
 use derive_more::Debug;
 use itertools::Itertools as _;
 use std::cmp::max;
-use std::num::NonZeroU32;
+use std::num::NonZeroU64;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -104,7 +104,7 @@ pub enum View {
         /// The display-index of the rule.
         index: isize,
         /// The number of cells (the number of markings - 1).
-        cells: NonZeroU32,
+        cells: NonZeroU64,
     },
     /// A view that needs to know its container's size.
     SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),

@@ -1,10 +1,9 @@
 mod non_zero;
 
 pub use non_zero::NonZeroInstant;
-use std::num::NonZeroU32;
 
-use crate::Ratio;
-use crate::time::{Duration, Mapping, real};
+use crate::audio::SampleRate;
+use crate::time::{Duration, Mapping};
 use std::ops::{Add, AddAssign, Sub};
 
 /// An instant in musical time.
@@ -23,10 +22,10 @@ impl Instant {
     // TODO: move to its own mapping
     /// Gets the offset in samples from the staring point.
     #[must_use]
-    pub fn to_sample_index(self, mapping: &Mapping, sample_rate: NonZeroU32) -> usize {
+    pub fn to_sample_index(self, mapping: &Mapping, sample_rate: SampleRate) -> usize {
         let duration = mapping.real_time_offset(self);
 
-        let sample = duration / real::NonZeroDuration::SECOND * Ratio::integer(sample_rate.get());
+        let sample = duration / sample_rate.sample_duration();
 
         sample.to_usize()
     }

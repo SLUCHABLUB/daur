@@ -1,11 +1,14 @@
 //! Type pertaining to [`Audio`].
 
 mod sample;
+mod sample_rate;
 mod source;
 
 pub use sample::Sample;
+pub use sample_rate::SampleRate;
 pub use source::Source;
 
+use crate::Ratio;
 use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, Period};
 use crate::view::Context;
@@ -13,13 +16,13 @@ use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
 use std::cmp::max;
 use std::io::Read;
-use std::num::{NonZeroU32, NonZeroU128};
+use std::num::NonZeroU32;
 
 /// Some stereo 64-bit floating point audio.
 #[doc(hidden)]
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
-    sample_rate: NonZeroU32,
+    sample_rate: SampleRate,
     /// The left and right channels, in that order.
     channels: [Vec<Sample>; 2],
 }
@@ -35,18 +38,7 @@ impl Audio {
     /// Returns the duration of the audio.
     #[must_use]
     pub fn duration(&self) -> Duration {
-        let sample_count = self.sample_count() as u128;
-        let sample_rate = NonZeroU128::from(self.sample_rate);
-        let nanoseconds_per_second = u128::from(Duration::SECOND.nanoseconds);
-
-        // TODO: round
-        // sample_count * samples_per_nanosecond
-        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
-        #[expect(clippy::integer_division, reason = "todo")]
-        let nanoseconds = sample_count * sample_rate.get() / nanoseconds_per_second;
-        let nanoseconds = u64::try_from(nanoseconds).unwrap_or(u64::MAX);
-
-        Duration { nanoseconds }
+        self.sample_rate.sample_duration().get() * Ratio::from_usize(self.sample_count())
     }
 
     /// An iterator of the samples converted to mono
@@ -114,8 +106,9 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
             _ => return Err(Error::Unsupported),
         };
 
-        let sample_rate = NonZeroU32::new(spec.sample_rate)
+        let samples_per_second = NonZeroU32::new(spec.sample_rate)
             .ok_or(Error::FormatError("encountered a sample rate of zero"))?;
+        let sample_rate = SampleRate { samples_per_second };
 
         Ok(Audio {
             sample_rate,

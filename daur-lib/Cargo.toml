@@ -11,7 +11,7 @@ const-str = "0.6.1"
 crossbeam = "0.8.4"
 derive_more = { version = "2.0.1", features = ["debug", "from", "full"] }
 dirs = "6.0.0"
-# TODO: use the official verion when clone-getters get added
+# TODO: use the official version when clone-getters get added
 getset = { git = "https://github.com/SLUCHABLUB/getset.git" }
 hound = "3.5.1"
 itertools = "0.14.0"

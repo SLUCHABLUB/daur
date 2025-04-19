@@ -7,7 +7,7 @@ use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 /// A signed [length](Length).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
-    pixels: i64,
+    pixels: i32,
 }
 
 impl Offset {
@@ -15,7 +15,7 @@ impl Offset {
     #[must_use]
     pub const fn positive(length: Length) -> Offset {
         Offset {
-            pixels: length.pixels as i64,
+            pixels: length.pixels as i32,
         }
     }
 
@@ -24,7 +24,7 @@ impl Offset {
     pub const fn negative(length: Length) -> Offset {
         #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in i64")]
         Offset {
-            pixels: -(length.pixels as i64),
+            pixels: -(length.pixels as i32),
         }
     }
 

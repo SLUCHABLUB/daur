@@ -1,8 +1,8 @@
 use crate::tui::Tui;
+use daur::audio::SampleRate;
 use daur::{App, Popup};
 use never::Never;
-use rodio::cpal::SampleRate;
-use rodio::{DeviceTrait as _, OutputStream, Sink};
+use rodio::{DeviceTrait as _, OutputStream, Sink, cpal};
 use std::error::Error;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -75,11 +75,13 @@ impl Display for ZeroSampleRateDevice {
 
 impl Error for ZeroSampleRateDevice {}
 
-fn get_sink(app: &App<Tui>) -> Result<(Sink, NonZeroU32, OutputStream), Popup> {
+fn get_sink(app: &App<Tui>) -> Result<(Sink, SampleRate, OutputStream), Popup> {
     let device = app.device.get().ok_or(NoSelectedDevice)?;
+
     let config = device.default_output_config()?;
-    let SampleRate(sample_rate) = config.sample_rate();
-    let sample_rate = NonZeroU32::new(sample_rate).ok_or(ZeroSampleRateDevice)?;
+    let cpal::SampleRate(samples_per_second) = config.sample_rate();
+    let samples_per_second = NonZeroU32::new(samples_per_second).ok_or(ZeroSampleRateDevice)?;
+    let sample_rate = SampleRate { samples_per_second };
 
     let (output_stream, handle) = OutputStream::try_from_device(&device)?;
     let sink = Sink::try_new(&handle)?;

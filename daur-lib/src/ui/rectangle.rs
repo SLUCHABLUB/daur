@@ -1,7 +1,8 @@
+use crate::Ratio;
 use crate::ui::{Length, Point, Size, Vector};
 use crate::view::{Direction, Quotum};
 use std::cmp::{max, min};
-use std::num::NonZeroU32;
+use std::num::NonZeroU64;
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]
@@ -77,7 +78,7 @@ impl Rectangle {
         // the size that will be allocated to `Quotum::Remaining` quota
         let mut fill_size = self.size.parallel_to(direction);
 
-        let mut fill_count: u32 = 0;
+        let mut fill_count: u64 = 0;
 
         for quotum in quota {
             match quotum {
@@ -87,8 +88,8 @@ impl Rectangle {
             }
         }
 
-        if let Some(fill_count) = NonZeroU32::new(fill_count) {
-            fill_size /= fill_count;
+        if let Some(fill_count) = NonZeroU64::new(fill_count) {
+            fill_size *= Ratio::reciprocal_of(fill_count);
         }
 
         let mut offset = Length::ZERO;

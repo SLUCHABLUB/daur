@@ -3,7 +3,7 @@ use crate::{Changing, NonZeroRatio};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
-use std::num::{NonZeroU8, NonZeroU32};
+use std::num::{NonZeroU8, NonZeroU64};
 
 #[expect(clippy::unwrap_used, reason = "4 is not 0")]
 const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
@@ -25,8 +25,8 @@ impl Signature {
     pub fn bar_duration(self) -> NonZeroDuration {
         NonZeroDuration {
             whole_notes: NonZeroRatio::new(
-                NonZeroU32::from(self.beats_per_bar),
-                NonZeroU32::from(self.beat_size),
+                NonZeroU64::from(self.beats_per_bar),
+                NonZeroU64::from(self.beat_size),
             ),
         }
     }
@@ -34,7 +34,7 @@ impl Signature {
     /// The duration of one beat
     #[must_use]
     pub fn beat_duration(self) -> NonZeroDuration {
-        self.bar_duration() / NonZeroRatio::integer(NonZeroU32::from(self.beats_per_bar))
+        self.bar_duration() / NonZeroRatio::from(self.beats_per_bar)
     }
 }
 

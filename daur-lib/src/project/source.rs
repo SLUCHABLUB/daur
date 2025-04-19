@@ -1,10 +1,10 @@
+use crate::audio::SampleRate;
 use crate::track::Source;
-use std::num::NonZeroU32;
 use std::time::Duration;
 
 #[derive(Debug)]
 pub struct ProjectSource {
-    pub sample_rate: NonZeroU32,
+    pub sample_rate: SampleRate,
     pub tracks: Vec<Source>,
 }
 
@@ -41,7 +41,7 @@ impl rodio::Source for ProjectSource {
     }
 
     fn sample_rate(&self) -> u32 {
-        self.sample_rate.get()
+        self.sample_rate.samples_per_second.get()
     }
 
     fn total_duration(&self) -> Option<Duration> {

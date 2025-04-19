@@ -5,15 +5,18 @@ pub use non_zero::NonZeroRatio;
 
 use crate::ratio::util::lcm;
 use getset::CopyGetters;
+use saturating_cast::SaturatingCast as _;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::num::{FpCategory, NonZeroU32, NonZeroU128};
+use std::num::{FpCategory, NonZero, NonZeroU64, NonZeroU128};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-const ONE: NonZeroU32 = NonZeroU32::MIN;
-const TWO: NonZeroU32 = ONE.saturating_add(1);
-const FOUR: NonZeroU32 = TWO.saturating_pow(2);
+const ONE: NonZeroU64 = NonZeroU64::MIN;
+#[expect(clippy::unwrap_used, reason = "2 != 0")]
+const TWO: NonZeroU64 = NonZero::new(2).unwrap();
+#[expect(clippy::unwrap_used, reason = "4 != 0")]
+const FOUR: NonZeroU64 = NonZero::new(4).unwrap();
 
 /// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.
@@ -23,10 +26,10 @@ const FOUR: NonZeroU32 = TWO.saturating_pow(2);
 pub struct Ratio {
     /// The numerator.
     #[get_copy = "pub"]
-    numerator: u32,
+    numerator: u64,
     /// The numerator.
     #[get_copy = "pub"]
-    denominator: NonZeroU32,
+    denominator: NonZeroU64,
 }
 
 impl Ratio {
@@ -42,13 +45,13 @@ impl Ratio {
     /// 1
     pub const ONE: Ratio = Ratio::integer(1);
 
-    const EPSILON: Ratio = Ratio::reciprocal_of(NonZeroU32::MAX);
-    const MAX: Ratio = Ratio::integer(u32::MAX);
+    const EPSILON: Ratio = Ratio::reciprocal_of(NonZeroU64::MAX);
+    const MAX: Ratio = Ratio::integer(u64::MAX);
 
     /// Creates a new ratio from a numerator and denominator.
     #[must_use]
-    pub fn new(numerator: u32, denominator: NonZeroU32) -> Ratio {
-        let Some(numerator) = NonZeroU32::new(numerator) else {
+    pub fn new(numerator: u64, denominator: NonZeroU64) -> Ratio {
+        let Some(numerator) = NonZeroU64::new(numerator) else {
             return Self::ZERO;
         };
 
@@ -57,7 +60,7 @@ impl Ratio {
 
     /// Converts an integer to a ratio.
     #[must_use]
-    pub const fn integer(integer: u32) -> Ratio {
+    pub const fn integer(integer: u64) -> Ratio {
         Ratio {
             numerator: integer,
             denominator: ONE,
@@ -66,7 +69,7 @@ impl Ratio {
 
     /// Constructs the ratio from an integer by taking its reciprocal.
     #[must_use]
-    pub const fn reciprocal_of(integer: NonZeroU32) -> Ratio {
+    pub const fn reciprocal_of(integer: NonZeroU64) -> Ratio {
         Ratio {
             numerator: 1,
             denominator: integer,
@@ -75,7 +78,7 @@ impl Ratio {
 
     /// Calculates the ceiling of the ratio
     #[must_use]
-    pub fn ceil(self) -> u32 {
+    pub fn ceil(self) -> u64 {
         let quotient = self.numerator / self.denominator;
         let remainder = self.numerator % self.denominator;
 
@@ -94,7 +97,7 @@ impl Ratio {
 
     /// Calculates the floor of the ratio
     #[must_use]
-    pub fn floor(self) -> u32 {
+    pub fn floor(self) -> u64 {
         self.numerator / self.denominator
     }
 
@@ -106,7 +109,7 @@ impl Ratio {
 
     /// Rounds the ratio to an integer.
     #[must_use]
-    pub fn round(self) -> u32 {
+    pub fn round(self) -> u64 {
         let quotient = self.numerator / self.denominator;
         let remainder = self.numerator % self.denominator;
 
@@ -128,7 +131,7 @@ impl Ratio {
     /// Approximates a float as a ratio.
     #[must_use]
     pub fn approximate(float: f64) -> Ratio {
-        #![expect(clippy::cast_sign_loss, reason = "we check sign")]
+        #![expect(clippy::cast_sign_loss, reason = "we check the sign")]
         #![expect(
             clippy::cast_possible_truncation,
             reason = "values are converted to integers and checked against MAX"
@@ -154,8 +157,8 @@ impl Ratio {
             return Ratio::MAX;
         }
 
-        let mut low_guess = Ratio::integer(float.floor() as u32);
-        let mut high_guess = Ratio::integer(float.ceil() as u32);
+        let mut low_guess = Ratio::integer(float.floor() as u64);
+        let mut high_guess = Ratio::integer(float.ceil() as u64);
 
         loop {
             let mean_guess = (low_guess + high_guess) * Ratio::HALF;
@@ -172,9 +175,16 @@ impl Ratio {
         }
     }
 
-    /// Approximates the ratio as a float
+    /// Approximates a [`usize`].
+    #[must_use]
+    pub fn from_usize(value: usize) -> Ratio {
+        Ratio::integer(value.saturating_cast())
+    }
+
+    /// Approximates the ratio as a float.
     #[must_use]
     pub const fn to_float(self) -> f64 {
+        #![expect(clippy::cast_precision_loss, reason = "we approximate")]
         self.numerator as f64 / self.denominator.get() as f64
     }
 
@@ -211,10 +221,10 @@ impl PartialOrd for Ratio {
 
 impl Ord for Ratio {
     fn cmp(&self, other: &Self) -> Ordering {
-        #![expect(clippy::arithmetic_side_effects, reason = "we cast to u64 first")]
+        #![expect(clippy::arithmetic_side_effects, reason = "we cast to u128 first")]
         Ord::cmp(
-            &(u64::from(self.numerator) * u64::from(other.denominator.get())),
-            &(u64::from(other.numerator) * u64::from(self.denominator.get())),
+            &(u128::from(self.numerator) * u128::from(other.denominator.get())),
+            &(u128::from(other.numerator) * u128::from(self.denominator.get())),
         )
     }
 }
@@ -228,6 +238,12 @@ impl Display for Ratio {
 impl Default for Ratio {
     fn default() -> Self {
         Ratio::ZERO
+    }
+}
+
+impl<T: Into<u64>> From<T> for Ratio {
+    fn from(value: T) -> Self {
+        Ratio::integer(value.into())
     }
 }
 

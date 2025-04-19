@@ -16,6 +16,7 @@ pub struct Mapping {
 }
 
 impl Mapping {
+    // TODO: return instant
     /// Calculates the real time duration that has elapsed since [the start](Instant::START).
     #[must_use]
     pub fn real_time_offset(&self, instant: Instant) -> real::Duration {
@@ -84,6 +85,7 @@ impl Mapping {
         Period { start, duration }
     }
 
+    // TODO: rename
     fn periods(
         &self,
         mut start: Instant,

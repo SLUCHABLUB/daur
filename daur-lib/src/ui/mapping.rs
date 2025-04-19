@@ -24,14 +24,14 @@ impl Mapping {
     // TODO: maybe make the last cell smaller if possible?
     /// Returns the numer of grid-cells that take up the bar (rounded up).
     #[must_use]
-    pub fn bar_cell_count(&self, bar: Bar) -> u32 {
+    pub fn bar_cell_count(&self, bar: Bar) -> u64 {
         (bar.period().duration / self.grid.cell_duration).ceil()
     }
 
     /// Calculates the display-width of a bar.
     #[must_use]
     pub fn bar_width(&self, bar: Bar) -> Length {
-        self.grid.cell_width.get() * self.bar_cell_count(bar)
+        self.grid.cell_width.get() * self.bar_cell_count(bar).into()
     }
 
     /// Maps an [instant](Instant) to an offset from the left of the window.

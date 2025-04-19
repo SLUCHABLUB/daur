@@ -18,7 +18,7 @@ use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
 use std::io;
 use std::iter::zip;
-use std::num::{NonZeroU32, NonZeroUsize};
+use std::num::{NonZeroU64, NonZeroUsize};
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
@@ -191,7 +191,7 @@ fn render_canvas(background: Colour, painter: &Painter, area: Rect, buffer: &mut
         .render(area, buffer);
 }
 
-fn render_rule(index: isize, cells: NonZeroU32, area: Rect, buffer: &mut Buffer) {
+fn render_rule(index: isize, cells: NonZeroU64, area: Rect, buffer: &mut Buffer) {
     let width = usize::from(area.width);
     let cells = NonZeroUsize::try_from(cells).unwrap_or(NonZeroUsize::MAX);
 

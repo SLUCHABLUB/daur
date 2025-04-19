@@ -2,7 +2,7 @@ use crate::ratio::util::make_coprime;
 use crate::ratio::{FOUR, ONE, Ratio};
 use getset::CopyGetters;
 use std::cmp::Ordering;
-use std::num::{NonZeroU32, NonZeroU128};
+use std::num::{NonZeroU64, NonZeroU128};
 use std::ops::{Div, DivAssign};
 
 /// A non-zero [ratio](Ratio)
@@ -10,10 +10,10 @@ use std::ops::{Div, DivAssign};
 pub struct NonZeroRatio {
     /// The numerator.
     #[get_copy = "pub"]
-    numerator: NonZeroU32,
+    numerator: NonZeroU64,
     /// The denominator.
     #[get_copy = "pub"]
-    denominator: NonZeroU32,
+    denominator: NonZeroU64,
 }
 
 impl NonZeroRatio {
@@ -23,13 +23,13 @@ impl NonZeroRatio {
     /// 1
     pub const ONE: NonZeroRatio = NonZeroRatio::integer(ONE);
 
-    const MIN: NonZeroRatio = NonZeroRatio::reciprocal_of(NonZeroU32::MAX);
-    const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU32::MAX);
+    const MIN: NonZeroRatio = NonZeroRatio::reciprocal_of(NonZeroU64::MAX);
+    const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU64::MAX);
 
     /// Creates a new ratio from a numerator and a denominator.
     #[must_use]
-    pub fn new(numerator: NonZeroU32, denominator: NonZeroU32) -> NonZeroRatio {
-        // The non-zero types don't implement `num::Integer`.
+    pub fn new(numerator: NonZeroU64, denominator: NonZeroU64) -> NonZeroRatio {
+        // The non-zero types do not implement `num::Integer`.
         // Therefore, a `num::rational::Ratio` thereof cannot be reduced
         // since it requires comparison with zero.
 
@@ -43,7 +43,7 @@ impl NonZeroRatio {
 
     /// Converts an integer to a ratio.
     #[must_use]
-    pub const fn integer(integer: NonZeroU32) -> NonZeroRatio {
+    pub const fn integer(integer: NonZeroU64) -> NonZeroRatio {
         NonZeroRatio {
             numerator: integer,
             denominator: ONE,
@@ -52,7 +52,7 @@ impl NonZeroRatio {
 
     /// Constructs a ratio from an integer by taking its reciprocal.
     #[must_use]
-    pub const fn reciprocal_of(integer: NonZeroU32) -> NonZeroRatio {
+    pub const fn reciprocal_of(integer: NonZeroU64) -> NonZeroRatio {
         NonZeroRatio {
             numerator: ONE,
             denominator: integer,
@@ -81,7 +81,7 @@ impl NonZeroRatio {
     #[must_use]
     pub fn from_ratio(ratio: Ratio) -> Option<NonZeroRatio> {
         Some(NonZeroRatio {
-            numerator: NonZeroU32::new(ratio.numerator)?,
+            numerator: NonZeroU64::new(ratio.numerator)?,
             denominator: ratio.denominator,
         })
     }
@@ -97,8 +97,8 @@ impl NonZeroRatio {
         };
 
         loop {
-            if let Ok(numerator) = NonZeroU32::try_from(numerator) {
-                if let Ok(denominator) = NonZeroU32::try_from(denominator) {
+            if let Ok(numerator) = NonZeroU64::try_from(numerator) {
+                if let Ok(denominator) = NonZeroU64::try_from(denominator) {
                     return NonZeroRatio::new(numerator, denominator);
                 }
             }
@@ -125,6 +125,12 @@ impl PartialOrd<Self> for NonZeroRatio {
 impl Ord for NonZeroRatio {
     fn cmp(&self, other: &Self) -> Ordering {
         self.get().cmp(&other.get())
+    }
+}
+
+impl<T: Into<NonZeroU64>> From<T> for NonZeroRatio {
+    fn from(value: T) -> Self {
+        NonZeroRatio::integer(value.into())
     }
 }
 

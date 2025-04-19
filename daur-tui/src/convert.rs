@@ -5,9 +5,7 @@ use ratatui::style::Color;
 use saturating_cast::SaturatingCast as _;
 
 fn u16_to_length(chars: u16) -> Length {
-    Length {
-        pixels: u32::from(chars),
-    }
+    Length { pixels: chars }
 }
 
 pub fn length_to_u16(length: Length) -> u16 {

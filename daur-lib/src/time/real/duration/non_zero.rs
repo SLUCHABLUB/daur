@@ -1,5 +1,6 @@
 use crate::NonZeroRatio;
 use crate::time::real::Duration;
+use saturating_cast::SaturatingCast as _;
 use std::num::{NonZeroU64, NonZeroU128};
 use std::ops::Mul;
 
@@ -11,6 +12,11 @@ pub struct NonZeroDuration {
 }
 
 impl NonZeroDuration {
+    /// One nanosecond.
+    #[expect(clippy::unwrap_used, reason = "1 second != 0")]
+    pub const NANOSECOND: NonZeroDuration =
+        NonZeroDuration::from_duration(Duration::NANOSECOND).unwrap();
+
     /// One second.
     #[expect(clippy::unwrap_used, reason = "1 second != 0")]
     pub const SECOND: NonZeroDuration = NonZeroDuration::from_duration(Duration::SECOND).unwrap();
@@ -42,10 +48,9 @@ impl Mul<NonZeroRatio> for NonZeroDuration {
         let denominator = NonZeroU128::from(rhs.denominator());
 
         // TODO: round
-        #[expect(clippy::suspicious_arithmetic_impl, reason = "we multiply by a ratio")]
-        let nanoseconds = nanoseconds.saturating_mul(numerator).get() / denominator;
-        let nanoseconds = u64::try_from(nanoseconds).unwrap_or(u64::MAX);
-        let nanoseconds = NonZeroU64::new(nanoseconds).unwrap_or(NonZeroU64::MIN);
+        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
+        let nanoseconds = nanoseconds.get() * numerator.get() / denominator;
+        let nanoseconds = NonZeroU64::new(nanoseconds.saturating_cast()).unwrap_or(NonZeroU64::MIN);
 
         NonZeroDuration { nanoseconds }
     }

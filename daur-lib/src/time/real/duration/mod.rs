@@ -20,6 +20,9 @@ impl Duration {
     /// 0
     pub const ZERO: Duration = Duration { nanoseconds: 0 };
 
+    /// One nanosecond.
+    pub const NANOSECOND: Duration = Duration { nanoseconds: 1 };
+
     /// One second.
     pub const SECOND: Duration = Duration {
         nanoseconds: 1_000_000_000,

@@ -1,6 +1,6 @@
 use crate::ui::{Mapping, Offset};
 use crate::view::{Direction, View, feed};
-use std::num::NonZeroU32;
+use std::num::NonZeroU64;
 
 // TODO: use `Button` for moving and scaling the overview
 /// A ruler of musical time
@@ -12,7 +12,7 @@ pub fn ruler(mapping: Mapping, offset: Offset) -> View {
             let cell_width = mapping.grid.cell_width;
 
             let cells = (bar_width / cell_width).ceil();
-            let Some(cells) = NonZeroU32::new(cells) else {
+            let Some(cells) = NonZeroU64::new(cells) else {
                 return View::Empty.quotated(bar_width);
             };
 
@@ -23,7 +23,7 @@ pub fn ruler(mapping: Mapping, offset: Offset) -> View {
 
             View::Rule {
                 index,
-                cells: NonZeroU32::MIN,
+                cells: NonZeroU64::MIN,
             }
             .quotated(bar_width)
         }

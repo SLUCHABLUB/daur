@@ -51,7 +51,7 @@ impl rodio::Source for Source {
     }
 
     fn sample_rate(&self) -> u32 {
-        self.audio.sample_rate.get()
+        self.audio.sample_rate.samples_per_second.get()
     }
 
     fn total_duration(&self) -> Option<Duration> {
