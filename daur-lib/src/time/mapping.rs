@@ -16,31 +16,21 @@ pub struct Mapping {
 }
 
 impl Mapping {
-    // TODO: return instant
     /// Calculates the real time duration that has elapsed since [the start](Instant::START).
     #[must_use]
-    pub fn real_time_offset(&self, instant: Instant) -> real::Duration {
-        self.real_time_duration(Period {
-            start: Instant::START,
-            duration: instant.since_start,
-        })
-    }
+    pub fn real_time(&self, instant: Instant) -> real::Instant {
+        let mut since_start = real::Duration::ZERO;
 
-    /// Calculates the real time duration of a period.
-    #[must_use]
-    pub fn real_time_duration(&self, period: Period) -> real::Duration {
-        let mut duration = real::Duration::ZERO;
-
-        for period in self.periods(period.start, Some(period.end())) {
+        for period in self.time_constant_periods(Instant::START, Some(instant)) {
             let tempo = self.tempo.get(period.start);
             let time_signature = self.time_signature.get(period.start);
 
             let beat_count = period.duration.get() / time_signature.beat_duration();
 
-            duration += tempo.beat_duration().get() * beat_count;
+            since_start += tempo.beat_duration().get() * beat_count;
         }
 
-        duration
+        real::Instant { since_start }
     }
 
     /// Calculates a period from a starting point and a real-time duration.
@@ -51,7 +41,7 @@ impl Mapping {
 
         let mut last = start;
 
-        for period in self.periods(start, None) {
+        for period in self.time_constant_periods(start, None) {
             let tempo = self.tempo.get(period.start);
             let time_signature = self.time_signature.get(period.start);
 
@@ -85,8 +75,10 @@ impl Mapping {
         Period { start, duration }
     }
 
-    // TODO: rename
-    fn periods(
+    /// Returns the periods that have a constant tempo and time-signature.
+    ///
+    /// If an end point is specified, it will be the end point if the last period.
+    fn time_constant_periods(
         &self,
         mut start: Instant,
         end: Option<Instant>,

@@ -12,6 +12,7 @@ arithmetic-side-effects-allowed = [
     "time::duration::Duration",
     "time::duration::non_zero::NonZeroDuration",
     "time::instant::Instant",
+    "time::real::instant::Instant",
     "time::real::duration::Duration",
 
     # type names for other crates

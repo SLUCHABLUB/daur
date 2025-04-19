@@ -6,12 +6,12 @@ use crate::time::{Duration, Instant};
 use std::cmp::{max, min};
 use std::ops::Range;
 
-/// A period of musical time
+/// A period of musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Period {
-    /// The start of the period
+    /// The start of the period.
     pub start: Instant,
-    /// The duration of the period
+    /// The duration of the period.
     pub duration: Duration,
 }
 

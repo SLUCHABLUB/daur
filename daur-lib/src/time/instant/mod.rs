@@ -19,13 +19,12 @@ impl Instant {
         since_start: Duration::ZERO,
     };
 
-    // TODO: move to its own mapping
     /// Gets the offset in samples from the staring point.
     #[must_use]
     pub fn to_sample_index(self, mapping: &Mapping, sample_rate: SampleRate) -> usize {
-        let duration = mapping.real_time_offset(self);
+        let instant = mapping.real_time(self);
 
-        let sample = duration / sample_rate.sample_duration();
+        let sample = instant.since_start / sample_rate.sample_duration();
 
         sample.to_usize()
     }
