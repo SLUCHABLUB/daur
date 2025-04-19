@@ -1,5 +1,7 @@
 //! Types pertaining to [musical time](https://en.wikipedia.org/wiki/Metre_(music)).
 
+pub mod real;
+
 mod bar;
 mod duration;
 mod instant;
@@ -12,6 +14,6 @@ pub use bar::Bar;
 pub use duration::{Duration, NonZeroDuration};
 pub use instant::{Instant, NonZeroInstant};
 pub use mapping::Mapping;
-pub use period::Period;
+pub use period::{NonZeroPeriod, Period};
 pub use signature::Signature;
 pub use tempo::Tempo;

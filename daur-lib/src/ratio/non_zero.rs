@@ -1,13 +1,18 @@
 use crate::ratio::util::make_coprime;
 use crate::ratio::{FOUR, ONE, Ratio};
+use getset::CopyGetters;
 use std::cmp::Ordering;
 use std::num::{NonZeroU32, NonZeroU128};
 use std::ops::{Div, DivAssign};
 
 /// A non-zero [ratio](Ratio)
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
 pub struct NonZeroRatio {
+    /// The numerator.
+    #[get_copy = "pub"]
     numerator: NonZeroU32,
+    /// The denominator.
+    #[get_copy = "pub"]
     denominator: NonZeroU32,
 }
 

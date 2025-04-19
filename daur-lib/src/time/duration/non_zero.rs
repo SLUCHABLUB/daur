@@ -10,7 +10,7 @@ pub struct NonZeroDuration {
 }
 
 impl NonZeroDuration {
-    /// The duration of a quarter note
+    /// The duration of a quarter note.
     pub const QUARTER: NonZeroDuration = NonZeroDuration {
         whole_notes: NonZeroRatio::QUARTER,
     };
@@ -23,7 +23,7 @@ impl NonZeroDuration {
         }
     }
 
-    /// Converts a duration to a non-zero one is it is not zero.
+    /// Converts a duration to a non-zero one if it is not zero.
     #[must_use]
     pub fn from_duration(duration: Duration) -> Option<NonZeroDuration> {
         Some(NonZeroDuration {

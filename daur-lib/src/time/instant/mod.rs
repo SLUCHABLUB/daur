@@ -1,11 +1,10 @@
 mod non_zero;
 
 pub use non_zero::NonZeroInstant;
-use std::num::{NonZeroU32, NonZeroU128};
+use std::num::NonZeroU32;
 
-use crate::time::{Duration, Mapping};
-use num::Integer as _;
-use saturating_cast::SaturatingCast as _;
+use crate::Ratio;
+use crate::time::{Duration, Mapping, real};
 use std::ops::{Add, AddAssign, Sub};
 
 /// An instant in musical time.
@@ -22,32 +21,14 @@ impl Instant {
     };
 
     // TODO: move to its own mapping
-    /// Gets the offset in samples from the staring point
+    /// Gets the offset in samples from the staring point.
     #[must_use]
-    pub fn to_sample(self, mapping: &Mapping, sample_rate: NonZeroU32) -> usize {
-        const NANOS_PER_SECOND: u128 = 1_000_000_000;
-        const HALF: u128 = 500_000_000;
-
-        let sample_rate = NonZeroU128::from(sample_rate);
+    pub fn to_sample_index(self, mapping: &Mapping, sample_rate: NonZeroU32) -> usize {
         let duration = mapping.real_time_offset(self);
 
-        // < 2^64 * 10^9 < 2^94
-        let nanos = duration.as_nanos();
+        let sample = duration / real::NonZeroDuration::SECOND * Ratio::integer(sample_rate.get());
 
-        // * 2 since we are always in stereo
-        #[expect(
-            clippy::arithmetic_side_effects,
-            reason = "nanos < 2^94, sample_rate < 2^32 => nano_sample < 2^(94 + 32 + 1) < 2^128"
-        )]
-        let nano_sample = nanos * sample_rate.get() * 2;
-
-        let (mut sample, remainder) = nano_sample.div_rem(&NANOS_PER_SECOND);
-
-        if remainder > HALF {
-            sample = sample.saturating_add(1);
-        }
-
-        sample.saturating_cast()
+        sample.to_usize()
     }
 }
 

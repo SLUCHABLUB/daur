@@ -4,6 +4,7 @@ mod util;
 pub use non_zero::NonZeroRatio;
 
 use crate::ratio::util::lcm;
+use getset::CopyGetters;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
@@ -18,9 +19,13 @@ const FOUR: NonZeroU32 = TWO.saturating_pow(2);
 /// When operations would result in a non-representable value, the result is an approximation.
 // INVARIANT: `numerator` and `denominator` are co-prime
 // due to this we can derive `Eq` and `PartialEq`
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
 pub struct Ratio {
+    /// The numerator.
+    #[get_copy = "pub"]
     numerator: u32,
+    /// The numerator.
+    #[get_copy = "pub"]
     denominator: NonZeroU32,
 }
 
@@ -173,7 +178,14 @@ impl Ratio {
         self.numerator as f64 / self.denominator.get() as f64
     }
 
-    fn approximate_big(numerator: u128, denominator: NonZeroU128) -> Ratio {
+    /// Rounds the ratio to a [`usize`].
+    #[must_use]
+    pub fn to_usize(self) -> usize {
+        self.round().try_into().unwrap_or(usize::MAX)
+    }
+
+    // TODO: make not public
+    pub(crate) fn approximate_big(numerator: u128, denominator: NonZeroU128) -> Ratio {
         let Some(numerator) = NonZeroU128::new(numerator) else {
             return Ratio::ZERO;
         };

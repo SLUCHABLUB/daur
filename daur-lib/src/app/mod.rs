@@ -3,6 +3,7 @@ mod action;
 pub use action::Action;
 
 use crate::observed::Observed;
+use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::piano_roll::Settings;
@@ -13,7 +14,7 @@ use rodio::Device;
 use rodio::cpal::traits::HostTrait as _;
 use rodio::cpal::{Host, default_host};
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime};
+use std::time::SystemTime;
 
 /// A running instance of the DAW.
 #[derive(Debug)]
@@ -134,7 +135,10 @@ impl<Ui: UserInterface> App<Ui> {
             mapping
                 .period(
                     self.cursor.get(),
-                    playback_start.elapsed().unwrap_or(Duration::ZERO),
+                    playback_start
+                        .elapsed()
+                        .map(Duration::from)
+                        .unwrap_or(Duration::ZERO),
                 )
                 .end()
         } else {

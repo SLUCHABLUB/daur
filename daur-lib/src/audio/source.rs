@@ -55,6 +55,6 @@ impl rodio::Source for Source {
     }
 
     fn total_duration(&self) -> Option<Duration> {
-        Some(self.audio.duration())
+        Some(Duration::from(self.audio.duration()))
     }
 }

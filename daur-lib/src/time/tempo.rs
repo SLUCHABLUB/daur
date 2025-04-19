@@ -1,20 +1,26 @@
-use ordered_float::NotNan;
+use crate::time::real::{Duration, NonZeroDuration};
 use std::fmt;
 use std::fmt::{Display, Formatter};
-use std::time::Duration;
+use std::num::{NonZeroU16, NonZeroU64};
 
-/// A musical tempo
+// TODO: make transparent
+/// A musical tempo.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Tempo {
-    // INVARIANT: is positive
-    bpm: NotNan<f64>,
+    // TODO: support the psychopathy that is non-integral BPMs
+    bpm: NonZeroU16,
 }
 
 impl Tempo {
     /// The duration of a beat at this tempo
     #[must_use]
-    pub fn beat_duration(self) -> Duration {
-        Duration::from_secs_f64(self.bpm.recip() * 60.0)
+    pub fn beat_duration(self) -> NonZeroDuration {
+        let bpm = NonZeroU64::from(self.bpm);
+        let nanoseconds = Duration::MINUTE.nanoseconds / bpm;
+        // The minimum value of `nanoseconds` is 15,259, so we could technically unwrap.
+        let nanoseconds = NonZeroU64::new(nanoseconds).unwrap_or(NonZeroU64::MIN);
+
+        NonZeroDuration { nanoseconds }
     }
 }
 
@@ -22,8 +28,8 @@ impl Tempo {
 impl Default for Tempo {
     fn default() -> Self {
         Tempo {
-            #[expect(clippy::unwrap_used, reason = "180.0 is not NaN")]
-            bpm: NotNan::new(180.0).unwrap(),
+            #[expect(clippy::unwrap_used, reason = "180 != 0")]
+            bpm: NonZeroU16::new(180).unwrap(),
         }
     }
 }

@@ -76,7 +76,7 @@ impl Manager {
     pub fn source(&self, sample_rate: NonZeroU32, cursor: Instant) -> ProjectSource {
         let tracks = self.project.read().tracks.clone();
         let mapping = self.project.read().time_mapping();
-        let offset = cursor.to_sample(&mapping, sample_rate);
+        let offset = cursor.to_sample_index(&mapping, sample_rate);
         ProjectSource {
             sample_rate,
             tracks: tracks

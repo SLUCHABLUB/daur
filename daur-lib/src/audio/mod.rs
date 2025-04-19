@@ -6,15 +6,14 @@ mod source;
 pub use sample::Sample;
 pub use source::Source;
 
+use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, Period};
 use crate::view::Context;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::{EitherOrBoth, Itertools};
-use num::{Integer as _, rational};
 use std::cmp::max;
 use std::io::Read;
-use std::num::{NonZeroU32, NonZeroU64};
-use std::time::Duration;
+use std::num::{NonZeroU32, NonZeroU128};
 
 /// Some stereo 64-bit floating point audio.
 #[doc(hidden)]
@@ -32,30 +31,22 @@ impl Audio {
         max(self.channels[0].len(), self.channels[1].len())
     }
 
+    // TODO: use a mapping
     /// Returns the duration of the audio.
     #[must_use]
     pub fn duration(&self) -> Duration {
-        const NANOS_PER_SEC: u64 = 1_000_000_000;
+        let sample_count = self.sample_count() as u128;
+        let sample_rate = NonZeroU128::from(self.sample_rate);
+        let nanoseconds_per_second = u128::from(Duration::SECOND.nanoseconds);
 
-        let sample_count = self.sample_count() as u64;
-        let sample_rate = NonZeroU64::from(self.sample_rate);
-        let nano_sample_rate = rational::Ratio::new(sample_rate.get(), NANOS_PER_SEC);
+        // TODO: round
+        // sample_count * samples_per_nanosecond
+        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
+        #[expect(clippy::integer_division, reason = "todo")]
+        let nanoseconds = sample_count * sample_rate.get() / nanoseconds_per_second;
+        let nanoseconds = u64::try_from(nanoseconds).unwrap_or(u64::MAX);
 
-        let (seconds, remainder) = sample_count.div_rem(&sample_rate.get());
-
-        #[expect(
-            clippy::arithmetic_side_effects,
-            reason = "remainder and NANOS_PER_SEC fit in u32 => product fits in u64"
-        )]
-        let nanos = rational::Ratio::from(remainder) / nano_sample_rate;
-        let nanos = nanos.round().to_integer();
-        #[expect(
-            clippy::cast_possible_truncation,
-            reason = "remainder / sample_rate < 1 => it * NANOS_PER_SEC < NANOS_PER_SEC"
-        )]
-        let nanos = nanos as u32;
-
-        Duration::new(seconds, nanos)
+        Duration { nanoseconds }
     }
 
     /// An iterator of the samples converted to mono

@@ -1,3 +1,7 @@
+mod non_zero;
+
+pub use non_zero::NonZeroPeriod;
+
 use crate::time::{Duration, Instant};
 use std::cmp::{max, min};
 use std::ops::Range;

@@ -1,9 +1,10 @@
-use crate::time::{Duration, Instant, NonZeroInstant, Period, Signature, Tempo};
-use crate::{Changing, Ratio};
+use crate::Changing;
+use crate::time::{
+    Duration, Instant, NonZeroInstant, NonZeroPeriod, Period, Signature, Tempo, real,
+};
 use itertools::{chain, min};
 use std::iter::from_fn;
 use std::sync::Arc;
-use std::time;
 
 /// A mapping between real and musical time
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -17,7 +18,7 @@ pub struct Mapping {
 impl Mapping {
     /// Calculates the real time duration that has elapsed since [the start](Instant::START).
     #[must_use]
-    pub fn real_time_offset(&self, instant: Instant) -> time::Duration {
+    pub fn real_time_offset(&self, instant: Instant) -> real::Duration {
         self.real_time_duration(Period {
             start: Instant::START,
             duration: instant.since_start,
@@ -26,18 +27,16 @@ impl Mapping {
 
     /// Calculates the real time duration of a period.
     #[must_use]
-    pub fn real_time_duration(&self, period: Period) -> time::Duration {
-        let mut duration = time::Duration::ZERO;
+    pub fn real_time_duration(&self, period: Period) -> real::Duration {
+        let mut duration = real::Duration::ZERO;
 
         for period in self.periods(period.start, Some(period.end())) {
             let tempo = self.tempo.get(period.start);
             let time_signature = self.time_signature.get(period.start);
 
-            let beat_count = period.duration / time_signature.beat_duration();
+            let beat_count = period.duration.get() / time_signature.beat_duration();
 
-            let seconds = tempo.beat_duration().as_secs_f64() * beat_count.to_float();
-
-            duration = duration.saturating_add(time::Duration::from_secs_f64(seconds));
+            duration += tempo.beat_duration().get() * beat_count;
         }
 
         duration
@@ -45,7 +44,7 @@ impl Mapping {
 
     /// Calculates a period from a starting point and a real-time duration.
     #[must_use]
-    pub fn period(&self, start: Instant, duration: time::Duration) -> Period {
+    pub fn period(&self, start: Instant, duration: real::Duration) -> Period {
         let mut remaining = duration;
         let mut duration = Duration::ZERO;
 
@@ -57,32 +56,27 @@ impl Mapping {
 
             let beat_count = period.duration / time_signature.beat_duration();
 
-            let seconds = tempo.beat_duration().as_secs_f64() * beat_count.to_float();
+            let full_duration = tempo.beat_duration() * beat_count;
 
-            let full_duration = time::Duration::from_secs_f64(seconds);
-
-            if remaining < full_duration {
-                let fraction = remaining.as_secs_f64() / seconds;
-                let fraction = Ratio::approximate(fraction);
-
-                remaining = time::Duration::ZERO;
-                duration += period.duration * fraction;
+            if remaining < full_duration.get() {
+                let fraction = remaining / full_duration;
+                duration += period.duration.get() * fraction;
+                remaining = real::Duration::ZERO;
                 break;
             }
 
-            remaining = remaining.saturating_sub(full_duration);
-            duration += period.duration;
+            remaining -= full_duration.get();
+            duration += period.duration.get();
 
-            last = period.end();
+            last = period.get().end();
         }
 
         // The period extends after all tempo and time-signature changes
-        if remaining != time::Duration::ZERO {
+        if remaining != real::Duration::ZERO {
             let tempo = self.tempo.get(last);
             let time_signature = self.time_signature.get(last);
 
-            let beat_count = remaining.as_secs_f64() / tempo.beat_duration().as_secs_f64();
-            let beat_count = Ratio::approximate(beat_count);
+            let beat_count = remaining / tempo.beat_duration();
 
             duration += time_signature.beat_duration().get() * beat_count;
         }
@@ -94,7 +88,7 @@ impl Mapping {
         &self,
         mut start: Instant,
         end: Option<Instant>,
-    ) -> impl Iterator<Item = Period> + use<'_> {
+    ) -> impl Iterator<Item = NonZeroPeriod> + use<'_> {
         from_fn(move || {
             if let Some(end) = end {
                 if end < start {
@@ -119,14 +113,11 @@ impl Mapping {
 
             let next = min(chain!(end, next_tempo, next_time_signature))?;
 
-            let period = Period {
-                start,
-                duration: next - start,
-            };
+            let period = NonZeroPeriod::from_endpoints(start, next);
 
             start = next;
 
-            Some(period)
+            period
         })
     }
 }

@@ -45,7 +45,7 @@ impl Track {
             self.clips
                 .iter()
                 .map(|(start, clip)| {
-                    let start = start.to_sample(mapping, sample_rate);
+                    let start = start.to_sample_index(mapping, sample_rate);
                     let mut clip_offset = 0;
 
                     if start < offset {
