@@ -20,7 +20,7 @@ impl Length {
     pub const ZERO: Length = Length { pixels: 0 };
 
     /// The length of a single pixel.
-    pub const PIXEL: Length = Length { pixels: 0 };
+    pub const PIXEL: Length = Length { pixels: 1 };
 
     /// Converts the length to a [quotum](Quotum).
     #[must_use]
