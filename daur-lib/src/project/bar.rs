@@ -41,7 +41,7 @@ pub fn bar<Ui: UserInterface>(
         View::described_button(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
     };
 
-    let fallbacks = View::balanced_stack(
+    let start_settings = View::balanced_stack(
         Direction::Right,
         [
             View::described_button(
@@ -60,7 +60,7 @@ pub fn bar<Ui: UserInterface>(
 
     let left_side = View::spaced_stack::<Ui>(
         Direction::Right,
-        vec![literal!("TODO").centred(), fallbacks],
+        vec![literal!("TODO").centred(), start_settings],
     );
 
     let right_side = literal!("TODO").centred();
