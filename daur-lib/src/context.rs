@@ -1,7 +1,7 @@
 //! Types pertaining to [`Menu`].
 
 use crate::view::{Direction, OnClick, View};
-use crate::{Action, Popup, project};
+use crate::{Action, Popup, UserInterface, project};
 use arcstr::{ArcStr, literal};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -39,8 +39,8 @@ impl Menu {
     }
 
     /// Returns the view of the menu.
-    pub fn view(&self) -> View {
-        View::balanced_stack(
+    pub fn view<Ui: UserInterface>(&self) -> View {
+        View::balanced_stack::<Ui, _>(
             Direction::Down,
             self.buttons.iter().map(|(label, action)| {
                 View::simple_button(label.clone(), OnClick::from(action.clone()))

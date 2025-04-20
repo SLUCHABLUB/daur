@@ -66,8 +66,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
         ],
     };
 
-    let settings_column = View::balanced_stack(Direction::Down, track_settings);
-    let overview_column = View::balanced_stack(Direction::Down, track_overviews);
+    let settings_column = View::balanced_stack::<Ui, _>(Direction::Down, track_settings);
+    let overview_column = View::balanced_stack::<Ui, _>(Direction::Down, track_overviews);
 
     let track_area = View::Stack {
         direction: Direction::Right,

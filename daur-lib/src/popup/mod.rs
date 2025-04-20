@@ -78,7 +78,7 @@ impl Popup {
     /// Returns the popups [view](View).
     pub fn view<Ui: UserInterface>(&self, id: Id) -> View {
         match self {
-            Popup::ButtonPanel { title: _, buttons } => View::balanced_stack(
+            Popup::ButtonPanel { title: _, buttons } => View::balanced_stack::<Ui, _>(
                 Direction::Down,
                 buttons.iter().map(|(label, action)| {
                     View::simple_button(label.clone(), OnClick::from(action.clone()))
@@ -88,7 +88,7 @@ impl Popup {
             Popup::Error { display, debug } => {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
-                View::spaced_stack::<Ui>(
+                View::spaced_stack::<Ui, _>(
                     Direction::Down,
                     [
                         display.clone().aligned_to(Alignment::TopLeft),
@@ -118,7 +118,7 @@ impl Popup {
                 .terminating(id);
                 let cancel = CANCEL.centred().bordered().terminating(id);
 
-                let buttons = View::spaced_stack::<Ui>(Direction::Right, vec![cancel, confirm]);
+                let buttons = View::spaced_stack::<Ui, _>(Direction::Right, vec![cancel, confirm]);
 
                 View::Stack {
                     direction: Direction::Down,
@@ -135,7 +135,7 @@ impl Popup {
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
 
-                let buttons = View::spaced_stack::<Ui>(
+                let buttons = View::spaced_stack::<Ui, _>(
                     Direction::Right,
                     vec![
                         CANCEL.centred().bordered().terminating(id),
@@ -158,18 +158,18 @@ impl Popup {
                     ],
                 );
 
-                View::spaced_stack::<Ui>(
+                View::spaced_stack::<Ui, _>(
                     Direction::Down,
                     vec![
-                        single::selector_with_formatter(
+                        single::selector_with_formatter::<Ui, _, _>(
                             &tonic,
                             Direction::Right,
                             closure!([clone sign] move |chroma| {
                                 chroma.name(sign.get())
                             }),
                         ),
-                        single::selector(&sign, Direction::Right),
-                        multi::selector(&intervals, Direction::Right),
+                        single::selector::<Ui, _>(&sign, Direction::Right),
+                        multi::selector::<Ui, _>(&intervals, Direction::Right),
                         buttons,
                     ],
                 )

@@ -1,19 +1,19 @@
 //! A simple multi-selection view
 
 use crate::view::{Direction, OnClick, View};
-use crate::{Cell, ToArcStr};
+use crate::{Cell, ToArcStr, UserInterface};
 use bitbag::{BitBag, Flags};
 use std::sync::Arc;
 
 /// A simple multi-selection view
-pub fn selector<T: Copy + Flags + ToArcStr + Send + Sync>(
+pub fn selector<Ui: UserInterface, T: Copy + Flags + ToArcStr + Send + Sync>(
     cell: &Arc<Cell<BitBag<T>>>,
     direction: Direction,
 ) -> View
 where
     T::Repr: Send + Sync,
 {
-    View::balanced_stack(
+    View::balanced_stack::<Ui, _>(
         direction,
         T::VARIANTS.iter().map(move |(_, variant, _)| {
             let name = variant.to_arc_str();

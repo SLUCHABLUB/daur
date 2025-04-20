@@ -26,7 +26,7 @@ pub use text::ToText;
 
 use crate::context::Menu;
 use crate::ui::{Length, Size};
-use crate::{ArcCell, Colour, UserInterface};
+use crate::{ArcCell, Colour, Ratio, UserInterface};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use itertools::Itertools as _;
@@ -106,6 +106,8 @@ pub enum View {
         /// The number of cells (the number of markings - 1).
         cells: NonZeroU64,
     },
+    /// A view with a custom minimum size
+    Sized { view: Box<View>, minimum_size: Size },
     /// A view that needs to know its container's size.
     SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
     /// A solid colour.
@@ -198,24 +200,44 @@ impl View {
     }
 
     /// Constructs a new [stack](View::Stack) where all views are quotated equally.
-    pub fn balanced_stack<E>(direction: Direction, elements: E) -> Self
-    where
-        E: IntoIterator<Item = Self>,
-    {
-        View::Stack {
-            direction,
-            elements: elements.into_iter().map(View::fill_remaining).collect(),
+    pub fn balanced_stack<Ui: UserInterface, E: IntoIterator<Item = Self>>(
+        direction: Direction,
+        elements: E,
+    ) -> Self {
+        let iter = elements.into_iter();
+        let mut elements = Vec::new();
+        let mut minimum_size = Size::ZERO;
+        let mut count: u64 = 0;
+
+        for element in iter {
+            let size = element.minimum_size::<Ui>();
+            minimum_size.width = max(minimum_size.width, size.width);
+            minimum_size.height = max(minimum_size.height, size.height);
+            count = count.saturating_add(1);
+
+            elements.push(element.fill_remaining());
+        }
+
+        let count = Ratio::integer(count);
+
+        match direction {
+            Direction::Up | Direction::Down => minimum_size.height *= count,
+            Direction::Left | Direction::Right => minimum_size.width *= count,
+        }
+
+        View::Sized {
+            view: Box::new(View::Stack {
+                direction,
+                elements,
+            }),
+            minimum_size,
         }
     }
 
     /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size and spread out evenly.
-    #[expect(
-        clippy::impl_trait_in_params,
-        reason = "this has been determined to aid readability since turbofishes will not need two arguments"
-    )]
-    pub fn spaced_stack<Ui: UserInterface>(
+    pub fn spaced_stack<Ui: UserInterface, E: IntoIterator<Item = Self>>(
         direction: Direction,
-        elements: impl IntoIterator<Item = Self>,
+        elements: E,
     ) -> Self {
         View::Stack {
             direction,
@@ -278,6 +300,7 @@ impl View {
                 width: Length::ZERO,
                 height: Ui::RULER_HEIGHT.get(),
             },
+            View::Sized { minimum_size, .. } => *minimum_size,
             View::Stack {
                 direction,
                 elements,
@@ -296,17 +319,10 @@ impl View {
             View::Text {
                 string,
                 alignment: _,
-            } => {
-                let mut size = Size::ZERO;
-
-                for line in string.lines() {
-                    size.width = max(size.width, Ui::string_width(line));
-                }
-
-                size.height = Ui::string_height(string);
-
-                size
-            }
+            } => Size {
+                width: Ui::string_width(string),
+                height: Ui::string_height(string),
+            },
         }
     }
 }

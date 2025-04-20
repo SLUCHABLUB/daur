@@ -93,7 +93,9 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         } => {
             render_canvas(*background, painter, area, buffer);
         }
-        View::Contextual { menu: _, view } => render(view, area, buffer, mouse_position),
+        View::Contextual { menu: _, view } | View::Sized { view, .. } => {
+            render(view, area, buffer, mouse_position);
+        }
         View::CursorWindow { offset } => {
             let offset = length_to_u16(*offset);
 

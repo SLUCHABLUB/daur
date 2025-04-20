@@ -1,7 +1,7 @@
 //! A simple single-selection view
 
 use crate::view::{Direction, OnClick, View};
-use crate::{Cell, ToArcStr};
+use crate::{Cell, ToArcStr, UserInterface};
 use arcstr::ArcStr;
 use closure::closure;
 use std::fmt::Display;
@@ -9,15 +9,16 @@ use std::sync::Arc;
 use strum::VariantArray;
 
 /// A simple single-selection view
-pub fn selector<T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
+pub fn selector<Ui: UserInterface, T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
     cell: &Arc<Cell<T>>,
     direction: Direction,
 ) -> View {
-    selector_with_formatter(cell, direction, ToArcStr::to_arc_str)
+    selector_with_formatter::<Ui, _, _>(cell, direction, ToArcStr::to_arc_str)
 }
 
 /// A simple single-selection view that uses a custom "formatter".
 pub fn selector_with_formatter<
+    Ui: UserInterface,
     T: Copy + PartialEq + VariantArray + Send + Sync,
     F: Fn(&T) -> ArcStr + Clone + Send + Sync + 'static,
 >(
@@ -25,7 +26,7 @@ pub fn selector_with_formatter<
     direction: Direction,
     formatter: F,
 ) -> View {
-    View::balanced_stack(
+    View::balanced_stack::<Ui, _>(
         direction,
         T::VARIANTS.iter().map(|variant| {
             View::generator(closure!([clone cell, clone formatter] move || {

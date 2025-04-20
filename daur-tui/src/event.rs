@@ -201,12 +201,12 @@ fn click(
         | View::Text { .. } => (),
         View::Contextual { menu, view } => {
             if button == MouseButton::Right {
-                let view = menu.view();
+                let view = menu.view::<Tui>();
 
                 let size = size_to_ratatui(view.minimum_size::<Tui>());
                 let area = Rect::from((position, size));
 
-                context_menu.set_some_value((area, menu.view()));
+                context_menu.set_some_value((area, menu.view::<Tui>()));
             }
 
             click(view, button, area, position, actions, context_menu);
@@ -248,6 +248,7 @@ fn click(
             .iter()
             .rev()
             .for_each(|layer| click(layer, button, area, position, actions, context_menu)),
+        View::Sized { view, .. } => click(view, button, area, position, actions, context_menu),
         View::SizeInformed(generator) => click(
             &generator(ratatui_to_size(area.as_size())),
             button,

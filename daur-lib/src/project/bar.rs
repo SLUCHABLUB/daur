@@ -41,7 +41,7 @@ pub fn bar<Ui: UserInterface>(
         View::described_button(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
     };
 
-    let start_settings = View::balanced_stack(
+    let start_settings = View::balanced_stack::<Ui, _>(
         Direction::Right,
         [
             View::described_button(
@@ -58,7 +58,7 @@ pub fn bar<Ui: UserInterface>(
         ],
     );
 
-    let left_side = View::spaced_stack::<Ui>(
+    let left_side = View::spaced_stack::<Ui, _>(
         Direction::Right,
         vec![literal!("TODO").centred(), start_settings],
     );
