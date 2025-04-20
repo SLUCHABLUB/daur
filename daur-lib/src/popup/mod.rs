@@ -11,6 +11,7 @@ use crate::time::Instant;
 use crate::view::{Alignment, Direction, OnClick, ToText as _, multi, single};
 use crate::{Action, ArcCell, Cell, ToArcStr as _, UserInterface, View, project};
 use arcstr::{ArcStr, format, literal};
+use closure::closure;
 use derive_more::Debug;
 use dirs::home_dir;
 use std::env::current_dir;
@@ -128,6 +129,8 @@ impl Popup {
                 }
             }
             Popup::KeySelector { instant, key } => {
+                let instant = *instant;
+
                 let tonic = Arc::new(Cell::new(key.tonic));
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
@@ -138,14 +141,18 @@ impl Popup {
                         CANCEL.centred().bordered().terminating(id),
                         View::standard_button(
                             CONFIRM,
-                            OnClick::from(Action::Project(project::Action::SetKey {
-                                instant: *instant,
-                                key: Key {
-                                    tonic: tonic.get(),
-                                    sign: sign.get(),
-                                    intervals: intervals.get(),
-                                },
-                            })),
+                            OnClick::action(
+                                closure!([clone tonic, clone sign, clone intervals] move || {
+                                    Action::Project(project::Action::SetKey {
+                                        instant,
+                                        key: Key {
+                                            tonic: tonic.get(),
+                                            sign: sign.get(),
+                                            intervals: intervals.get(),
+                                        },
+                                    })
+                                }),
+                            ),
                         )
                         .terminating(id),
                     ],
@@ -154,9 +161,13 @@ impl Popup {
                 View::spaced_stack::<Ui>(
                     Direction::Down,
                     vec![
-                        single::selector_with_formatter(&tonic, Direction::Right, |chroma| {
-                            chroma.name(sign.get())
-                        }),
+                        single::selector_with_formatter(
+                            &tonic,
+                            Direction::Right,
+                            closure!([clone sign] move |chroma| {
+                                chroma.name(sign.get())
+                            }),
+                        ),
                         single::selector(&sign, Direction::Right),
                         multi::selector(&intervals, Direction::Right),
                         buttons,

@@ -3,6 +3,7 @@
 use crate::view::{Direction, OnClick, View};
 use crate::{Cell, ToArcStr};
 use arcstr::ArcStr;
+use closure::closure;
 use std::fmt::Display;
 use std::sync::Arc;
 use strum::VariantArray;
@@ -18,19 +19,16 @@ pub fn selector<T: Copy + PartialEq + Display + VariantArray + Send + Sync>(
 /// A simple single-selection view that uses a custom "formatter".
 pub fn selector_with_formatter<
     T: Copy + PartialEq + VariantArray + Send + Sync,
-    F: FnMut(&T) -> ArcStr,
+    F: Fn(&T) -> ArcStr + Clone + Send + Sync + 'static,
 >(
     cell: &Arc<Cell<T>>,
     direction: Direction,
-    mut formatter: F,
+    formatter: F,
 ) -> View {
     View::balanced_stack(
         direction,
         T::VARIANTS.iter().map(|variant| {
-            let name = formatter(variant);
-
-            let cell = Arc::clone(cell);
-            View::generator(move || {
+            View::generator(closure!([clone cell, clone formatter] move || {
                 let is_set = cell.get() == *variant;
 
                 let cell = Arc::clone(&cell);
@@ -38,8 +36,8 @@ pub fn selector_with_formatter<
                     cell.set(*variant);
                 });
 
-                View::standard_button(name.clone(), on_click).with_thickness(is_set)
-            })
+                View::standard_button(formatter(variant), on_click).with_selection_status(is_set)
+            }))
         }),
     )
 }

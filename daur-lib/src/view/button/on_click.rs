@@ -22,6 +22,14 @@ impl OnClick {
         }
     }
 
+    /// Creates a new function from a closure generating an [action](Action).
+    ///
+    /// [`OnClick`] also implements [`From<Action>`] so if the action is available at call-time,
+    /// [`from`](From::<Action>::from) is preferred.
+    pub fn action<F: Fn() -> Action + Send + Sync + 'static>(generator: F) -> Self {
+        OnClick::new(move |_, _, actions| actions.send(generator()))
+    }
+
     /// Runs the function.
     pub fn run(&self, size: Size, position: Point, receiver: &mut dyn Receiver<Action>) {
         if let Some(function) = self.function.as_ref() {
@@ -32,13 +40,13 @@ impl OnClick {
 
 impl From<Action> for OnClick {
     fn from(action: Action) -> Self {
-        OnClick::new(move |_, _, actions| actions.send(action.clone()))
+        OnClick::action(move || action.clone())
     }
 }
 
 impl From<project::Action> for OnClick {
     fn from(action: project::Action) -> Self {
-        OnClick::new(move |_, _, actions| actions.send(Action::Project(action.clone())))
+        OnClick::from(Action::Project(action))
     }
 }
 

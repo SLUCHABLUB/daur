@@ -35,7 +35,7 @@ where
                     cell.set(bag);
                 });
 
-                View::standard_button(name.clone(), on_click).with_thickness(is_set)
+                View::standard_button(name.clone(), on_click).with_selection_status(is_set)
             })
         }),
     )
