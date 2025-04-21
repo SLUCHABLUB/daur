@@ -7,12 +7,13 @@ use crossterm::event::{
 };
 use daur::ui::{Length, NonZeroLength, Vector};
 use daur::view::{Direction, View};
-use daur::{Action, App, OptionArcCell};
+use daur::{Action, App, ArcCell, OptionArcCell};
 use ratatui::layout::{Position, Rect};
-use ratatui::widgets::Block;
+use ratatui::widgets::{Block, Borders};
 use ratatui_explorer::FileExplorer;
 use std::io;
 use std::iter::zip;
+use std::path::Path;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
@@ -134,10 +135,24 @@ fn handle_mouse_event(
                 action.take(app);
             }
         }
-        MouseEventKind::Up(_) => {
-            // TODO:
-            //  - drop held item
-            //  - stop selection
+        MouseEventKind::Up(button) => {
+            if button != MouseButton::Left {
+                return;
+            }
+
+            let popups = app.ui.popups.read();
+
+            for (_id, area, view) in popups.iter().rev() {
+                release_mouse(view, *area, app.ui.mouse_position.get());
+            }
+
+            drop(popups);
+
+            release_mouse(
+                &app.main_view(),
+                app.ui.window_area.get(),
+                app.ui.mouse_position.get(),
+            );
         }
         MouseEventKind::Moved | MouseEventKind::Drag(_) => (),
         MouseEventKind::ScrollDown => {
@@ -155,6 +170,15 @@ fn handle_mouse_event(
     }
 }
 
+fn titled_content_area(content: &View, area: Rect) -> Rect {
+    // shrink the content area if the title is not part of a border
+    if matches!(content, View::Bordered { .. }) {
+        area
+    } else {
+        Block::bordered().borders(Borders::TOP).inner(area)
+    }
+}
+
 fn click(
     view: &View,
     button: MouseButton,
@@ -165,11 +189,7 @@ fn click(
 ) {
     match view {
         // clicking the border counts as clicking the content
-        View::Bordered {
-            title: _,
-            thick: _,
-            content,
-        } => click(
+        View::Bordered { thick: _, content } => click(
             content,
             button,
             Block::bordered().inner(area),
@@ -178,15 +198,12 @@ fn click(
             context_menu,
         ),
         View::Button { on_click, content } => {
-            let relative_position = Position {
-                x: position.x.saturating_sub(area.x),
-                y: position.y.saturating_sub(area.y),
-            };
+            let relative_position = position_to_point(position) - rect_to_rectangle(area).position;
 
             if button == MouseButton::Left {
                 on_click.run(
                     ratatui_to_size(area.as_size()),
-                    position_to_point(relative_position),
+                    relative_position.point(),
                     actions,
                 );
             }
@@ -211,23 +228,16 @@ fn click(
 
             click(view, button, area, position, actions, context_menu);
         }
-        View::FileSelector { selected_file } => {
-            let Ok(mut explorer) = FileExplorer::new() else {
-                return;
-            };
+        View::Draggable {
+            update,
+            release: _,
+            view,
+        } => {
+            update(rect_to_rectangle(area), position_to_point(position));
 
-            let Ok(()) = explorer.set_cwd(&*selected_file.get()) else {
-                return;
-            };
-
-            let index = usize::from(position.y);
-            let Some(file) = explorer.files().get(index).or(explorer.files().last()) else {
-                // Should be unreachable since `..` is always in the list
-                return;
-            };
-
-            selected_file.set(Arc::from(file.path().as_path()));
+            click(view, button, area, position, actions, context_menu);
         }
+        View::FileSelector { selected_file } => click_file_explorer(selected_file, position),
         View::Generator(generator) => {
             click(&generator(), button, area, position, actions, context_menu);
         }
@@ -273,6 +283,96 @@ fn click(
                     break;
                 }
             }
+        }
+        View::Titled {
+            title: _,
+            highlighted: _,
+            view,
+        } => click(
+            view,
+            button,
+            titled_content_area(view, area),
+            position,
+            actions,
+            context_menu,
+        ),
+    }
+}
+
+fn click_file_explorer(selected_file: &ArcCell<Path>, position: Position) {
+    let Ok(mut explorer) = FileExplorer::new() else {
+        return;
+    };
+
+    let Ok(()) = explorer.set_cwd(&*selected_file.get()) else {
+        return;
+    };
+
+    let index = usize::from(position.y);
+    let Some(file) = explorer.files().get(index).or(explorer.files().last()) else {
+        // Should be unreachable since `..` is always in the list
+        return;
+    };
+
+    selected_file.set(Arc::from(file.path().as_path()));
+}
+
+fn release_mouse(view: &View, area: Rect, position: Position) {
+    match view {
+        View::Bordered { content, .. } => {
+            release_mouse(content, Block::bordered().inner(area), position);
+        }
+        View::Button { content, .. } => release_mouse(content, area, position),
+        View::Canvas { .. }
+        | View::CursorWindow { .. }
+        | View::Empty
+        | View::FileSelector { .. }
+        | View::Rule { .. }
+        | View::Solid(_)
+        | View::Text { .. } => (),
+        View::Contextual { view, .. } | View::Sized { view, .. } => {
+            release_mouse(view, area, position);
+        }
+        View::Draggable { release, view, .. } => {
+            release();
+            release_mouse(view, area, position);
+        }
+        View::Generator(generator) => release_mouse(&generator(), area, position),
+        View::Hoverable { default, hovered } => release_mouse(
+            if area.contains(position) {
+                hovered
+            } else {
+                default
+            },
+            area,
+            position,
+        ),
+        View::Layers(layers) => layers
+            .iter()
+            .rev()
+            .for_each(|layer| release_mouse(layer, area, position)),
+        View::SizeInformed(generator) => {
+            release_mouse(&generator(ratatui_to_size(area.as_size())), area, position);
+        }
+        View::Stack {
+            direction,
+            elements,
+        } => {
+            let quota: Vec<_> = elements.iter().map(|quotated| quotated.quotum).collect();
+            let rectangles = rect_to_rectangle(area)
+                .split(*direction, &quota)
+                .map(rectangle_to_rect);
+
+            for (area, quoted) in zip(rectangles, elements) {
+                release_mouse(&quoted.view, area, position);
+            }
+        }
+        View::Titled {
+            title: _,
+            highlighted: _,
+            view,
+        } => {
+            release_mouse(view, titled_content_area(view, area), position);
         }
     }
 }

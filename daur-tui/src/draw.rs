@@ -11,7 +11,7 @@ use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
 use ratatui::widgets::canvas::Canvas;
-use ratatui::widgets::{Block, Clear, Paragraph, Widget as _};
+use ratatui::widgets::{Block, Borders, Clear, Paragraph, Widget as _};
 use ratatui::{DefaultTerminal, layout};
 use ratatui_explorer::{FileExplorer, Theme};
 use saturating_cast::SaturatingCast as _;
@@ -19,6 +19,7 @@ use std::cmp::min;
 use std::io;
 use std::iter::zip;
 use std::num::{NonZeroU64, NonZeroUsize};
+use std::path::Path;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
@@ -67,21 +68,13 @@ pub fn spawn_draw_thread(
 type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
 fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position) {
+    if try_render_bordered_title(view, area, buffer, mouse_position) {
+        return;
+    }
+
     match view {
-        View::Bordered {
-            title,
-            thick,
-            content,
-        } => {
-            let set = if *thick { THICK } else { PLAIN };
-
-            let block = Block::bordered().border_set(set).title(title.as_str());
-
-            let inner = block.inner(area);
-
-            block.render(area, buffer);
-
-            render(content, inner, buffer, mouse_position);
+        View::Bordered { thick, content } => {
+            render_bordered(content, *thick, None, area, buffer, mouse_position);
         }
         View::Button {
             on_click: _,
@@ -93,7 +86,7 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         } => {
             render_canvas(*background, painter, area, buffer);
         }
-        View::Contextual { menu: _, view } | View::Sized { view, .. } => {
+        View::Contextual { view, .. } | View::Draggable { view, .. } | View::Sized { view, .. } => {
             render(view, area, buffer, mouse_position);
         }
         View::CursorWindow { offset } => {
@@ -116,20 +109,7 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         }
         View::Empty => (),
         View::FileSelector { selected_file } => {
-            let theme = Theme::new()
-                .with_block(Block::bordered())
-                .add_default_title()
-                .with_highlight_symbol("> ");
-
-            let Ok(mut explorer) = FileExplorer::with_theme(theme) else {
-                return;
-            };
-
-            let Ok(()) = explorer.set_cwd(&*selected_file.get()) else {
-                return;
-            };
-
-            explorer.widget().render(area, buffer);
+            render_file_selector(&selected_file.get(), area, buffer);
         }
         View::Generator(generator) => render(&generator(), area, buffer, mouse_position),
         View::Hoverable { default, hovered } => render(
@@ -173,7 +153,76 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
             }
         }
         View::Text { string, alignment } => render_text(string, *alignment, area, buffer),
+        View::Titled {
+            title,
+            highlighted,
+            view,
+        } => {
+            let set = if *highlighted { THICK } else { PLAIN };
+
+            let block = Block::bordered()
+                .borders(Borders::TOP)
+                .border_set(set)
+                .title(title.as_str());
+
+            let inner = block.inner(area);
+
+            block.render(area, buffer);
+
+            render(view, inner, buffer, mouse_position);
+        }
     }
+}
+
+fn try_render_bordered_title(
+    view: &View,
+    area: Rect,
+    buffer: &mut Buffer,
+    mouse_position: Position,
+) -> bool {
+    // handle the special case of a titled border
+    if let View::Titled {
+        title,
+        highlighted,
+        view,
+    } = view
+    {
+        if let View::Bordered { thick, content } = &**view {
+            render_bordered(
+                content,
+                *highlighted || *thick,
+                Some(title),
+                area,
+                buffer,
+                mouse_position,
+            );
+            return true;
+        }
+    }
+
+    false
+}
+
+fn render_bordered(
+    content: &View,
+    thick: bool,
+    title: Option<&str>,
+    area: Rect,
+    buffer: &mut Buffer,
+    mouse_position: Position,
+) {
+    let set = if thick { THICK } else { PLAIN };
+
+    let mut block = Block::bordered().border_set(set);
+    if let Some(title) = title {
+        block = block.title(title);
+    }
+
+    let inner = block.inner(area);
+
+    block.render(area, buffer);
+
+    render(content, inner, buffer, mouse_position);
 }
 
 fn render_canvas(background: Colour, painter: &Painter, area: Rect, buffer: &mut Buffer) {
@@ -191,6 +240,25 @@ fn render_canvas(background: Colour, painter: &Painter, area: Rect, buffer: &mut
             });
         })
         .render(area, buffer);
+}
+
+fn render_file_selector(selected_file: &Path, area: Rect, buffer: &mut Buffer) {
+    {
+        let theme = Theme::new()
+            .with_block(Block::bordered())
+            .add_default_title()
+            .with_highlight_symbol("> ");
+
+        let Ok(mut explorer) = FileExplorer::with_theme(theme) else {
+            return;
+        };
+
+        let Ok(()) = explorer.set_cwd(selected_file) else {
+            return;
+        };
+
+        explorer.widget().render(area, buffer);
+    }
 }
 
 fn render_rule(index: isize, cells: NonZeroU64, area: Rect, buffer: &mut Buffer) {

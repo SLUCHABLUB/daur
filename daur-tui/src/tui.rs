@@ -63,7 +63,7 @@ impl UserInterface for Tui {
     type PopupHandle = PopupHandle;
 
     fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle {
-        let view = view.titled(title);
+        let view = view.bordered().titled(title);
 
         let window_area = rect_to_rectangle(self.window_area.get());
 

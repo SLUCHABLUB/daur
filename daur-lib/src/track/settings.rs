@@ -13,6 +13,7 @@ pub fn settings(track: &Arc<Track>, selected: bool) -> View {
 
     literal!("TODO")
         .centred()
+        .bordered()
         .titled(track.name.clone())
         .with_thickness(selected)
         .on_click(on_click)

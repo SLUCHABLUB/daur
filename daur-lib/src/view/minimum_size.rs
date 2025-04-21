@@ -5,11 +5,7 @@ use std::cmp::max;
 /// See [`View::minimum_size`]
 pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
     match view {
-        View::Bordered {
-            title: _,
-            thick: _,
-            content,
-        } => {
+        View::Bordered { thick: _, content } => {
             let mut size = content.minimum_size::<Ui>();
             size.height += Ui::DOUBLE_BORDER_THICKNESS;
             size.width += Ui::DOUBLE_BORDER_THICKNESS;
@@ -25,7 +21,9 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         | View::FileSelector { .. }
         | View::SizeInformed(_)
         | View::Solid(_) => Size::ZERO,
-        View::Contextual { menu: _, view } => view.minimum_size::<Ui>(),
+        View::Contextual { menu: _, view } | View::Draggable { view, .. } => {
+            view.minimum_size::<Ui>()
+        }
         View::Generator(generator) => generator().minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {
             let default = default.minimum_size::<Ui>();
@@ -74,5 +72,17 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             width: Ui::string_width(string),
             height: Ui::string_height(string),
         },
+        View::Titled {
+            title,
+            highlighted: _,
+            view,
+        } => {
+            let mut size = view.minimum_size::<Ui>();
+
+            // The title gets cropped if the view is narrower than it.
+            size.height += Ui::string_height(title);
+
+            size
+        }
     }
 }

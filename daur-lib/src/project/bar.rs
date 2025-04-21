@@ -73,6 +73,7 @@ pub fn bar<Ui: UserInterface>(
             right_side.fill_remaining(),
         ],
     }
+    .bordered()
     .titled(title)
     .with_thickness(true)
 }

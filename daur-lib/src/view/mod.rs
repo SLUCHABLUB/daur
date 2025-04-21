@@ -26,7 +26,7 @@ pub use ruler::ruler;
 pub use text::ToText;
 
 use crate::context::Menu;
-use crate::ui::{Length, Size};
+use crate::ui::{Length, Point, Rectangle, Size};
 use crate::view::minimum_size::minimum_size;
 use crate::{ArcCell, Colour, Ratio, UserInterface};
 use arcstr::ArcStr;
@@ -45,10 +45,8 @@ pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 #[must_use = "A view must be processed in some way"]
 #[derive(Debug, Default)]
 pub enum View {
-    /// A view with a border and optional title.
+    /// A view with a border.
     Bordered {
-        /// The title.
-        title: ArcStr,
         /// Whether the border is **thick**.
         thick: bool,
         /// The bordered view.
@@ -81,6 +79,22 @@ pub enum View {
     CursorWindow {
         /// How far from the left the cursor is positioned.
         offset: Length,
+    },
+    /// A view that responds to being dragged on by the mouse.
+    Draggable {
+        /// The function to be called when the mouse moves from or in the view whilst being held down.
+        ///
+        /// # Arguments
+        ///
+        /// - [`Rectangle`]: The area of the view.
+        /// - [`Point`]: The new mouse position.
+        #[debug(skip)]
+        update: Box<dyn Fn(Rectangle, Point) + Send + Sync>,
+        /// The function to be called when the mouse button is released.
+        #[debug(skip)]
+        release: Box<dyn Fn() + Send + Sync>,
+        /// The view.
+        view: Box<View>,
     },
     /// An empty (transparent) view.
     #[default]
@@ -128,35 +142,54 @@ pub enum View {
         /// How the text should be aligned.
         alignment: Alignment,
     },
+    /// A view with a title bar.
+    Titled {
+        /// The title.
+        title: ArcStr,
+        /// Whether the title is highlighted.
+        highlighted: bool,
+        /// The view.
+        view: Box<View>,
+    },
 }
 
 impl View {
     /// Puts a border around the view.
     pub fn bordered(self) -> Self {
-        self.titled(ArcStr::new())
-    }
-
-    /// Puts a titled border around the view.
-    pub fn titled(self, title: ArcStr) -> Self {
         View::Bordered {
-            title,
             thick: false,
             content: Box::new(self),
         }
     }
 
-    /// Sets the border thickness if the view is [bordered](View::Bordered).
-    pub fn with_thickness(self, thickness: bool) -> Self {
-        if let View::Bordered {
+    /// Puts a titled border around the view.
+    pub fn titled(self, title: ArcStr) -> Self {
+        View::Titled {
             title,
-            thick: _,
-            content,
-        } = self
-        {
+            highlighted: false,
+            view: Box::new(self),
+        }
+    }
+
+    /// Sets the border thickness if the view is [bordered](View::Bordered).
+    ///
+    /// Also sets highlights the title if the view is [titled](View::Titled).
+    pub fn with_thickness(self, thickness: bool) -> Self {
+        if let View::Bordered { thick: _, content } = self {
             View::Bordered {
-                title,
                 thick: thickness,
                 content,
+            }
+        } else if let View::Titled {
+            title,
+            highlighted: _,
+            view,
+        } = self
+        {
+            View::Titled {
+                title,
+                highlighted: thickness,
+                view,
             }
         } else {
             // TODO: log that nothing happened

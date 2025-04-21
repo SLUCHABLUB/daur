@@ -18,6 +18,7 @@ arithmetic-side-effects-allowed = [
     # type names for other crates
     "daur::audio::Sample",
     "daur::ui::Length",
+    "daur::ui::Point",
     "daur::ui::Offset",
     "daur::ui::Vector",
 ]
