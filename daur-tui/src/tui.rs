@@ -60,6 +60,14 @@ impl UserInterface for Tui {
         }
     }
 
+    fn title_height(_title: &str, titled: &View) -> Length {
+        if matches!(titled, View::Bordered { .. }) {
+            Length::ZERO
+        } else {
+            Length::PIXEL
+        }
+    }
+
     type PopupHandle = PopupHandle;
 
     fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle {

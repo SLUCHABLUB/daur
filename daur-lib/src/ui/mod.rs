@@ -60,6 +60,10 @@ pub trait UserInterface {
     #[must_use]
     fn string_width(string: &str) -> Length;
 
+    /// Returns the height of the title if it was to be applied to the view.
+    #[must_use]
+    fn title_height(title: &str, titled: &View) -> Length;
+
     /// A [RAII](wikipedia.org/wiki/RAII) handle to a popup.
     /// Dropping it should close the popup.
     type PopupHandle;

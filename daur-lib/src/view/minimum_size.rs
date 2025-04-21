@@ -80,7 +80,7 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             let mut size = view.minimum_size::<Ui>();
 
             // The title gets cropped if the view is narrower than it.
-            size.height += Ui::string_height(title);
+            size.height += Ui::title_height(title, view);
 
             size
         }
