@@ -5,7 +5,6 @@ use std::cmp::max;
 /// See [`View::minimum_size`]
 pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
     match view {
-        // TODO: this may depend on thickness
         View::Bordered {
             title: _,
             thick: _,
