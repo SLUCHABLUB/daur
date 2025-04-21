@@ -18,6 +18,7 @@ use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 use std::sync::Weak;
 
+const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
 // The piano roll has a fixed lower pitch.
@@ -30,8 +31,8 @@ pub fn view<Ui: UserInterface>(
     settings: Settings,
     key: &Changing<Key>,
 ) -> View {
-    let Some(_clip) = clip.upgrade() else {
-        return NO_CLIP_SELECTED.centred();
+    let Some(clip) = clip.upgrade() else {
+        return NO_CLIP_SELECTED.centred().titled(PIANO_ROLL);
     };
 
     let roll_start = mapping.instant(settings.piano_depth.get());
@@ -67,4 +68,5 @@ pub fn view<Ui: UserInterface>(
         direction: Direction::Right,
         elements: vec![ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()],
     }
+    .titled(clip.name.clone())
 }
