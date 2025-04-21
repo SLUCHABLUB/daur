@@ -16,6 +16,7 @@ use crate::view::{Direction, ToText as _, View, feed, ruler};
 use crate::{Changing, Clip, UserInterface};
 use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
+use std::sync::Weak;
 
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
@@ -24,12 +25,12 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 // Since the top is the thing you move, this seems intuitive.
 /// Return the view for the piano roll.
 pub fn view<Ui: UserInterface>(
-    clip: Option<&Clip>,
+    clip: &Weak<Clip>,
     mapping: Mapping,
     settings: Settings,
     key: &Changing<Key>,
 ) -> View {
-    let Some(_clip) = clip else {
+    let Some(_clip) = clip.upgrade() else {
         return NO_CLIP_SELECTED.centred();
     };
 

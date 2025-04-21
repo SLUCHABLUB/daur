@@ -10,8 +10,8 @@ use crate::project::{Project, bar, workspace};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, NonZeroLength, Offset};
 use crate::view::View;
-use crate::{Changing, UserInterface};
-use std::sync::Arc;
+use crate::{Changing, Track, UserInterface};
+use std::sync::{Arc, Weak};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -54,23 +54,6 @@ impl Manager {
         self.project.read().time_signature()
     }
 
-    /// Returns a clip from its index.
-    #[must_use]
-    pub fn clip(
-        &self,
-        selected_track_index: usize,
-        selected_clip_index: usize,
-    ) -> Option<Arc<Clip>> {
-        self.project
-            .read()
-            .tracks
-            .get(selected_track_index)?
-            .clips
-            .values()
-            .nth(selected_clip_index)
-            .map(Arc::clone)
-    }
-
     /// Returns an audio source for the project
     #[must_use]
     pub fn source(&self, sample_rate: SampleRate, cursor: Instant) -> ProjectSource {
@@ -102,16 +85,16 @@ impl Manager {
         track_settings_size: NonZeroLength,
         grid: Grid,
         overview_offset: Offset,
-        selected_track_index: usize,
-        selected_clip_index: usize,
+        selected_track: &Weak<Track>,
+        selected_clip: &Weak<Clip>,
         cursor: Instant,
     ) -> View {
         let project = self.project.read();
 
         workspace::<Ui>(
             overview_offset,
-            selected_track_index,
-            selected_clip_index,
+            selected_track,
+            selected_clip,
             track_settings_size,
             project.tracks.clone(),
             project.time_mapping(),
@@ -129,7 +112,7 @@ impl Manager {
         &self,
         action: Action,
         cursor: Instant,
-        selected_track: usize,
+        selected_track: Weak<Track>,
     ) -> Result<(), Popup> {
         self.edit(Edit::from_action(action, cursor, selected_track)?)
     }
@@ -145,7 +128,7 @@ impl Manager {
                 position,
                 clip,
             } => {
-                Arc::make_mut(project.tracks.get_mut(track).ok_or(NoTrackSelected)?)
+                Arc::make_mut(&mut track.upgrade().ok_or(NoTrackSelected)?)
                     .clips
                     .insert(position, Arc::new(clip));
             }

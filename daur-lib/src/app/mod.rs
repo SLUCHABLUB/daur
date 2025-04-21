@@ -2,18 +2,22 @@ mod action;
 
 pub use action::Action;
 
+use crate::cell::WeakCell;
 use crate::observed::Observed;
 use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::piano_roll::Settings;
 use crate::view::{Direction, Quotated, View, piano_roll};
-use crate::{ArcCell, Cell, OptionArcCell, Project, UserInterface, popup, project, ui};
+use crate::{
+    ArcCell, Cell, Clip, OptionArcCell, Project, Track, UserInterface, popup, project, ui,
+};
 use derive_more::Debug;
 use rodio::Device;
 use rodio::cpal::traits::HostTrait as _;
 use rodio::cpal::{Host, default_host};
 use std::collections::HashMap;
+use std::sync::Weak;
 use std::time::SystemTime;
 
 /// A running instance of the DAW.
@@ -46,13 +50,10 @@ pub struct App<Ui: UserInterface> {
     /// The width of the track settings.
     pub track_settings_width: NonZeroLength,
 
-    // TODO: find a semantically superior way to index tracks
-    /// The index iof the currently selected track.
-    /// Note that this may not index a valid track.
-    pub selected_track_index: Cell<usize>,
-    /// The index iof the currently selected clip.
-    /// Note that this may not index a valid clip.
-    pub selected_clip_index: Cell<usize>,
+    /// The currently selected track.
+    pub selected_track: WeakCell<Track>,
+    /// The currently selected clip.
+    pub selected_clip: WeakCell<Clip>,
 
     /// The position of the musical cursor.
     pub cursor: Cell<Instant>,
@@ -88,8 +89,8 @@ impl<Ui: UserInterface> App<Ui> {
             project_bar_height: Ui::PROJECT_BAR_HEIGHT,
             track_settings_width: Ui::TRACK_SETTINGS_WITH,
 
-            selected_track_index: Cell::new(0),
-            selected_clip_index: Cell::new(0),
+            selected_track: WeakCell::new(Weak::new()),
+            selected_clip: WeakCell::new(Weak::new()),
             cursor: Cell::new(Instant::START),
 
             grid: Grid {
@@ -159,8 +160,8 @@ impl<Ui: UserInterface> App<Ui> {
                         self.track_settings_width,
                         self.grid,
                         self.overview_offset.get(),
-                        self.selected_track_index.get(),
-                        self.selected_clip_index.get(),
+                        &self.selected_track.get(),
+                        &self.selected_clip.get(),
                         self.playback_position(),
                     )
                     .fill_remaining(),
@@ -169,12 +170,7 @@ impl<Ui: UserInterface> App<Ui> {
                     .height
                     .map_or(Quotated::EMPTY, |height| {
                         piano_roll::view::<Ui>(
-                            self.project
-                                .clip(
-                                    self.selected_track_index.get(),
-                                    self.selected_clip_index.get(),
-                                )
-                                .as_deref(),
+                            &self.selected_clip.get(),
                             ui::Mapping {
                                 time_signature: self.project.time_signature(),
                                 grid: self.grid,

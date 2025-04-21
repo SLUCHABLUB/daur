@@ -1,19 +1,19 @@
 use crate::time::{Mapping, Period};
 use crate::view::{OnClick, View};
-use crate::{Action, Clip};
-use std::sync::Arc;
+use crate::{Action, Clip, Track};
+use std::sync::{Arc, Weak};
 
 /// Returns a view of a clip's overview.
 pub fn overview(
     clip: Arc<Clip>,
-    track_index: usize,
-    index: usize,
+    track: Weak<Track>,
     selected: bool,
     full_period: Period,
     visible_period: Period,
     mapping: Mapping,
 ) -> View {
     let title = clip.name.clone();
+    let clip_reference = Arc::downgrade(&clip);
 
     View::canvas(clip.colour, move |context| {
         clip.content
@@ -21,5 +21,8 @@ pub fn overview(
     })
     .titled(title)
     .with_thickness(selected)
-    .on_click(OnClick::from(Action::SelectClip { track_index, index }))
+    .on_click(OnClick::from(Action::SelectClip {
+        track,
+        clip: clip_reference,
+    }))
 }

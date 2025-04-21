@@ -1,10 +1,11 @@
 use crate::popup::{Id, Popup};
 use crate::time::Instant;
 use crate::ui::{Length, NonZeroLength};
-use crate::{App, UserInterface, project};
+use crate::{App, Clip, Track, UserInterface, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
+use std::sync::Weak;
 
 /// An action to take on the app
 #[derive(Clone, Debug)]
@@ -17,13 +18,13 @@ pub enum Action {
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
     /// Selects the track with the given index
-    SelectTrack(usize),
+    SelectTrack(Weak<Track>),
     /// Selects a clip
     SelectClip {
         /// The index of the track in which the clip resides
-        track_index: usize,
+        track: Weak<Track>,
         /// The index of the clip to select
-        index: usize,
+        clip: Weak<Clip>,
     },
 
     /// Sets the piano roll's height to half the screen
@@ -111,20 +112,20 @@ impl Action {
                 }
             }
             Action::Project(action) => {
-                let result =
-                    app.project
-                        .take(action, app.cursor.get(), app.selected_track_index.get());
+                let result = app
+                    .project
+                    .take(action, app.cursor.get(), app.selected_track.get());
 
                 if let Err(popup) = result {
                     app.popups.open(&popup, &app.ui);
                 }
             }
             Action::SelectTrack(index) => {
-                app.selected_track_index.set(index);
+                app.selected_track.set(index);
             }
-            Action::SelectClip { track_index, index } => {
-                app.selected_track_index.set(track_index);
-                app.selected_clip_index.set(index);
+            Action::SelectClip { track, clip, .. } => {
+                app.selected_track.set(track);
+                app.selected_clip.set(clip);
             }
             Action::SetDevice(device) => {
                 app.device.set_value(Some(device));

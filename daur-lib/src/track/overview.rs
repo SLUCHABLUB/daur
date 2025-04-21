@@ -4,61 +4,54 @@ use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
 use crate::view::{Direction, OnClick, Quotated, View, cursor_window, feed};
-use crate::{clip, time, ui};
+use crate::{Clip, clip, time, ui};
+use closure::closure;
 use num::Integer as _;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 /// Returns the track overview.
 pub fn overview(
     track: Arc<Track>,
-    index: usize,
-    selected_clip_index: usize,
+    selected_clip: &Weak<Clip>,
     time_mapping: time::Mapping,
     ui_mapping: ui::Mapping,
     offset: Offset,
     cursor: Instant,
 ) -> View {
-    View::size_informed(move |size| {
+    let track_reference = Arc::downgrade(&track);
+
+    View::size_informed(closure!([clone selected_clip] move |size| {
         let overview_start = (-offset).rectify();
         let overview_period = ui_mapping.period(overview_start, size.width);
 
-        let time_mapping = time_mapping.clone();
-        let cursor_mapping = ui_mapping.clone();
-        let ui_mapping = ui_mapping.clone();
-        View::Layers(vec![
-            feed(
-                Direction::Right,
-                offset,
-                feed_generator(
-                    Arc::clone(&track),
-                    selected_clip_index,
-                    time_mapping,
-                    ui_mapping,
-                    offset,
-                    overview_period,
-                ),
-            ),
-            cursor_window(cursor, cursor_mapping, offset),
-        ])
-    })
-    .on_click(OnClick::new(move |_, _, actions| {
-        // TODO: move, select or open clips
+        let generator = feed_generator(
+            &track,
+            &selected_clip,
+            &time_mapping,
+            &ui_mapping,
+            offset,
+            overview_period,
+        );
 
-        actions.send(Action::SelectTrack(index));
+        View::Layers(vec![
+            feed(Direction::Right, offset, generator),
+            cursor_window(cursor, &ui_mapping, offset),
+        ])
     }))
+    .on_click(OnClick::from(Action::SelectTrack(track_reference)))
     .context(Menu::track_overview())
 }
 
 /// Returns a function for generating clip-overviews from a feed index.
 fn feed_generator(
-    track: Arc<Track>,
-    selected_clip_index: usize,
-    time_mapping: time::Mapping,
-    ui_mapping: ui::Mapping,
+    track: &Arc<Track>,
+    selected_clip: &Weak<Clip>,
+    time_mapping: &time::Mapping,
+    ui_mapping: &ui::Mapping,
     offset: Offset,
     overview_period: Period,
-) -> impl Fn(isize) -> Quotated {
-    move |index| {
+) -> impl Fn(isize) -> Quotated + 'static {
+    closure!([clone track, clone selected_clip, clone time_mapping, clone ui_mapping] move |index| {
         let Ok(index) = usize::try_from(index) else {
             return View::Empty.quotated(offset.abs());
         };
@@ -93,6 +86,7 @@ fn feed_generator(
         let Some((start, clip)) = track.clips.iter().nth(clip_index) else {
             return View::Empty.fill_remaining();
         };
+        let clip_reference = Arc::downgrade(clip);
 
         let clip_period = clip.period(*start, &time_mapping);
         let clip_width = ui_mapping.width_of(clip_period);
@@ -101,17 +95,16 @@ fn feed_generator(
             return View::Empty.quotated(clip_width);
         };
 
-        let selected = selected_clip_index == clip_index;
+        let selected = selected_clip.as_ptr() == clip_reference.as_ptr();
 
         clip::overview(
             Arc::clone(clip),
-            index,
-            index,
+            Arc::downgrade(&track),
             selected,
             clip_period,
             visible_period,
             time_mapping.clone(),
         )
         .quotated(clip_width)
-    }
+    })
 }

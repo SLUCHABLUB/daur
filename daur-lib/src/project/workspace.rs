@@ -3,16 +3,16 @@ use crate::time::Instant;
 use crate::track::{Track, overview, settings};
 use crate::ui::{NonZeroLength, Offset};
 use crate::view::{Direction, OnClick, ToText as _, View, ruler};
-use crate::{UserInterface, time, ui};
+use crate::{Clip, UserInterface, time, ui};
 use arcstr::literal;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
 #[expect(clippy::too_many_arguments, reason = "todo")]
 pub(crate) fn workspace<Ui: UserInterface>(
     overview_offset: Offset,
-    selected_track_index: usize,
-    selected_clip_index: usize,
+    selected_track: &Weak<Track>,
+    selected_clip: &Weak<Clip>,
     track_settings_width: NonZeroLength,
     tracks: Vec<Arc<Track>>,
     time_mapping: time::Mapping,
@@ -22,13 +22,14 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let mut track_settings = Vec::new();
     let mut track_overviews = Vec::new();
 
-    for (track_index, track) in tracks.into_iter().enumerate() {
-        let selected = track_index == selected_track_index;
-        track_settings.push(settings(&track, track_index, selected));
+    for track in tracks {
+        let track_reference = Arc::downgrade(&track);
+        let selected = selected_track.as_ptr() == track_reference.as_ptr();
+
+        track_settings.push(settings(&track, selected));
         track_overviews.push(overview(
             track,
-            track_index,
-            selected_clip_index,
+            selected_clip,
             time_mapping.clone(),
             ui_mapping.clone(),
             overview_offset,
@@ -46,8 +47,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     // A "dummy-track" for the row with the add-track button
     track_overviews.push(overview(
         Arc::new(Track::new()),
-        usize::MAX,
-        selected_clip_index,
+        selected_clip,
         time_mapping,
         ui_mapping.clone(),
         overview_offset,

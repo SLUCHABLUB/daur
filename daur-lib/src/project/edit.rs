@@ -12,6 +12,7 @@ use arcstr::{ArcStr, literal};
 use hound::WavReader;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
+use std::sync::Weak;
 use thiserror::Error;
 
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
@@ -48,7 +49,7 @@ pub struct NoExtensionError {
 pub enum Edit {
     /// Inserts the clip into the selected track at the cursor
     AddClip {
-        track: usize,
+        track: Weak<Track>,
         position: Instant,
         clip: Clip,
     },
@@ -62,7 +63,7 @@ impl Edit {
     pub fn from_action(
         action: Action,
         cursor: Instant,
-        selected_track: usize,
+        selected_track: Weak<Track>,
     ) -> Result<Edit, Popup> {
         Ok(match action {
             Action::AddNotes => Edit::AddClip {
