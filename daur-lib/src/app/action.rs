@@ -17,9 +17,7 @@ pub enum Action {
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
-    /// Selects the track with the given index
-    SelectTrack(Weak<Track>),
-    /// Selects a clip
+    /// Selects a clip and track
     SelectClip {
         /// The index of the track in which the clip resides
         track: Weak<Track>,
@@ -119,9 +117,6 @@ impl Action {
                 if let Err(popup) = result {
                     app.popups.open(&popup, &app.ui);
                 }
-            }
-            Action::SelectTrack(index) => {
-                app.selected_track.set(index);
             }
             Action::SelectClip { track, clip, .. } => {
                 app.selected_track.set(track);

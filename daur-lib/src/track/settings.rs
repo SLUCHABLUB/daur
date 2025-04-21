@@ -2,11 +2,14 @@ use crate::app::Action;
 use crate::track::Track;
 use crate::view::{OnClick, ToText as _, View};
 use arcstr::literal;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 /// Returns the track settings.
 pub fn settings(track: &Arc<Track>, selected: bool) -> View {
-    let on_click = OnClick::from(Action::SelectTrack(Arc::downgrade(track)));
+    let on_click = OnClick::from(Action::SelectClip {
+        track: Arc::downgrade(track),
+        clip: Weak::new(),
+    });
 
     literal!("TODO")
         .centred()

@@ -13,7 +13,7 @@ use crate::audio::SampleRate;
 use crate::time::{Instant, Mapping};
 use arcstr::{ArcStr, literal};
 use std::collections::BTreeMap;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 
@@ -57,6 +57,14 @@ impl Track {
                 .collect(),
             offset,
         )
+    }
+
+    #[must_use]
+    pub fn track_mut(&mut self, weak: &Weak<Clip>) -> Option<&mut Clip> {
+        self.clips
+            .values_mut()
+            .find(|arc| Arc::as_ptr(arc) == Weak::as_ptr(weak))
+            .map(Arc::make_mut)
     }
 }
 

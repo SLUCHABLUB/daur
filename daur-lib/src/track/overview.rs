@@ -38,7 +38,10 @@ pub fn overview(
             cursor_window(cursor, &ui_mapping, offset),
         ])
     }))
-    .on_click(OnClick::from(Action::SelectTrack(track_reference)))
+    .on_click(OnClick::from(Action::SelectClip {
+        track: track_reference,
+        clip: Weak::new(),
+    }))
     .context(Menu::track_overview())
 }
 

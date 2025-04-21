@@ -19,7 +19,7 @@ use crate::ui::Grid;
 use crate::{Changing, time, ui};
 use arcstr::{ArcStr, literal};
 use getset::CloneGetters;
-use std::sync::Arc;
+use std::sync::{Arc, Weak};
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
@@ -62,5 +62,13 @@ impl Project {
             time_signature: self.time_signature(),
             grid,
         }
+    }
+
+    #[must_use]
+    pub fn track_mut(&mut self, weak: &Weak<Track>) -> Option<&mut Track> {
+        self.tracks
+            .iter_mut()
+            .find(|arc| Arc::as_ptr(arc) == Weak::as_ptr(weak))
+            .map(Arc::make_mut)
     }
 }

@@ -128,7 +128,9 @@ impl Manager {
                 position,
                 clip,
             } => {
-                Arc::make_mut(&mut track.upgrade().ok_or(NoTrackSelected)?)
+                project
+                    .track_mut(&track)
+                    .ok_or(NoTrackSelected)?
                     .clips
                     .insert(position, Arc::new(clip));
             }
