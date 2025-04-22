@@ -1,11 +1,13 @@
-//! Types pertaining to [`Menu`].
+//! Types pertaining to context menus.
 
+use crate::ui::{Point, Rectangle};
 use crate::view::{Direction, OnClick, View};
 use crate::{Action, Popup, UserInterface, project};
 use arcstr::{ArcStr, literal};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::path::Path;
+use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");
@@ -19,7 +21,8 @@ pub fn open_import_audio_popup() -> Action {
     Action::OpenPopup(Popup::explorer(IMPORT_AUDIO, action))
 }
 
-/// A context (right-click) menu.
+/// A context (right-click) menu specification.
+#[derive(Clone)]
 pub struct Menu {
     /// The buttons in the menu.
     pub buttons: Vec<(ArcStr, Action)>,
@@ -39,14 +42,23 @@ impl Menu {
     }
 
     /// Returns the view of the menu.
-    pub fn view<Ui: UserInterface>(&self) -> View {
+    pub fn into_view<Ui: UserInterface>(self) -> View {
         View::balanced_stack::<Ui, _>(
             Direction::Down,
-            self.buttons.iter().map(|(label, action)| {
-                View::simple_button(label.clone(), OnClick::from(action.clone()))
-            }),
+            self.buttons
+                .into_iter()
+                .map(|(label, action)| View::simple_button(label, OnClick::from(action))),
         )
         .bordered()
+    }
+
+    /// Constructs a new [`MenuInstance`].
+    #[must_use]
+    pub fn instantiate<Ui: UserInterface>(self, position: Point) -> MenuInstance {
+        let view = Arc::new(self.into_view::<Ui>());
+        let size = view.minimum_size::<Ui>();
+        let area = Rectangle { position, size };
+        MenuInstance { area, view }
     }
 }
 
@@ -59,5 +71,24 @@ impl Debug for Menu {
         }
 
         map.finish()
+    }
+}
+
+/// An instance of a context menu.
+#[derive(Clone, Debug)]
+pub struct MenuInstance {
+    /// The area of the context menu.
+    pub area: Rectangle,
+    /// The view of the context menu.
+    pub view: Arc<View>,
+}
+
+impl MenuInstance {
+    /// Converts the context menu into a [window view](View::Window).
+    pub fn into_view(self) -> View {
+        View::Window {
+            area: self.area,
+            view: self.view,
+        }
     }
 }

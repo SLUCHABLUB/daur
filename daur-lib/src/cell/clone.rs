@@ -1,0 +1,41 @@
+use crate::lock::Lock;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+
+/// A cell containing a clonable value.
+pub struct CloneCell<T> {
+    lock: Lock<T>,
+}
+
+impl<T: Clone> CloneCell<T> {
+    /// Construct a new cell from a pointer.
+    pub const fn new(value: T) -> CloneCell<T> {
+        CloneCell {
+            lock: Lock::new(value),
+        }
+    }
+
+    /// Return a pointer to the value.
+    pub fn get(&self) -> T {
+        self.lock.read().clone()
+    }
+
+    /// Sets the pointer to a new value.
+    pub fn set(&self, value: T) {
+        *self.lock.write() = value;
+    }
+}
+
+impl<T: Clone> Clone for CloneCell<T> {
+    fn clone(&self) -> Self {
+        CloneCell {
+            lock: Lock::new(self.get()),
+        }
+    }
+}
+
+impl<T: Clone + Debug> Debug for CloneCell<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.get().fmt(f)
+    }
+}

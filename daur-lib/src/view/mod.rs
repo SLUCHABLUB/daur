@@ -26,7 +26,7 @@ pub use ruler::ruler;
 pub use text::ToText;
 
 use crate::context::Menu;
-use crate::ui::{Length, Point, Rectangle, Size};
+use crate::ui::{Length, Rectangle, Size};
 use crate::view::minimum_size::minimum_size;
 use crate::{ArcCell, Colour, Ratio, UserInterface};
 use arcstr::ArcStr;
@@ -79,22 +79,6 @@ pub enum View {
     CursorWindow {
         /// How far from the left the cursor is positioned.
         offset: Length,
-    },
-    /// A view that responds to being dragged on by the mouse.
-    Draggable {
-        /// The function to be called when the mouse moves from or in the view whilst being held down.
-        ///
-        /// # Arguments
-        ///
-        /// - [`Rectangle`]: The area of the view.
-        /// - [`Point`]: The new mouse position.
-        #[debug(skip)]
-        update: Box<dyn Fn(Rectangle, Point) + Send + Sync>,
-        /// The function to be called when the mouse button is released.
-        #[debug(skip)]
-        release: Box<dyn Fn() + Send + Sync>,
-        /// The view.
-        view: Box<View>,
     },
     /// An empty (transparent) view.
     #[default]
@@ -150,6 +134,13 @@ pub enum View {
         highlighted: bool,
         /// The view.
         view: Box<View>,
+    },
+    /// A window which takes up part of the screen.
+    Window {
+        /// The area of the window.
+        area: Rectangle,
+        /// The view of the window.
+        view: Arc<View>,
     },
 }
 

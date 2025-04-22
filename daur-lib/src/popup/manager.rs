@@ -1,37 +1,45 @@
 use crate::UserInterface;
 use crate::lock::Lock;
-use crate::popup::{Id, Popup};
-use std::collections::HashMap;
+use crate::popup::{Id, Instance, Popup};
 
 /// A manager for the open [popups](Popup).
 #[derive(Debug)]
-pub struct Manager<Ui: UserInterface> {
-    handles: Lock<HashMap<Id, Ui::PopupHandle>>,
+pub struct Manager {
+    popups: Lock<Vec<Instance>>,
 }
 
-impl<Ui: UserInterface> Manager<Ui> {
+impl Manager {
     /// Constructs a new manager with no popups.
     #[must_use]
     pub fn new() -> Self {
         Manager {
-            handles: Lock::new(HashMap::new()),
+            popups: Lock::new(Vec::new()),
         }
     }
 
     /// Opens a new [popup](Popup).
-    pub fn open(&self, popup: &Popup, ui: &Ui) {
+    pub fn open<Ui: UserInterface>(&self, popup: &Popup, ui: &Ui) {
         let id = Id::generate();
-        let handle = ui.open_popup(popup.title(), popup.view::<Ui>(id), id);
-        self.handles.write().insert(id, handle);
+
+        self.popups.write().push(popup.instantiate::<Ui>(id, ui));
     }
 
     /// Closes a [popup](Popup).
     pub fn close(&self, popup: Id) {
-        self.handles.write().remove(&popup);
+        let mut popups = self.popups.write();
+
+        if let Some(index) = popups.iter().position(|instance| instance.id == popup) {
+            let popup = popups.remove(index);
+            drop(popup);
+        }
+    }
+
+    pub(crate) fn to_vec(&self) -> Vec<Instance> {
+        self.popups.read().clone()
     }
 }
 
-impl<Ui: UserInterface> Default for Manager<Ui> {
+impl Default for Manager {
     fn default() -> Self {
         Self::new()
     }

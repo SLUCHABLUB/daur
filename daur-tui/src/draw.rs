@@ -1,6 +1,7 @@
 use crate::canvas::Context;
 use crate::convert::{
-    approximate_colour, length_to_u16, ratatui_to_size, rect_to_rectangle, rectangle_to_rect,
+    approximate_colour, length_to_u16, position_to_point, rect_to_rectangle, rectangle_to_rect,
+    to_size,
 };
 use crate::tui::Tui;
 use daur::view::{Alignment, Painter, View};
@@ -39,23 +40,7 @@ pub fn spawn_draw_thread(
 
                 app.ui.window_area.set(area);
 
-                render(&app.main_view(), area, buffer, app.ui.mouse_position.get());
-
-                let popups = app.ui.popups.read();
-
-                for (_id, area, view) in popups.iter() {
-                    Clear.render(*area, buffer);
-                    render(view, *area, buffer, app.ui.mouse_position.get());
-                }
-
-                drop(popups);
-
-                if let Some(menu) = app.ui.context_menu.get() {
-                    let (area, view) = &*menu;
-
-                    Clear.render(*area, buffer);
-                    render(view, *area, buffer, app.ui.mouse_position.get());
-                }
+                render(&app.view(), area, buffer, app.ui.mouse_position.get());
             });
 
             if let Err(error) = result {
@@ -67,6 +52,8 @@ pub fn spawn_draw_thread(
 
 type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
+// TODO: use visitor
+#[expect(clippy::too_many_lines, reason = "todo")]
 fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position) {
     if try_render_bordered_title(view, area, buffer, mouse_position) {
         return;
@@ -86,7 +73,7 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         } => {
             render_canvas(*background, painter, area, buffer);
         }
-        View::Contextual { view, .. } | View::Draggable { view, .. } | View::Sized { view, .. } => {
+        View::Contextual { view, .. } | View::Sized { view, .. } => {
             render(view, area, buffer, mouse_position);
         }
         View::CursorWindow { offset } => {
@@ -130,7 +117,7 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         View::Rule { index, cells } => render_rule(*index, *cells, area, buffer),
         View::SizeInformed(generator) => {
             render(
-                &generator(ratatui_to_size(area.as_size())),
+                &generator(to_size(area.as_size())),
                 area,
                 buffer,
                 mouse_position,
@@ -160,7 +147,7 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
         } => {
             let set = if *highlighted { THICK } else { PLAIN };
 
-            let block = Block::bordered()
+            let block = Block::new()
                 .borders(Borders::TOP)
                 .border_set(set)
                 .title(title.as_str());
@@ -168,8 +155,18 @@ fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position
             let inner = block.inner(area);
 
             block.render(area, buffer);
-
             render(view, inner, buffer, mouse_position);
+        }
+        View::Window {
+            area: window_area,
+            view,
+        } => {
+            //  Offset the window area.
+            let area = *window_area + position_to_point(area.as_position()).position();
+            let area = rectangle_to_rect(area);
+
+            Clear.render(area, buffer);
+            render(view, area, buffer, mouse_position);
         }
     }
 }
@@ -236,7 +233,7 @@ fn render_canvas(background: Colour, painter: &Painter, area: Rect, buffer: &mut
         .paint(|context| {
             painter(&mut Context {
                 context,
-                size: ratatui_to_size(area.as_size()),
+                size: to_size(area.as_size()),
             });
         })
         .render(area, buffer);

@@ -19,8 +19,6 @@ mod size;
 mod vector;
 
 use crate::View;
-use crate::popup::Id;
-use arcstr::ArcStr;
 
 /// A user interface for the DAW.
 #[doc(hidden)]
@@ -49,8 +47,11 @@ pub trait UserInterface {
     /// Exits the DAW.
     ///
     /// It is OK for implementations not to do anything or restart when this is run.
-    /// This may be the case if the application, for example, can't close itself.
+    /// This may be the case if the application, for example, cannot close itself.
     fn exit(&self);
+
+    /// Returns the current screen size.
+    fn size(&self) -> Size;
 
     /// Returns the height of the string
     #[must_use]
@@ -63,12 +64,4 @@ pub trait UserInterface {
     /// Returns the height of the title if it was to be applied to the view.
     #[must_use]
     fn title_height(title: &str, titled: &View) -> Length;
-
-    /// A [RAII](wikipedia.org/wiki/RAII) handle to a popup.
-    /// Dropping it should close the popup.
-    type PopupHandle;
-
-    /// Opens a popup.
-    #[must_use]
-    fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle;
 }

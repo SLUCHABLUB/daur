@@ -3,6 +3,7 @@ use crate::ui::{Length, Point, Size, Vector};
 use crate::view::{Direction, Quotum};
 use std::cmp::{max, min};
 use std::num::NonZeroU64;
+use std::ops::{Add, AddAssign};
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]
@@ -110,5 +111,20 @@ impl Rectangle {
                 size: Size::from_parallel_orthogonal(parallel, orthogonal, direction),
             })
         })
+    }
+}
+
+impl Add<Vector> for Rectangle {
+    type Output = Rectangle;
+
+    fn add(mut self, rhs: Vector) -> Self::Output {
+        self += rhs;
+        self
+    }
+}
+
+impl AddAssign<Vector> for Rectangle {
+    fn add_assign(&mut self, rhs: Vector) {
+        self.position += rhs;
     }
 }

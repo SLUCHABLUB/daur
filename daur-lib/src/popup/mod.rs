@@ -1,15 +1,18 @@
 //! Types pertaining to [`Popup`].
 
 mod id;
+mod instance;
 mod manager;
 
 pub use id::Id;
+pub use instance::Instance;
 pub use manager::Manager;
 
 use crate::key::Key;
 use crate::time::Instant;
+use crate::ui::Rectangle;
 use crate::view::{Alignment, Direction, OnClick, ToText as _, multi, single};
-use crate::{Action, ArcCell, Cell, ToArcStr as _, UserInterface, View, project};
+use crate::{Action, ArcCell, Cell, Ratio, ToArcStr as _, UserInterface, View, project};
 use arcstr::{ArcStr, format, literal};
 use closure::closure;
 use derive_more::Debug;
@@ -75,8 +78,13 @@ impl Popup {
         }
     }
 
-    /// Returns the popups [view](View).
+    /// Returns the popups [view](View) with a border and title.
     pub fn view<Ui: UserInterface>(&self, id: Id) -> View {
+        self.inner_view::<Ui>(id).bordered().titled(self.title())
+    }
+
+    /// Returns the popups inner [view](View), with no border and title.
+    pub fn inner_view<Ui: UserInterface>(&self, id: Id) -> View {
         match self {
             Popup::ButtonPanel { title: _, buttons } => View::balanced_stack::<Ui, _>(
                 Direction::Down,
@@ -175,6 +183,18 @@ impl Popup {
                 )
             }
         }
+    }
+
+    pub fn instantiate<Ui: UserInterface>(&self, id: Id, ui: &Ui) -> Instance {
+        let view = Arc::new(self.view::<Ui>(id));
+
+        let size = view.minimum_size::<Ui>();
+        let centre = (ui.size().diagonal() * Ratio::HALF).point();
+        let offset = -(size.diagonal() * Ratio::HALF);
+        let position = centre + offset;
+        let area = Rectangle { position, size };
+
+        Instance { id, area, view }
     }
 }
 

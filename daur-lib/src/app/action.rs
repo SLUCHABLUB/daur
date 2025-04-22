@@ -1,6 +1,7 @@
+use crate::context::Menu;
 use crate::popup::{Id, Popup};
 use crate::time::Instant;
-use crate::ui::{Length, NonZeroLength};
+use crate::ui::{Length, NonZeroLength, Point};
 use crate::{App, Clip, Track, UserInterface, project};
 use derive_more::Debug;
 use rodio::Device;
@@ -10,10 +11,20 @@ use std::sync::Weak;
 /// An action to take on the app
 #[derive(Clone, Debug)]
 pub enum Action {
-    /// Opens the popup
+    /// Opens a popup.
     OpenPopup(Popup),
-    /// Closes the popup
+    /// Closes a popup.
     ClosePopup(Id),
+    /// Opens a context menu.
+    OpenContextMenu {
+        /// The context menu to open.
+        menu: Menu,
+        /// The position at which to open the context menu.
+        /// (The mouse position.)
+        position: Point,
+    },
+    /// Opens the context menu.
+    CloseContextMenu,
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
@@ -62,9 +73,19 @@ impl Action {
     /// Take the action on the app
     pub fn take<Ui: UserInterface>(self, app: &App<Ui>) {
         match self {
+            Action::OpenPopup(popup) => {
+                app.popups.open(&popup, &app.ui);
+            }
             Action::ClosePopup(popup) => {
                 app.popups.close(popup);
             }
+            Action::OpenContextMenu { menu, position } => {
+                app.context_menu.set(Some(menu.instantiate::<Ui>(position)));
+            }
+            Action::CloseContextMenu => {
+                app.context_menu.set(None);
+            }
+
             Action::Exit => app.ui.exit(),
             Action::MoveCursor(instant) => {
                 app.cursor.set(instant);
@@ -93,9 +114,6 @@ impl Action {
                 app.piano_roll_settings.set(settings);
             }
 
-            Action::OpenPopup(popup) => {
-                app.popups.open(&popup, &app.ui);
-            }
             Action::Pause => {
                 app.stop_playback();
             }

@@ -21,9 +21,7 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         | View::FileSelector { .. }
         | View::SizeInformed(_)
         | View::Solid(_) => Size::ZERO,
-        View::Contextual { menu: _, view } | View::Draggable { view, .. } => {
-            view.minimum_size::<Ui>()
-        }
+        View::Contextual { menu: _, view } => view.minimum_size::<Ui>(),
         View::Generator(generator) => generator().minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {
             let default = default.minimum_size::<Ui>();
@@ -84,5 +82,6 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
 
             size
         }
+        View::Window { area: _, view } => view.minimum_size::<Ui>(),
     }
 }

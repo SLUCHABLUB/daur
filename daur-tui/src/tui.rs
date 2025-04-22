@@ -1,12 +1,8 @@
-use crate::convert::{point_to_position, rect_to_rectangle, size_to_ratatui};
-use crate::popup_handle::PopupHandle;
-use daur::arcstr::ArcStr;
-use daur::popup::Id;
-use daur::ui::{Length, NonZeroLength};
-use daur::{Cell, Lock, Observed, OptionArcCell, Ratio, UserInterface, View};
+use crate::convert::to_size;
+use daur::ui::{Length, NonZeroLength, Size};
+use daur::{Cell, Observed, UserInterface, View};
 use ratatui::layout::{Position, Rect};
 use saturating_cast::SaturatingCast as _;
-use std::sync::Arc;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 macro_rules! non_zero_length {
@@ -18,9 +14,6 @@ macro_rules! non_zero_length {
 }
 
 pub struct Tui {
-    pub popups: Arc<Lock<Vec<(Id, Rect, View)>>>,
-    pub context_menu: OptionArcCell<(Rect, View)>,
-
     pub should_exit: Observed<bool>,
     pub should_redraw: Observed<bool>,
     pub mouse_position: Cell<Position>,
@@ -40,6 +33,10 @@ impl UserInterface for Tui {
 
     fn exit(&self) {
         self.should_exit.set(true);
+    }
+
+    fn size(&self) -> Size {
+        to_size(self.window_area.get().as_size())
     }
 
     fn string_height(string: &str) -> Length {
@@ -67,34 +64,11 @@ impl UserInterface for Tui {
             Length::PIXEL
         }
     }
-
-    type PopupHandle = PopupHandle;
-
-    fn open_popup(&self, title: ArcStr, view: View, id: Id) -> Self::PopupHandle {
-        let view = view.bordered().titled(title);
-
-        let window_area = rect_to_rectangle(self.window_area.get());
-
-        let size = view.minimum_size::<Tui>();
-        let position = point_to_position(
-            (window_area.bottom_right().position() * Ratio::HALF - size.diagonal() * Ratio::HALF)
-                .point(),
-        );
-
-        let area = Rect::from((position, size_to_ratatui(size)));
-
-        self.popups.write().push((id, area, view));
-
-        PopupHandle::new(Arc::clone(&self.popups), id)
-    }
 }
 
 impl Default for Tui {
     fn default() -> Self {
         Tui {
-            popups: Arc::new(Lock::new(Vec::new())),
-            context_menu: OptionArcCell::none(),
-
             should_exit: Observed::new(false),
             should_redraw: Observed::new(true),
             mouse_position: Cell::new(Position::ORIGIN),

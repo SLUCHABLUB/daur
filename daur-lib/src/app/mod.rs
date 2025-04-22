@@ -2,13 +2,14 @@ mod action;
 
 pub use action::Action;
 
-use crate::cell::WeakCell;
+use crate::cell::{CloneCell, WeakCell};
+use crate::context::MenuInstance;
 use crate::observed::Observed;
 use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::piano_roll::Settings;
-use crate::view::{Direction, Quotated, View, piano_roll};
+use crate::view::{Direction, OnClick, Quotated, View, piano_roll};
 use crate::{
     ArcCell, Cell, Clip, OptionArcCell, Project, Track, UserInterface, popup, project, ui,
 };
@@ -43,7 +44,9 @@ pub struct App<Ui: UserInterface> {
     pub device: OptionArcCell<Device>,
 
     /// The popup manager.
-    pub popups: popup::Manager<Ui>,
+    pub popups: popup::Manager,
+    /// The context menu.
+    pub context_menu: CloneCell<Option<MenuInstance>>,
 
     /// The height of the project bar.
     pub project_bar_height: NonZeroLength,
@@ -85,6 +88,7 @@ impl<Ui: UserInterface> App<Ui> {
             device,
 
             popups: popup::Manager::new(),
+            context_menu: CloneCell::new(None),
 
             project_bar_height: Ui::PROJECT_BAR_HEIGHT,
             track_settings_width: Ui::TRACK_SETTINGS_WITH,
@@ -148,7 +152,7 @@ impl<Ui: UserInterface> App<Ui> {
     }
 
     /// The main view of the app behind any popups
-    pub fn main_view(&self) -> View {
+    fn main_view(&self) -> View {
         View::Stack {
             direction: Direction::Down,
             elements: vec![
@@ -181,6 +185,31 @@ impl<Ui: UserInterface> App<Ui> {
                         .quotated(height.get())
                     }),
             ],
+        }
+    }
+
+    fn view_with_popups(&self) -> View {
+        let mut layers = vec![self.main_view()];
+
+        for instance in self.popups.to_vec() {
+            layers.push(instance.into_view());
+        }
+
+        View::Layers(layers)
+    }
+
+    /// The view of the app.
+    ///
+    /// This includes popups and the context menu.
+    pub fn view(&self) -> View {
+        if let Some(instance) = self.context_menu.get() {
+            View::Layers(vec![
+                self.view_with_popups()
+                    .on_click(OnClick::from(Action::CloseContextMenu)),
+                instance.into_view(),
+            ])
+        } else {
+            self.view_with_popups()
         }
     }
 }

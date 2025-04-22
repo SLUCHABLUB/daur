@@ -19,31 +19,17 @@ pub fn position_to_point(position: Position) -> Point {
     }
 }
 
-pub fn point_to_position(point: Point) -> Position {
-    Position {
-        x: length_to_u16(point.x),
-        y: length_to_u16(point.y),
-    }
-}
-
-pub fn ratatui_to_size(size: RatatuiSize) -> Size {
+pub fn to_size(size: RatatuiSize) -> Size {
     Size {
         width: u16_to_length(size.width),
         height: u16_to_length(size.height),
     }
 }
 
-pub fn size_to_ratatui(size: Size) -> RatatuiSize {
-    RatatuiSize {
-        width: length_to_u16(size.width),
-        height: length_to_u16(size.height),
-    }
-}
-
 pub fn rect_to_rectangle(rect: Rect) -> Rectangle {
     Rectangle {
         position: position_to_point(rect.as_position()),
-        size: ratatui_to_size(rect.as_size()),
+        size: to_size(rect.as_size()),
     }
 }
 
