@@ -18,7 +18,7 @@ const OPEN_PIANO_ROLL: ArcStr = literal!("open piano roll");
 pub fn open_import_audio_popup() -> Action {
     let action = move |file: &Path| Action::import_audio(file);
 
-    Action::OpenPopup(Popup::explorer(IMPORT_AUDIO, action))
+    Action::OpenPopup(Popup::file_selector(IMPORT_AUDIO, action))
 }
 
 /// A context (right-click) menu specification.

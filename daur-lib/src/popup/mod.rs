@@ -53,8 +53,8 @@ pub enum Popup {
 }
 
 impl Popup {
-    /// Constructs a new [file-explorer popup](Popup::FileSelector) starting at the current dir.
-    pub fn explorer<A: Fn(&Path) -> Action + Send + Sync + 'static>(
+    /// Constructs a new [file-section popup](Popup::FileSelector) starting at the current dir.
+    pub fn file_selector<A: Fn(&Path) -> Action + Send + Sync + 'static>(
         title: ArcStr,
         action: A,
     ) -> Popup {
