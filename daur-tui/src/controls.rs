@@ -17,7 +17,7 @@ pub fn controls() -> HashMap<String, Action> {
         ),
         (
             (KeyModifiers::NONE, KeyCode::Char('p')),
-            Action::OpenPianoRoll,
+            Action::TogglePianoRoll,
         ),
         ((KeyModifiers::NONE, KeyCode::Tab), Action::ScrollLeft),
         ((KeyModifiers::SHIFT, KeyCode::BackTab), Action::ScrollRight),

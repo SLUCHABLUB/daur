@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");
-const OPEN_PIANO_ROLL: ArcStr = literal!("open piano roll");
+const TOGGLE_PIANO_ROLL: ArcStr = literal!("toggle piano roll");
 
 /// Opens a popup for importing audio.
 #[must_use]
@@ -36,7 +36,7 @@ impl Menu {
             buttons: vec![
                 (IMPORT_AUDIO, open_import_audio_popup()),
                 (ADD_NOTES, Action::Project(project::Action::AddNotes)),
-                (OPEN_PIANO_ROLL, Action::OpenPianoRoll),
+                (TOGGLE_PIANO_ROLL, Action::TogglePianoRoll),
             ],
         }
     }

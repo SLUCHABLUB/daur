@@ -37,7 +37,7 @@ pub enum Action {
     },
 
     /// Sets the piano roll's height to half the screen
-    OpenPianoRoll,
+    TogglePianoRoll,
     /// Sets the piano roll's height
     SetPianoRollHeight(Length),
 
@@ -104,8 +104,14 @@ impl Action {
                     .set(app.overview_offset.get() + app.grid.cell_width.get());
             }
 
-            Action::OpenPianoRoll => {
-                Action::SetPianoRollHeight(app.ui.size().height * Ratio::HALF).take(app);
+            Action::TogglePianoRoll => {
+                let mut settings = app.piano_roll_settings.get();
+                settings.height = if settings.height.is_none() {
+                    NonZeroLength::from_length(app.ui.size().height * Ratio::HALF)
+                } else {
+                    None
+                };
+                app.piano_roll_settings.set(settings);
             }
             Action::SetPianoRollHeight(height) => {
                 let mut settings = app.piano_roll_settings.get();
