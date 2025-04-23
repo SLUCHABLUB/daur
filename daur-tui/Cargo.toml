@@ -5,7 +5,7 @@ authors = ["SLUCHABLUB"]
 edition = "2024"
 
 [dependencies]
-crossterm = { version = "0.28.1", features = ["serde"] }
+crossterm = { version = "0.29.0", features = ["serde"] }
 daur = { path = "../daur-lib" }
 ratatui = { version = "0.29.0", features = ["unstable-rendered-line-info"] }
 # TODO: remove when "never_type" gets stabilised
