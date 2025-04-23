@@ -5,22 +5,20 @@ use std::cmp::max;
 /// See [`View::minimum_size`]
 pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
     match view {
-        View::Bordered { thick: _, content } => {
-            let mut size = content.minimum_size::<Ui>();
+        View::Bordered { thick: _, view } => {
+            let mut size = view.minimum_size::<Ui>();
             size.height += Ui::BORDER_THICKNESS * Ratio::integer(2);
             size.width += Ui::BORDER_THICKNESS * Ratio::integer(2);
             size
         }
-        View::Button {
-            on_click: _,
-            content,
-        } => content.minimum_size::<Ui>(),
         View::Canvas { .. }
         | View::CursorWindow { .. }
         | View::Empty
         | View::SizeInformed(_)
         | View::Solid(_) => Size::ZERO,
-        View::Contextual { menu: _, view } => view.minimum_size::<Ui>(),
+        View::Clickable { on_click: _, view } | View::Contextual { menu: _, view } => {
+            view.minimum_size::<Ui>()
+        }
         View::Generator(generator) => generator().minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {
             let default = default.minimum_size::<Ui>();

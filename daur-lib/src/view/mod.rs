@@ -58,14 +58,7 @@ pub enum View {
         /// Whether the border is **thick**.
         thick: bool,
         /// The bordered view.
-        content: Box<Self>,
-    },
-    /// A clickable view.
-    Button {
-        /// The action to take when the button is clicked
-        on_click: OnClick,
-        /// The default label for the button
-        content: Box<Self>,
+        view: Box<Self>,
     },
     /// A canvas on which stuff can be drawn.
     /// See [`Context`].
@@ -75,6 +68,13 @@ pub enum View {
         /// The function that paints the canvas.
         #[debug(skip)]
         painter: Box<Painter>,
+    },
+    /// A clickable view.
+    Clickable {
+        /// The action to take when the button is clicked
+        on_click: OnClick,
+        /// The default label for the button
+        view: Box<Self>,
     },
     /// A view with a custom context-menu.
     Contextual {
@@ -110,7 +110,7 @@ pub enum View {
         cells: NonZeroU64,
     },
     /// A view with a custom minimum size
-    Sized { view: Box<View>, minimum_size: Size },
+    Sized { minimum_size: Size, view: Box<View> },
     /// A view that needs to know its container's size.
     SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
     /// A solid colour.
@@ -152,7 +152,7 @@ impl View {
     pub fn bordered(self) -> Self {
         View::Bordered {
             thick: false,
-            content: Box::new(self),
+            view: Box::new(self),
         }
     }
 
@@ -172,8 +172,8 @@ impl View {
         minimum_size.height += Ui::title_height(&title, &self);
 
         View::Sized {
-            view: Box::new(self.titled(title)),
             minimum_size,
+            view: Box::new(self.titled(title)),
         }
     }
 
@@ -181,10 +181,10 @@ impl View {
     ///
     /// Also sets highlights the title if the view is [titled](View::Titled).
     pub fn with_thickness(self, thickness: bool) -> Self {
-        if let View::Bordered { thick: _, content } = self {
+        if let View::Bordered { thick: _, view } = self {
             View::Bordered {
                 thick: thickness,
-                content,
+                view,
             }
         } else if let View::Titled {
             title,
@@ -267,11 +267,11 @@ impl View {
         }
 
         View::Sized {
+            minimum_size,
             view: Box::new(View::Stack {
                 direction,
                 elements,
             }),
-            minimum_size,
         }
     }
 

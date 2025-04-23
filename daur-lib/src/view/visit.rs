@@ -20,11 +20,11 @@ pub trait Visitor {
     /// Visits a bordered view.
     fn visit_border(&mut self, area: Rectangle, thick: bool);
 
-    /// Visits a clickable view.
-    fn visit_button(&mut self, area: Rectangle, on_click: &OnClick);
-
     /// Visits a canvas.
     fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter);
+
+    /// Visits a clickable view.
+    fn visit_clickable(&mut self, area: Rectangle, on_click: &OnClick);
 
     /// Visits a view with a context menu.
     fn visit_contextual(&mut self, area: Rectangle, menu: &Menu);
@@ -88,18 +88,18 @@ impl View {
         mouse_position: Point,
     ) {
         match self {
-            View::Bordered { thick, content } => compound!(
+            View::Bordered { thick, view } => compound!(
                 visitor.visit_border(area, *thick),
-                content.accept(visitor, inner_area::<V::Ui>(area), mouse_position),
-            ),
-            View::Button { on_click, content } => compound!(
-                visitor.visit_button(area, on_click),
-                content.accept(visitor, area, mouse_position),
+                view.accept(visitor, inner_area::<V::Ui>(area), mouse_position),
             ),
             View::Canvas {
                 background,
                 painter,
             } => visitor.visit_canvas(area, *background, painter),
+            View::Clickable { on_click, view } => compound!(
+                visitor.visit_clickable(area, on_click),
+                view.accept(visitor, area, mouse_position),
+            ),
             View::Contextual { menu, view } => compound!(
                 visitor.visit_contextual(area, menu),
                 view.accept(visitor, area, mouse_position),
@@ -125,8 +125,8 @@ impl View {
             }
             View::Rule { index, cells } => visitor.visit_rule(area, *index, *cells),
             View::Sized {
-                view,
                 minimum_size: _,
+                view,
             } => view.accept(visitor, area, mouse_position),
             View::SizeInformed(generator) => {
                 generator(area.size).accept(visitor, area, mouse_position);
@@ -151,7 +151,7 @@ impl View {
             } => {
                 let titled_area = titled_area::<V::Ui>(area, title, view);
 
-                if let View::Bordered { thick, content } = &**view {
+                if let View::Bordered { thick, view } = &**view {
                     let inner_area = inner_area::<V::Ui>(titled_area);
                     compound!(
                         visitor.visit_titled_bordered(
@@ -161,7 +161,7 @@ impl View {
                             *highlighted,
                             *thick
                         ),
-                        content.accept(visitor, inner_area, mouse_position),
+                        view.accept(visitor, inner_area, mouse_position),
                     );
                     return;
                 }

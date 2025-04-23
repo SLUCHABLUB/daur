@@ -65,14 +65,14 @@ impl<Ui: UserInterface> Visitor for Clicker<Ui> {
 
     fn visit_border(&mut self, _: Rectangle, _: bool) {}
 
-    fn visit_button(&mut self, area: Rectangle, on_click: &OnClick) {
+    fn visit_canvas(&mut self, _: Rectangle, _: Colour, _: &Painter) {}
+
+    fn visit_clickable(&mut self, area: Rectangle, on_click: &OnClick) {
         if !self.right_click && self.should_click(area) {
             let position = self.position - area.position.position();
             on_click.run(area.size, position, &mut self.actions);
         }
     }
-
-    fn visit_canvas(&mut self, _: Rectangle, _: Colour, _: &Painter) {}
 
     fn visit_contextual(&mut self, area: Rectangle, menu: &Menu) {
         if self.right_click && self.should_click(area) {

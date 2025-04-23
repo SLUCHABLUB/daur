@@ -8,9 +8,9 @@ use arcstr::ArcStr;
 impl View {
     /// Turns the view into a button.
     pub fn on_click(self, on_click: OnClick) -> Self {
-        View::Button {
+        View::Clickable {
             on_click,
-            content: Box::new(self),
+            view: Box::new(self),
         }
     }
 
@@ -32,13 +32,13 @@ impl View {
 
     /// Sets the border thickness of a bordered button.
     ///
-    /// I.e. if a [`View::Bordered`] is wrapped in a [`View::Button`],
+    /// I.e. if a [`View::Bordered`] is wrapped in a [`View::Clickable`],
     /// the border thickness will be set.
     pub fn with_selection_status(self, status: bool) -> Self {
-        if let View::Button { on_click, content } = self {
-            View::Button {
+        if let View::Clickable { on_click, view } = self {
+            View::Clickable {
                 on_click,
-                content: Box::new(content.with_thickness(status)),
+                view: Box::new(view.with_thickness(status)),
             }
         } else {
             // TODO: log that nothing happened

@@ -65,8 +65,6 @@ impl Visitor for Renderer<'_> {
         self.visit_titled_bordered(area, area, "", thick, thick);
     }
 
-    fn visit_button(&mut self, _area: Rectangle, _on_click: &OnClick) {}
-
     fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter) {
         let area = rectangle_to_rect(area);
 
@@ -85,6 +83,8 @@ impl Visitor for Renderer<'_> {
             })
             .render(area, self.buffer);
     }
+
+    fn visit_clickable(&mut self, _area: Rectangle, _on_click: &OnClick) {}
 
     fn visit_contextual(&mut self, _area: Rectangle, _menu: &Menu) {}
 
