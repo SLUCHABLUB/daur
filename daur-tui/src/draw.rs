@@ -6,7 +6,7 @@ use crate::tui::Tui;
 use daur::ui::{Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::{Alignment, OnClick, Painter, Visitor};
-use daur::{App, ArcCell, Colour};
+use daur::{App, Colour};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};
@@ -15,12 +15,10 @@ use ratatui::text::{Line, Text};
 use ratatui::widgets::canvas::Canvas;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Widget as _};
 use ratatui::{DefaultTerminal, layout};
-use ratatui_explorer::{FileExplorer, Theme};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
 use std::io;
 use std::num::{NonZeroU64, NonZeroUsize};
-use std::path::Path;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
 
@@ -106,25 +104,6 @@ impl Visitor for Renderer<'_> {
         let line_count = area.height.saturating_cast();
 
         Text::from(vec![Line::raw(VERTICAL); line_count]).render(area, self.buffer);
-    }
-
-    fn visit_file_selector(&mut self, area: Rectangle, selected_file: &ArcCell<Path>) {
-        let area = rectangle_to_rect(area);
-
-        let theme = Theme::new()
-            .with_block(Block::bordered())
-            .add_default_title()
-            .with_highlight_symbol("> ");
-
-        let Ok(mut explorer) = FileExplorer::with_theme(theme) else {
-            return;
-        };
-
-        let Ok(()) = explorer.set_cwd(&*selected_file.get()) else {
-            return;
-        };
-
-        explorer.widget().render(area, self.buffer);
     }
 
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64) {

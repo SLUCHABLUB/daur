@@ -18,7 +18,6 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         View::Canvas { .. }
         | View::CursorWindow { .. }
         | View::Empty
-        | View::FileSelector { .. }
         | View::SizeInformed(_)
         | View::Solid(_) => Size::ZERO,
         View::Contextual { menu: _, view } => view.minimum_size::<Ui>(),

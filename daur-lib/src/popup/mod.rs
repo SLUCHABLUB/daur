@@ -11,7 +11,7 @@ pub use manager::Manager;
 use crate::key::Key;
 use crate::time::Instant;
 use crate::ui::Rectangle;
-use crate::view::{Alignment, Direction, OnClick, ToText as _, multi, single};
+use crate::view::{Alignment, Direction, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Action, ArcCell, Cell, Ratio, ToArcStr as _, UserInterface, View, project};
 use arcstr::{ArcStr, format, literal};
 use closure::closure;
@@ -134,7 +134,7 @@ impl Popup {
                 View::Stack {
                     direction: Direction::Down,
                     elements: vec![
-                        View::FileSelector { selected_file }.fill_remaining(),
+                        file_selector::<Ui>(&selected_file).fill_remaining(),
                         buttons.quotated_minimally::<Ui>(),
                     ],
                 }

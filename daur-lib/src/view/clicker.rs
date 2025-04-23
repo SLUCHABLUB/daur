@@ -1,10 +1,9 @@
 use crate::ui::{Length, Point, Rectangle};
 use crate::view::context::Menu;
 use crate::view::{Alignment, OnClick, Painter, Visitor};
-use crate::{Action, App, ArcCell, Colour, UserInterface};
+use crate::{Action, App, Colour, UserInterface};
 use std::marker::PhantomData;
 use std::num::NonZeroU64;
-use std::path::Path;
 
 /// A visitor for clicking a view.
 ///
@@ -85,10 +84,6 @@ impl<Ui: UserInterface> Visitor for Clicker<Ui> {
     }
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
-
-    fn visit_file_selector(&mut self, _: Rectangle, _: &ArcCell<Path>) {
-        // TODO: call dependency injected function
-    }
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 

@@ -12,6 +12,7 @@ mod clicker;
 mod cursor;
 mod direction;
 mod feed;
+mod file_selector;
 mod minimum_size;
 mod quotum;
 mod ruler;
@@ -25,6 +26,7 @@ pub use clicker::Clicker;
 pub use cursor::cursor_window;
 pub use direction::Direction;
 pub use feed::feed;
+pub use file_selector::file_selector;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 pub use text::ToText;
@@ -33,13 +35,12 @@ pub use visit::Visitor;
 use crate::ui::{Length, Rectangle, Size};
 use crate::view::context::Menu;
 use crate::view::minimum_size::minimum_size;
-use crate::{ArcCell, Colour, Ratio, UserInterface};
+use crate::{Colour, Ratio, UserInterface};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use itertools::Itertools as _;
 use std::cmp::max;
 use std::num::NonZeroU64;
-use std::path::Path;
 use std::sync::Arc;
 
 /// A function for painting a canvas.
@@ -90,11 +91,6 @@ pub enum View {
     /// An empty (transparent) view.
     #[default]
     Empty,
-    /// A view into the file system.
-    FileSelector {
-        /// The currently selected file.
-        selected_file: Arc<ArcCell<Path>>,
-    },
     /// A function that generates a view.
     Generator(#[debug(skip)] Box<Generator>),
     /// A view that whose appearance changes when hovered.
@@ -160,12 +156,24 @@ impl View {
         }
     }
 
-    /// Puts a titled border around the view.
+    /// Puts a title on the view.
     pub fn titled(self, title: ArcStr) -> Self {
         View::Titled {
             title,
             highlighted: false,
             view: Box::new(self),
+        }
+    }
+
+    /// Puts a title on the view where the title influences the [minimum size](View::minimum_size).
+    pub fn hard_titled<Ui: UserInterface>(self, title: ArcStr) -> Self {
+        let mut minimum_size = self.minimum_size::<Ui>();
+        minimum_size.width = max(minimum_size.width, Ui::title_width(&title, &self));
+        minimum_size.height += Ui::title_height(&title, &self);
+
+        View::Sized {
+            view: Box::new(self.titled(title)),
+            minimum_size,
         }
     }
 

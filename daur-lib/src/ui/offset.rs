@@ -31,6 +31,9 @@ impl Offset {
     /// 0
     pub const ZERO: Offset = Offset { pixels: 0 };
 
+    /// One pixel.
+    pub const PIXEL: Offset = Offset { pixels: 1 };
+
     /// Returns the absolute value of the offset.
     #[must_use]
     pub fn abs(self) -> Length {

@@ -7,6 +7,7 @@ pub use offset::Offset;
 pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
+use std::path::Path;
 pub use vector::Vector;
 
 mod grid;
@@ -53,15 +54,23 @@ pub trait UserInterface {
     /// Returns the current screen size.
     fn size(&self) -> Size;
 
-    /// Returns the height of the string
-    #[must_use]
-    fn string_height(string: &str) -> Length;
-
     /// Returns the width of the string
     #[must_use]
     fn string_width(string: &str) -> Length;
 
+    /// Returns the height of the string
+    #[must_use]
+    fn string_height(string: &str) -> Length;
+
+    /// Returns the width of the title if it was to be applied to the view.
+    #[must_use]
+    fn title_width(title: &str, titled: &View) -> Length;
+
     /// Returns the height of the title if it was to be applied to the view.
     #[must_use]
     fn title_height(title: &str, titled: &View) -> Length;
+
+    /// Returns the default size for a file selector.
+    #[must_use]
+    fn file_selector_size(path: &Path) -> Size;
 }

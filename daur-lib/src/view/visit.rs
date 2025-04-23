@@ -1,10 +1,9 @@
 use crate::ui::{Length, Point, Rectangle};
 use crate::view::context::Menu;
 use crate::view::{Alignment, OnClick, Painter};
-use crate::{ArcCell, Colour, Ratio, UserInterface, View};
+use crate::{Colour, Ratio, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
-use std::path::Path;
 
 /// A type that can visit a [view](View).
 pub trait Visitor {
@@ -32,9 +31,6 @@ pub trait Visitor {
 
     /// Visits a cursor window.
     fn visit_cursor_window(&mut self, area: Rectangle, offset: Length);
-
-    /// Visits a file selector.
-    fn visit_file_selector(&mut self, area: Rectangle, selected_file: &ArcCell<Path>);
 
     /// Visits a rule.
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64);
@@ -110,9 +106,6 @@ impl View {
             ),
             View::CursorWindow { offset } => visitor.visit_cursor_window(area, *offset),
             View::Empty => (),
-            View::FileSelector { selected_file } => {
-                visitor.visit_file_selector(area, selected_file);
-            }
             View::Generator(generator) => generator().accept(visitor, area, mouse_position),
             View::Hoverable { default, hovered } => {
                 if area.contains(mouse_position) {

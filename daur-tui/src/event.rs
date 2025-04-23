@@ -101,26 +101,6 @@ fn handle_mouse_event(
     }
 }
 
-/* TODO: pass to clicker
-fn click_file_explorer(selected_file: &ArcCell<Path>, position: Position) {
-    let Ok(mut explorer) = FileExplorer::new() else {
-        return;
-    };
-
-    let Ok(()) = explorer.set_cwd(&*selected_file.get()) else {
-        return;
-    };
-
-    let index = usize::from(position.y);
-    let Some(file) = explorer.files().get(index).or(explorer.files().last()) else {
-        // Should be unreachable since `..` is always in the list
-        return;
-    };
-
-    selected_file.set(Arc::from(file.path().as_path()));
-}
- */
-
 // TODO: break into parts and move into the library
 fn scroll(app: &App<Tui>, direction: Direction) {
     let offset = -Vector::directed(Length::PIXEL, direction);

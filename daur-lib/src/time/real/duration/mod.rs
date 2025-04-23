@@ -8,7 +8,7 @@ use std::time;
 
 /// A duration of real time.
 ///
-/// Like [`core::time::Duration`], it can only represent time down to nanoseconds.
+/// Like [`core::time::Duration`](time::Duration), it can only represent time down to nanoseconds.
 /// Furthermore, the maximum duration which is representable is only about 500 years.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Duration {

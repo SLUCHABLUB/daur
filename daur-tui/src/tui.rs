@@ -1,8 +1,9 @@
 use crate::convert::to_size;
 use daur::ui::{Length, NonZeroLength, Size};
-use daur::{Cell, Observed, UserInterface, View};
+use daur::{Cell, Observed, Ratio, UserInterface, View};
 use ratatui::layout::{Position, Rect};
 use saturating_cast::SaturatingCast as _;
+use std::path::Path;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 macro_rules! non_zero_length {
@@ -39,12 +40,6 @@ impl UserInterface for Tui {
         to_size(self.window_area.get().as_size())
     }
 
-    fn string_height(string: &str) -> Length {
-        let pixels = string.lines().count().saturating_cast();
-
-        Length { pixels }
-    }
-
     fn string_width(string: &str) -> Length {
         let graphemes = string
             .lines()
@@ -57,12 +52,40 @@ impl UserInterface for Tui {
         }
     }
 
+    fn string_height(string: &str) -> Length {
+        let pixels = string.lines().count().saturating_cast();
+
+        Length { pixels }
+    }
+
+    fn title_width(title: &str, titled: &View) -> Length {
+        Self::string_width(title)
+            + if matches!(titled, View::Bordered { .. }) {
+                Length::PIXEL * Ratio::integer(2)
+            } else {
+                Length::ZERO
+            }
+    }
+
     fn title_height(_title: &str, titled: &View) -> Length {
         if matches!(titled, View::Bordered { .. }) {
             Length::ZERO
         } else {
             Length::PIXEL
         }
+    }
+
+    fn file_selector_size(path: &Path) -> Size {
+        let Ok(reader) = path.read_dir() else {
+            return Size::ZERO;
+        };
+
+        // + 1 for ".."
+        let height = Length::PIXEL * Ratio::from_usize(reader.count()) + Length::PIXEL;
+        // This is not very important, the user can resize the popup.
+        let width = Length::PIXEL * Ratio::from_usize(path.as_os_str().len());
+
+        Size { height, width }
     }
 }
 
