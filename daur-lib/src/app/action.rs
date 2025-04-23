@@ -2,7 +2,7 @@ use crate::popup::{Id, Popup};
 use crate::time::Instant;
 use crate::ui::{Length, NonZeroLength, Point};
 use crate::view::context::Menu;
-use crate::{App, Clip, Track, UserInterface, project};
+use crate::{App, Clip, Ratio, Track, UserInterface, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
@@ -105,8 +105,7 @@ impl Action {
             }
 
             Action::OpenPianoRoll => {
-                // TODO: do this more cleanly
-                Action::SetPianoRollHeight(Ui::PROJECT_BAR_HEIGHT.get()).take(app);
+                Action::SetPianoRollHeight(app.ui.size().height * Ratio::HALF).take(app);
             }
             Action::SetPianoRollHeight(height) => {
                 let mut settings = app.piano_roll_settings.get();
