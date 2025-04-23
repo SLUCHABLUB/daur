@@ -25,11 +25,11 @@ use crate::View;
 pub trait UserInterface {
     /// The default depth of the black keys on the piano roll.
     const BLACK_KEY_DEPTH: NonZeroLength;
-    /// The border thickness of a [bordered view](View::Bordered) (times 2).
+    /// The border thickness of a [bordered view](View::Bordered).
     ///
     /// This should be the same for thick and non-thick borders.
     /// Padding may be added to non-thick borders.
-    const DOUBLE_BORDER_THICKNESS: Length;
+    const BORDER_THICKNESS: Length;
     /// The default width of a [grid](Grid) cell.
     const CELL_WIDTH: NonZeroLength;
     /// The default width of the piano-roll keys.

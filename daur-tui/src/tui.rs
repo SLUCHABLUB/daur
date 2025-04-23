@@ -22,7 +22,7 @@ pub struct Tui {
 
 impl UserInterface for Tui {
     const BLACK_KEY_DEPTH: NonZeroLength = non_zero_length!(6);
-    const DOUBLE_BORDER_THICKNESS: Length = Length { pixels: 2 };
+    const BORDER_THICKNESS: Length = Length::PIXEL;
     const CELL_WIDTH: NonZeroLength = non_zero_length!(4);
     const KEY_WIDTH: NonZeroLength = non_zero_length!(1);
     const PIANO_DEPTH: NonZeroLength = non_zero_length!(10);

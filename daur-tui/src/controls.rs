@@ -1,5 +1,5 @@
 use crossterm::event::{KeyCode, KeyModifiers};
-use daur::context::open_import_audio_popup;
+use daur::view::context::open_import_audio_popup;
 use daur::{Action, project};
 use std::collections::HashMap;
 

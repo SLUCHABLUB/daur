@@ -80,7 +80,10 @@ impl Popup {
 
     /// Returns the popups [view](View) with a border and title.
     pub fn view<Ui: UserInterface>(&self, id: Id) -> View {
-        self.inner_view::<Ui>(id).bordered().titled(self.title())
+        self.inner_view::<Ui>(id)
+            .bordered()
+            .titled(self.title())
+            .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
     /// Returns the popups inner [view](View), with no border and title.
@@ -183,6 +186,7 @@ impl Popup {
                 )
             }
         }
+        .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
     pub fn instantiate<Ui: UserInterface>(&self, id: Id, ui: &Ui) -> Instance {

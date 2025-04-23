@@ -2,7 +2,6 @@
 
 pub mod audio;
 pub mod clip;
-pub mod context;
 pub mod popup;
 pub mod project;
 pub mod time;

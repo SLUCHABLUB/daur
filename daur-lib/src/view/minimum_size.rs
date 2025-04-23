@@ -1,5 +1,5 @@
 use crate::ui::{Length, Size};
-use crate::{UserInterface, View};
+use crate::{Ratio, UserInterface, View};
 use std::cmp::max;
 
 /// See [`View::minimum_size`]
@@ -7,8 +7,8 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
     match view {
         View::Bordered { thick: _, content } => {
             let mut size = content.minimum_size::<Ui>();
-            size.height += Ui::DOUBLE_BORDER_THICKNESS;
-            size.width += Ui::DOUBLE_BORDER_THICKNESS;
+            size.height += Ui::BORDER_THICKNESS * Ratio::integer(2);
+            size.width += Ui::BORDER_THICKNESS * Ratio::integer(2);
             size
         }
         View::Button {

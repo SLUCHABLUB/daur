@@ -1,5 +1,6 @@
 //! Types pertaining to [`View`].
 
+pub mod context;
 pub mod multi;
 pub mod piano_roll;
 pub mod single;
@@ -7,6 +8,7 @@ pub mod single;
 mod alignment;
 mod button;
 mod canvas;
+mod clicker;
 mod cursor;
 mod direction;
 mod feed;
@@ -14,19 +16,22 @@ mod minimum_size;
 mod quotum;
 mod ruler;
 mod text;
+mod visit;
 
 pub use alignment::Alignment;
 pub use button::OnClick;
 pub use canvas::Context;
+pub use clicker::Clicker;
 pub use cursor::cursor_window;
 pub use direction::Direction;
 pub use feed::feed;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 pub use text::ToText;
+pub use visit::Visitor;
 
-use crate::context::Menu;
 use crate::ui::{Length, Rectangle, Size};
+use crate::view::context::Menu;
 use crate::view::minimum_size::minimum_size;
 use crate::{ArcCell, Colour, Ratio, UserInterface};
 use arcstr::ArcStr;
@@ -39,6 +44,8 @@ use std::sync::Arc;
 
 /// A function for painting a canvas.
 pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
+/// A function for generating a view.
+pub type Generator = dyn Fn() -> View + Send + Sync;
 
 /// A UI element.
 #[doc(hidden)]
@@ -89,7 +96,7 @@ pub enum View {
         selected_file: Arc<ArcCell<Path>>,
     },
     /// A function that generates a view.
-    Generator(#[debug(skip)] Box<dyn Fn() -> View + Send + Sync>),
+    Generator(#[debug(skip)] Box<Generator>),
     /// A view that whose appearance changes when hovered.
     Hoverable {
         /// The view to use when not hovered.

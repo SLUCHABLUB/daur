@@ -50,6 +50,7 @@ impl Menu {
                 .map(|(label, action)| View::simple_button(label, OnClick::from(action))),
         )
         .bordered()
+        .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
     /// Constructs a new [`MenuInstance`].

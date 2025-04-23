@@ -1,5 +1,5 @@
 use crate::ui::{Length, Offset, Vector};
-use std::ops::{Add, AddAssign, Sub};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// A point on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
@@ -37,10 +37,29 @@ impl Add<Vector> for Point {
     }
 }
 
+// TODO: derive
 impl AddAssign<Vector> for Point {
     fn add_assign(&mut self, rhs: Vector) {
         self.x += rhs.x;
         self.y += rhs.y;
+    }
+}
+
+// TODO: derive
+impl Sub<Vector> for Point {
+    type Output = Point;
+
+    fn sub(mut self, rhs: Vector) -> Self::Output {
+        self -= rhs;
+        self
+    }
+}
+
+// TODO: derive
+impl SubAssign<Vector> for Point {
+    fn sub_assign(&mut self, rhs: Vector) {
+        self.x -= rhs.x;
+        self.y -= rhs.y;
     }
 }
 

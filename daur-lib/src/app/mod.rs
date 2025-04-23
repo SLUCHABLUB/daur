@@ -3,13 +3,13 @@ mod action;
 pub use action::Action;
 
 use crate::cell::{CloneCell, WeakCell};
-use crate::context::MenuInstance;
 use crate::observed::Observed;
 use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
+use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;
-use crate::view::{Direction, OnClick, Quotated, View, piano_roll};
+use crate::view::{Direction, Quotated, View, piano_roll};
 use crate::{
     ArcCell, Cell, Clip, OptionArcCell, Project, Track, UserInterface, popup, project, ui,
 };
@@ -188,28 +188,20 @@ impl<Ui: UserInterface> App<Ui> {
         }
     }
 
-    fn view_with_popups(&self) -> View {
+    /// The view of the app.
+    ///
+    /// This includes popups and the context menu.
+    pub fn view(&self) -> View {
         let mut layers = vec![self.main_view()];
 
         for instance in self.popups.to_vec() {
             layers.push(instance.into_view());
         }
 
-        View::Layers(layers)
-    }
-
-    /// The view of the app.
-    ///
-    /// This includes popups and the context menu.
-    pub fn view(&self) -> View {
         if let Some(instance) = self.context_menu.get() {
-            View::Layers(vec![
-                self.view_with_popups()
-                    .on_click(OnClick::from(Action::CloseContextMenu)),
-                instance.into_view(),
-            ])
-        } else {
-            self.view_with_popups()
+            layers.push(instance.into_view());
         }
+
+        View::Layers(layers)
     }
 }

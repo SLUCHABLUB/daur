@@ -1,8 +1,8 @@
 use crate::app::Action;
-use crate::context::Menu;
 use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
+use crate::view::context::Menu;
 use crate::view::{Direction, OnClick, Quotated, View, cursor_window, feed};
 use crate::{Clip, clip, time, ui};
 use closure::closure;
@@ -18,8 +18,6 @@ pub fn overview(
     offset: Offset,
     cursor: Instant,
 ) -> View {
-    let track_reference = Arc::downgrade(&track);
-
     View::size_informed(closure!([clone selected_clip] move |size| {
         let overview_start = (-offset).rectify();
         let overview_period = ui_mapping.period(overview_start, size.width);
@@ -38,10 +36,6 @@ pub fn overview(
             cursor_window(cursor, &ui_mapping, offset),
         ])
     }))
-    .on_click(OnClick::from(Action::SelectClip {
-        track: track_reference,
-        clip: Weak::new(),
-    }))
     .context(Menu::track_overview())
 }
 
@@ -54,9 +48,18 @@ fn feed_generator(
     offset: Offset,
     overview_period: Period,
 ) -> impl Fn(isize) -> Quotated + 'static {
-    closure!([clone track, clone selected_clip, clone time_mapping, clone ui_mapping] move |index| {
+    let track_reference = Arc::downgrade(track);
+
+    let empty = move || {
+        View::Empty.on_click(OnClick::from(Action::SelectClip {
+            track: Weak::clone(&track_reference),
+            clip: Weak::new(),
+        }))
+    };
+
+    closure!([clone track, clone selected_clip, clone time_mapping, clone ui_mapping, clone empty] move |index| {
         let Ok(index) = usize::try_from(index) else {
-            return View::Empty.quotated(offset.abs());
+            return empty().quotated(offset.abs());
         };
 
         let (clip_index, parity) = index.div_rem(&2);
@@ -83,11 +86,11 @@ fn feed_generator(
 
             let size = next_clip_start - last_clip_end;
 
-            return View::Empty.quotated(size);
+            return empty().quotated(size);
         }
 
         let Some((start, clip)) = track.clips.iter().nth(clip_index) else {
-            return View::Empty.fill_remaining();
+            return empty().fill_remaining();
         };
         let clip_reference = Arc::downgrade(clip);
 
@@ -95,7 +98,7 @@ fn feed_generator(
         let clip_width = ui_mapping.width_of(clip_period);
 
         let Some(visible_period) = Period::intersection(overview_period, clip_period) else {
-            return View::Empty.quotated(clip_width);
+            return empty().quotated(clip_width);
         };
 
         let selected = selected_clip.as_ptr() == clip_reference.as_ptr();

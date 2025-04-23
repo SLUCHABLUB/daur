@@ -1,13 +1,14 @@
 use crate::canvas::Context;
 use crate::convert::{
-    approximate_colour, length_to_u16, position_to_point, rect_to_rectangle, rectangle_to_rect,
-    to_size,
+    approximate_colour, position_to_point, rect_to_rectangle, rectangle_to_rect, to_size,
 };
 use crate::tui::Tui;
-use daur::view::{Alignment, Painter, View};
-use daur::{App, Colour};
+use daur::ui::{Length, Offset, Rectangle, Size, Vector};
+use daur::view::context::Menu;
+use daur::view::{Alignment, OnClick, Painter, Visitor};
+use daur::{App, ArcCell, Colour};
 use ratatui::buffer::Buffer;
-use ratatui::layout::{Position, Rect};
+use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
@@ -18,7 +19,6 @@ use ratatui_explorer::{FileExplorer, Theme};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
 use std::io;
-use std::iter::zip;
 use std::num::{NonZeroU64, NonZeroUsize};
 use std::path::Path;
 use std::sync::Arc;
@@ -40,7 +40,11 @@ pub fn spawn_draw_thread(
 
                 app.ui.window_area.set(area);
 
-                render(&app.view(), area, buffer, app.ui.mouse_position.get());
+                app.view().accept(
+                    &mut Renderer { buffer },
+                    rect_to_rectangle(area),
+                    position_to_point(app.ui.mouse_position.get()),
+                );
             });
 
             if let Err(error) = result {
@@ -52,195 +56,61 @@ pub fn spawn_draw_thread(
 
 type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
-// TODO: use visitor
-#[expect(clippy::too_many_lines, reason = "todo")]
-fn render(view: &View, area: Rect, buffer: &mut Buffer, mouse_position: Position) {
-    if try_render_bordered_title(view, area, buffer, mouse_position) {
-        return;
+pub struct Renderer<'buffer> {
+    pub buffer: &'buffer mut Buffer,
+}
+
+impl Visitor for Renderer<'_> {
+    type Ui = Tui;
+
+    fn visit_border(&mut self, area: Rectangle, thick: bool) {
+        self.visit_titled_bordered(area, area, "", thick, thick);
     }
 
-    match view {
-        View::Bordered { thick, content } => {
-            render_bordered(content, *thick, None, area, buffer, mouse_position);
-        }
-        View::Button {
-            on_click: _,
-            content,
-        } => render(content, area, buffer, mouse_position),
-        View::Canvas {
-            background,
-            painter,
-        } => {
-            render_canvas(*background, painter, area, buffer);
-        }
-        View::Contextual { view, .. } | View::Sized { view, .. } => {
-            render(view, area, buffer, mouse_position);
-        }
-        View::CursorWindow { offset } => {
-            let offset = length_to_u16(*offset);
+    fn visit_button(&mut self, _area: Rectangle, _on_click: &OnClick) {}
 
-            if area.width <= offset {
-                return;
-            }
+    fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter) {
+        let area = rectangle_to_rect(area);
 
-            let cursor_area = Rect {
-                x: area.x.saturating_add(offset),
-                y: area.y,
-                width: 1,
-                height: area.height,
-            };
+        let width = f64::from(area.width);
+        let height = f64::from(area.height);
 
-            let line_count = area.height.saturating_cast();
+        Canvas::default()
+            .background_color(approximate_colour(background))
+            .x_bounds([0.0, width])
+            .y_bounds([0.0, height])
+            .paint(|context| {
+                painter(&mut Context {
+                    context,
+                    size: to_size(area.as_size()),
+                });
+            })
+            .render(area, self.buffer);
+    }
 
-            Text::from(vec![Line::raw(VERTICAL); line_count]).render(cursor_area, buffer);
+    fn visit_contextual(&mut self, _area: Rectangle, _menu: &Menu) {}
+
+    fn visit_cursor_window(&mut self, area: Rectangle, offset: Length) {
+        if area.size.width <= offset {
+            return;
         }
-        View::Empty => (),
-        View::FileSelector { selected_file } => {
-            render_file_selector(&selected_file.get(), area, buffer);
-        }
-        View::Generator(generator) => render(&generator(), area, buffer, mouse_position),
-        View::Hoverable { default, hovered } => render(
-            if area.contains(mouse_position) {
-                hovered
-            } else {
-                default
+
+        let area = rectangle_to_rect(Rectangle {
+            position: area.position + Vector::from_x(Offset::positive(offset)),
+            size: Size {
+                width: Length::PIXEL,
+                height: area.size.height,
             },
-            area,
-            buffer,
-            mouse_position,
-        ),
-        View::Layers(layers) => {
-            for layer in layers {
-                render(layer, area, buffer, mouse_position);
-            }
-        }
-        View::Rule { index, cells } => render_rule(*index, *cells, area, buffer),
-        View::SizeInformed(generator) => {
-            render(
-                &generator(to_size(area.as_size())),
-                area,
-                buffer,
-                mouse_position,
-            );
-        }
-        View::Solid(colour) => EmptyCanvas::default()
-            .background_color(approximate_colour(*colour))
-            .render(area, buffer),
-        View::Stack {
-            direction,
-            elements,
-        } => {
-            let quota: Vec<_> = elements.iter().map(|quotated| quotated.quotum).collect();
-            let rectangles = rect_to_rectangle(area)
-                .split(*direction, &quota)
-                .map(rectangle_to_rect);
+        });
 
-            for (area, quoted) in zip(rectangles, elements) {
-                render(&quoted.view, area, buffer, mouse_position);
-            }
-        }
-        View::Text { string, alignment } => render_text(string, *alignment, area, buffer),
-        View::Titled {
-            title,
-            highlighted,
-            view,
-        } => {
-            let set = if *highlighted { THICK } else { PLAIN };
+        let line_count = area.height.saturating_cast();
 
-            let block = Block::new()
-                .borders(Borders::TOP)
-                .border_set(set)
-                .title(title.as_str());
-
-            let inner = block.inner(area);
-
-            block.render(area, buffer);
-            render(view, inner, buffer, mouse_position);
-        }
-        View::Window {
-            area: window_area,
-            view,
-        } => {
-            //  Offset the window area.
-            let area = *window_area + position_to_point(area.as_position()).position();
-            let area = rectangle_to_rect(area);
-
-            Clear.render(area, buffer);
-            render(view, area, buffer, mouse_position);
-        }
-    }
-}
-
-fn try_render_bordered_title(
-    view: &View,
-    area: Rect,
-    buffer: &mut Buffer,
-    mouse_position: Position,
-) -> bool {
-    // handle the special case of a titled border
-    if let View::Titled {
-        title,
-        highlighted,
-        view,
-    } = view
-    {
-        if let View::Bordered { thick, content } = &**view {
-            render_bordered(
-                content,
-                *highlighted || *thick,
-                Some(title),
-                area,
-                buffer,
-                mouse_position,
-            );
-            return true;
-        }
+        Text::from(vec![Line::raw(VERTICAL); line_count]).render(area, self.buffer);
     }
 
-    false
-}
+    fn visit_file_selector(&mut self, area: Rectangle, selected_file: &ArcCell<Path>) {
+        let area = rectangle_to_rect(area);
 
-fn render_bordered(
-    content: &View,
-    thick: bool,
-    title: Option<&str>,
-    area: Rect,
-    buffer: &mut Buffer,
-    mouse_position: Position,
-) {
-    let set = if thick { THICK } else { PLAIN };
-
-    let mut block = Block::bordered().border_set(set);
-    if let Some(title) = title {
-        block = block.title(title);
-    }
-
-    let inner = block.inner(area);
-
-    block.render(area, buffer);
-
-    render(content, inner, buffer, mouse_position);
-}
-
-fn render_canvas(background: Colour, painter: &Painter, area: Rect, buffer: &mut Buffer) {
-    let width = f64::from(area.width);
-    let height = f64::from(area.height);
-
-    Canvas::default()
-        .background_color(approximate_colour(background))
-        .x_bounds([0.0, width])
-        .y_bounds([0.0, height])
-        .paint(|context| {
-            painter(&mut Context {
-                context,
-                size: to_size(area.as_size()),
-            });
-        })
-        .render(area, buffer);
-}
-
-fn render_file_selector(selected_file: &Path, area: Rect, buffer: &mut Buffer) {
-    {
         let theme = Theme::new()
             .with_block(Block::bordered())
             .add_default_title()
@@ -250,64 +120,112 @@ fn render_file_selector(selected_file: &Path, area: Rect, buffer: &mut Buffer) {
             return;
         };
 
-        let Ok(()) = explorer.set_cwd(selected_file) else {
+        let Ok(()) = explorer.set_cwd(&*selected_file.get()) else {
             return;
         };
 
-        explorer.widget().render(area, buffer);
+        explorer.widget().render(area, self.buffer);
     }
-}
 
-fn render_rule(index: isize, cells: NonZeroU64, area: Rect, buffer: &mut Buffer) {
-    let width = usize::from(area.width);
-    let cells = NonZeroUsize::try_from(cells).unwrap_or(NonZeroUsize::MAX);
+    fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64) {
+        let area = rectangle_to_rect(area);
 
-    if index < 0 {
-        Text::raw(format!("{index:<width$}\n{:><width$}", "|"))
-    } else {
-        let first_row = format!("{index:<width$}\n");
-        let cell_width = width / cells;
-        let first_cell = format!("{:<cell_width$}", "|");
+        let width = usize::from(area.width);
+        let cells = NonZeroUsize::try_from(cells).unwrap_or(NonZeroUsize::MAX);
 
-        let standard_cells = cells.get().saturating_sub(1);
-        let standard_cell = format!("{:<cell_width$}", ".");
+        if index < 0 {
+            Text::raw(format!("{index:<width$}\n{:><width$}", "|"))
+        } else {
+            let first_row = format!("{index:<width$}\n");
+            let cell_width = width / cells;
+            let first_cell = format!("{:<cell_width$}", "|");
 
-        Text::raw(first_row + &*first_cell + &*standard_cell.repeat(standard_cells))
+            let standard_cells = cells.get().saturating_sub(1);
+            let standard_cell = format!("{:<cell_width$}", ".");
+
+            Text::raw(first_row + &*first_cell + &*standard_cell.repeat(standard_cells))
+        }
+        .render(area, self.buffer);
     }
-    .render(area, buffer);
-}
 
-fn render_text(string: &str, alignment: Alignment, area: Rect, buffer: &mut Buffer) {
-    let paragraph_alignment = match alignment {
-        Alignment::TopLeft | Alignment::Left | Alignment::BottomLeft => layout::Alignment::Left,
-        Alignment::Top | Alignment::Centre | Alignment::Bottom => layout::Alignment::Center,
-        Alignment::TopRight | Alignment::Right | Alignment::BottomRight => layout::Alignment::Right,
-    };
+    fn visit_solid(&mut self, area: Rectangle, colour: Colour) {
+        let area = rectangle_to_rect(area);
 
-    let paragraph = Paragraph::new(string).alignment(paragraph_alignment);
+        EmptyCanvas::default()
+            .background_color(approximate_colour(colour))
+            .render(area, self.buffer);
+    }
 
-    let height = min(
-        paragraph.line_count(area.width).saturating_cast(),
-        area.height,
-    );
+    fn visit_text(&mut self, area: Rectangle, string: &str, alignment: Alignment) {
+        let area = rectangle_to_rect(area);
 
-    #[expect(clippy::integer_division, reason = "favour top by rounding down")]
-    let y_offset = match alignment {
-        Alignment::TopLeft | Alignment::Top | Alignment::TopRight => 0,
-        Alignment::Left | Alignment::Centre | Alignment::Right => {
-            area.height.saturating_sub(height) / 2
-        }
-        Alignment::BottomLeft | Alignment::Bottom | Alignment::BottomRight => {
-            area.height.saturating_sub(height)
-        }
-    };
+        let paragraph_alignment = match alignment {
+            Alignment::TopLeft | Alignment::Left | Alignment::BottomLeft => layout::Alignment::Left,
+            Alignment::Top | Alignment::Centre | Alignment::Bottom => layout::Alignment::Center,
+            Alignment::TopRight | Alignment::Right | Alignment::BottomRight => {
+                layout::Alignment::Right
+            }
+        };
 
-    let area = Rect {
-        x: area.x,
-        y: area.y.saturating_add(y_offset),
-        width: area.width,
-        height,
-    };
+        let paragraph = Paragraph::new(string).alignment(paragraph_alignment);
 
-    paragraph.render(area, buffer);
+        let height = min(
+            paragraph.line_count(area.width).saturating_cast(),
+            area.height,
+        );
+
+        #[expect(clippy::integer_division, reason = "favour top by rounding down")]
+        let y_offset = match alignment {
+            Alignment::TopLeft | Alignment::Top | Alignment::TopRight => 0,
+            Alignment::Left | Alignment::Centre | Alignment::Right => {
+                area.height.saturating_sub(height) / 2
+            }
+            Alignment::BottomLeft | Alignment::Bottom | Alignment::BottomRight => {
+                area.height.saturating_sub(height)
+            }
+        };
+
+        let area = Rect {
+            x: area.x,
+            y: area.y.saturating_add(y_offset),
+            width: area.width,
+            height,
+        };
+
+        paragraph.render(area, self.buffer);
+    }
+
+    fn visit_titled(&mut self, area: Rectangle, title: &str, highlighted: bool) {
+        let area = rectangle_to_rect(area);
+
+        let set = if highlighted { THICK } else { PLAIN };
+
+        Block::new()
+            .borders(Borders::TOP)
+            .border_set(set)
+            .title(title)
+            .render(area, self.buffer);
+    }
+
+    fn visit_window(&mut self, area: Rectangle) {
+        Clear.render(rectangle_to_rect(area), self.buffer);
+    }
+
+    fn visit_titled_bordered(
+        &mut self,
+        area: Rectangle,
+        _titled_area: Rectangle,
+        title: &str,
+        highlighted: bool,
+        thick: bool,
+    ) {
+        let area = rectangle_to_rect(area);
+
+        let set = if thick || highlighted { THICK } else { PLAIN };
+
+        Block::bordered()
+            .border_set(set)
+            .title(title)
+            .render(area, self.buffer);
+    }
 }
