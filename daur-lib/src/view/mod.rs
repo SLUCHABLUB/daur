@@ -13,6 +13,7 @@ mod cursor;
 mod direction;
 mod feed;
 mod file_selector;
+mod grabber;
 mod minimum_size;
 mod quotum;
 mod ruler;
@@ -27,12 +28,14 @@ pub use cursor::cursor_window;
 pub use direction::Direction;
 pub use feed::feed;
 pub use file_selector::file_selector;
+pub use grabber::Grabber;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 pub use text::ToText;
 pub use visit::Visitor;
 
-use crate::ui::{Length, Rectangle, Size};
+use crate::app::HoldableObject;
+use crate::ui::{Length, Point, Rectangle, Size};
 use crate::view::context::Menu;
 use crate::view::minimum_size::minimum_size;
 use crate::{Colour, Ratio, UserInterface};
@@ -93,6 +96,11 @@ pub enum View {
     Empty,
     /// A function that generates a view.
     Generator(#[debug(skip)] Box<Generator>),
+    Grabbable {
+        #[debug(skip)]
+        object: Box<dyn Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static>,
+        view: Box<View>,
+    },
     /// A view that whose appearance changes when hovered.
     Hoverable {
         /// The view to use when not hovered.
@@ -233,6 +241,17 @@ impl View {
     /// Constructs a new view from a [generator](View::Generator).
     pub fn generator<F: Fn() -> View + Send + Sync + 'static>(generator: F) -> Self {
         View::Generator(Box::new(generator))
+    }
+
+    /// Adds a grabbable object to the view
+    pub fn grabbable<F: Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static>(
+        self,
+        generator: F,
+    ) -> Self {
+        View::Grabbable {
+            object: Box::new(generator),
+            view: Box::new(self),
+        }
     }
 
     /// Constructs a new [size-informed](View::SizeInformed) view.

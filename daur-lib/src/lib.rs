@@ -29,7 +29,7 @@ mod receiver;
 mod sign;
 mod string;
 
-pub use app::{Action, App};
+pub use app::{Action, App, HoldableObject};
 pub use cell::{ArcCell, Cell, OptionArcCell};
 pub use changing::Changing;
 pub use colour::Colour;

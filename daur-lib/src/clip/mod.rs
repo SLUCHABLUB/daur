@@ -11,12 +11,14 @@ pub use source::Source;
 use crate::Colour;
 use crate::time::{Instant, Mapping, Period};
 use arcstr::ArcStr;
+use getset::CloneGetters;
 
 /// A part of a [track](crate::Track).
 #[doc(hidden)]
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, CloneGetters)]
 pub struct Clip {
     /// The name of the clip
+    #[get_clone = "pub"]
     pub name: ArcStr,
     /// The colour of the clip
     pub colour: Colour,

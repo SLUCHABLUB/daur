@@ -24,7 +24,7 @@ impl Length {
 
     /// Converts the length to a [quotum](Quotum).
     #[must_use]
-    pub fn quotum(self) -> Quotum {
+    pub const fn quotum(self) -> Quotum {
         Quotum::Exact(self)
     }
 }

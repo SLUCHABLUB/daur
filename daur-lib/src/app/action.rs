@@ -1,8 +1,9 @@
+use crate::app::HoldableObject;
 use crate::popup::{Id, Popup};
 use crate::time::Instant;
-use crate::ui::{Length, NonZeroLength, Point};
+use crate::ui::Point;
 use crate::view::context::Menu;
-use crate::{App, Clip, Ratio, Track, UserInterface, project};
+use crate::{App, Clip, Track, UserInterface, project};
 use derive_more::Debug;
 use rodio::Device;
 use std::path::PathBuf;
@@ -36,10 +37,11 @@ pub enum Action {
         clip: Weak<Clip>,
     },
 
-    /// Sets the piano roll's height to half the screen
+    /// Sets the piano roll's height to half of the screen height.
     TogglePianoRoll,
-    /// Sets the piano roll's height
-    SetPianoRollHeight(Length),
+
+    /// Picks up an object.
+    PickUp(HoldableObject),
 
     /// Scrolls the overview to the left by one cell
     ScrollLeft,
@@ -106,17 +108,14 @@ impl Action {
 
             Action::TogglePianoRoll => {
                 let mut settings = app.piano_roll_settings.get();
-                settings.height = if settings.height.is_none() {
-                    NonZeroLength::from_length(app.ui.size().height * Ratio::HALF)
-                } else {
-                    None
-                };
+                settings.open = !settings.open;
                 app.piano_roll_settings.set(settings);
             }
-            Action::SetPianoRollHeight(height) => {
-                let mut settings = app.piano_roll_settings.get();
-                settings.height = NonZeroLength::from_length(height);
-                app.piano_roll_settings.set(settings);
+
+            Action::PickUp(object) => {
+                if let Some(old) = app.hand.replace(Some(object)) {
+                    old.let_go(app);
+                }
             }
 
             Action::Pause => {

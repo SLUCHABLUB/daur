@@ -35,15 +35,12 @@ pub struct Quotated {
 
 impl Quotated {
     /// An [empty view](View::Empty) with a zero quotum.
-    pub const EMPTY: Quotated = Quotated {
-        quotum: Quotum::Exact(Length::ZERO),
-        view: View::Empty,
-    };
+    pub const EMPTY: Quotated = View::Empty.quotated(Length::ZERO);
 }
 
 impl View {
     /// Adds a [quotum](Quotum) to the view.
-    pub fn with_quotum(self, quotum: Quotum) -> Quotated {
+    pub const fn with_quotum(self, quotum: Quotum) -> Quotated {
         Quotated { quotum, view: self }
     }
 
@@ -53,7 +50,7 @@ impl View {
     }
 
     /// Makes the view take up the specified [amount of space](Length).
-    pub fn quotated(self, size: Length) -> Quotated {
+    pub const fn quotated(self, size: Length) -> Quotated {
         self.with_quotum(size.quotum())
     }
 

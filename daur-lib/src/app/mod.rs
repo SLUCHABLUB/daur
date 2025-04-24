@@ -1,6 +1,8 @@
 mod action;
+mod holdable;
 
 pub use action::Action;
+pub use holdable::HoldableObject;
 
 use crate::cell::{CloneCell, WeakCell};
 use crate::observed::Observed;
@@ -9,9 +11,9 @@ use crate::time::{Instant, Mapping, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;
-use crate::view::{Direction, Quotated, View, piano_roll};
+use crate::view::{Direction, View, piano_roll};
 use crate::{
-    ArcCell, Cell, Clip, OptionArcCell, Project, Track, UserInterface, popup, project, ui,
+    ArcCell, Cell, Clip, OptionArcCell, Project, Ratio, Track, UserInterface, popup, project, ui,
 };
 use derive_more::Debug;
 use rodio::Device;
@@ -47,6 +49,8 @@ pub struct App<Ui: UserInterface> {
     pub popups: popup::Manager,
     /// The context menu.
     pub context_menu: CloneCell<Option<MenuInstance>>,
+    /// The currently held object.
+    pub hand: Cell<Option<HoldableObject>>,
 
     /// The height of the project bar.
     pub project_bar_height: NonZeroLength,
@@ -77,6 +81,8 @@ impl<Ui: UserInterface> App<Ui> {
         let device = OptionArcCell::from_value(host.default_output_device());
         let host = ArcCell::from_value(host);
 
+        let height = ui.size().height;
+
         App {
             ui,
 
@@ -89,6 +95,7 @@ impl<Ui: UserInterface> App<Ui> {
 
             popups: popup::Manager::new(),
             context_menu: CloneCell::new(None),
+            hand: Cell::new(None),
 
             project_bar_height: Ui::PROJECT_BAR_HEIGHT,
             track_settings_width: Ui::TRACK_SETTINGS_WITH,
@@ -105,7 +112,8 @@ impl<Ui: UserInterface> App<Ui> {
             piano_roll_settings: Cell::new(Settings {
                 x_offset: Length::ZERO,
                 y_offset: Offset::ZERO,
-                height: None,
+                content_height: height * Ratio::HALF,
+                open: false,
                 key_width: Ui::KEY_WIDTH,
                 piano_depth: Ui::PIANO_DEPTH,
                 black_key_depth: Ui::BLACK_KEY_DEPTH,
@@ -169,21 +177,15 @@ impl<Ui: UserInterface> App<Ui> {
                         self.playback_position(),
                     )
                     .fill_remaining(),
-                self.piano_roll_settings
-                    .get()
-                    .height
-                    .map_or(Quotated::EMPTY, |height| {
-                        piano_roll::view::<Ui>(
-                            &self.selected_clip.get(),
-                            ui::Mapping {
-                                time_signature: self.project.time_signature(),
-                                grid: self.grid,
-                            },
-                            self.piano_roll_settings.get(),
-                            &self.project.key(),
-                        )
-                        .quotated(height.get())
-                    }),
+                piano_roll::view::<Ui>(
+                    &self.selected_clip.get(),
+                    ui::Mapping {
+                        time_signature: self.project.time_signature(),
+                        grid: self.grid,
+                    },
+                    self.piano_roll_settings.get(),
+                    &self.project.key(),
+                ),
             ],
         }
     }

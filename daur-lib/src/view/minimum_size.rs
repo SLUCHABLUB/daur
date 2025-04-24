@@ -16,9 +16,9 @@ pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         | View::Empty
         | View::SizeInformed(_)
         | View::Solid(_) => Size::ZERO,
-        View::Clickable { on_click: _, view } | View::Contextual { menu: _, view } => {
-            view.minimum_size::<Ui>()
-        }
+        View::Clickable { view, .. }
+        | View::Contextual { view, .. }
+        | View::Grabbable { view, .. } => view.minimum_size::<Ui>(),
         View::Generator(generator) => generator().minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {
             let default = default.minimum_size::<Ui>();

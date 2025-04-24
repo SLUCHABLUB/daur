@@ -2,7 +2,7 @@ use crate::ui::{Length, Offset, Vector};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// A point on the screen
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Point {
     /// The x coordinate of the point
     pub x: Length,

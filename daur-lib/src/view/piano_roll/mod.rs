@@ -11,9 +11,9 @@ pub use settings::Settings;
 use crate::interval::Interval;
 use crate::key::Key;
 use crate::pitch::Pitch;
-use crate::ui::{Mapping, Offset};
-use crate::view::{Direction, ToText as _, View, feed, ruler};
-use crate::{Changing, Clip, UserInterface};
+use crate::ui::{Length, Mapping, Offset, Point, Rectangle};
+use crate::view::{Direction, Quotated, ToText as _, View, feed, ruler};
+use crate::{Changing, Clip, HoldableObject, UserInterface};
 use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 use std::sync::Weak;
@@ -21,18 +21,40 @@ use std::sync::Weak;
 const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
+/// Returns the view for the piano roll.
+///
 // The piano roll has a fixed lower pitch.
 // Resizing it will thus cause the bottom to be fixed.
 // Since the top is the thing you move, this seems intuitive.
-/// Return the view for the piano roll.
 pub fn view<Ui: UserInterface>(
+    clip: &Weak<Clip>,
+    mapping: Mapping,
+    settings: Settings,
+    key: &Changing<Key>,
+) -> Quotated {
+    if !settings.open {
+        return Quotated::EMPTY;
+    }
+
+    let view = content::<Ui>(clip, mapping, settings, key);
+
+    let title = clip.upgrade().as_deref().map_or(PIANO_ROLL, Clip::name);
+
+    let title_height = Ui::title_height(&title, &view);
+
+    view.titled(title)
+        .grabbable(grabber(title_height))
+        .quotated(settings.content_height + title_height)
+}
+
+fn content<Ui: UserInterface>(
     clip: &Weak<Clip>,
     mapping: Mapping,
     settings: Settings,
     key: &Changing<Key>,
 ) -> View {
     let Some(clip) = clip.upgrade() else {
-        return NO_CLIP_SELECTED.centred().titled(PIANO_ROLL);
+        return NO_CLIP_SELECTED.centred();
     };
 
     let roll_start = mapping.instant(settings.piano_depth.get());
@@ -64,9 +86,30 @@ pub fn view<Ui: UserInterface>(
         stack.quotated(settings.key_width.get())
     });
 
-    View::Stack {
+    let view = View::Stack {
         direction: Direction::Right,
         elements: vec![ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()],
+    };
+
+    let title_height = Ui::title_height(&clip.name, &view);
+
+    view.titled(clip.name.clone())
+        .grabbable(grabber(title_height))
+}
+
+fn grabber(
+    title_height: Length,
+) -> impl Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static {
+    move |area, position| {
+        let relative_position = position - area.position.position();
+
+        if relative_position.y < title_height {
+            Some(HoldableObject::PianoRollHandle {
+                y: relative_position.y,
+            })
+        } else {
+            // TODO: grab contents, i.e. notes
+            None
+        }
     }
-    .titled(clip.name.clone())
 }

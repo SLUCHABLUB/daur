@@ -21,6 +21,11 @@ impl<T> Cell<T> {
     pub fn set(&self, value: T) {
         self.inner.store(value);
     }
+
+    /// Replaces the value in the cell.
+    pub fn replace(&self, value: T) -> T {
+        self.inner.swap(value)
+    }
 }
 
 impl<T: Copy> Cell<T> {

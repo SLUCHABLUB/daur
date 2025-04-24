@@ -4,8 +4,8 @@ use crossterm::event::{
     Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
 use daur::App;
-use daur::ui::{Length, NonZeroLength, Vector};
-use daur::view::{Clicker, Direction};
+use daur::ui::{Length, Vector};
+use daur::view::{Clicker, Direction, Grabber};
 use ratatui::layout::{Position, Rect};
 use std::io;
 use std::sync::Arc;
@@ -67,10 +67,27 @@ fn handle_mouse_event(
 ) {
     app.ui.mouse_position.set(Position::new(column, row));
 
+    let area = rect_to_rectangle(app.ui.window_area.get());
+    let position = position_to_point(app.ui.mouse_position.get());
+
+    if let Some(object) = app.hand.get() {
+        object.update(app, position);
+    }
+
     match kind {
         MouseEventKind::Down(button) => {
-            let area = rect_to_rectangle(app.ui.window_area.get());
-            let position = position_to_point(app.ui.mouse_position.get());
+            if button != MouseButton::Left {
+                return;
+            }
+
+            let mut grabber = Grabber::<Tui>::new(position);
+
+            app.view().accept(&mut grabber, area, position);
+
+            app.hand.set(grabber.object());
+        }
+        MouseEventKind::Up(button) => {
+            // click
 
             let mut clicker = match button {
                 MouseButton::Left => Clicker::left_click(position),
@@ -81,9 +98,12 @@ fn handle_mouse_event(
             app.view().accept(&mut clicker, area, position);
 
             clicker.take_actions(app);
-        }
-        MouseEventKind::Up(_) => {
-            // TODO: clear the hand
+
+            // let go
+
+            if let Some(object) = app.hand.replace(None) {
+                object.let_go(app);
+            }
         }
         MouseEventKind::Moved | MouseEventKind::Drag(_) => (),
         MouseEventKind::ScrollDown => {
@@ -108,12 +128,7 @@ fn scroll(app: &App<Tui>, direction: Direction) {
     let mouse_position = position_to_point(app.ui.mouse_position.get());
     let area = rect_to_rectangle(app.ui.window_area.get());
 
-    let piano_roll_start = area.size.height
-        - app
-            .piano_roll_settings
-            .get()
-            .height
-            .map_or(Length::ZERO, NonZeroLength::get);
+    let piano_roll_start = area.size.height - app.piano_roll_settings.get().content_height;
 
     if mouse_position.y < app.project_bar_height.get() {
         // scroll the project bar (do nothing)

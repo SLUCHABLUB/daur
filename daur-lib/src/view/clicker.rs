@@ -1,3 +1,4 @@
+use crate::app::HoldableObject;
 use crate::ui::{Length, Point, Rectangle};
 use crate::view::context::Menu;
 use crate::view::{Alignment, OnClick, Painter, Visitor};
@@ -84,6 +85,10 @@ impl<Ui: UserInterface> Visitor for Clicker<Ui> {
     }
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
+
+    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {
+        // a click triggers on release whilst a grab triggers on press
+    }
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 

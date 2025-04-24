@@ -6,7 +6,7 @@ use crate::tui::Tui;
 use daur::ui::{Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::{Alignment, OnClick, Painter, Visitor};
-use daur::{App, Colour};
+use daur::{App, Colour, HoldableObject};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};
@@ -84,9 +84,9 @@ impl Visitor for Renderer<'_> {
             .render(area, self.buffer);
     }
 
-    fn visit_clickable(&mut self, _area: Rectangle, _on_click: &OnClick) {}
+    fn visit_clickable(&mut self, _: Rectangle, _: &OnClick) {}
 
-    fn visit_contextual(&mut self, _area: Rectangle, _menu: &Menu) {}
+    fn visit_contextual(&mut self, _: Rectangle, _: &Menu) {}
 
     fn visit_cursor_window(&mut self, area: Rectangle, offset: Length) {
         if area.size.width <= offset {
@@ -105,6 +105,8 @@ impl Visitor for Renderer<'_> {
 
         Text::from(vec![Line::raw(VERTICAL); line_count]).render(area, self.buffer);
     }
+
+    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
 
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64) {
         let area = rectangle_to_rect(area);

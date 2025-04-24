@@ -7,9 +7,10 @@ pub struct Settings {
     pub x_offset: Length,
     /// How far from A4 the piano roll is scrolled.
     pub y_offset: Offset,
-    /// The height of the piano roll itself.
-    /// Or [`None`] if the piano roll is closed.
-    pub height: Option<NonZeroLength>,
+    /// The height of the piano roll content (excluding the title).
+    pub content_height: Length,
+    /// Whether the piano roll is open.
+    pub open: bool,
 
     /// The width of the keys
     pub key_width: NonZeroLength,
