@@ -1,7 +1,5 @@
 use crate::canvas::Context;
-use crate::convert::{
-    approximate_colour, position_to_point, rect_to_rectangle, rectangle_to_rect, to_size,
-};
+use crate::convert::{approximate_colour, from_rectangle, to_rectangle, to_size};
 use crate::tui::Tui;
 use daur::ui::{Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
@@ -33,16 +31,13 @@ pub fn spawn_draw_thread(
             app.ui.should_redraw.set(app.is_playing());
 
             let result = terminal.draw(|frame| {
-                let area = frame.area();
+                let area = to_rectangle(frame.area());
                 let buffer = frame.buffer_mut();
 
                 app.ui.window_area.set(area);
 
-                app.view().accept(
-                    &mut Renderer { buffer },
-                    rect_to_rectangle(area),
-                    position_to_point(app.ui.mouse_position.get()),
-                );
+                app.view()
+                    .accept(&mut Renderer { buffer }, area, app.ui.mouse_position.get());
             });
 
             if let Err(error) = result {
@@ -66,7 +61,7 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter) {
-        let area = rectangle_to_rect(area);
+        let area = from_rectangle(area);
 
         let width = f64::from(area.width);
         let height = f64::from(area.height);
@@ -93,7 +88,7 @@ impl Visitor for Renderer<'_> {
             return;
         }
 
-        let area = rectangle_to_rect(Rectangle {
+        let area = from_rectangle(Rectangle {
             position: area.position + Vector::from_x(Offset::positive(offset)),
             size: Size {
                 width: Length::PIXEL,
@@ -109,7 +104,7 @@ impl Visitor for Renderer<'_> {
     fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
 
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64) {
-        let area = rectangle_to_rect(area);
+        let area = from_rectangle(area);
 
         let width = usize::from(area.width);
         let cells = NonZeroUsize::try_from(cells).unwrap_or(NonZeroUsize::MAX);
@@ -130,7 +125,7 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_solid(&mut self, area: Rectangle, colour: Colour) {
-        let area = rectangle_to_rect(area);
+        let area = from_rectangle(area);
 
         EmptyCanvas::default()
             .background_color(approximate_colour(colour))
@@ -138,7 +133,7 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_text(&mut self, area: Rectangle, string: &str, alignment: Alignment) {
-        let area = rectangle_to_rect(area);
+        let area = from_rectangle(area);
 
         let paragraph_alignment = match alignment {
             Alignment::TopLeft | Alignment::Left | Alignment::BottomLeft => layout::Alignment::Left,
@@ -177,7 +172,7 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_titled(&mut self, area: Rectangle, title: &str, highlighted: bool) {
-        let area = rectangle_to_rect(area);
+        let area = from_rectangle(area);
 
         let set = if highlighted { THICK } else { PLAIN };
 
@@ -189,7 +184,7 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_window(&mut self, area: Rectangle) {
-        Clear.render(rectangle_to_rect(area), self.buffer);
+        Clear.render(from_rectangle(area), self.buffer);
     }
 
     fn visit_titled_bordered(
@@ -200,7 +195,7 @@ impl Visitor for Renderer<'_> {
         highlighted: bool,
         thick: bool,
     ) {
-        let area = rectangle_to_rect(area);
+        let area = from_rectangle(area);
 
         let set = if thick || highlighted { THICK } else { PLAIN };
 

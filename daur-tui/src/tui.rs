@@ -1,7 +1,6 @@
-use crate::convert::to_size;
-use daur::ui::{Length, NonZeroLength, Size};
+use crate::convert::to_length;
+use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use daur::{Cell, Observed, Ratio, UserInterface, View};
-use ratatui::layout::{Position, Rect};
 use saturating_cast::SaturatingCast as _;
 use std::path::Path;
 use unicode_segmentation::UnicodeSegmentation as _;
@@ -17,8 +16,8 @@ macro_rules! non_zero_length {
 pub struct Tui {
     pub should_exit: Observed<bool>,
     pub should_redraw: Observed<bool>,
-    pub mouse_position: Cell<Position>,
-    pub window_area: Cell<Rect>,
+    pub mouse_position: Cell<Point>,
+    pub window_area: Cell<Rectangle>,
 }
 
 impl UserInterface for Tui {
@@ -37,7 +36,7 @@ impl UserInterface for Tui {
     }
 
     fn size(&self) -> Size {
-        to_size(self.window_area.get().as_size())
+        self.window_area.get().size
     }
 
     fn string_width(string: &str) -> Length {
@@ -89,13 +88,21 @@ impl UserInterface for Tui {
     }
 }
 
+const DEFAULT_TERMINAL_SIZE: Size = Size {
+    width: to_length(80),
+    height: to_length(24),
+};
+
 impl Default for Tui {
     fn default() -> Self {
         Tui {
             should_exit: Observed::new(false),
             should_redraw: Observed::new(true),
-            mouse_position: Cell::new(Position::ORIGIN),
-            window_area: Cell::new(Rect::ZERO),
+            mouse_position: Cell::new(Point::ZERO),
+            window_area: Cell::new(Rectangle {
+                position: Point::ZERO,
+                size: DEFAULT_TERMINAL_SIZE,
+            }),
         }
     }
 }

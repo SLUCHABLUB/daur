@@ -1,12 +1,12 @@
-use crate::convert::{position_to_point, rect_to_rectangle};
+use crate::convert::{to_point, to_size};
 use crate::tui::Tui;
 use crossterm::event::{
     Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
 use daur::App;
-use daur::ui::{Length, Vector};
+use daur::ui::{Length, Point, Rectangle, Vector};
 use daur::view::{Clicker, Direction, Grabber};
-use ratatui::layout::{Position, Rect};
+use ratatui::layout::{Position, Size};
 use std::io;
 use std::sync::Arc;
 use std::thread::{JoinHandle, spawn};
@@ -23,11 +23,9 @@ pub fn spawn_events_thread(app: Arc<App<Tui>>) -> JoinHandle<io::Error> {
                 Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
                 Event::Key(event) => handle_key_event(event, &app),
                 Event::Mouse(event) => handle_mouse_event(event, &app),
-                Event::Resize(width, height) => app.ui.window_area.set(Rect {
-                    x: 0,
-                    y: 0,
-                    width,
-                    height,
+                Event::Resize(width, height) => app.ui.window_area.set(Rectangle {
+                    position: Point::ZERO,
+                    size: to_size(Size { width, height }),
                 }),
             }
 
@@ -65,10 +63,12 @@ fn handle_mouse_event(
     }: MouseEvent,
     app: &App<Tui>,
 ) {
-    app.ui.mouse_position.set(Position::new(column, row));
+    app.ui
+        .mouse_position
+        .set(to_point(Position::new(column, row)));
 
-    let area = rect_to_rectangle(app.ui.window_area.get());
-    let position = position_to_point(app.ui.mouse_position.get());
+    let area = app.ui.window_area.get();
+    let position = app.ui.mouse_position.get();
 
     if let Some(object) = app.hand.get() {
         object.update(app, position);
@@ -125,8 +125,8 @@ fn handle_mouse_event(
 fn scroll(app: &App<Tui>, direction: Direction) {
     let offset = -Vector::directed(Length::PIXEL, direction);
 
-    let mouse_position = position_to_point(app.ui.mouse_position.get());
-    let area = rect_to_rectangle(app.ui.window_area.get());
+    let mouse_position = app.ui.mouse_position.get();
+    let area = app.ui.window_area.get();
 
     let piano_roll_start = area.size.height - app.piano_roll_settings.get().content_height;
 
