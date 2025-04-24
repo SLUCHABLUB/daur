@@ -2,8 +2,17 @@ use crate::ui::{Length, Size};
 use crate::{Ratio, UserInterface, View};
 use std::cmp::max;
 
-/// See [`View::minimum_size`]
-pub(super) fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
+impl View {
+    /// Returns the minimum size required to fit the entire view.
+    #[must_use]
+    pub fn minimum_size<Ui: UserInterface>(&self) -> Size {
+        minimum_size::<Ui>(self)
+    }
+}
+
+/// See [`View::minimum_size`].
+/// Used to minimise indentation.
+fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
     match view {
         View::Bordered { thick: _, view } => {
             let mut size = view.minimum_size::<Ui>();

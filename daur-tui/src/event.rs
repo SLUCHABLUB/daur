@@ -5,7 +5,8 @@ use crossterm::event::{
 };
 use daur::App;
 use daur::ui::{Length, Point, Rectangle, Vector};
-use daur::view::{Clicker, Direction, Grabber};
+use daur::view::Direction;
+use daur::view::visit::{Clicker, Grabber};
 use ratatui::layout::{Position, Size};
 use std::io;
 use std::sync::Arc;

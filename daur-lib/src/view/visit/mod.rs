@@ -1,3 +1,11 @@
+//! Types pertaining to [`Visitor`].
+
+mod clicker;
+mod grabber;
+
+pub use clicker::Clicker;
+pub use grabber::Grabber;
+
 use crate::app::HoldableObject;
 use crate::ui::{Length, Point, Rectangle};
 use crate::view::context::Menu;

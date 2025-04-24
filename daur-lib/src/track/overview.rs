@@ -36,7 +36,7 @@ pub fn overview(
             cursor_window(cursor, &ui_mapping, offset),
         ])
     }))
-    .context(Menu::track_overview())
+    .contextual(Menu::track_overview())
 }
 
 /// Returns a function for generating clip-overviews from a feed index.

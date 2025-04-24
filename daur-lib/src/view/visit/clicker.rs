@@ -1,7 +1,8 @@
 use crate::app::HoldableObject;
 use crate::ui::{Length, Point, Rectangle};
 use crate::view::context::Menu;
-use crate::view::{Alignment, OnClick, Painter, Visitor};
+use crate::view::visit::Visitor;
+use crate::view::{Alignment, OnClick, Painter};
 use crate::{Action, App, Colour, UserInterface};
 use std::marker::PhantomData;
 use std::num::NonZeroU64;
