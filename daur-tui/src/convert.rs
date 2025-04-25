@@ -1,5 +1,4 @@
-use daur::Colour;
-use daur::ui::{Length, Point, Rectangle, Size};
+use daur::ui::{Colour, Length, Point, Rectangle, Size};
 use ratatui::layout::{Position, Rect, Size as RatatuiSize};
 use ratatui::style::Color;
 use saturating_cast::SaturatingCast as _;

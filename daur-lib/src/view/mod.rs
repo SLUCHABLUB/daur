@@ -31,9 +31,8 @@ pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 pub use text::ToText;
 
-use crate::Colour;
 use crate::app::HoldableObject;
-use crate::ui::{Length, Point, Rectangle, Size};
+use crate::ui::{Colour, Length, Point, Rectangle, Size};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;

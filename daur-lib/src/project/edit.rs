@@ -1,4 +1,3 @@
-use crate::Colour;
 use crate::audio::Audio;
 use crate::clip::{Clip, Content};
 use crate::key::Key;
@@ -8,6 +7,7 @@ use crate::project::Action;
 use crate::ratio::Ratio;
 use crate::time::{Duration, Instant};
 use crate::track::Track;
+use crate::ui::Colour;
 use arcstr::{ArcStr, literal};
 use hound::WavReader;
 use std::ffi::{OsStr, OsString};

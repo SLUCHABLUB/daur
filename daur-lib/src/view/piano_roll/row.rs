@@ -1,5 +1,5 @@
-use crate::Colour;
 use crate::pitch::Pitch;
+use crate::ui::Colour;
 use crate::view::View;
 
 /// Return the view for a (non-piano) row of the piano roll.

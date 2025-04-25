@@ -1,7 +1,6 @@
-use crate::Colour;
 use crate::key::Key;
 use crate::pitch::Pitch;
-use crate::ui::NonZeroLength;
+use crate::ui::{Colour, NonZeroLength};
 use crate::view::{Alignment, Direction, ToText as _, View};
 use arcstr::ArcStr;
 

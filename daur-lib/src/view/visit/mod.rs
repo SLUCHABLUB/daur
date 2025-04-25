@@ -7,10 +7,10 @@ pub use clicker::Clicker;
 pub use grabber::Grabber;
 
 use crate::app::HoldableObject;
-use crate::ui::{Length, Point, Rectangle};
+use crate::ui::{Colour, Length, Point, Rectangle};
 use crate::view::context::Menu;
 use crate::view::{Alignment, OnClick, Painter};
-use crate::{Colour, Ratio, UserInterface, View};
+use crate::{Ratio, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
 

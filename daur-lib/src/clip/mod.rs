@@ -8,8 +8,8 @@ pub use content::Content;
 pub use overview::overview;
 pub use source::Source;
 
-use crate::Colour;
 use crate::time::{Instant, Mapping, Period};
+use crate::ui::Colour;
 use arcstr::ArcStr;
 use getset::CloneGetters;
 

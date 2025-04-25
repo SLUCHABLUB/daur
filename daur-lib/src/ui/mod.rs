@@ -1,15 +1,6 @@
 //! Types pertaining to [`UserInterface`].
 
-pub use grid::Grid;
-pub use length::{Length, NonZeroLength};
-pub use mapping::Mapping;
-pub use offset::Offset;
-pub use point::Point;
-pub use rectangle::Rectangle;
-pub use size::Size;
-use std::path::Path;
-pub use vector::Vector;
-
+mod colour;
 mod grid;
 mod length;
 mod mapping;
@@ -19,7 +10,18 @@ mod rectangle;
 mod size;
 mod vector;
 
+pub use colour::Colour;
+pub use grid::Grid;
+pub use length::{Length, NonZeroLength};
+pub use mapping::Mapping;
+pub use offset::Offset;
+pub use point::Point;
+pub use rectangle::Rectangle;
+pub use size::Size;
+pub use vector::Vector;
+
 use crate::View;
+use std::path::Path;
 
 /// A user interface for the DAW.
 #[doc(hidden)]

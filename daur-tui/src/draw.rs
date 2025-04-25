@@ -1,11 +1,11 @@
 use crate::canvas::Context;
 use crate::convert::{approximate_colour, from_rectangle, to_rectangle, to_size};
 use crate::tui::Tui;
-use daur::ui::{Length, Offset, Rectangle, Size, Vector};
+use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
 use daur::view::{Alignment, OnClick, Painter};
-use daur::{App, Colour, HoldableObject};
+use daur::{App, HoldableObject};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};

@@ -1,6 +1,6 @@
-use crate::ui::Size;
+use crate::ui::{Colour, Size};
 use crate::view::{Context, Direction};
-use crate::{Colour, Ratio, UserInterface, View};
+use crate::{Ratio, UserInterface, View};
 use itertools::Itertools as _;
 use std::cmp::max;
 

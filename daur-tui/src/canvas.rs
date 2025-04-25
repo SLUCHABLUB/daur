@@ -1,6 +1,6 @@
 use crate::convert::approximate_colour;
-use daur::ui::{Point, Rectangle, Size};
-use daur::{Colour, view};
+use daur::ui::{Colour, Point, Rectangle, Size};
+use daur::view;
 use ratatui::widgets::canvas;
 use ratatui::widgets::canvas::Points;
 
