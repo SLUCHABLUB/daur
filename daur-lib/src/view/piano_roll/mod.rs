@@ -22,10 +22,6 @@ const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
 /// Returns the view for the piano roll.
-///
-// The piano roll has a fixed lower pitch.
-// Resizing it will thus cause the bottom to be fixed.
-// Since the top is the thing you move, this seems intuitive.
 pub fn view<Ui: UserInterface>(
     clip: &Weak<Clip>,
     mapping: Mapping,
@@ -68,6 +64,9 @@ fn content<Ui: UserInterface>(
         ],
     };
 
+    // The piano roll has a fixed lower pitch.
+    // Resizing it will thus cause the bottom to be fixed.
+    // Since the top is the thing being moved, this seems intuitive.
     let workspace = feed(Direction::Up, -settings.y_offset, move |index| {
         let interval = Interval::from_semitones(index.saturating_cast());
         let pitch = Pitch::A440 + interval;
