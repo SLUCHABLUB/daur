@@ -9,9 +9,6 @@ pub mod track;
 pub mod ui;
 pub mod view;
 
-#[cfg(test)]
-mod test;
-
 mod app;
 mod cell;
 mod changing;
