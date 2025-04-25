@@ -53,7 +53,7 @@ fn content<Ui: UserInterface>(
     settings: Settings,
     key: &Changing<Key>,
 ) -> View {
-    let Some(clip) = clip.upgrade() else {
+    let Some(_clip) = clip.upgrade() else {
         return NO_CLIP_SELECTED.centred();
     };
 
@@ -86,15 +86,10 @@ fn content<Ui: UserInterface>(
         stack.quotated(settings.key_width.get())
     });
 
-    let view = View::Stack {
+    View::Stack {
         direction: Direction::Right,
         elements: vec![ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()],
-    };
-
-    let title_height = Ui::title_height(&clip.name, &view);
-
-    view.titled(clip.name.clone())
-        .grabbable(grabber(title_height))
+    }
 }
 
 fn grabber(
