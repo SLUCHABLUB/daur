@@ -1,4 +1,6 @@
+use crate::ui::{Length, Offset, Vector};
 use crate::view::Axis;
+use std::ops::Mul;
 
 /// A direction in which items can be laid out
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -30,5 +32,23 @@ impl Direction {
             Direction::Up | Direction::Left => true,
             Direction::Down | Direction::Right => false,
         }
+    }
+}
+
+impl Mul<Length> for Direction {
+    type Output = Vector;
+
+    fn mul(self, rhs: Length) -> Vector {
+        let mut x = Offset::ZERO;
+        let mut y = Offset::ZERO;
+
+        match self {
+            Direction::Up => y = Offset::negative(rhs),
+            Direction::Left => x = Offset::negative(rhs),
+            Direction::Down => y = Offset::positive(rhs),
+            Direction::Right => x = Offset::positive(rhs),
+        }
+
+        Vector { x, y }
     }
 }

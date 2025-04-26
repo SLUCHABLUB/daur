@@ -4,7 +4,7 @@ use crossterm::event::{
     Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
 };
 use daur::App;
-use daur::ui::{Length, Point, Rectangle, Vector};
+use daur::ui::{Length, Point, Rectangle};
 use daur::view::Direction;
 use daur::view::visit::{Clicker, Grabber};
 use ratatui::layout::{Position, Size};
@@ -124,7 +124,8 @@ fn handle_mouse_event(
 
 // TODO: break into parts and move into the library
 fn scroll(app: &App<Tui>, direction: Direction) {
-    let offset = -Vector::directed(Length::PIXEL, direction);
+    // the screen is moved in the opposite direction of the mouse movement
+    let offset = -(direction * Length::PIXEL);
 
     let mouse_position = app.ui.mouse_position.get();
     let area = app.ui.window_area.get();
