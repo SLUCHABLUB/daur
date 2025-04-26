@@ -2,7 +2,6 @@ use crate::ui::{Mapping, Offset};
 use crate::view::{Direction, View, feed};
 use std::num::NonZeroU64;
 
-// TODO: use `Button` for moving and scaling the overview
 /// A ruler of musical time
 pub fn ruler(mapping: Mapping, offset: Offset) -> View {
     feed(Direction::Right, offset, move |index| {

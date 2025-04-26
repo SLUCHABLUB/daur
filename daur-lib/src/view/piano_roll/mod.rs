@@ -86,7 +86,7 @@ fn content<Ui: UserInterface>(
     });
 
     View::Stack {
-        direction: Direction::Right,
+        direction: Direction::Down,
         elements: vec![ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()],
     }
 }
