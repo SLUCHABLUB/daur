@@ -193,6 +193,7 @@ impl<Ui: UserInterface> App<Ui> {
     /// The view of the app.
     ///
     /// This includes popups and the context menu.
+    /// The view may need to be recomputed if an action is taken on the app.
     pub fn view(&self) -> View {
         let mut layers = vec![self.main_view()];
 
