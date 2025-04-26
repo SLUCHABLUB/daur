@@ -23,4 +23,4 @@ arithmetic-side-effects-allowed = [
     "daur::ui::Vector",
 ]
 # `f` is used in Display::fmt 
-allowed-idents-below-min-chars = ["f", "x", "y"]
+allowed-idents-below-min-chars = ["f", "x", "y", "X", "Y"]

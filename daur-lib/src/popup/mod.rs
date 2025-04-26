@@ -11,7 +11,7 @@ pub use manager::Manager;
 use crate::key::Key;
 use crate::time::Instant;
 use crate::ui::Rectangle;
-use crate::view::{Alignment, Direction, OnClick, ToText as _, file_selector, multi, single};
+use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Action, ArcCell, Cell, Ratio, ToArcStr as _, UserInterface, View, project};
 use arcstr::{ArcStr, format, literal};
 use closure::closure;
@@ -90,7 +90,7 @@ impl Popup {
     pub fn inner_view<Ui: UserInterface>(&self, id: Id) -> View {
         match self {
             Popup::ButtonPanel { title: _, buttons } => View::balanced_stack::<Ui, _>(
-                Direction::Down,
+                Axis::Y,
                 buttons.iter().map(|(label, action)| {
                     View::simple_button(label.clone(), OnClick::from(action.clone()))
                         .terminating(id)
@@ -100,7 +100,7 @@ impl Popup {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
                 View::spaced_stack::<Ui, _>(
-                    Direction::Down,
+                    Axis::Y,
                     [
                         display.clone().aligned_to(Alignment::TopLeft),
                         debug.clone().aligned_to(Alignment::TopLeft),
@@ -129,15 +129,12 @@ impl Popup {
                 .terminating(id);
                 let cancel = CANCEL.centred().bordered().terminating(id);
 
-                let buttons = View::spaced_stack::<Ui, _>(Direction::Right, vec![cancel, confirm]);
+                let buttons = View::spaced_stack::<Ui, _>(Axis::X, vec![cancel, confirm]);
 
-                View::Stack {
-                    direction: Direction::Down,
-                    elements: vec![
-                        file_selector::<Ui>(&selected_file).fill_remaining(),
-                        buttons.quotated_minimally::<Ui>(),
-                    ],
-                }
+                View::y_stack([
+                    file_selector::<Ui>(&selected_file).fill_remaining(),
+                    buttons.quotated_minimally::<Ui>(),
+                ])
             }
             Popup::KeySelector { instant, key } => {
                 let instant = *instant;
@@ -147,7 +144,7 @@ impl Popup {
                 let intervals = Arc::new(Cell::new(key.intervals));
 
                 let buttons = View::spaced_stack::<Ui, _>(
-                    Direction::Right,
+                    Axis::X,
                     vec![
                         CANCEL.centred().bordered().terminating(id),
                         View::standard_button(
@@ -170,17 +167,17 @@ impl Popup {
                 );
 
                 View::spaced_stack::<Ui, _>(
-                    Direction::Down,
+                    Axis::Y,
                     vec![
                         single::selector_with_formatter::<Ui, _, _>(
                             &tonic,
-                            Direction::Right,
+                            Axis::X,
                             closure!([clone sign] move |chroma| {
                                 chroma.name(sign.get())
                             }),
                         ),
-                        single::selector::<Ui, _>(&sign, Direction::Right),
-                        multi::selector::<Ui, _>(&intervals, Direction::Right),
+                        single::selector::<Ui, _>(&sign, Axis::X),
+                        multi::selector::<Ui, _>(&intervals, Axis::X),
                         buttons,
                     ],
                 )

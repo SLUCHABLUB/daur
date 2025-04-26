@@ -150,12 +150,9 @@ impl View {
                 generator(area.size).accept(visitor, area, mouse_position);
             }
             View::Solid(colour) => visitor.visit_solid(area, *colour),
-            View::Stack {
-                direction,
-                elements,
-            } => {
+            View::Stack { axis, elements } => {
                 let quota: Vec<_> = elements.iter().map(|quotated| quotated.quotum).collect();
-                let rectangles = area.split(*direction, &quota);
+                let rectangles = area.split(*axis, &quota);
 
                 for (area, quoted) in zip(rectangles, elements) {
                     quoted.view.accept(visitor, area, mouse_position);

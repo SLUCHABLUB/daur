@@ -11,7 +11,7 @@ use crate::time::{Instant, Mapping, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;
-use crate::view::{Direction, View, piano_roll};
+use crate::view::{View, piano_roll};
 use crate::{
     ArcCell, Cell, Clip, OptionArcCell, Project, Ratio, Track, UserInterface, popup, project, ui,
 };
@@ -161,33 +161,30 @@ impl<Ui: UserInterface> App<Ui> {
 
     /// The main view of the app behind any popups
     fn main_view(&self) -> View {
-        View::Stack {
-            direction: Direction::Down,
-            elements: vec![
-                self.project
-                    .bar::<Ui>(self.is_playing())
-                    .quotated(self.project_bar_height.get()),
-                self.project
-                    .workspace::<Ui>(
-                        self.track_settings_width,
-                        self.grid,
-                        self.overview_offset.get(),
-                        &self.selected_track.get(),
-                        &self.selected_clip.get(),
-                        self.playback_position(),
-                    )
-                    .fill_remaining(),
-                piano_roll::view::<Ui>(
+        View::y_stack([
+            self.project
+                .bar::<Ui>(self.is_playing())
+                .quotated(self.project_bar_height.get()),
+            self.project
+                .workspace::<Ui>(
+                    self.track_settings_width,
+                    self.grid,
+                    self.overview_offset.get(),
+                    &self.selected_track.get(),
                     &self.selected_clip.get(),
-                    ui::Mapping {
-                        time_signature: self.project.time_signature(),
-                        grid: self.grid,
-                    },
-                    self.piano_roll_settings.get(),
-                    &self.project.key(),
-                ),
-            ],
-        }
+                    self.playback_position(),
+                )
+                .fill_remaining(),
+            piano_roll::view::<Ui>(
+                &self.selected_clip.get(),
+                ui::Mapping {
+                    time_signature: self.project.time_signature(),
+                    grid: self.grid,
+                },
+                self.piano_roll_settings.get(),
+                &self.project.key(),
+            ),
+        ])
     }
 
     /// The view of the app.

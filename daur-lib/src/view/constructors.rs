@@ -1,5 +1,5 @@
 use crate::ui::{Colour, Size};
-use crate::view::{Context, Direction};
+use crate::view::{Axis, Context, Quotated};
 use crate::{Ratio, UserInterface, View};
 use itertools::Itertools as _;
 use std::cmp::max;
@@ -34,9 +34,25 @@ impl View {
         View::SizeInformed(Box::new(generator))
     }
 
+    /// Constructs a new horizontal [stack](View::Stack).
+    pub fn x_stack<E: IntoIterator<Item = Quotated>>(elements: E) -> Self {
+        View::Stack {
+            axis: Axis::X,
+            elements: elements.into_iter().collect(),
+        }
+    }
+
+    /// Constructs a new vertical [stack](View::Stack).
+    pub fn y_stack<E: IntoIterator<Item = Quotated>>(elements: E) -> Self {
+        View::Stack {
+            axis: Axis::Y,
+            elements: elements.into_iter().collect(),
+        }
+    }
+
     /// Constructs a new [stack](View::Stack) where all views are quotated equally.
     pub fn balanced_stack<Ui: UserInterface, E: IntoIterator<Item = Self>>(
-        direction: Direction,
+        axis: Axis,
         elements: E,
     ) -> Self {
         let iter = elements.into_iter();
@@ -55,27 +71,24 @@ impl View {
 
         let count = Ratio::integer(count);
 
-        match direction {
-            Direction::Up | Direction::Down => minimum_size.height *= count,
-            Direction::Left | Direction::Right => minimum_size.width *= count,
+        match axis {
+            Axis::X => minimum_size.width *= count,
+            Axis::Y => minimum_size.height *= count,
         }
 
         View::Sized {
             minimum_size,
-            view: Box::new(View::Stack {
-                direction,
-                elements,
-            }),
+            view: Box::new(View::Stack { axis, elements }),
         }
     }
 
     /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size and spread out evenly.
     pub fn spaced_stack<Ui: UserInterface, E: IntoIterator<Item = Self>>(
-        direction: Direction,
+        axis: Axis,
         elements: E,
     ) -> Self {
         View::Stack {
-            direction,
+            axis,
             elements: elements
                 .into_iter()
                 .map(View::quotated_minimally::<Ui>)

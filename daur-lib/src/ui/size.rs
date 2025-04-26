@@ -1,5 +1,5 @@
 use crate::ui::{Length, Point, Vector};
-use crate::view::Direction;
+use crate::view::Axis;
 
 /// The size of something on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
@@ -19,36 +19,32 @@ impl Size {
 
     /// Returns the length parallel to a direction.
     #[must_use]
-    pub fn parallel_to(self, direction: Direction) -> Length {
-        match direction {
-            Direction::Left | Direction::Right => self.width,
-            Direction::Up | Direction::Down => self.height,
+    pub fn parallel_to(self, axis: Axis) -> Length {
+        match axis {
+            Axis::X => self.width,
+            Axis::Y => self.height,
         }
     }
 
     /// Returns the length orthogonal to a direction.
     #[must_use]
-    pub fn orthogonal_to(self, direction: Direction) -> Length {
-        match direction {
-            Direction::Left | Direction::Right => self.height,
-            Direction::Up | Direction::Down => self.width,
+    pub fn orthogonal_to(self, axis: Axis) -> Length {
+        match axis {
+            Axis::X => self.height,
+            Axis::Y => self.width,
         }
     }
 
     /// Construct a size from two lengths,
     /// one parallel and one orthogonal to a direction.
     #[must_use]
-    pub fn from_parallel_orthogonal(
-        parallel: Length,
-        orthogonal: Length,
-        direction: Direction,
-    ) -> Size {
-        match direction {
-            Direction::Left | Direction::Right => Size {
+    pub fn from_parallel_orthogonal(parallel: Length, orthogonal: Length, axis: Axis) -> Size {
+        match axis {
+            Axis::X => Size {
                 width: parallel,
                 height: orthogonal,
             },
-            Direction::Up | Direction::Down => Size {
+            Axis::Y => Size {
                 width: orthogonal,
                 height: parallel,
             },

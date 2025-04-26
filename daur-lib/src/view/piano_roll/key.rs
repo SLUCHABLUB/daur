@@ -1,7 +1,7 @@
 use crate::key::Key;
 use crate::pitch::Pitch;
 use crate::ui::{Colour, NonZeroLength};
-use crate::view::{Alignment, Direction, ToText as _, View};
+use crate::view::{Alignment, ToText as _, View};
 use arcstr::ArcStr;
 
 // TODO: use `Button` for:
@@ -25,8 +25,5 @@ pub fn piano_key(pitch: Pitch, key: Key, black_key_depth: NonZeroLength) -> View
 
     let bottom = View::Layers(vec![View::Solid(Colour::WHITE), text]);
 
-    View::Stack {
-        direction: Direction::Right,
-        elements: vec![top.quotated(black_key_depth.get()), bottom.fill_remaining()],
-    }
+    View::x_stack([top.quotated(black_key_depth.get()), bottom.fill_remaining()])
 }

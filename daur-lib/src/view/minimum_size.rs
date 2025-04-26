@@ -54,20 +54,17 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             height: Ui::RULER_HEIGHT.get(),
         },
         View::Sized { minimum_size, .. } => *minimum_size,
-        View::Stack {
-            direction,
-            elements,
-        } => {
+        View::Stack { axis, elements } => {
             let mut parallel = Length::ZERO;
             let mut orthogonal = Length::ZERO;
 
             for quoted in elements {
                 let child = quoted.view.minimum_size::<Ui>();
-                parallel += child.parallel_to(*direction);
-                orthogonal = max(orthogonal, child.orthogonal_to(*direction));
+                parallel += child.parallel_to(*axis);
+                orthogonal = max(orthogonal, child.orthogonal_to(*axis));
             }
 
-            Size::from_parallel_orthogonal(parallel, orthogonal, *direction)
+            Size::from_parallel_orthogonal(parallel, orthogonal, *axis)
         }
         View::Text {
             string,

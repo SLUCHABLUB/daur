@@ -7,6 +7,7 @@ pub mod single;
 pub mod visit;
 
 mod alignment;
+mod axis;
 mod builder;
 mod button;
 mod canvas;
@@ -21,6 +22,7 @@ mod ruler;
 mod text;
 
 pub use alignment::Alignment;
+pub use axis::Axis;
 pub use button::OnClick;
 pub use canvas::Context;
 pub use cursor::cursor_window;
@@ -118,8 +120,8 @@ pub enum View {
     Solid(Colour),
     /// A stack of views.
     Stack {
-        /// The direction in which the elements are laid out.
-        direction: Direction,
+        /// The axis along which the elements are laid out.
+        axis: Axis,
         /// The stacked views.
         elements: Vec<Quotated>,
     },

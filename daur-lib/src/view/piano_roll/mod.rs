@@ -56,13 +56,10 @@ fn content<Ui: UserInterface>(
     let roll_start = mapping.instant(settings.piano_depth.get());
     let piano_key_key = key.get(roll_start);
 
-    let ruler = View::Stack {
-        direction: Direction::Right,
-        elements: vec![
-            View::Empty.quotated(settings.piano_depth.get()),
-            ruler(mapping, Offset::negative(settings.x_offset)).fill_remaining(),
-        ],
-    };
+    let ruler = View::x_stack([
+        View::Empty.quotated(settings.piano_depth.get()),
+        ruler(mapping, Offset::negative(settings.x_offset)).fill_remaining(),
+    ]);
 
     // The piano roll has a fixed lower pitch.
     // Resizing it will thus cause the bottom to be fixed.
@@ -74,21 +71,15 @@ fn content<Ui: UserInterface>(
         let key = piano_key(pitch, piano_key_key, settings.black_key_depth);
         let row = row(pitch);
 
-        let stack = View::Stack {
-            direction: Direction::Right,
-            elements: vec![
-                key.quotated(settings.piano_depth.get()),
-                row.fill_remaining(),
-            ],
-        };
+        let stack = View::x_stack([
+            key.quotated(settings.piano_depth.get()),
+            row.fill_remaining(),
+        ]);
 
         stack.quotated(settings.key_width.get())
     });
 
-    View::Stack {
-        direction: Direction::Down,
-        elements: vec![ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()],
-    }
+    View::y_stack([ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()])
 }
 
 fn grabber(

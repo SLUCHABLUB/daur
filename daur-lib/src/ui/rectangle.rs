@@ -1,6 +1,6 @@
 use crate::Ratio;
-use crate::ui::{Length, Point, Size, Vector};
-use crate::view::{Direction, Quotum};
+use crate::ui::{Offset, Point, Size, Vector};
+use crate::view::{Axis, Quotum};
 use std::cmp::{max, min};
 use std::num::NonZeroU64;
 use std::ops::{Add, AddAssign};
@@ -69,15 +69,16 @@ impl Rectangle {
     }
 
     /// Splits the rectangle.
+    #[must_use]
     pub fn split(
         self,
-        direction: Direction,
+        axis: Axis,
         quota: &[Quotum],
-    ) -> impl Iterator<Item = Rectangle> + use<'_> {
-        let orthogonal = self.size.orthogonal_to(direction);
+    ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_> {
+        let orthogonal = self.size.orthogonal_to(axis);
 
         // the size that will be allocated to `Quotum::Remaining` quota
-        let mut fill_size = self.size.parallel_to(direction);
+        let mut fill_size = self.size.parallel_to(axis);
 
         let mut fill_count: u64 = 0;
 
@@ -85,7 +86,7 @@ impl Rectangle {
             match quotum {
                 Quotum::Remaining => fill_count = fill_count.saturating_add(1),
                 Quotum::Exact(length) => fill_size -= *length,
-                Quotum::DirectionDependent(size) => fill_size -= size.parallel_to(direction),
+                Quotum::DirectionDependent(size) => fill_size -= size.parallel_to(axis),
             }
         }
 
@@ -93,22 +94,22 @@ impl Rectangle {
             fill_size *= Ratio::reciprocal_of(fill_count);
         }
 
-        let mut offset = Length::ZERO;
+        let mut offset = Offset::ZERO;
 
         quota.iter().filter_map(move |quotum| {
             let parallel = match quotum {
                 Quotum::Remaining => fill_size,
                 Quotum::Exact(length) => *length,
-                Quotum::DirectionDependent(size) => size.parallel_to(direction),
+                Quotum::DirectionDependent(size) => size.parallel_to(axis),
             };
 
-            let position = self.position + Vector::directed(offset, direction);
+            let position = self.position + axis * offset;
 
             offset += parallel;
 
             self.intersection(Rectangle {
                 position,
-                size: Size::from_parallel_orthogonal(parallel, orthogonal, direction),
+                size: Size::from_parallel_orthogonal(parallel, orthogonal, axis),
             })
         })
     }

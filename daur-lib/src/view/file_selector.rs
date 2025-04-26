@@ -1,4 +1,4 @@
-use crate::view::{Alignment, Direction, OnClick, Quotated, ToText as _};
+use crate::view::{Alignment, OnClick, Quotated, ToText as _};
 use crate::{ArcCell, ToArcStr as _, UserInterface, View};
 use closure::closure;
 use std::fs::DirEntry;
@@ -40,13 +40,11 @@ fn list<Ui: UserInterface>(selected_file: &Arc<ArcCell<Path>>) -> View {
         return View::Empty;
     };
 
-    View::Stack {
-        direction: Direction::Down,
-        elements: directory
+    View::y_stack(
+        directory
             .filter_map(Result::ok)
-            .map(|entry| view_entry::<Ui>(entry, Arc::clone(selected_file)))
-            .collect(),
-    }
+            .map(|entry| view_entry::<Ui>(entry, Arc::clone(selected_file))),
+    )
 }
 
 fn view_entry<Ui: UserInterface>(entry: DirEntry, selected_file: Arc<ArcCell<Path>>) -> Quotated {

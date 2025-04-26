@@ -2,7 +2,7 @@ use crate::app::Action;
 use crate::key::Key;
 use crate::popup::Popup;
 use crate::time::{Instant, Signature, Tempo};
-use crate::view::{Direction, OnClick, ToText as _, View};
+use crate::view::{Axis, OnClick, ToText as _, View};
 use crate::{ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
 
@@ -42,7 +42,7 @@ pub fn bar<Ui: UserInterface>(
     };
 
     let start_settings = View::balanced_stack::<Ui, _>(
-        Direction::Right,
+        Axis::X,
         [
             View::described_button(
                 key.to_arc_str(),
@@ -58,21 +58,16 @@ pub fn bar<Ui: UserInterface>(
         ],
     );
 
-    let left_side = View::spaced_stack::<Ui, _>(
-        Direction::Right,
-        vec![literal!("TODO").centred(), start_settings],
-    );
+    let left_side =
+        View::spaced_stack::<Ui, _>(Axis::X, vec![literal!("TODO").centred(), start_settings]);
 
     let right_side = literal!("TODO").centred();
 
-    View::Stack {
-        direction: Direction::Right,
-        elements: vec![
-            left_side.fill_remaining(),
-            playback_button.quotated(Ui::PLAYBACK_BUTTON_WIDTH.get()),
-            right_side.fill_remaining(),
-        ],
-    }
+    View::x_stack([
+        left_side.fill_remaining(),
+        playback_button.quotated(Ui::PLAYBACK_BUTTON_WIDTH.get()),
+        right_side.fill_remaining(),
+    ])
     .bordered()
     .titled(title)
     .with_thickness(true)

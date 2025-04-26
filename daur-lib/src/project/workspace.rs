@@ -2,7 +2,7 @@ use crate::project::{ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Action};
 use crate::time::Instant;
 use crate::track::{Track, overview, settings};
 use crate::ui::{NonZeroLength, Offset};
-use crate::view::{Direction, OnClick, ToText as _, View, ruler};
+use crate::view::{Axis, OnClick, ToText as _, View, ruler};
 use crate::{Clip, UserInterface, time, ui};
 use arcstr::literal;
 use std::sync::{Arc, Weak};
@@ -58,30 +58,21 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let empty_space = literal!(":)").centred();
 
     let ruler = ruler(ui_mapping, overview_offset);
-    let ruler_row = View::Stack {
-        direction: Direction::Right,
-        elements: vec![
-            empty_space.quotated(track_settings_width.get()),
-            ruler.fill_remaining(),
-        ],
-    };
+    let ruler_row = View::x_stack([
+        empty_space.quotated(track_settings_width.get()),
+        ruler.fill_remaining(),
+    ]);
 
-    let settings_column = View::balanced_stack::<Ui, _>(Direction::Down, track_settings);
-    let overview_column = View::balanced_stack::<Ui, _>(Direction::Down, track_overviews);
+    let settings_column = View::balanced_stack::<Ui, _>(Axis::Y, track_settings);
+    let overview_column = View::balanced_stack::<Ui, _>(Axis::Y, track_overviews);
 
-    let track_area = View::Stack {
-        direction: Direction::Right,
-        elements: vec![
-            settings_column.quotated(track_settings_width.get()),
-            overview_column.fill_remaining(),
-        ],
-    };
+    let track_area = View::x_stack([
+        settings_column.quotated(track_settings_width.get()),
+        overview_column.fill_remaining(),
+    ]);
 
-    View::Stack {
-        direction: Direction::Down,
-        elements: vec![
-            ruler_row.quotated(Ui::RULER_HEIGHT.get()),
-            track_area.fill_remaining(),
-        ],
-    }
+    View::y_stack([
+        ruler_row.quotated(Ui::RULER_HEIGHT.get()),
+        track_area.fill_remaining(),
+    ])
 }

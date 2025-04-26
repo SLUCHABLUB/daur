@@ -26,6 +26,7 @@ impl Vector {
         Vector { x: Offset::ZERO, y }
     }
 
+    // TODO: replace with Mul
     /// Constructs a new vector with a given length and direction
     #[must_use]
     pub const fn directed(length: Length, direction: Direction) -> Vector {

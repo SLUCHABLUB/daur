@@ -10,7 +10,7 @@ where
     View::size_informed(move |size| {
         let mut offset = offset;
 
-        let full_size = size.parallel_to(direction);
+        let full_size = size.parallel_to(direction.axis());
 
         let first;
 
@@ -21,7 +21,7 @@ where
                 let quotated = generator(index);
                 offset += quotated
                     .quotum
-                    .size_parallel_to(direction)
+                    .size_parallel_to(direction.axis())
                     .unwrap_or(full_size);
                 index = index.saturating_add(1);
 
@@ -38,7 +38,7 @@ where
                 let new = index.saturating_sub(1);
 
                 let Quotated { quotum, view } = generator(new);
-                let quotum_size = quotum.size_parallel_to(direction);
+                let quotum_size = quotum.size_parallel_to(direction.axis());
                 offset -= quotum_size.unwrap_or(full_size);
 
                 if offset < Offset::ZERO {
@@ -56,7 +56,7 @@ where
 
         let used_size = first
             .quotum
-            .size_parallel_to(direction)
+            .size_parallel_to(direction.axis())
             .unwrap_or(full_size);
 
         let mut remaining = full_size - used_size;
@@ -69,7 +69,7 @@ where
             let new_remaining = remaining
                 - quotated
                     .quotum
-                    .size_parallel_to(direction)
+                    .size_parallel_to(direction.axis())
                     .unwrap_or(full_size);
 
             index = index.saturating_add(1);
@@ -78,8 +78,12 @@ where
             elements.push(quotated);
         }
 
+        if direction.is_negative() {
+            elements.reverse();
+        }
+
         View::Stack {
-            direction,
+            axis: direction.axis(),
             elements,
         }
     })

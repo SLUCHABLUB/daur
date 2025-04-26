@@ -3,7 +3,7 @@ mod quotated;
 pub use quotated::Quotated;
 
 use crate::ui::{Length, Size};
-use crate::view::Direction;
+use crate::view::Axis;
 
 /// The amount of space that is allocated to a view.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -17,11 +17,11 @@ pub enum Quotum {
 }
 
 impl Quotum {
-    pub(crate) fn size_parallel_to(self, direction: Direction) -> Option<Length> {
+    pub(crate) fn size_parallel_to(self, axis: Axis) -> Option<Length> {
         match self {
             Quotum::Remaining => None,
             Quotum::Exact(length) => Some(length),
-            Quotum::DirectionDependent(size) => Some(size.parallel_to(direction)),
+            Quotum::DirectionDependent(size) => Some(size.parallel_to(axis)),
         }
     }
 }
