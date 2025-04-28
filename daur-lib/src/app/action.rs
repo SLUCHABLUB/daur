@@ -42,9 +42,15 @@ pub enum Action {
 
     /// Picks up an object.
     PickUp(HoldableObject),
+    /// Moves the held object.
+    MoveHand(Point),
+    /// Lets go of the held object.
+    LetGo,
 
+    // TODO: use Length
     /// Scrolls the overview to the left by one cell
     ScrollLeft,
+    // TODO: use Length
     /// Scrolls the overview to the right by one cell
     ScrollRight,
 
@@ -71,82 +77,121 @@ impl Action {
     pub fn import_audio<P: Into<PathBuf>>(file: P) -> Action {
         Action::Project(project::Action::ImportAudio { file: file.into() })
     }
+}
 
-    /// Take the action on the app
-    pub fn take<Ui: UserInterface>(self, app: &App<Ui>) {
-        match self {
+impl<Ui: UserInterface> App<Ui> {
+    /// Takes an action on the app.
+    pub fn take_action(&self, action: Action) {
+        let should_rerender = self.take_(action);
+
+        if should_rerender {
+            self.ui.rerender();
+        }
+    }
+
+    /// Takes multiple actions on the app.
+    pub fn take_actions<Actions: IntoIterator<Item = Action>>(&self, actions: Actions) {
+        let mut should_rerender = false;
+
+        for action in actions {
+            should_rerender |= self.take_(action);
+        }
+
+        if should_rerender {
+            self.ui.rerender();
+        }
+    }
+
+    /// Takes a single action on the app and return whether the app needs to be rerendered.
+    fn take_(&self, action: Action) -> bool {
+        let mut need_rerender = true;
+
+        match action {
             Action::OpenPopup(popup) => {
-                app.popups.open(&popup, &app.ui);
+                self.popups.open(&popup, &self.ui);
             }
             Action::ClosePopup(popup) => {
-                app.popups.close(popup);
+                self.popups.close(popup);
             }
             Action::OpenContextMenu { menu, position } => {
-                app.context_menu.set(Some(menu.instantiate::<Ui>(position)));
+                self.context_menu
+                    .set(Some(menu.instantiate::<Ui>(position)));
             }
             Action::CloseContextMenu => {
-                app.context_menu.set(None);
+                self.context_menu.set(None);
             }
 
-            Action::Exit => app.ui.exit(),
+            Action::Exit => self.ui.exit(),
             Action::MoveCursor(instant) => {
-                app.cursor.set(instant);
+                self.cursor.set(instant);
 
-                if app.is_playing() {
-                    app.start_playback();
+                if self.is_playing() {
+                    self.start_playback();
                 }
             }
 
             Action::ScrollLeft => {
-                app.overview_offset
-                    .set(app.overview_offset.get() - app.grid.cell_width.get());
+                self.overview_offset
+                    .set(self.overview_offset.get() - self.grid.cell_width.get());
             }
             Action::ScrollRight => {
-                app.overview_offset
-                    .set(app.overview_offset.get() + app.grid.cell_width.get());
+                self.overview_offset
+                    .set(self.overview_offset.get() + self.grid.cell_width.get());
             }
 
             Action::TogglePianoRoll => {
-                let mut settings = app.piano_roll_settings.get();
+                let mut settings = self.piano_roll_settings.get();
                 settings.open = !settings.open;
-                app.piano_roll_settings.set(settings);
+                self.piano_roll_settings.set(settings);
             }
 
             Action::PickUp(object) => {
-                if let Some(old) = app.hand.replace(Some(object)) {
-                    old.let_go(app);
+                if let Some(old) = self.hand.replace(Some(object)) {
+                    old.let_go(self);
                 }
+                need_rerender = false;
             }
+            Action::MoveHand(point) => match self.hand.get() {
+                Some(object) => object.update(self, point),
+                None => need_rerender = false,
+            },
+            Action::LetGo => match self.hand.take() {
+                Some(object) => object.let_go(self),
+                None => need_rerender = false,
+            },
 
             Action::Pause => {
-                app.stop_playback();
+                self.stop_playback();
             }
             Action::Play => {
-                app.start_playback();
+                self.start_playback();
             }
             Action::PlayPause => {
-                if app.is_playing() {
-                    app.stop_playback();
+                if self.is_playing() {
+                    self.stop_playback();
                 } else {
-                    app.start_playback();
+                    self.start_playback();
                 }
             }
             Action::Project(action) => {
-                let result = app
-                    .project
-                    .take(action, app.cursor.get(), app.selected_track.get());
+                let result =
+                    self.project
+                        .take(action, self.cursor.get(), self.selected_track.get());
 
                 if let Err(popup) = result {
-                    app.popups.open(&popup, &app.ui);
+                    self.popups.open(&popup, &self.ui);
                 }
             }
             Action::SelectClip { track, clip, .. } => {
-                app.selected_track.set(track);
-                app.selected_clip.set(clip);
+                self.selected_track.set(track);
+                self.selected_clip.set(clip);
             }
             Action::SetDevice(device) => {
-                app.device.set_value(Some(device));
+                self.device.set_value(Some(device));
+                need_rerender = false;
             }
         }
+
+        need_rerender
     }
 }

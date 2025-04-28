@@ -52,9 +52,7 @@ impl<Ui> Clicker<Ui> {
 impl<Ui: UserInterface> Clicker<Ui> {
     /// Takes the actions stored in the clicker.
     pub fn take_actions(self, app: &App<Ui>) {
-        for action in self.actions {
-            action.take(app);
-        }
+        app.take_actions(self.actions);
     }
 }
 

@@ -26,6 +26,10 @@ impl<T: ?Sized> OptionArcCell<T> {
     pub fn set_some(&self, value: Arc<T>) {
         self.set(Some(value));
     }
+
+    pub fn get_or_insert_with<F: FnOnce() -> Arc<T>>(&self, f: F) -> Arc<T> {
+        Arc::clone(self.lock_ref().write().get_or_insert_with(f))
+    }
 }
 
 impl<T> OptionArcCell<T> {
@@ -43,5 +47,9 @@ impl<T> OptionArcCell<T> {
     /// Sets the optional value.
     pub fn set_some_value(&self, value: T) {
         self.set_some(Arc::new(value));
+    }
+
+    pub fn get_or_insert_value_with<F: FnOnce() -> T>(&self, f: F) -> Arc<T> {
+        self.get_or_insert_with(|| Arc::new(f()))
     }
 }

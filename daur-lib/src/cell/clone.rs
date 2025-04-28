@@ -24,6 +24,10 @@ impl<T: Clone> CloneCell<T> {
     pub fn set(&self, value: T) {
         *self.lock.write() = value;
     }
+
+    pub(super) fn lock_ref(&self) -> &Lock<T> {
+        &self.lock
+    }
 }
 
 impl<T: Clone> Clone for CloneCell<T> {

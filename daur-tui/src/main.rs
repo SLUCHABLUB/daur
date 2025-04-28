@@ -10,51 +10,59 @@ mod tui;
 
 use crate::audio::spawn_audio_thread;
 use crate::controls::controls;
-use crate::draw::spawn_draw_thread;
-use crate::event::spawn_events_thread;
+use crate::draw::redraw;
+use crate::event::handle_event;
 use crate::tui::Tui;
-use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
+use crossterm::event::{DisableMouseCapture, EnableMouseCapture, poll, read};
 use crossterm::execute;
 use daur::App;
-use std::io::{Result, stdout};
-use std::panic::resume_unwind;
+use ratatui::DefaultTerminal;
+use std::io;
+use std::io::stdout;
 use std::sync::Arc;
+use std::time::Duration;
 
-fn main() -> Result<()> {
+fn main() -> io::Result<()> {
     execute!(stdout(), EnableMouseCapture)?;
-    let terminal = ratatui::init();
+    let terminal = &mut ratatui::init();
 
-    let app = &Arc::new(App::new(Tui::default()));
-
-    app.controls.set_value(controls());
-
-    let audio_thread = spawn_audio_thread(Arc::clone(app));
-    let draw_thread = spawn_draw_thread(Arc::clone(app), terminal);
-    let events_thread = spawn_events_thread(Arc::clone(app));
-
-    app.ui.should_exit.wait_until();
-
-    // TODO: save
+    let result = in_terminal(terminal);
 
     ratatui::restore();
     execute!(stdout(), DisableMouseCapture)?;
 
-    if audio_thread.is_finished() {
-        let Err(error) = audio_thread.join();
-        resume_unwind(error)
-    }
+    result
+}
 
-    if draw_thread.is_finished() {
-        match draw_thread.join() {
-            Ok(error) => return Err(error),
-            Err(error) => resume_unwind(error),
-        };
-    }
+/// Runs the app in a given terminal.
+/// This ensures that the terminal is properly closed if an error occurs.
+fn in_terminal(terminal: &mut DefaultTerminal) -> io::Result<()> {
+    let app = Arc::new(App::new(Tui::default()));
 
-    if events_thread.is_finished() {
-        match events_thread.join() {
-            Ok(error) => return Err(error),
-            Err(error) => resume_unwind(error),
+    // TODO: move to UserInterface
+    app.controls.set_value(controls());
+
+    // TODO: allocate more threads for faster rendering?
+    spawn_audio_thread(Arc::clone(&app));
+
+    let result = io_loop(&app, terminal);
+
+    // TODO: save
+
+    #[expect(clippy::let_and_return, reason = "see todo")]
+    result
+}
+
+/// The main program loop that handles events and writes to the screen
+/// This ensures that the project is saved if an error occurs.
+fn io_loop(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    while !app.ui.should_exit.get() {
+        if poll(Duration::ZERO)? {
+            handle_event(&read()?, app);
+        }
+
+        if app.ui.should_redraw.get() {
+            redraw(app, terminal)?;
         }
     }
 

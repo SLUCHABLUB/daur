@@ -18,40 +18,29 @@ use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
 use std::io;
 use std::num::{NonZeroU64, NonZeroUsize};
-use std::sync::Arc;
-use std::thread::{JoinHandle, spawn};
 
-pub fn spawn_draw_thread(
-    app: Arc<App<Tui>>,
-    mut terminal: DefaultTerminal,
-) -> JoinHandle<io::Error> {
-    spawn(move || {
-        loop {
-            app.ui.should_redraw.wait_until();
+pub(crate) fn redraw(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    app.ui.should_redraw.set(app.is_playing());
 
-            app.ui.should_redraw.set(app.is_playing());
+    terminal
+        .draw(|frame| {
+            let area = to_rectangle(frame.area());
+            let buffer = frame.buffer_mut();
 
-            let result = terminal.draw(|frame| {
-                let area = to_rectangle(frame.area());
-                let buffer = frame.buffer_mut();
+            app.ui.window_area.set(area);
 
-                app.ui.window_area.set(area);
-
-                app.view()
-                    .accept(&mut Renderer { buffer }, area, app.ui.mouse_position.get());
-            });
-
-            if let Err(error) = result {
-                return error;
-            }
-        }
-    })
+            app.ui
+                .cached_view
+                .get_or_insert_value_with(|| app.view())
+                .accept(&mut Renderer { buffer }, area, app.ui.mouse_position.get());
+        })
+        .map(|_| ())
 }
 
 type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
-pub struct Renderer<'buffer> {
-    pub buffer: &'buffer mut Buffer,
+struct Renderer<'buffer> {
+    buffer: &'buffer mut Buffer,
 }
 
 impl Visitor for Renderer<'_> {

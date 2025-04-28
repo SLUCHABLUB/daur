@@ -53,6 +53,10 @@ pub trait UserInterface {
     /// This may be the case if the application, for example, cannot close itself.
     fn exit(&self);
 
+    /// Informs the interface that the app needs to be rerendered.
+    /// I.e. that [`App::view`] needs to be called again.
+    fn rerender(&self);
+
     /// Returns the current screen size.
     fn size(&self) -> Size;
 

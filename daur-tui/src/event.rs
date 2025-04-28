@@ -1,38 +1,24 @@
 use crate::convert::{to_point, to_size};
 use crate::tui::Tui;
-use crossterm::event::{
-    Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind, read,
-};
-use daur::App;
+use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
 use daur::ui::{Length, Point, Rectangle};
 use daur::view::Direction;
 use daur::view::visit::{Clicker, Grabber};
+use daur::{Action, App, UserInterface as _};
 use ratatui::layout::{Position, Size};
-use std::io;
-use std::sync::Arc;
-use std::thread::{JoinHandle, spawn};
 
-pub fn spawn_events_thread(app: Arc<App<Tui>>) -> JoinHandle<io::Error> {
-    spawn(move || {
-        loop {
-            let event = match read() {
-                Ok(event) => event,
-                Err(error) => return error,
-            };
+pub(crate) fn handle_event(event: &Event, app: &App<Tui>) {
+    match *event {
+        Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
+        Event::Key(event) => handle_key_event(event, app),
+        Event::Mouse(event) => handle_mouse_event(event, app),
+        Event::Resize(width, height) => app.ui.window_area.set(Rectangle {
+            position: Point::ZERO,
+            size: to_size(Size { width, height }),
+        }),
+    }
 
-            match event {
-                Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
-                Event::Key(event) => handle_key_event(event, &app),
-                Event::Mouse(event) => handle_mouse_event(event, &app),
-                Event::Resize(width, height) => app.ui.window_area.set(Rectangle {
-                    position: Point::ZERO,
-                    size: to_size(Size { width, height }),
-                }),
-            }
-
-            app.ui.should_redraw.set(true);
-        }
-    })
+    app.ui.should_redraw.set(true);
 }
 
 fn handle_key_event(
@@ -50,8 +36,8 @@ fn handle_key_event(
 
     let key_name = format!("{modifiers} + {code}");
 
-    if let Some(action) = app.controls.get().get(&key_name) {
-        action.clone().take(app);
+    if let Some(action) = app.controls.get().get(&key_name).cloned() {
+        app.take_action(action);
     }
 }
 
@@ -71,9 +57,7 @@ fn handle_mouse_event(
     let area = app.ui.window_area.get();
     let position = app.ui.mouse_position.get();
 
-    if let Some(object) = app.hand.get() {
-        object.update(app, position);
-    }
+    app.take_action(Action::MoveHand(position));
 
     match kind {
         MouseEventKind::Down(button) => {
@@ -102,9 +86,7 @@ fn handle_mouse_event(
 
             // let go
 
-            if let Some(object) = app.hand.replace(None) {
-                object.let_go(app);
-            }
+            app.take_action(Action::LetGo);
         }
         MouseEventKind::Moved | MouseEventKind::Drag(_) => (),
         MouseEventKind::ScrollDown => {
@@ -150,4 +132,6 @@ fn scroll(app: &App<Tui>, direction: Direction) {
 
         app.piano_roll_settings.set(settings);
     }
+
+    app.ui.rerender();
 }

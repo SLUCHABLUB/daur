@@ -1,6 +1,6 @@
 use crate::convert::to_length;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use daur::{Cell, Observed, Ratio, UserInterface, View};
+use daur::{Cell, OptionArcCell, Ratio, UserInterface, View};
 use saturating_cast::SaturatingCast as _;
 use std::path::Path;
 use unicode_segmentation::UnicodeSegmentation as _;
@@ -14,8 +14,9 @@ macro_rules! non_zero_length {
 }
 
 pub struct Tui {
-    pub should_exit: Observed<bool>,
-    pub should_redraw: Observed<bool>,
+    pub should_exit: Cell<bool>,
+    pub cached_view: OptionArcCell<View>,
+    pub should_redraw: Cell<bool>,
     pub mouse_position: Cell<Point>,
     pub window_area: Cell<Rectangle>,
 }
@@ -33,6 +34,11 @@ impl UserInterface for Tui {
 
     fn exit(&self) {
         self.should_exit.set(true);
+    }
+
+    fn rerender(&self) {
+        self.cached_view.set_none();
+        self.should_redraw.set(true);
     }
 
     fn size(&self) -> Size {
@@ -96,8 +102,9 @@ const DEFAULT_TERMINAL_SIZE: Size = Size {
 impl Default for Tui {
     fn default() -> Self {
         Tui {
-            should_exit: Observed::new(false),
-            should_redraw: Observed::new(true),
+            should_exit: Cell::new(false),
+            cached_view: OptionArcCell::none(),
+            should_redraw: Cell::new(true),
             mouse_position: Cell::new(Point::ZERO),
             window_area: Cell::new(Rectangle {
                 position: Point::ZERO,

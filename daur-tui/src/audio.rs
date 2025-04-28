@@ -1,7 +1,6 @@
 use crate::tui::Tui;
 use daur::audio::SampleRate;
 use daur::{App, Popup};
-use never::Never;
 use rodio::{DeviceTrait as _, OutputStream, Sink, cpal};
 use std::error::Error;
 use std::fmt;
@@ -9,9 +8,9 @@ use std::fmt::{Display, Formatter};
 use std::hint::spin_loop;
 use std::num::NonZeroU32;
 use std::sync::Arc;
-use std::thread::{JoinHandle, spawn};
+use std::thread::spawn;
 
-pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
+pub(crate) fn spawn_audio_thread(app: Arc<App<Tui>>) {
     spawn(move || {
         let mut cache = None;
 
@@ -47,7 +46,7 @@ pub fn spawn_audio_thread(app: Arc<App<Tui>>) -> JoinHandle<Never> {
 
             app.playback_start.wait_while(|new| *new == Some(start));
         }
-    })
+    });
 }
 
 #[derive(Debug)]

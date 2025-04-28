@@ -14,7 +14,7 @@ pub enum HoldableObject {
 
 impl HoldableObject {
     /// Moves the object.
-    pub fn update<Ui: UserInterface>(self, app: &App<Ui>, position: Point) {
+    pub(crate) fn update<Ui: UserInterface>(self, app: &App<Ui>, position: Point) {
         match self {
             HoldableObject::PianoRollHandle { y } => {
                 let mut settings = app.piano_roll_settings.get();
@@ -25,7 +25,7 @@ impl HoldableObject {
     }
 
     /// Lets go of the object.
-    pub fn let_go<Ui: UserInterface>(self, _app: &App<Ui>) {
+    pub(crate) fn let_go<Ui: UserInterface>(self, _app: &App<Ui>) {
         match self {
             HoldableObject::PianoRollHandle { .. } => (),
         }
