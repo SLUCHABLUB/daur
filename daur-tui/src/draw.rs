@@ -1,5 +1,5 @@
 use crate::canvas::Context;
-use crate::convert::{approximate_colour, from_rectangle, to_rectangle, to_size};
+use crate::convert::{approximate_colour, from_rectangle, to_rectangle};
 use crate::tui::Tui;
 use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
@@ -20,19 +20,20 @@ use std::io;
 use std::num::{NonZeroU64, NonZeroUsize};
 
 pub(crate) fn redraw(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
-    app.ui.should_redraw.set(app.is_playing());
+    if !app.is_playing() {
+        app.ui.clear_redraw();
+    }
 
     terminal
         .draw(|frame| {
             let area = to_rectangle(frame.area());
             let buffer = frame.buffer_mut();
 
-            app.ui.window_area.set(area);
+            app.ui.set_area(area);
 
             app.ui
-                .cached_view
-                .get_or_insert_value_with(|| app.view())
-                .accept(&mut Renderer { buffer }, area, app.ui.mouse_position.get());
+                .view(app)
+                .accept(&mut Renderer { buffer }, area, app.ui.mouse_position());
         })
         .map(|_| ())
 }
@@ -51,6 +52,7 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter) {
+        let size = area.size;
         let area = from_rectangle(area);
 
         let width = f64::from(area.width);
@@ -61,10 +63,7 @@ impl Visitor for Renderer<'_> {
             .x_bounds([0.0, width])
             .y_bounds([0.0, height])
             .paint(|context| {
-                painter(&mut Context {
-                    context,
-                    size: to_size(area.as_size()),
-                });
+                painter(&mut Context::new(context, size));
             })
             .render(area, self.buffer);
     }

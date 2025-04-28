@@ -4,9 +4,15 @@ use daur::view;
 use ratatui::widgets::canvas;
 use ratatui::widgets::canvas::Points;
 
-pub struct Context<'reference, 'context> {
-    pub context: &'reference mut canvas::Context<'context>,
-    pub size: Size,
+pub(crate) struct Context<'reference, 'context> {
+    context: &'reference mut canvas::Context<'context>,
+    size: Size,
+}
+
+impl<'reference, 'context> Context<'reference, 'context> {
+    pub(crate) fn new(context: &'reference mut canvas::Context<'context>, size: Size) -> Self {
+        Context { context, size }
+    }
 }
 
 impl view::Context for Context<'_, '_> {

@@ -12,13 +12,13 @@ pub(crate) fn handle_event(event: &Event, app: &App<Tui>) {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
         Event::Key(event) => handle_key_event(event, app),
         Event::Mouse(event) => handle_mouse_event(event, app),
-        Event::Resize(width, height) => app.ui.window_area.set(Rectangle {
+        Event::Resize(width, height) => app.ui.set_area(Rectangle {
             position: Point::ZERO,
             size: to_size(Size { width, height }),
         }),
     }
 
-    app.ui.should_redraw.set(true);
+    app.ui.redraw();
 }
 
 fn handle_key_event(
@@ -51,11 +51,10 @@ fn handle_mouse_event(
     app: &App<Tui>,
 ) {
     app.ui
-        .mouse_position
-        .set(to_point(Position::new(column, row)));
+        .set_mouse_position(to_point(Position::new(column, row)));
 
-    let area = app.ui.window_area.get();
-    let position = app.ui.mouse_position.get();
+    let area = app.ui.area();
+    let position = app.ui.mouse_position();
 
     app.take_action(Action::MoveHand(position));
 
@@ -109,8 +108,8 @@ fn scroll(app: &App<Tui>, direction: Direction) {
     // the screen is moved in the opposite direction of the mouse movement
     let offset = -(direction * Length::PIXEL);
 
-    let mouse_position = app.ui.mouse_position.get();
-    let area = app.ui.window_area.get();
+    let mouse_position = app.ui.mouse_position();
+    let area = app.ui.area();
 
     let piano_roll_start = area.size.height - app.piano_roll_settings.get().content_height;
 

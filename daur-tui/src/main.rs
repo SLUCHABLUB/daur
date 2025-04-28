@@ -56,12 +56,12 @@ fn in_terminal(terminal: &mut DefaultTerminal) -> io::Result<()> {
 /// The main program loop that handles events and writes to the screen
 /// This ensures that the project is saved if an error occurs.
 fn io_loop(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
-    while !app.ui.should_exit.get() {
+    while !app.ui.should_exit() {
         if poll(Duration::ZERO)? {
             handle_event(&read()?, app);
         }
 
-        if app.ui.should_redraw.get() {
+        if app.ui.should_redraw() {
             redraw(app, terminal)?;
         }
     }

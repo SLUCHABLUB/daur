@@ -1,8 +1,9 @@
 use crate::convert::to_length;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use daur::{Cell, OptionArcCell, Ratio, UserInterface, View};
+use daur::{App, Cell, OptionArcCell, Ratio, UserInterface, View};
 use saturating_cast::SaturatingCast as _;
 use std::path::Path;
+use std::sync::Arc;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 macro_rules! non_zero_length {
@@ -13,12 +14,54 @@ macro_rules! non_zero_length {
     };
 }
 
-pub struct Tui {
-    pub should_exit: Cell<bool>,
-    pub cached_view: OptionArcCell<View>,
-    pub should_redraw: Cell<bool>,
-    pub mouse_position: Cell<Point>,
-    pub window_area: Cell<Rectangle>,
+pub(crate) struct Tui {
+    should_exit: Cell<bool>,
+    // TODO: move to App?
+    cached_view: OptionArcCell<View>,
+    should_redraw: Cell<bool>,
+    mouse_position: Cell<Point>,
+    area: Cell<Rectangle>,
+}
+
+impl Tui {
+    pub(crate) fn should_exit(&self) -> bool {
+        self.should_exit.get()
+    }
+
+    /// Returns the view of the app.
+    /// This is taken from the cache if it is populated,
+    /// otherwise the cache is filled using the app reference.
+    pub(crate) fn view(&self, app: &App<Tui>) -> Arc<View> {
+        self.cached_view.get_or_insert_value_with(|| app.view())
+    }
+
+    pub(crate) fn should_redraw(&self) -> bool {
+        self.should_redraw.get()
+    }
+
+    pub(crate) fn redraw(&self) {
+        self.should_redraw.set(true);
+    }
+
+    pub(crate) fn clear_redraw(&self) {
+        self.should_redraw.set(false);
+    }
+
+    pub(crate) fn mouse_position(&self) -> Point {
+        self.mouse_position.get()
+    }
+
+    pub(crate) fn set_mouse_position(&self, position: Point) {
+        self.mouse_position.set(position);
+    }
+
+    pub(crate) fn area(&self) -> Rectangle {
+        self.area.get()
+    }
+
+    pub(crate) fn set_area(&self, area: Rectangle) {
+        self.area.set(area);
+    }
 }
 
 impl UserInterface for Tui {
@@ -38,11 +81,11 @@ impl UserInterface for Tui {
 
     fn rerender(&self) {
         self.cached_view.set_none();
-        self.should_redraw.set(true);
+        self.redraw();
     }
 
     fn size(&self) -> Size {
-        self.window_area.get().size
+        self.area.get().size
     }
 
     fn string_width(string: &str) -> Length {
@@ -106,7 +149,7 @@ impl Default for Tui {
             cached_view: OptionArcCell::none(),
             should_redraw: Cell::new(true),
             mouse_position: Cell::new(Point::ZERO),
-            window_area: Cell::new(Rectangle {
+            area: Cell::new(Rectangle {
                 position: Point::ZERO,
                 size: DEFAULT_TERMINAL_SIZE,
             }),
