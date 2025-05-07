@@ -20,20 +20,16 @@ use std::io;
 use std::num::{NonZeroU64, NonZeroUsize};
 
 pub(crate) fn redraw(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
-    if !app.is_playing() {
-        app.ui.clear_redraw();
-    }
-
     terminal
         .draw(|frame| {
             let area = to_rectangle(frame.area());
             let buffer = frame.buffer_mut();
 
-            app.ui.set_area(area);
+            app.ui().set_area(area);
 
-            app.ui
+            app.ui()
                 .view(app)
-                .accept(&mut Renderer { buffer }, area, app.ui.mouse_position());
+                .accept(&mut Renderer { buffer }, area, app.ui().mouse_position());
         })
         .map(|_| ())
 }

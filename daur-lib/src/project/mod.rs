@@ -4,12 +4,13 @@ mod action;
 mod bar;
 mod edit;
 mod manager;
-mod source;
+mod renderer;
 mod workspace;
 
 pub use action::Action;
 pub use bar::bar;
 pub use manager::Manager;
+pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
 use crate::key::Key;

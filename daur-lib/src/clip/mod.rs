@@ -2,11 +2,9 @@
 
 mod content;
 mod overview;
-mod source;
 
 pub use content::Content;
 pub use overview::overview;
-pub use source::Source;
 
 use crate::time::{Instant, Mapping, Period};
 use crate::ui::Colour;
@@ -31,13 +29,5 @@ impl Clip {
     #[must_use]
     pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
         self.content.period(start, mapping)
-    }
-
-    /// Returns an [audio source](rodio::Source) for the clip.
-    pub fn to_source(&self, offset: usize) -> Source {
-        match &self.content {
-            Content::Audio(audio) => Source::Audio(audio.to_source(offset)),
-            Content::Notes(_) => Source::Notes,
-        }
     }
 }

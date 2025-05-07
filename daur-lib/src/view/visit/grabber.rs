@@ -1,14 +1,14 @@
-use crate::UserInterface;
 use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
+use crate::{Action, App, UserInterface};
 use std::marker::PhantomData;
 use std::num::NonZeroU64;
 
 /// A visitor that grabs objects.
-#[must_use = "run `Grabber::object`"]
+#[must_use = "run `Grabber::take_action`"]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Grabber<Ui> {
     object: Option<HoldableObject>,
@@ -25,11 +25,12 @@ impl<Ui> Grabber<Ui> {
             phantom: PhantomData,
         }
     }
+}
 
-    /// Grabs the grabbers grabbed object.
-    #[must_use]
-    pub fn object(self) -> Option<HoldableObject> {
-        self.object
+impl<Ui: UserInterface> Grabber<Ui> {
+    /// Takes picks up the grabbers held object.
+    pub fn take_action(self, app: &App<Ui>) {
+        app.take_actions(self.object.map(Action::PickUp));
     }
 }
 

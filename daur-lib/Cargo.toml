@@ -21,6 +21,7 @@ parking_lot = "0.12.3"
 saturating_cast = "0.1.0"
 strum = { version = "0.27.1", features = ["derive"] }
 thiserror = "2.0.11"
-
-# TODO: remove so that different UIs can use their own audio (but maybe provide a feature for an implementation)
 rodio = "0.20.1"
+executors = "0.10.0"
+rubato = "0.16.2"
+anyhow = "1.0.98"

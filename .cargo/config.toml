@@ -72,7 +72,7 @@ rustflags = [
     "--deny", "clippy::let_underscore_must_use",
     # not `clippy::little_endian_bytes` since usage is explicit
     "--deny", "clippy::lossy_float_literal",
-    "--deny", "clippy::map_err_ignore",
+    #not `clippy::map_err_ignore`
     "--deny", "clippy::map_with_unused_argument_over_ranges",
     "--deny", "clippy::min_ident_chars",
     "--deny", "clippy::missing_assert_message",

@@ -1,22 +1,24 @@
 use crate::audio::Audio;
+use crate::time::real;
+use rodio::source::SeekError;
 use std::time::Duration;
 
 /// An [audio source](rodio::Source) for an [audio](Audio).
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[must_use = "AudioSource is an iterator"]
 pub struct Source {
     audio: Audio,
     right: bool,
     /// The current sample that the iterator is on, from the beginning
-    sample: usize,
+    sample_index: usize,
 }
 
 impl Source {
-    pub(super) fn new(audio: Audio, sample: usize) -> Source {
+    pub(super) fn new(audio: Audio) -> Source {
         Source {
             audio,
             right: false,
-            sample,
+            sample_index: 0,
         }
     }
 }
@@ -25,15 +27,11 @@ impl Iterator for Source {
     type Item = f32;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let channel = if self.right {
-            &self.audio.channels[1]
-        } else {
-            &self.audio.channels[0]
-        };
-        let sample = *channel.get(self.sample)?;
+        let pair = *self.audio.samples.get(self.sample_index)?;
+        let sample = if self.right { pair.right } else { pair.left };
 
         if self.right {
-            self.sample = self.sample.saturating_add(1);
+            self.sample_index = self.sample_index.saturating_add(1);
         }
         self.right = !self.right;
 
@@ -43,7 +41,7 @@ impl Iterator for Source {
 
 impl rodio::Source for Source {
     fn current_frame_len(&self) -> Option<usize> {
-        Some(self.audio.sample_count().saturating_sub(self.sample))
+        Some(self.audio.samples.len().saturating_sub(self.sample_index))
     }
 
     fn channels(&self) -> u16 {
@@ -56,5 +54,13 @@ impl rodio::Source for Source {
 
     fn total_duration(&self) -> Option<Duration> {
         Some(Duration::from(self.audio.duration()))
+    }
+
+    fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
+        let sample_delta =
+            (real::Duration::from(pos) / self.audio.sample_rate.sample_duration()).to_usize();
+        self.sample_index = self.sample_index.saturating_add(sample_delta);
+
+        Ok(())
     }
 }

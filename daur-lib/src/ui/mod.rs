@@ -23,6 +23,7 @@ pub use vector::Vector;
 use crate::View;
 use std::path::Path;
 
+// TODO: remove internal mutability
 /// A user interface for the DAW.
 #[doc(hidden)]
 pub trait UserInterface {

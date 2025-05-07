@@ -3,8 +3,8 @@ use daur::view::context::open_import_audio_popup;
 use daur::{Action, project};
 use std::collections::HashMap;
 
-pub(crate) fn controls() -> HashMap<String, Action> {
-    [
+pub(crate) fn controls() -> HashMap<(KeyModifiers, KeyCode), Action> {
+    HashMap::from([
         ((KeyModifiers::CONTROL, KeyCode::Char('c')), Action::Exit),
         ((KeyModifiers::NONE, KeyCode::Char(' ')), Action::PlayPause),
         (
@@ -21,8 +21,5 @@ pub(crate) fn controls() -> HashMap<String, Action> {
         ),
         ((KeyModifiers::NONE, KeyCode::Tab), Action::ScrollLeft),
         ((KeyModifiers::SHIFT, KeyCode::BackTab), Action::ScrollRight),
-    ]
-    .into_iter()
-    .map(|((modifiers, code), action)| (format!("{modifiers} + {code}"), action))
-    .collect()
+    ])
 }

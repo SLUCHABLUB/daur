@@ -1,6 +1,8 @@
 use crate::Ratio;
 use crate::time::real::{Duration, NonZeroDuration};
+use rodio::cpal;
 use std::num::{NonZeroU32, NonZeroU64};
+use thiserror::Error;
 
 /// A sample rate.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -18,5 +20,20 @@ impl SampleRate {
         let duration = Duration::SECOND * seconds_per_sample;
 
         NonZeroDuration::from_duration(duration).unwrap_or(NonZeroDuration::NANOSECOND)
+    }
+}
+
+#[derive(Copy, Clone, Debug, Error)]
+#[error("sample rates cannot be zero")]
+pub struct ZeroSampleRateError;
+
+impl TryFrom<cpal::SampleRate> for SampleRate {
+    type Error = ZeroSampleRateError;
+
+    fn try_from(
+        cpal::SampleRate(sample_rate): cpal::SampleRate,
+    ) -> Result<SampleRate, ZeroSampleRateError> {
+        let samples_per_second = NonZeroU32::new(sample_rate).ok_or(ZeroSampleRateError)?;
+        Ok(SampleRate { samples_per_second })
     }
 }

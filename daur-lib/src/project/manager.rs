@@ -1,16 +1,14 @@
-use crate::audio::SampleRate;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::lock::Lock;
 use crate::popup::Popup;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
-use crate::project::source::ProjectSource;
 use crate::project::{Project, bar, workspace};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, NonZeroLength, Offset};
 use crate::view::View;
-use crate::{Changing, Track, UserInterface};
+use crate::{Changing, Track, UserInterface, time, ui};
 use std::sync::{Arc, Weak};
 use thiserror::Error;
 
@@ -36,6 +34,10 @@ impl Manager {
         }
     }
 
+    pub(crate) fn tracks(&self) -> Vec<Arc<Track>> {
+        self.project.read().tracks.clone()
+    }
+
     /// Returns the key of the project.
     #[must_use]
     pub fn key(&self) -> Arc<Changing<Key>> {
@@ -54,18 +56,21 @@ impl Manager {
         self.project.read().time_signature()
     }
 
-    /// Returns an audio source for the project
+    /// Returns the [time mapping](time::Mapping) for the project.
     #[must_use]
-    pub fn source(&self, sample_rate: SampleRate, cursor: Instant) -> ProjectSource {
-        let tracks = self.project.read().tracks.clone();
-        let mapping = self.project.read().time_mapping();
-        let offset = cursor.to_sample_index(&mapping, sample_rate);
-        ProjectSource {
-            sample_rate,
-            tracks: tracks
-                .into_iter()
-                .map(|track| track.to_source(&mapping, sample_rate, offset))
-                .collect(),
+    pub fn time_mapping(&self) -> time::Mapping {
+        time::Mapping {
+            tempo: self.tempo(),
+            time_signature: self.time_signature(),
+        }
+    }
+
+    /// Returns the [UI mapping](ui::Mapping) for the project.
+    #[must_use]
+    pub fn ui_mapping(&self, grid: Grid) -> ui::Mapping {
+        ui::Mapping {
+            time_signature: self.time_signature(),
+            grid,
         }
     }
 

@@ -13,6 +13,7 @@ mod app;
 mod cell;
 mod changing;
 mod chroma;
+mod extension;
 mod interval;
 mod key;
 mod lock;
@@ -24,6 +25,8 @@ mod ratio;
 mod receiver;
 mod sign;
 mod string;
+
+pub(crate) use cell::{CloneCell, WeakCell};
 
 pub use app::{Action, App, HoldableObject};
 pub use cell::{ArcCell, Cell, OptionArcCell};

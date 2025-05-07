@@ -16,7 +16,7 @@ pub struct Mapping {
 }
 
 impl Mapping {
-    /// Calculates the real time duration that has elapsed since [the start](Instant::START).
+    /// Calculates a real-time instant from a musical instant.
     #[must_use]
     pub fn real_time(&self, instant: Instant) -> real::Instant {
         let mut since_start = real::Duration::ZERO;
@@ -31,6 +31,12 @@ impl Mapping {
         }
 
         real::Instant { since_start }
+    }
+
+    /// Calculates a musical instant from a real-time instant.
+    #[must_use]
+    pub fn musical(&self, instant: real::Instant) -> Instant {
+        self.period(Instant::START, instant.since_start).end()
     }
 
     /// Calculates a period from a starting point and a real-time duration.

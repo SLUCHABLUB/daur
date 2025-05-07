@@ -1,7 +1,10 @@
+use crate::controls::controls;
 use crate::convert::to_length;
+use crossterm::event::{KeyCode, KeyModifiers};
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use daur::{App, Cell, OptionArcCell, Ratio, UserInterface, View};
+use daur::{Action, App, Cell, OptionArcCell, Ratio, UserInterface, View};
 use saturating_cast::SaturatingCast as _;
+use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
 use unicode_segmentation::UnicodeSegmentation as _;
@@ -14,8 +17,10 @@ macro_rules! non_zero_length {
     };
 }
 
+// TODO: remove internal mutability
 pub(crate) struct Tui {
     should_exit: Cell<bool>,
+    key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
     // TODO: move to App?
     cached_view: OptionArcCell<View>,
     should_redraw: Cell<bool>,
@@ -43,10 +48,6 @@ impl Tui {
         self.should_redraw.set(true);
     }
 
-    pub(crate) fn clear_redraw(&self) {
-        self.should_redraw.set(false);
-    }
-
     pub(crate) fn mouse_position(&self) -> Point {
         self.mouse_position.get()
     }
@@ -61,6 +62,10 @@ impl Tui {
 
     pub(crate) fn set_area(&self, area: Rectangle) {
         self.area.set(area);
+    }
+
+    pub(crate) fn key_action(&self, modifiers: KeyModifiers, code: KeyCode) -> Option<Action> {
+        self.key_actions.get(&(modifiers, code)).cloned()
     }
 }
 
@@ -146,6 +151,7 @@ impl Default for Tui {
     fn default() -> Self {
         Tui {
             should_exit: Cell::new(false),
+            key_actions: controls(),
             cached_view: OptionArcCell::none(),
             should_redraw: Cell::new(true),
             mouse_position: Cell::new(Point::ZERO),

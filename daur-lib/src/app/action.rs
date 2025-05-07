@@ -5,7 +5,7 @@ use crate::ui::Point;
 use crate::view::context::Menu;
 use crate::{App, Clip, Track, UserInterface, project};
 use derive_more::Debug;
-use rodio::Device;
+use std::iter::once;
 use std::path::PathBuf;
 use std::sync::Weak;
 
@@ -64,9 +64,6 @@ pub enum Action {
     /// Takes a project action
     Project(project::Action),
 
-    /// Sets the audio output device
-    SetDevice(#[debug(ignore)] Device),
-
     /// Saves and exits the program
     Exit,
     // TODO: add scripting
@@ -82,29 +79,32 @@ impl Action {
 impl<Ui: UserInterface> App<Ui> {
     /// Takes an action on the app.
     pub fn take_action(&self, action: Action) {
-        let should_rerender = self.take_(action);
-
-        if should_rerender {
-            self.ui.rerender();
-        }
+        self.take_actions(once(action));
     }
 
     /// Takes multiple actions on the app.
     pub fn take_actions<Actions: IntoIterator<Item = Action>>(&self, actions: Actions) {
-        let mut should_rerender = false;
-
         for action in actions {
-            should_rerender |= self.take_(action);
+            self.take(action);
         }
 
-        if should_rerender {
-            self.ui.rerender();
-        }
+        self.ui.rerender();
     }
 
     /// Takes a single action on the app and return whether the app needs to be rerendered.
-    fn take_(&self, action: Action) -> bool {
-        let mut need_rerender = true;
+    fn take(&self, action: Action) {
+        // alternate spelling of "try"
+        macro_rules! trie {
+            ($result:expr) => {
+                match $result {
+                    Ok(ok) => ok,
+                    Err(error) => {
+                        self.popups.open(&error, &self.ui);
+                        return;
+                    }
+                }
+            };
+        }
 
         match action {
             Action::OpenPopup(popup) => {
@@ -125,8 +125,8 @@ impl<Ui: UserInterface> App<Ui> {
             Action::MoveCursor(instant) => {
                 self.cursor.set(instant);
 
-                if self.is_playing() {
-                    self.start_playback();
+                if self.audio_config.is_player_playing() {
+                    self.take(Action::Play);
                 }
             }
 
@@ -149,34 +149,49 @@ impl<Ui: UserInterface> App<Ui> {
                 if let Some(old) = self.hand.replace(Some(object)) {
                     old.let_go(self);
                 }
-                need_rerender = false;
             }
-            Action::MoveHand(point) => match self.hand.get() {
-                Some(object) => object.update(self, point),
-                None => need_rerender = false,
-            },
-            Action::LetGo => match self.hand.take() {
-                Some(object) => object.let_go(self),
-                None => need_rerender = false,
-            },
+            Action::MoveHand(point) => {
+                if let Some(object) = self.hand.get() {
+                    object.update(self, point);
+                }
+            }
+            Action::LetGo => {
+                if let Some(object) = self.hand.take() {
+                    object.let_go(self);
+                }
+            }
 
             Action::Pause => {
-                self.stop_playback();
+                if let Some(position) = self.audio_config.pause_player() {
+                    let position = self.project.time_mapping().musical(position);
+                    self.cursor.set(position);
+                }
             }
             Action::Play => {
-                self.start_playback();
+                let cursor = self.cursor.get();
+                let from = self.project.time_mapping().real_time(cursor);
+
+                let player = trie!(self.audio_config.player());
+
+                self.renderer.play_when_finished(from, player);
             }
             Action::PlayPause => {
-                if self.is_playing() {
-                    self.stop_playback();
+                if self.audio_config.is_player_playing() {
+                    self.take(Action::Pause);
                 } else {
-                    self.start_playback();
+                    self.take(Action::Play);
                 }
             }
             Action::Project(action) => {
                 let result =
                     self.project
                         .take(action, self.cursor.get(), self.selected_track.get());
+
+                self.renderer.restart(
+                    &self.project.tracks(),
+                    &self.project.time_mapping(),
+                    trie!(self.audio_config.sample_rate()),
+                );
 
                 if let Err(popup) = result {
                     self.popups.open(&popup, &self.ui);
@@ -186,12 +201,6 @@ impl<Ui: UserInterface> App<Ui> {
                 self.selected_track.set(track);
                 self.selected_clip.set(clip);
             }
-            Action::SetDevice(device) => {
-                self.device.set_value(Some(device));
-                need_rerender = false;
-            }
         }
-
-        need_rerender
     }
 }

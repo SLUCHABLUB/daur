@@ -4,94 +4,80 @@ mod holdable;
 pub use action::Action;
 pub use holdable::HoldableObject;
 
-use crate::cell::{CloneCell, WeakCell};
-use crate::observed::Observed;
-use crate::time::real::Duration;
-use crate::time::{Instant, Mapping, NonZeroDuration};
+use crate::audio::Config;
+use crate::time::{Instant, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;
 use crate::view::{View, piano_roll};
 use crate::{
-    ArcCell, Cell, Clip, OptionArcCell, Project, Ratio, Track, UserInterface, popup, project, ui,
+    Cell, Clip, CloneCell, Project, Ratio, Track, UserInterface, WeakCell, popup, project, ui,
 };
 use derive_more::Debug;
-use rodio::Device;
-use rodio::cpal::traits::HostTrait as _;
-use rodio::cpal::{Host, default_host};
-use std::collections::HashMap;
+use getset::Getters;
 use std::sync::Weak;
-use std::time::SystemTime;
 
+// TODO: remove internal mutability
 /// A running instance of the DAW.
-#[derive(Debug)]
+#[derive(Debug, Getters)]
 pub struct App<Ui: UserInterface> {
-    /// The user interface.
-    pub ui: Ui,
+    /// The user interface used by the app.
+    #[get = "pub"]
+    ui: Ui,
 
-    /// The keybinds.
-    /// How the keys are interpreted is based on the UI implementation.
-    pub controls: ArcCell<HashMap<String, Action>>,
-    /// The project manager.
-    pub project: project::Manager,
+    project: project::Manager,
+    #[debug(skip)]
+    renderer: project::Renderer,
 
-    /// When playback started.
-    /// [`None`] means that playback is paused.
-    pub playback_start: Observed<Option<SystemTime>>,
-    /// The playback-audio host.
-    #[debug(ignore)]
-    pub host: ArcCell<Host>,
-    /// The playback-audio device.
-    #[debug(ignore)]
-    pub device: OptionArcCell<Device>,
+    #[debug(skip)]
+    audio_config: Config,
 
-    /// The popup manager.
-    pub popups: popup::Manager,
-    /// The context menu.
-    pub context_menu: CloneCell<Option<MenuInstance>>,
+    popups: popup::Manager,
+    context_menu: CloneCell<Option<MenuInstance>>,
     /// The currently held object.
-    pub hand: Cell<Option<HoldableObject>>,
+    hand: Cell<Option<HoldableObject>>,
 
+    // TODO: move to temporary settings
+    #[get = "pub"]
     /// The height of the project bar.
-    pub project_bar_height: NonZeroLength,
-    /// The width of the track settings.
-    pub track_settings_width: NonZeroLength,
+    project_bar_height: NonZeroLength,
+    track_settings_width: NonZeroLength,
 
-    /// The currently selected track.
-    pub selected_track: WeakCell<Track>,
-    /// The currently selected clip.
-    pub selected_clip: WeakCell<Clip>,
+    selected_track: WeakCell<Track>,
+    selected_clip: WeakCell<Clip>,
 
     /// The position of the musical cursor.
-    pub cursor: Cell<Instant>,
+    ///
+    /// If audio is playing, this may not reflect the actual position,
+    /// but the position of the cursor at the time when audio playback started.
+    cursor: Cell<Instant>,
 
     /// The settings for the overview grid.
-    pub grid: Grid,
+    // TODO: move to temporary settings
+    grid: Grid,
+    // TODO: move to temporary settings
     /// How far to the right the overview is offset.
-    pub overview_offset: Cell<Offset>,
+    #[get = "pub"]
+    overview_offset: Cell<Offset>,
+    // TODO: move to temporary settings
     /// The settings regarding the piano roll.
-    pub piano_roll_settings: Cell<Settings>,
+    #[get = "pub"]
+    piano_roll_settings: Cell<Settings>,
 }
 
 impl<Ui: UserInterface> App<Ui> {
     /// Creates a new instance
     #[must_use]
     pub fn new(ui: Ui) -> App<Ui> {
-        let host = default_host();
-        let device = OptionArcCell::from_value(host.default_output_device());
-        let host = ArcCell::from_value(host);
-
         let height = ui.size().height;
 
         App {
             ui,
 
-            controls: ArcCell::from_value(HashMap::new()),
             project: project::Manager::new(Project::default()),
+            renderer: project::Renderer::default(),
 
-            playback_start: Observed::new(None),
-            host,
-            device,
+            audio_config: Config::default(),
 
             popups: popup::Manager::new(),
             context_menu: CloneCell::new(None),
@@ -121,39 +107,10 @@ impl<Ui: UserInterface> App<Ui> {
         }
     }
 
-    /// Whether the app is currently playing audio
-    #[must_use]
-    pub fn is_playing(&self) -> bool {
-        self.playback_start.get().is_some()
-    }
-
-    /// Starts playing the audio
-    pub fn start_playback(&self) {
-        self.playback_start.set(Some(SystemTime::now()));
-    }
-
-    /// Stops playing the audio
-    pub fn stop_playback(&self) {
-        self.cursor.set(self.playback_position());
-        self.playback_start.set(None);
-    }
-
-    fn playback_position(&self) -> Instant {
-        let mapping = Mapping {
-            tempo: self.project.tempo(),
-            time_signature: self.project.time_signature(),
-        };
-
-        if let Some(playback_start) = self.playback_start.get() {
-            mapping
-                .period(
-                    self.cursor.get(),
-                    playback_start
-                        .elapsed()
-                        .map(Duration::from)
-                        .unwrap_or(Duration::ZERO),
-                )
-                .end()
+    /// Returns the position of the musical cursor.
+    fn cursor(&self) -> Instant {
+        if let Some(position) = self.audio_config.player_position() {
+            self.project.time_mapping().musical(position)
         } else {
             self.cursor.get()
         }
@@ -163,7 +120,7 @@ impl<Ui: UserInterface> App<Ui> {
     fn main_view(&self) -> View {
         View::y_stack([
             self.project
-                .bar::<Ui>(self.is_playing())
+                .bar::<Ui>(self.audio_config.is_player_playing())
                 .quotated(self.project_bar_height.get()),
             self.project
                 .workspace::<Ui>(
@@ -172,7 +129,7 @@ impl<Ui: UserInterface> App<Ui> {
                     self.overview_offset.get(),
                     &self.selected_track.get(),
                     &self.selected_clip.get(),
-                    self.playback_position(),
+                    self.cursor(),
                 )
                 .fill_remaining(),
             piano_roll::view::<Ui>(

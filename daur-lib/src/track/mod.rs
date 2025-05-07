@@ -1,16 +1,17 @@
 //! Items pertaining to [`Track`].
 
 mod overview;
+mod render_stream;
 mod settings;
-mod source;
 
 pub use overview::overview;
+pub(crate) use render_stream::RenderStream;
 pub use settings::settings;
-pub use source::Source;
 
-use crate::Clip;
-use crate::audio::SampleRate;
+use crate::audio::{Pair, SampleRate};
+use crate::clip::Content;
 use crate::time::{Instant, Mapping};
+use crate::{Audio, Clip};
 use arcstr::{ArcStr, literal};
 use std::collections::BTreeMap;
 use std::sync::{Arc, Weak};
@@ -37,26 +38,39 @@ impl Track {
         }
     }
 
-    /// Returns the audio source for the track.
-    #[must_use]
-    pub fn to_source(&self, mapping: &Mapping, sample_rate: SampleRate, offset: usize) -> Source {
-        Source::new(
-            sample_rate,
-            self.clips
-                .iter()
-                .map(|(start, clip)| {
-                    let start = start.to_sample_index(mapping, sample_rate);
-                    let mut clip_offset = 0;
+    /// Renders the track to audio.
+    pub(crate) fn render_stream(&self, mapping: &Mapping, sample_rate: SampleRate) -> RenderStream {
+        // TODO: remove when note processing has been added
+        let min_end = self
+            .clips
+            .last_key_value()
+            .map_or(Instant::START, |(start, clip)| {
+                clip.content.period(*start, mapping).end()
+            });
+        let min_duration = mapping.real_time(min_end).since_start;
+        let min_len = (min_duration / sample_rate.sample_duration()).to_usize();
 
-                    if start < offset {
-                        clip_offset = offset.saturating_sub(start);
-                    }
+        let mut audio = Audio::empty(sample_rate);
 
-                    (start, clip.to_source(clip_offset))
-                })
-                .collect(),
-            offset,
-        )
+        for (start, clip) in &self.clips {
+            let start = mapping.real_time(*start);
+            // TODO: multiply by sample rate instead of dividing by sample duration
+            let sample_offset = start.since_start / sample_rate.sample_duration();
+            let sample_offset = sample_offset.to_usize();
+
+            match &clip.content {
+                Content::Audio(clip) => {
+                    audio += &clip.resample(sample_rate).offset(sample_offset);
+                }
+                Content::Notes(_) => {}
+            }
+        }
+
+        if audio.samples.len() < min_len {
+            audio.samples.resize(min_len, Pair::ZERO);
+        }
+
+        RenderStream::new(audio)
     }
 
     #[must_use]

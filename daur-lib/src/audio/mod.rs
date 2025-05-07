@@ -1,59 +1,149 @@
 //! Type pertaining to [`Audio`].
 
+mod config;
+mod pair;
+mod player;
 mod sample;
 mod sample_rate;
 mod source;
 
+pub(crate) use config::Config;
+pub use pair::Pair;
+pub(crate) use player::Player;
 pub use sample::Sample;
 pub use sample_rate::SampleRate;
-pub use source::Source;
+pub(crate) use source::Source;
 
 use crate::Ratio;
 use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, Period};
 use crate::view::Context;
+use anyhow::Result;
 use hound::{Error, SampleFormat, WavReader};
-use itertools::{EitherOrBoth, Itertools};
+use itertools::Itertools as _;
+use rubato::{FftFixedIn, Resampler as _};
+use saturating_cast::SaturatingCast as _;
+use std::borrow::Cow;
 use std::cmp::max;
 use std::io::Read;
+use std::iter::zip;
 use std::num::NonZeroU32;
+use std::ops::{Add, AddAssign};
 
+// TODO: add sample rate macro to make the test more readable
 /// Some stereo 64-bit floating point audio.
+///
+/// # Addition
+///
+/// Two pieces of audio can be added together, using both `+` and `+=`.
+/// When this is done, the sample rate is taken from the audio on the left.
+/// See example:
+///
+/// ```ignore
+/// let audio_one = ...;
+/// let audio_two = ...;
+///
+/// assert_eq!(audio_one.sample_rate.samples_per_second.get(), 44_100);
+/// assert_eq!(audio_two.sample_rate.samples_per_second.get(), 48_000);
+///
+/// let output = audio_one + audio_two;
+///
+/// assert_eq!(output.sample_rate.samples_per_second.get(), 44_100);
+/// ```
 #[doc(hidden)]
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
-    sample_rate: SampleRate,
+    /// The sample rate of the audio.
+    pub sample_rate: SampleRate,
     /// The left and right channels, in that order.
-    channels: [Vec<Sample>; 2],
+    pub samples: Vec<Pair>,
 }
 
 impl Audio {
-    /// Returns the number of stereo sample-pairs
     #[must_use]
-    pub fn sample_count(&self) -> usize {
-        max(self.channels[0].len(), self.channels[1].len())
+    pub const fn empty(sample_rate: SampleRate) -> Audio {
+        Audio {
+            sample_rate,
+            samples: Vec::new(),
+        }
     }
 
     // TODO: use a mapping
     /// Returns the duration of the audio.
     #[must_use]
     pub fn duration(&self) -> Duration {
-        self.sample_rate.sample_duration().get() * Ratio::from_usize(self.sample_count())
+        self.sample_rate.sample_duration().get() * Ratio::from_usize(self.samples.len())
     }
 
-    /// An iterator of the samples converted to mono
-    pub fn mono_samples(&self) -> impl Iterator<Item = Sample> + use<'_> {
-        Itertools::zip_longest(self.channels[0].iter(), self.channels[1].iter()).map(|either| {
-            match either {
-                EitherOrBoth::Both(left, right) => (*left + *right) / 2,
-                EitherOrBoth::Left(sample) | EitherOrBoth::Right(sample) => *sample,
+    /// Resamples the audio to the given sample rate.
+    #[must_use]
+    pub fn resample(&self, sample_rate: SampleRate) -> Cow<Audio> {
+        if self.sample_rate == sample_rate {
+            return Cow::Borrowed(self);
+        }
+
+        match self.try_resample(sample_rate) {
+            Ok(audio) => Cow::Owned(audio),
+            // this should be unreachable
+            Err(error) => {
+                // TODO: log the error
+                drop(error);
+                Cow::Borrowed(self)
             }
+        }
+    }
+
+    fn try_resample(&self, sample_rate: SampleRate) -> Result<Audio> {
+        const ALL_CHANNELS_ENABLED: Option<&[bool]> = None;
+        const CHANNEL_COUNT: usize = 2;
+        // TODO: pick more intelligently
+        const SUB_CHUNKS: usize = 1;
+
+        let input_sample_rate = self.sample_rate.samples_per_second.get().saturating_cast();
+        let output_sample_rate = sample_rate.samples_per_second.get().saturating_cast();
+        let sample_count = self.samples.len();
+
+        let mut resampler = FftFixedIn::new(
+            input_sample_rate,
+            output_sample_rate,
+            sample_count,
+            SUB_CHUNKS,
+            CHANNEL_COUNT,
+        )?;
+
+        let (left, right): (Vec<_>, Vec<_>) = self
+            .samples
+            .iter()
+            .map(|pair| (pair.left.to_f64(), pair.right.to_f64()))
+            .unzip();
+
+        let mut output = resampler.process(&[left, right], ALL_CHANNELS_ENABLED)?;
+
+        let left = output.pop().unwrap_or_default();
+        let right = output.pop().unwrap_or_default();
+
+        let samples = zip(left, right).map(Pair::from).collect();
+
+        Ok(Audio {
+            sample_rate,
+            samples,
         })
+    }
+
+    // TODO: remove
+    pub(crate) fn offset(&self, offset: usize) -> Audio {
+        let mut samples = vec![Pair::ZERO; offset];
+        samples.extend_from_slice(&self.samples);
+
+        Audio {
+            sample_rate: self.sample_rate,
+            samples,
+        }
     }
 
     /// Returns the period of the audio
     #[must_use]
-    pub fn period(&self, start: Instant, mapping: &Mapping) -> Period {
+    pub(crate) fn period(&self, start: Instant, mapping: &Mapping) -> Period {
         mapping.period(start, self.duration())
     }
 
@@ -70,8 +160,8 @@ impl Audio {
     }
 
     /// Returns an [audio source](rodio::Source) for the audio.
-    pub fn to_source(&self, offset: usize) -> Source {
-        Source::new(self.clone(), offset)
+    pub(crate) fn into_source(self) -> Source {
+        Source::new(self)
     }
 }
 
@@ -91,18 +181,21 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
                 .try_collect()?,
         };
 
+        // TODO: use byte muck
         #[expect(
             clippy::indexing_slicing,
             clippy::missing_asserts_for_indexing,
             reason = "chunks_exact is exact"
         )]
-        let channels = match spec.channels {
-            1 => [samples.clone(), samples],
+        let samples = match spec.channels {
+            1 => samples.into_iter().map(Pair::from).collect(),
             2 => samples
                 .chunks_exact(2)
-                .map(|chunk| (chunk[0], chunk[1]))
-                .unzip()
-                .into(),
+                .map(|chunk| Pair {
+                    left: chunk[0],
+                    right: chunk[1],
+                })
+                .collect(),
             _ => return Err(Error::Unsupported),
         };
 
@@ -112,7 +205,29 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
 
         Ok(Audio {
             sample_rate,
-            channels,
+            samples,
         })
+    }
+}
+
+impl Add<&Audio> for Audio {
+    type Output = Audio;
+
+    fn add(mut self, rhs: &Audio) -> Self::Output {
+        self += rhs;
+        self
+    }
+}
+
+impl AddAssign<&Audio> for Audio {
+    fn add_assign(&mut self, rhs: &Audio) {
+        let rhs = rhs.resample(self.sample_rate);
+
+        let sample_count = max(self.samples.len(), rhs.samples.len());
+        self.samples.resize(sample_count, Pair::ZERO);
+
+        for (lhs, rhs) in zip(&mut self.samples, &rhs.samples) {
+            *lhs += *rhs;
+        }
     }
 }

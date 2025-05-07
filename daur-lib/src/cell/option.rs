@@ -27,6 +27,7 @@ impl<T: ?Sized> OptionArcCell<T> {
         self.set(Some(value));
     }
 
+    /// See [`Option::get_or_insert_with`].
     pub fn get_or_insert_with<F: FnOnce() -> Arc<T>>(&self, f: F) -> Arc<T> {
         Arc::clone(self.lock_ref().write().get_or_insert_with(f))
     }
@@ -49,6 +50,7 @@ impl<T> OptionArcCell<T> {
         self.set_some(Arc::new(value));
     }
 
+    /// Like [`OptionArcCell::get_or_insert_with`] but the value is automatically wrapped in a pointer.
     pub fn get_or_insert_value_with<F: FnOnce() -> T>(&self, f: F) -> Arc<T> {
         self.get_or_insert_with(|| Arc::new(f()))
     }

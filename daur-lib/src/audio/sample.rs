@@ -30,6 +30,12 @@ impl Sample {
         }
     }
 
+    /// Calculates the average of two samples.
+    #[must_use]
+    pub const fn average(self, other: Sample) -> Sample {
+        Sample::new((self.inner + other.inner) / 2.0)
+    }
+
     /// Losslessly constructs a new float sample from a 32-bit integral sample.
     #[must_use]
     pub fn from_i32(sample: i32) -> Sample {
@@ -58,6 +64,12 @@ impl Sample {
     pub const fn to_f32(self) -> f32 {
         #![expect(clippy::cast_possible_truncation, reason = "lossy conversion")]
         self.inner as f32
+    }
+
+    /// Converts the float sample to an `f64`.
+    #[must_use]
+    pub const fn to_f64(self) -> f64 {
+        self.inner
     }
 }
 

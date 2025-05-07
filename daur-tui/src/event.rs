@@ -12,13 +12,13 @@ pub(crate) fn handle_event(event: &Event, app: &App<Tui>) {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
         Event::Key(event) => handle_key_event(event, app),
         Event::Mouse(event) => handle_mouse_event(event, app),
-        Event::Resize(width, height) => app.ui.set_area(Rectangle {
+        Event::Resize(width, height) => app.ui().set_area(Rectangle {
             position: Point::ZERO,
             size: to_size(Size { width, height }),
         }),
     }
 
-    app.ui.redraw();
+    app.ui().redraw();
 }
 
 fn handle_key_event(
@@ -34,9 +34,7 @@ fn handle_key_event(
         return;
     }
 
-    let key_name = format!("{modifiers} + {code}");
-
-    if let Some(action) = app.controls.get().get(&key_name).cloned() {
+    if let Some(action) = app.ui().key_action(modifiers, code) {
         app.take_action(action);
     }
 }
@@ -50,11 +48,11 @@ fn handle_mouse_event(
     }: MouseEvent,
     app: &App<Tui>,
 ) {
-    app.ui
+    app.ui()
         .set_mouse_position(to_point(Position::new(column, row)));
 
-    let area = app.ui.area();
-    let position = app.ui.mouse_position();
+    let area = app.ui().area();
+    let position = app.ui().mouse_position();
 
     app.take_action(Action::MoveHand(position));
 
@@ -68,7 +66,7 @@ fn handle_mouse_event(
 
             app.view().accept(&mut grabber, area, position);
 
-            app.hand.set(grabber.object());
+            grabber.take_action(app);
         }
         MouseEventKind::Up(button) => {
             // click
@@ -108,29 +106,29 @@ fn scroll(app: &App<Tui>, direction: Direction) {
     // the screen is moved in the opposite direction of the mouse movement
     let offset = -(direction * Length::PIXEL);
 
-    let mouse_position = app.ui.mouse_position();
-    let area = app.ui.area();
+    let mouse_position = app.ui().mouse_position();
+    let area = app.ui().area();
 
-    let piano_roll_start = area.size.height - app.piano_roll_settings.get().content_height;
+    let piano_roll_start = area.size.height - app.piano_roll_settings().get().content_height;
 
-    if mouse_position.y < app.project_bar_height.get() {
+    if mouse_position.y < app.project_bar_height().get() {
         // scroll the project bar (do nothing)
     } else if mouse_position.y < piano_roll_start {
         // scroll the track overview
-        let new_offset = app.overview_offset.get() + offset.x;
-        app.overview_offset.set(new_offset);
+        let new_offset = app.overview_offset().get() + offset.x;
+        app.overview_offset().set(new_offset);
         // TODO: scroll tracks vertically
     } else {
         // scroll the piano roll
 
-        let mut settings = app.piano_roll_settings.get();
+        let mut settings = app.piano_roll_settings().get();
 
         // The x offset is to the right
         settings.x_offset -= offset.x;
         settings.y_offset += offset.y;
 
-        app.piano_roll_settings.set(settings);
+        app.piano_roll_settings().set(settings);
     }
 
-    app.ui.rerender();
+    app.ui().rerender();
 }

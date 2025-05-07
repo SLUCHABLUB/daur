@@ -37,6 +37,7 @@ pub enum Popup {
     /// A panel of buttons.
     ButtonPanel {
         title: ArcStr,
+        // TODO: make this non empty
         buttons: Vec<(ArcStr, Action)>,
     },
     /// An error message.
