@@ -21,8 +21,7 @@ use crate::view::Context;
 use anyhow::Result;
 use hound::{Error, SampleFormat, WavReader};
 use itertools::Itertools as _;
-use rubato::{FftFixedIn, Resampler as _};
-use saturating_cast::SaturatingCast as _;
+use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
 use std::borrow::Cow;
 use std::cmp::max;
 use std::io::Read;
@@ -96,18 +95,21 @@ impl Audio {
     fn try_resample(&self, sample_rate: SampleRate) -> Result<Audio> {
         const ALL_CHANNELS_ENABLED: Option<&[bool]> = None;
         const CHANNEL_COUNT: usize = 2;
-        // TODO: pick more intelligently
-        const SUB_CHUNKS: usize = 1;
+        // we want exact resampling
+        const MAX_RESAMPLE_RATIO_RELATIVE: f64 = 1.0;
 
-        let input_sample_rate = self.sample_rate.samples_per_second.get().saturating_cast();
-        let output_sample_rate = sample_rate.samples_per_second.get().saturating_cast();
+        let input_sample_rate = self.sample_rate.samples_per_second.get();
+        let output_sample_rate = sample_rate.samples_per_second.get();
+
+        let ratio = f64::from(output_sample_rate) / f64::from(input_sample_rate);
         let sample_count = self.samples.len();
 
-        let mut resampler = FftFixedIn::new(
-            input_sample_rate,
-            output_sample_rate,
+        // TODO: allow the user to select an implementation?
+        let mut resampler = FastFixedIn::new(
+            ratio,
+            MAX_RESAMPLE_RATIO_RELATIVE,
+            PolynomialDegree::Septic,
             sample_count,
-            SUB_CHUNKS,
             CHANNEL_COUNT,
         )?;
 
