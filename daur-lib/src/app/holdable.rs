@@ -14,18 +14,17 @@ pub enum HoldableObject {
 
 impl HoldableObject {
     /// Moves the object.
-    pub(crate) fn update<Ui: UserInterface>(self, app: &App<Ui>, position: Point) {
+    pub(crate) fn update<Ui: UserInterface>(self, app: &mut App<Ui>, position: Point) {
         match self {
             HoldableObject::PianoRollHandle { y } => {
-                let mut settings = app.piano_roll_settings.get();
-                settings.content_height = app.ui.size().height - position.y + y - Length::PIXEL;
-                app.piano_roll_settings.set(settings);
+                app.piano_roll_settings.content_height =
+                    app.ui.size().height - position.y + y - Length::PIXEL;
             }
         }
     }
 
     /// Lets go of the object.
-    pub(crate) fn let_go<Ui: UserInterface>(self, _app: &App<Ui>) {
+    pub(crate) fn let_go<Ui: UserInterface>(self, _app: &mut App<Ui>) {
         match self {
             HoldableObject::PianoRollHandle { .. } => (),
         }

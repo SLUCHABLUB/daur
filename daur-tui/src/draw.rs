@@ -19,19 +19,18 @@ use std::cmp::min;
 use std::io;
 use std::num::{NonZeroU64, NonZeroUsize};
 
-pub(crate) fn redraw(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
+pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
     terminal
         .draw(|frame| {
             let area = to_rectangle(frame.area());
             let buffer = frame.buffer_mut();
 
-            app.ui().set_area(area);
+            app.ui_mut().area = area;
 
-            app.ui().view(app).accept::<Tui, _>(
-                &mut Renderer { buffer },
-                area,
-                app.ui().mouse_position(),
-            );
+            let ui = app.ui();
+
+            app.view()
+                .accept::<Tui, _>(&mut Renderer { buffer }, area, ui.mouse_position);
         })
         .map(|_| ())
 }

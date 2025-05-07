@@ -33,9 +33,9 @@ fn main() -> io::Result<()> {
 /// Runs the app in a given terminal.
 /// This ensures that the terminal is properly closed if an error occurs.
 fn in_terminal(terminal: &mut DefaultTerminal) -> io::Result<()> {
-    let app = App::new(Tui::default());
+    let mut app = App::new(Tui::default());
 
-    let result = io_loop(&app, terminal);
+    let result = io_loop(&mut app, terminal);
 
     // TODO: save
 
@@ -45,11 +45,11 @@ fn in_terminal(terminal: &mut DefaultTerminal) -> io::Result<()> {
 
 /// The main program loop that handles events and writes to the screen
 /// This ensures that the project is saved if an error occurs.
-fn io_loop(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
-    while !app.ui().should_exit() {
+fn io_loop(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
+    while !app.ui().should_exit {
         handle_events(&available_events()?, app);
 
-        if app.ui().should_redraw() {
+        if app.ui().should_redraw {
             redraw(app, terminal)?;
         }
     }

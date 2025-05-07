@@ -4,6 +4,7 @@ use crate::time::Instant;
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{App, Clip, Track, UserInterface, project};
+use anyhow::Result;
 use derive_more::Debug;
 use std::iter::once;
 use std::path::PathBuf;
@@ -77,12 +78,12 @@ impl Action {
 
 impl<Ui: UserInterface> App<Ui> {
     /// Takes an action on the app.
-    pub fn take_action(&self, action: Action) {
+    pub fn take_action(&mut self, action: Action) {
         self.take_actions(once(action));
     }
 
     /// Takes multiple actions on the app.
-    pub fn take_actions<Actions: IntoIterator<Item = Action>>(&self, actions: Actions) {
+    pub fn take_actions<Actions: IntoIterator<Item = Action>>(&mut self, actions: Actions) {
         let mut should_rerender = false;
 
         for action in actions {
@@ -91,25 +92,17 @@ impl<Ui: UserInterface> App<Ui> {
         }
 
         if should_rerender {
-            self.ui.rerender();
+            self.view = self.render_view();
         }
     }
 
-    /// Takes a single action on the app and return whether the app needs to be rerendered.
-    fn take(&self, action: Action) {
-        // alternate spelling of "try"
-        macro_rules! trie {
-            ($result:expr) => {
-                match $result {
-                    Ok(ok) => ok,
-                    Err(error) => {
-                        self.popups.open(&Popup::from(error), &self.ui);
-                        return;
-                    }
-                }
-            };
+    fn take(&mut self, action: Action) {
+        if let Err(error) = self.try_take(action) {
+            self.popups.open(&Popup::from(error), &self.ui);
         }
+    }
 
+    fn try_take(&mut self, action: Action) -> Result<()> {
         match action {
             Action::OpenPopup(popup) => {
                 self.popups.open(&popup, &self.ui);
@@ -118,16 +111,15 @@ impl<Ui: UserInterface> App<Ui> {
                 self.popups.close(popup);
             }
             Action::OpenContextMenu { menu, position } => {
-                self.context_menu
-                    .set(Some(menu.instantiate::<Ui>(position)));
+                self.context_menu = Some(menu.instantiate::<Ui>(position));
             }
             Action::CloseContextMenu => {
-                self.context_menu.set(None);
+                self.context_menu = None;
             }
 
             Action::Exit => self.ui.exit(),
             Action::MoveCursor(instant) => {
-                self.cursor.set(instant);
+                self.cursor = instant;
 
                 if self.audio_config.is_player_playing() {
                     self.take(Action::Play);
@@ -135,31 +127,25 @@ impl<Ui: UserInterface> App<Ui> {
             }
 
             Action::MoveOverview(by) => {
-                self.overview_offset.set(self.overview_offset.get() - by.x);
+                self.overview_offset -= by.x;
                 // TODO: scroll tracks vertically
             }
             Action::MovePianoRoll(by) => {
-                let mut settings = self.piano_roll_settings.get();
-
-                settings.x_offset -= by.x;
-                settings.y_offset += by.y;
-
-                self.piano_roll_settings.set(settings);
+                self.piano_roll_settings.x_offset -= by.x;
+                self.piano_roll_settings.y_offset += by.y;
             }
 
             Action::TogglePianoRoll => {
-                let mut settings = self.piano_roll_settings.get();
-                settings.open = !settings.open;
-                self.piano_roll_settings.set(settings);
+                self.piano_roll_settings.open = !self.piano_roll_settings.open;
             }
 
             Action::PickUp(object) => {
-                if let Some(old) = self.hand.replace(Some(object)) {
+                if let Some(old) = self.hand.replace(object) {
                     old.let_go(self);
                 }
             }
             Action::MoveHand(point) => {
-                if let Some(object) = self.hand.get() {
+                if let Some(object) = self.hand {
                     object.update(self, point);
                 }
             }
@@ -171,15 +157,21 @@ impl<Ui: UserInterface> App<Ui> {
 
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
-                    let position = self.project.time_mapping().musical(position);
-                    self.cursor.set(position);
+                    self.cursor = self
+                        .project_manager
+                        .project()
+                        .time_mapping()
+                        .musical(position);
                 }
             }
             Action::Play => {
-                let cursor = self.cursor.get();
-                let from = self.project.time_mapping().real_time(cursor);
+                let from = self
+                    .project_manager
+                    .project()
+                    .time_mapping()
+                    .real_time(self.cursor);
 
-                let player = trie!(self.audio_config.player());
+                let player = self.audio_config.player()?;
 
                 self.renderer.play_when_finished(from, player);
             }
@@ -191,22 +183,21 @@ impl<Ui: UserInterface> App<Ui> {
                 }
             }
             Action::Project(action) => {
-                let result =
-                    self.project
-                        .take(action, self.cursor.get(), self.selected_track.get());
+                self.project_manager
+                    .take(action, self.cursor, self.selected_track())?;
 
                 self.renderer.restart(
-                    &self.project.tracks(),
-                    &self.project.time_mapping(),
-                    trie!(self.audio_config.sample_rate()),
+                    &self.project_manager.project().tracks,
+                    &self.project_manager.project().time_mapping(),
+                    self.audio_config.sample_rate()?,
                 );
-
-                trie!(result);
             }
             Action::SelectClip { track, clip, .. } => {
-                self.selected_track.set(track);
-                self.selected_clip.set(clip);
+                self.selected_track = track;
+                self.selected_clip = clip;
             }
         }
+
+        Ok(())
     }
 }

@@ -1,7 +1,6 @@
 use crate::lock::Lock;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use std::mem::replace;
 
 /// A cell containing a clonable value.
 #[derive(Clone, Default)]
@@ -25,10 +24,6 @@ impl<T: Clone> CloneCell<T> {
     /// Sets the pointer to a new value.
     pub fn set(&self, value: T) {
         *self.lock.write() = value;
-    }
-
-    pub(crate) fn replace(&self, value: T) -> T {
-        replace(&mut self.lock.write(), value)
     }
 
     pub(super) fn lock_ref(&self) -> &Lock<T> {

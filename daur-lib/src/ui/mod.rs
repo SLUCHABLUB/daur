@@ -54,11 +54,7 @@ pub trait UserInterface {
     ///
     /// It is OK for implementations not to do anything or restart when this is run.
     /// This may be the case if the application, for example, cannot close itself.
-    fn exit(&self);
-
-    /// Informs the interface that the app needs to be rerendered.
-    /// I.e. that [`App::view`] needs to be called again.
-    fn rerender(&self);
+    fn exit(&mut self);
 
     /// Returns the current screen size.
     fn size(&self) -> Size;

@@ -2,11 +2,10 @@ use crate::controls::controls;
 use crate::convert::to_length;
 use crossterm::event::{KeyCode, KeyModifiers};
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use daur::{Action, App, Cell, OptionArcCell, Ratio, UserInterface, View};
+use daur::{Action, Ratio, UserInterface, View};
 use saturating_cast::SaturatingCast as _;
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::Arc;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 macro_rules! non_zero_length {
@@ -19,51 +18,15 @@ macro_rules! non_zero_length {
 
 // TODO: remove internal mutability
 pub(crate) struct Tui {
-    should_exit: Cell<bool>,
-    key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
-    // TODO: move to App?
-    cached_view: OptionArcCell<View>,
-    should_redraw: Cell<bool>,
-    mouse_position: Cell<Point>,
-    area: Cell<Rectangle>,
+    pub should_exit: bool,
+    // TODO: move to app
+    pub key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
+    pub should_redraw: bool,
+    pub mouse_position: Point,
+    pub area: Rectangle,
 }
 
 impl Tui {
-    pub(crate) fn should_exit(&self) -> bool {
-        self.should_exit.get()
-    }
-
-    /// Returns the view of the app.
-    /// This is taken from the cache if it is populated,
-    /// otherwise the cache is filled using the app reference.
-    pub(crate) fn view(&self, app: &App<Tui>) -> Arc<View> {
-        self.cached_view.get_or_insert_value_with(|| app.view())
-    }
-
-    pub(crate) fn should_redraw(&self) -> bool {
-        self.should_redraw.get()
-    }
-
-    pub(crate) fn redraw(&self) {
-        self.should_redraw.set(true);
-    }
-
-    pub(crate) fn mouse_position(&self) -> Point {
-        self.mouse_position.get()
-    }
-
-    pub(crate) fn set_mouse_position(&self, position: Point) {
-        self.mouse_position.set(position);
-    }
-
-    pub(crate) fn area(&self) -> Rectangle {
-        self.area.get()
-    }
-
-    pub(crate) fn set_area(&self, area: Rectangle) {
-        self.area.set(area);
-    }
-
     pub(crate) fn key_action(&self, modifiers: KeyModifiers, code: KeyCode) -> Option<Action> {
         self.key_actions.get(&(modifiers, code)).cloned()
     }
@@ -80,17 +43,12 @@ impl UserInterface for Tui {
     const RULER_HEIGHT: NonZeroLength = non_zero_length!(2);
     const TRACK_SETTINGS_WITH: NonZeroLength = non_zero_length!(20);
 
-    fn exit(&self) {
-        self.should_exit.set(true);
-    }
-
-    fn rerender(&self) {
-        self.cached_view.set_none();
-        self.redraw();
+    fn exit(&mut self) {
+        self.should_exit = true;
     }
 
     fn size(&self) -> Size {
-        self.area.get().size
+        self.area.size
     }
 
     fn string_width(string: &str) -> Length {
@@ -150,15 +108,14 @@ const DEFAULT_TERMINAL_SIZE: Size = Size {
 impl Default for Tui {
     fn default() -> Self {
         Tui {
-            should_exit: Cell::new(false),
+            should_exit: false,
             key_actions: controls(),
-            cached_view: OptionArcCell::none(),
-            should_redraw: Cell::new(true),
-            mouse_position: Cell::new(Point::ZERO),
-            area: Cell::new(Rectangle {
+            should_redraw: true,
+            mouse_position: Point::ZERO,
+            area: Rectangle {
                 position: Point::ZERO,
                 size: DEFAULT_TERMINAL_SIZE,
-            }),
+            },
         }
     }
 }

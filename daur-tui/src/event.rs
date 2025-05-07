@@ -6,26 +6,27 @@ use daur::view::visit::{Clicker, Grabber, Scroller};
 use daur::{Action, App, View};
 use ratatui::layout::{Position, Size};
 
-pub(crate) fn handle_events(events: &[Event], app: &App<Tui>) {
+pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
     let mut actions = Vec::new();
-    let view = app.ui().view(app);
 
     for event in events {
-        handle_event(event, app.ui(), &view, &mut actions);
+        handle_event(event, app, &mut actions);
     }
 
     app.take_actions(actions);
 }
 
-pub fn handle_event(event: &Event, ui: &Tui, view: &View, actions: &mut Vec<Action>) {
+pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Vec<Action>) {
     match *event {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
-        Event::Key(event) => handle_key_event(event, ui, actions),
-        Event::Mouse(event) => handle_mouse_event(event, ui, view, actions),
-        Event::Resize(width, height) => ui.set_area(Rectangle {
-            position: Point::ZERO,
-            size: to_size(Size { width, height }),
-        }),
+        Event::Key(event) => handle_key_event(event, app.ui(), actions),
+        Event::Mouse(event) => handle_mouse_event(event, app, actions),
+        Event::Resize(width, height) => {
+            app.ui_mut().area = Rectangle {
+                position: Point::ZERO,
+                size: to_size(Size { width, height }),
+            }
+        }
     }
 }
 
@@ -55,16 +56,15 @@ fn handle_mouse_event(
         row,
         modifiers: _,
     }: MouseEvent,
-    ui: &Tui,
-    view: &View,
+    app: &mut App<Tui>,
     actions: &mut Vec<Action>,
 ) {
-    ui.set_mouse_position(to_point(Position::new(column, row)));
+    app.ui_mut().mouse_position = to_point(Position::new(column, row));
 
-    let area = ui.area();
-    let position = ui.mouse_position();
+    let ui = app.ui();
+    let view = app.view();
 
-    actions.push(Action::MoveHand(position));
+    actions.push(Action::MoveHand(ui.mouse_position));
 
     match kind {
         MouseEventKind::Down(button) => {
@@ -72,9 +72,9 @@ fn handle_mouse_event(
                 return;
             }
 
-            let mut grabber = Grabber::new(position);
+            let mut grabber = Grabber::new(ui.mouse_position);
 
-            view.accept::<Tui, _>(&mut grabber, area, position);
+            view.accept::<Tui, _>(&mut grabber, ui.area, ui.mouse_position);
 
             actions.extend(grabber.actions());
         }
@@ -82,12 +82,12 @@ fn handle_mouse_event(
             // click
 
             let mut clicker = match button {
-                MouseButton::Left => Clicker::left_click(position),
-                MouseButton::Right => Clicker::right_click(position),
+                MouseButton::Left => Clicker::left_click(ui.mouse_position),
+                MouseButton::Right => Clicker::right_click(ui.mouse_position),
                 MouseButton::Middle => return,
             };
 
-            view.accept::<Tui, _>(&mut clicker, area, position);
+            view.accept::<Tui, _>(&mut clicker, ui.area, ui.mouse_position);
 
             actions.extend(clicker.actions());
 
@@ -114,12 +114,9 @@ fn handle_mouse_event(
 fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Vec<Action>) {
     let offset = -direction * Length::PIXEL;
 
-    let mouse_position = ui.mouse_position();
-    let area = ui.area();
+    let mut scroller = Scroller::new(ui.mouse_position, offset);
 
-    let mut scroller = Scroller::new(mouse_position, offset);
-
-    view.accept::<Tui, _>(&mut scroller, area, mouse_position);
+    view.accept::<Tui, _>(&mut scroller, ui.area, ui.mouse_position);
 
     actions.extend(scroller.actions());
 }

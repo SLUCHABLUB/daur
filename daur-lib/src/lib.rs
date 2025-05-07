@@ -26,10 +26,8 @@ mod receiver;
 mod sign;
 mod string;
 
-pub(crate) use cell::{CloneCell, WeakCell};
-
 pub use app::{Action, App, HoldableObject};
-pub use cell::{ArcCell, Cell, OptionArcCell};
+pub use cell::{ArcCell, Cell};
 pub use changing::Changing;
 pub use lock::Lock;
 pub use observed::Observed;
