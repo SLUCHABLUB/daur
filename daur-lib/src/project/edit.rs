@@ -2,12 +2,12 @@ use crate::audio::Audio;
 use crate::clip::{Clip, Content};
 use crate::key::Key;
 use crate::notes::Notes;
-use crate::popup::Popup;
 use crate::project::Action;
 use crate::ratio::Ratio;
 use crate::time::{Duration, Instant};
 use crate::track::Track;
 use crate::ui::Colour;
+use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};
 use hound::WavReader;
 use std::ffi::{OsStr, OsString};
@@ -64,7 +64,7 @@ impl Edit {
         action: Action,
         cursor: Instant,
         selected_track: Weak<Track>,
-    ) -> Result<Edit, Popup> {
+    ) -> Result<Edit> {
         Ok(match action {
             Action::AddNotes => Edit::AddClip {
                 track: selected_track,
@@ -78,7 +78,7 @@ impl Edit {
             Action::AddTrack => Edit::AddTrack(Track::new()),
             Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {
-                    return Err(Popup::from(NoExtensionError { file }));
+                    bail!(NoExtensionError { file });
                 };
 
                 // TODO: look at the symphonia crate
@@ -88,9 +88,9 @@ impl Edit {
                         Audio::try_from(reader)?
                     }
                     _ => {
-                        return Err(Popup::from(UnsupportedFormatError {
+                        bail!(UnsupportedFormatError {
                             format: extension.to_owned(),
-                        }));
+                        });
                     }
                 };
 

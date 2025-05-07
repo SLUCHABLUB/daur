@@ -19,7 +19,7 @@ use crate::time::real::Duration;
 use crate::time::{Instant, Mapping, Period};
 use crate::view::Context;
 use anyhow::Result;
-use hound::{Error, SampleFormat, WavReader};
+use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
 use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
 use std::borrow::Cow;
@@ -168,9 +168,9 @@ impl Audio {
 }
 
 impl<R: Read> TryFrom<WavReader<R>> for Audio {
-    type Error = Error;
+    type Error = hound::Error;
 
-    fn try_from(mut reader: WavReader<R>) -> Result<Audio, Error> {
+    fn try_from(mut reader: WavReader<R>) -> hound::Result<Audio> {
         let spec = reader.spec();
         let samples: Vec<_> = match spec.sample_format {
             SampleFormat::Float => reader
@@ -198,11 +198,12 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
                     right: chunk[1],
                 })
                 .collect(),
-            _ => return Err(Error::Unsupported),
+            _ => return Err(hound::Error::Unsupported),
         };
 
-        let samples_per_second = NonZeroU32::new(spec.sample_rate)
-            .ok_or(Error::FormatError("encountered a sample rate of zero"))?;
+        let samples_per_second = NonZeroU32::new(spec.sample_rate).ok_or(
+            hound::Error::FormatError("encountered a sample rate of zero"),
+        )?;
         let sample_rate = SampleRate { samples_per_second };
 
         Ok(Audio {

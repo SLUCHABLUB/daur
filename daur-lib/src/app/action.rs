@@ -99,7 +99,7 @@ impl<Ui: UserInterface> App<Ui> {
                 match $result {
                     Ok(ok) => ok,
                     Err(error) => {
-                        self.popups.open(&error, &self.ui);
+                        self.popups.open(&Popup::from(error), &self.ui);
                         return;
                     }
                 }
@@ -193,9 +193,7 @@ impl<Ui: UserInterface> App<Ui> {
                     trie!(self.audio_config.sample_rate()),
                 );
 
-                if let Err(popup) = result {
-                    self.popups.open(&popup, &self.ui);
-                }
+                trie!(result);
             }
             Action::SelectClip { track, clip, .. } => {
                 self.selected_track.set(track);

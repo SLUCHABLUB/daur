@@ -12,13 +12,13 @@ use crate::key::Key;
 use crate::time::Instant;
 use crate::ui::Rectangle;
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
-use crate::{Action, ArcCell, Cell, Ratio, ToArcStr as _, UserInterface, View, project};
+use crate::{Action, ArcCell, Cell, Ratio, UserInterface, View, project};
+use anyhow::Error;
 use arcstr::{ArcStr, format, literal};
 use closure::closure;
 use derive_more::Debug;
 use dirs::home_dir;
 use std::env::current_dir;
-use std::error::Error;
 use std::path::Path;
 use std::sync::Arc;
 
@@ -41,7 +41,7 @@ pub enum Popup {
         buttons: Vec<(ArcStr, Action)>,
     },
     /// An error message.
-    Error { display: ArcStr, debug: ArcStr },
+    Error(Arc<Error>),
     /// A file selector.
     FileSelector {
         title: ArcStr,
@@ -97,14 +97,13 @@ impl Popup {
                         .terminating(id)
                 }),
             ),
-            Popup::Error { display, debug } => {
+            Popup::Error(error) => {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
                 View::spaced_stack::<Ui, _>(
                     Axis::Y,
                     [
-                        display.clone().aligned_to(Alignment::TopLeft),
-                        debug.clone().aligned_to(Alignment::TopLeft),
+                        format!("{error:#}").aligned_to(Alignment::TopLeft),
                         acknowledge_button.terminating(id),
                     ],
                 )
@@ -200,12 +199,9 @@ impl Popup {
     }
 }
 
-impl<E: Error> From<E> for Popup {
+impl<E: Into<Error>> From<E> for Popup {
     fn from(error: E) -> Self {
-        Popup::Error {
-            display: error.to_arc_str(),
-            debug: format!("{error:?}"),
-        }
+        Popup::Error(Arc::new(error.into()))
     }
 }
 

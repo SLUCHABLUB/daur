@@ -2,7 +2,6 @@ use crate::audio::Player;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::lock::Lock;
-use crate::popup::Popup;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
 use crate::project::{Project, bar, workspace};
@@ -10,6 +9,7 @@ use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::View;
 use crate::{Changing, Track, UserInterface, time, ui};
+use anyhow::Result;
 use std::sync::{Arc, Weak};
 use thiserror::Error;
 
@@ -118,16 +118,11 @@ impl Manager {
     /// # Errors
     ///
     /// If the action cannot be completed, a popup to open will be returned.
-    pub fn take(
-        &self,
-        action: Action,
-        cursor: Instant,
-        selected_track: Weak<Track>,
-    ) -> Result<(), Popup> {
+    pub fn take(&self, action: Action, cursor: Instant, selected_track: Weak<Track>) -> Result<()> {
         self.edit(Edit::from_action(action, cursor, selected_track)?)
     }
 
-    fn edit(&self, edit: Edit) -> Result<(), Popup> {
+    fn edit(&self, edit: Edit) -> Result<()> {
         self.history.write().push(edit.clone());
 
         let mut project = self.project.write();
