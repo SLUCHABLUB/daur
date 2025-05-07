@@ -1,39 +1,47 @@
 use crate::app::Action;
+use crate::audio::Player;
 use crate::time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Length, Offset};
 use crate::view::context::Menu;
-use crate::view::{Direction, OnClick, Quotated, View, cursor_window, feed};
+use crate::view::{CursorWindow, Direction, OnClick, Quotated, View, feed};
 use crate::{Clip, clip, time, ui};
 use closure::closure;
 use num::Integer as _;
 use std::sync::{Arc, Weak};
 
 /// Returns the track overview.
-pub fn overview(
+pub(crate) fn overview(
     track: Arc<Track>,
     selected_clip: &Weak<Clip>,
-    time_mapping: time::Mapping,
-    ui_mapping: ui::Mapping,
-    offset: Offset,
+    time_mapping: &time::Mapping,
+    ui_mapping: &ui::Mapping,
+    offset: Length,
     cursor: Instant,
+    player: Option<&Player>,
 ) -> View {
-    View::size_informed(closure!([clone selected_clip] move |size| {
-        let overview_start = (-offset).rectify();
-        let overview_period = ui_mapping.period(overview_start, size.width);
+    View::size_informed(closure!([
+        clone selected_clip,
+        clone time_mapping,
+        clone ui_mapping,
+        cloned player,
+    ] move |size| {
+        let vissible_period_start = offset;
+        let vissible_period = ui_mapping.period(vissible_period_start, size.width);
 
+        // TODO: don't use a feed here
         let generator = feed_generator(
             &track,
             &selected_clip,
             &time_mapping,
             &ui_mapping,
-            offset,
-            overview_period,
+            Offset::negative(offset),
+            vissible_period,
         );
 
         View::Layers(vec![
-            feed(Direction::Right, offset, generator),
-            cursor_window(cursor, &ui_mapping, offset),
+            feed(Direction::Right, Offset::negative(offset), generator),
+            CursorWindow::view(player.clone(), cursor, time_mapping.clone(), ui_mapping.clone(), offset),
         ])
     }))
     .contextual(Menu::track_overview())
@@ -46,7 +54,7 @@ fn feed_generator(
     time_mapping: &time::Mapping,
     ui_mapping: &ui::Mapping,
     offset: Offset,
-    overview_period: Period,
+    visible_period: Period,
 ) -> impl Fn(isize) -> Quotated + 'static {
     let track_reference = Arc::downgrade(track);
 
@@ -97,7 +105,7 @@ fn feed_generator(
         let clip_period = clip.period(*start, &time_mapping);
         let clip_width = ui_mapping.width_of(clip_period);
 
-        let Some(visible_period) = Period::intersection(overview_period, clip_period) else {
+        let Some(visible_period) = Period::intersection(visible_period, clip_period) else {
             return empty().quotated(clip_width);
         };
 

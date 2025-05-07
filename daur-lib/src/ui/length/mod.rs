@@ -3,6 +3,7 @@ mod non_zero;
 pub use non_zero::NonZeroLength;
 
 use crate::Ratio;
+use crate::ui::Offset;
 use crate::view::Quotum;
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU64;
@@ -84,5 +85,35 @@ impl Div<NonZeroLength> for Length {
 
     fn div(self, rhs: NonZeroLength) -> Ratio {
         Ratio::new(u64::from(self.pixels), NonZeroU64::from(rhs.pixels))
+    }
+}
+
+impl Add<Offset> for Length {
+    type Output = Length;
+
+    fn add(self, rhs: Offset) -> Self::Output {
+        (Offset::positive(self) + rhs).rectify()
+    }
+}
+
+// TODO: derive
+impl AddAssign<Offset> for Length {
+    fn add_assign(&mut self, rhs: Offset) {
+        *self = *self + rhs;
+    }
+}
+
+impl Sub<Offset> for Length {
+    type Output = Length;
+
+    fn sub(self, rhs: Offset) -> Self::Output {
+        (Offset::positive(self) - rhs).rectify()
+    }
+}
+
+// TODO: derive
+impl SubAssign<Offset> for Length {
+    fn sub_assign(&mut self, rhs: Offset) {
+        *self = *self - rhs;
     }
 }

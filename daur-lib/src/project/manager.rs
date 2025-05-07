@@ -1,3 +1,4 @@
+use crate::audio::Player;
 use crate::clip::Clip;
 use crate::key::Key;
 use crate::lock::Lock;
@@ -6,7 +7,7 @@ use crate::project::action::Action;
 use crate::project::edit::Edit;
 use crate::project::{Project, bar, workspace};
 use crate::time::{Instant, NonZeroInstant, Signature, Tempo};
-use crate::ui::{Grid, NonZeroLength, Offset};
+use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::View;
 use crate::{Changing, Track, UserInterface, time, ui};
 use std::sync::{Arc, Weak};
@@ -85,14 +86,17 @@ impl Manager {
         )
     }
 
+    // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
+    #[expect(clippy::too_many_arguments, reason = "todo")]
     pub(crate) fn workspace<Ui: UserInterface>(
         &self,
         track_settings_size: NonZeroLength,
         grid: Grid,
-        overview_offset: Offset,
+        overview_offset: Length,
         selected_track: &Weak<Track>,
         selected_clip: &Weak<Clip>,
         cursor: Instant,
+        player: Option<&Player>,
     ) -> View {
         let project = self.project.read();
 
@@ -102,9 +106,10 @@ impl Manager {
             selected_clip,
             track_settings_size,
             project.tracks.clone(),
-            project.time_mapping(),
+            &project.time_mapping(),
             project.ui_mapping(grid),
             cursor,
+            player,
         )
     }
 

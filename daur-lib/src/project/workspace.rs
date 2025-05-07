@@ -1,7 +1,8 @@
+use crate::audio::Player;
 use crate::project::{ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Action};
 use crate::time::Instant;
 use crate::track::{Track, overview, settings};
-use crate::ui::{NonZeroLength, Offset};
+use crate::ui::{Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
 use crate::{Clip, UserInterface, time, ui};
 use arcstr::literal;
@@ -10,14 +11,15 @@ use std::sync::{Arc, Weak};
 // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
 #[expect(clippy::too_many_arguments, reason = "todo")]
 pub(crate) fn workspace<Ui: UserInterface>(
-    overview_offset: Offset,
+    overview_offset: Length,
     selected_track: &Weak<Track>,
     selected_clip: &Weak<Clip>,
     track_settings_width: NonZeroLength,
     tracks: Vec<Arc<Track>>,
-    time_mapping: time::Mapping,
+    time_mapping: &time::Mapping,
     ui_mapping: ui::Mapping,
     cursor: Instant,
+    player: Option<&Player>,
 ) -> View {
     let mut track_settings = Vec::new();
     let mut track_overviews = Vec::new();
@@ -30,10 +32,11 @@ pub(crate) fn workspace<Ui: UserInterface>(
         track_overviews.push(overview(
             track,
             selected_clip,
-            time_mapping.clone(),
-            ui_mapping.clone(),
+            time_mapping,
+            &ui_mapping,
             overview_offset,
             cursor,
+            player,
         ));
     }
 
@@ -49,9 +52,10 @@ pub(crate) fn workspace<Ui: UserInterface>(
         Arc::new(Track::new()),
         selected_clip,
         time_mapping,
-        ui_mapping.clone(),
+        &ui_mapping,
         overview_offset,
         cursor,
+        player,
     ));
 
     // TODO: put something here?

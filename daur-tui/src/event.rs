@@ -103,8 +103,7 @@ fn handle_mouse_event(
 
 // TODO: break into parts and move into the library
 fn scroll(app: &App<Tui>, direction: Direction) {
-    // the screen is moved in the opposite direction of the mouse movement
-    let offset = -(direction * Length::PIXEL);
+    let offset = direction * Length::PIXEL;
 
     let mouse_position = app.ui().mouse_position();
     let area = app.ui().area();

@@ -1,10 +1,11 @@
-use crate::ui::{Mapping, Offset};
+use crate::ui::{Length, Mapping, Offset};
 use crate::view::{Direction, View, feed};
 use std::num::NonZeroU64;
 
 /// A ruler of musical time
-pub fn ruler(mapping: Mapping, offset: Offset) -> View {
-    feed(Direction::Right, offset, move |index| {
+pub fn ruler(mapping: Mapping, offset: Length) -> View {
+    // TODO: don't use feed
+    feed(Direction::Right, Offset::negative(offset), move |index| {
         if let Ok(bar_index) = usize::try_from(index) {
             let bar = mapping.time_signature.bar_n(bar_index);
             let bar_width = mapping.bar_width(bar);

@@ -116,7 +116,11 @@ impl View {
                 visitor.visit_contextual(area, menu),
                 view.accept(visitor, area, mouse_position),
             ),
-            View::CursorWindow { offset } => visitor.visit_cursor_window(area, *offset),
+            View::CursorWindow(window) => {
+                if let Some(offset) = window.offset() {
+                    visitor.visit_cursor_window(area, offset);
+                }
+            }
             View::Empty => (),
             View::Generator(generator) => generator().accept(visitor, area, mouse_position),
             View::Grabbable { object, view } => compound!(

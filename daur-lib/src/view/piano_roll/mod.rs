@@ -11,7 +11,7 @@ pub use settings::Settings;
 use crate::interval::Interval;
 use crate::key::Key;
 use crate::pitch::Pitch;
-use crate::ui::{Length, Mapping, Offset, Point, Rectangle};
+use crate::ui::{Length, Mapping, Point, Rectangle};
 use crate::view::{Direction, Quotated, ToText as _, View, feed, ruler};
 use crate::{Changing, Clip, HoldableObject, UserInterface};
 use arcstr::{ArcStr, literal};
@@ -58,7 +58,7 @@ fn content<Ui: UserInterface>(
 
     let ruler = View::x_stack([
         View::Empty.quotated(settings.piano_depth.get()),
-        ruler(mapping, Offset::negative(settings.x_offset)).fill_remaining(),
+        ruler(mapping, settings.x_offset).fill_remaining(),
     ]);
 
     // The piano roll has a fixed lower pitch.

@@ -12,7 +12,7 @@ mod builder;
 mod button;
 mod canvas;
 mod constructors;
-mod cursor;
+mod cursor_window;
 mod direction;
 mod feed;
 mod file_selector;
@@ -25,7 +25,7 @@ pub use alignment::Alignment;
 pub use axis::Axis;
 pub use button::OnClick;
 pub use canvas::Context;
-pub use cursor::cursor_window;
+pub use cursor_window::CursorWindow;
 pub use direction::Direction;
 pub use feed::feed;
 pub use file_selector::file_selector;
@@ -34,7 +34,7 @@ pub use ruler::ruler;
 pub use text::ToText;
 
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Length, Point, Rectangle, Size};
+use crate::ui::{Colour, Point, Rectangle, Size};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;
@@ -82,10 +82,7 @@ pub enum View {
         view: Box<View>,
     },
     /// A view with a musical context.
-    CursorWindow {
-        /// How far from the left the cursor is positioned.
-        offset: Length,
-    },
+    CursorWindow(CursorWindow),
     /// An empty (transparent) view.
     #[default]
     Empty,

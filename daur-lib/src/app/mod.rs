@@ -22,6 +22,7 @@ use std::sync::Weak;
 #[derive(Debug, Getters)]
 pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.
+    // TODO: remove getter
     #[get = "pub"]
     ui: Ui,
 
@@ -56,9 +57,9 @@ pub struct App<Ui: UserInterface> {
     // TODO: move to temporary settings
     grid: Grid,
     // TODO: move to temporary settings
-    /// How far to the right the overview is offset.
+    /// How far to the left the overview has been moved.
     #[get = "pub"]
-    overview_offset: Cell<Offset>,
+    overview_offset: Cell<Length>,
     // TODO: move to temporary settings
     /// The settings regarding the piano roll.
     #[get = "pub"]
@@ -94,7 +95,7 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_duration: NonZeroDuration::QUARTER,
                 cell_width: Ui::CELL_WIDTH,
             },
-            overview_offset: Cell::new(Offset::ZERO),
+            overview_offset: Cell::new(Length::ZERO),
             piano_roll_settings: Cell::new(Settings {
                 x_offset: Length::ZERO,
                 y_offset: Offset::ZERO,
@@ -130,6 +131,7 @@ impl<Ui: UserInterface> App<Ui> {
                     &self.selected_track.get(),
                     &self.selected_clip.get(),
                     self.cursor(),
+                    self.audio_config.player().ok().as_ref(),
                 )
                 .fill_remaining(),
             piano_roll::view::<Ui>(

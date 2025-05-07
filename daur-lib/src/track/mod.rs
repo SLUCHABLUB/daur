@@ -4,9 +4,9 @@ mod overview;
 mod render_stream;
 mod settings;
 
-pub use overview::overview;
+pub(crate) use overview::overview;
 pub(crate) use render_stream::RenderStream;
-pub use settings::settings;
+pub(crate) use settings::settings;
 
 use crate::audio::{Pair, SampleRate};
 use crate::clip::Content;

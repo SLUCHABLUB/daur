@@ -140,20 +140,8 @@ impl AddAssign<Length> for Offset {
     }
 }
 
-impl AddAssign<Offset> for Length {
-    fn add_assign(&mut self, rhs: Offset) {
-        *self = (rhs + *self).rectify();
-    }
-}
-
 impl SubAssign<Length> for Offset {
     fn sub_assign(&mut self, rhs: Length) {
         *self = *self - rhs;
-    }
-}
-
-impl SubAssign<Offset> for Length {
-    fn sub_assign(&mut self, rhs: Offset) {
-        *self = ((-rhs) + *self).rectify();
     }
 }
