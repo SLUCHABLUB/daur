@@ -58,8 +58,8 @@ pub enum Action {
     Pause,
     /// Start playing
     Play,
-    /// Inverts the playback state.
-    PlayPause,
+    /// Toggles whether the app is playing.
+    TogglePlayback,
 
     /// Takes a project action
     Project(project::Action),
@@ -175,7 +175,7 @@ impl<Ui: UserInterface> App<Ui> {
 
                 self.renderer.play_when_finished(from, player);
             }
-            Action::PlayPause => {
+            Action::TogglePlayback => {
                 if self.audio_config.is_player_playing() {
                     self.take(Action::Pause);
                 } else {
