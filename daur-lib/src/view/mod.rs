@@ -13,7 +13,6 @@ mod button;
 mod canvas;
 mod constructors;
 mod cursor_window;
-mod direction;
 mod feed;
 mod file_selector;
 mod minimum_size;
@@ -26,15 +25,15 @@ pub use axis::Axis;
 pub use button::OnClick;
 pub use canvas::Context;
 pub use cursor_window::CursorWindow;
-pub use direction::Direction;
 pub use feed::feed;
 pub use file_selector::file_selector;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 pub use text::ToText;
 
+use crate::Action;
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Point, Rectangle, Size};
+use crate::ui::{Colour, Point, Rectangle, Size, Vector};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;
@@ -108,6 +107,11 @@ pub enum View {
         index: isize,
         /// The number of cells (the number of markings - 1).
         cells: NonZeroU64,
+    },
+    /// A scrollable view.
+    Scrollable {
+        action: fn(Vector) -> Action,
+        view: Box<View>,
     },
     /// A view with a custom minimum size
     Sized { minimum_size: Size, view: Box<View> },

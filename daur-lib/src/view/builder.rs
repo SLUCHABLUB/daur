@@ -1,6 +1,6 @@
-use crate::ui::{Point, Rectangle};
+use crate::ui::{Point, Rectangle, Vector};
 use crate::view::context::Menu;
-use crate::{HoldableObject, UserInterface, View};
+use crate::{Action, HoldableObject, UserInterface, View};
 use arcstr::ArcStr;
 use std::cmp::max;
 
@@ -28,6 +28,13 @@ impl View {
     ) -> Self {
         View::Grabbable {
             object: Box::new(generator),
+            view: Box::new(self),
+        }
+    }
+
+    pub fn scrollable(self, action: fn(Vector) -> Action) -> Self {
+        View::Scrollable {
+            action,
             view: Box::new(self),
         }
     }

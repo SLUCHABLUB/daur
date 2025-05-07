@@ -39,7 +39,6 @@ pub struct App<Ui: UserInterface> {
     hand: Cell<Option<HoldableObject>>,
 
     // TODO: move to temporary settings
-    #[get = "pub"]
     /// The height of the project bar.
     project_bar_height: NonZeroLength,
     track_settings_width: NonZeroLength,
@@ -58,11 +57,9 @@ pub struct App<Ui: UserInterface> {
     grid: Grid,
     // TODO: move to temporary settings
     /// How far to the left the overview has been moved.
-    #[get = "pub"]
     overview_offset: Cell<Length>,
     // TODO: move to temporary settings
     /// The settings regarding the piano roll.
-    #[get = "pub"]
     piano_roll_settings: Cell<Settings>,
 }
 

@@ -1,5 +1,5 @@
-use crate::ui::{Length, Mapping, Offset};
-use crate::view::{Direction, View, feed};
+use crate::ui::{Direction, Length, Mapping, Offset};
+use crate::view::{View, feed};
 use std::num::NonZeroU64;
 
 /// A ruler of musical time

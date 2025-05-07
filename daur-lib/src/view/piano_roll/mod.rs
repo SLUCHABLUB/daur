@@ -11,9 +11,9 @@ pub use settings::Settings;
 use crate::interval::Interval;
 use crate::key::Key;
 use crate::pitch::Pitch;
-use crate::ui::{Length, Mapping, Point, Rectangle};
-use crate::view::{Direction, Quotated, ToText as _, View, feed, ruler};
-use crate::{Changing, Clip, HoldableObject, UserInterface};
+use crate::ui::{Direction, Length, Mapping, Point, Rectangle};
+use crate::view::{Quotated, ToText as _, View, feed, ruler};
+use crate::{Action, Changing, Clip, HoldableObject, UserInterface};
 use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 use std::sync::Weak;
@@ -38,7 +38,8 @@ pub fn view<Ui: UserInterface>(
 
     let title_height = Ui::title_height(&title, &view);
 
-    view.titled(title)
+    view.scrollable(Action::MovePianoRoll)
+        .titled(title)
         .grabbable(grabber(title_height))
         .quotated(settings.content_height + title_height)
 }

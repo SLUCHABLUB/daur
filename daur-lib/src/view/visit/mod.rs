@@ -2,23 +2,22 @@
 
 mod clicker;
 mod grabber;
+mod scroller;
 
 pub use clicker::Clicker;
 pub use grabber::Grabber;
+pub use scroller::Scroller;
 
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Length, Point, Rectangle};
+use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::{Alignment, OnClick, Painter};
-use crate::{Ratio, UserInterface, View};
+use crate::{Action, Ratio, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
 
 /// A type that can visit a [view](View).
 pub trait Visitor {
-    /// The user interface in which the views should be visited.
-    type Ui: UserInterface;
-
     /// Whether views should be visited from inside out.
     /// This also reverses the order in which layers are visited.
     #[must_use]
@@ -46,6 +45,9 @@ pub trait Visitor {
 
     /// Visits a rule.
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64);
+
+    /// Visits a scrollable view.
+    fn visit_scrollable(&mut self, area: Rectangle, action: fn(Vector) -> Action);
 
     /// Visits a solid colour.
     fn visit_solid(&mut self, area: Rectangle, colour: Colour);
@@ -93,7 +95,8 @@ macro_rules! compound {
 }
 
 impl View {
-    pub fn accept<V: Visitor + ?Sized>(
+    #[expect(clippy::too_many_lines, reason = "`View` is a large")]
+    pub fn accept<Ui: UserInterface, V: Visitor + ?Sized>(
         &self,
         visitor: &mut V,
         area: Rectangle,
@@ -102,7 +105,7 @@ impl View {
         match self {
             View::Bordered { thick, view } => compound!(
                 visitor.visit_border(area, *thick),
-                view.accept(visitor, inner_area::<V::Ui>(area), mouse_position),
+                view.accept::<Ui, V>(visitor, inner_area::<Ui>(area), mouse_position),
             ),
             View::Canvas {
                 background,
@@ -110,11 +113,11 @@ impl View {
             } => visitor.visit_canvas(area, *background, painter),
             View::Clickable { on_click, view } => compound!(
                 visitor.visit_clickable(area, on_click),
-                view.accept(visitor, area, mouse_position),
+                view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
             View::Contextual { menu, view } => compound!(
                 visitor.visit_contextual(area, menu),
-                view.accept(visitor, area, mouse_position),
+                view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
             View::CursorWindow(window) => {
                 if let Some(offset) = window.offset() {
@@ -122,22 +125,24 @@ impl View {
                 }
             }
             View::Empty => (),
-            View::Generator(generator) => generator().accept(visitor, area, mouse_position),
+            View::Generator(generator) => {
+                generator().accept::<Ui, V>(visitor, area, mouse_position);
+            }
             View::Grabbable { object, view } => compound!(
                 if let Some(object) = object(area, mouse_position) {
                     visitor.visit_grabbable(area, object);
                 },
-                view.accept(visitor, area, mouse_position),
+                view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
             View::Hoverable { default, hovered } => {
                 if area.contains(mouse_position) {
-                    hovered.accept(visitor, area, mouse_position);
+                    hovered.accept::<Ui, V>(visitor, area, mouse_position);
                 } else {
-                    default.accept(visitor, area, mouse_position);
+                    default.accept::<Ui, V>(visitor, area, mouse_position);
                 }
             }
             View::Layers(layers) => {
-                let visit = |layer: &View| layer.accept(visitor, area, mouse_position);
+                let visit = |layer: &View| layer.accept::<Ui, V>(visitor, area, mouse_position);
 
                 if V::reverse_order() {
                     layers.iter().rev().for_each(visit);
@@ -146,12 +151,16 @@ impl View {
                 }
             }
             View::Rule { index, cells } => visitor.visit_rule(area, *index, *cells),
+            View::Scrollable { action, view } => compound!(
+                visitor.visit_scrollable(area, *action),
+                view.accept::<Ui, V>(visitor, area, mouse_position),
+            ),
             View::Sized {
                 minimum_size: _,
                 view,
-            } => view.accept(visitor, area, mouse_position),
+            } => view.accept::<Ui, V>(visitor, area, mouse_position),
             View::SizeInformed(generator) => {
-                generator(area.size).accept(visitor, area, mouse_position);
+                generator(area.size).accept::<Ui, V>(visitor, area, mouse_position);
             }
             View::Solid(colour) => visitor.visit_solid(area, *colour),
             View::Stack { axis, elements } => {
@@ -159,7 +168,7 @@ impl View {
                 let rectangles = area.split(*axis, &quota);
 
                 for (area, quoted) in zip(rectangles, elements) {
-                    quoted.view.accept(visitor, area, mouse_position);
+                    quoted.view.accept::<Ui, V>(visitor, area, mouse_position);
                 }
             }
             View::Text { string, alignment } => visitor.visit_text(area, string, *alignment),
@@ -168,10 +177,10 @@ impl View {
                 highlighted,
                 view,
             } => {
-                let titled_area = titled_area::<V::Ui>(area, title, view);
+                let titled_area = titled_area::<Ui>(area, title, view);
 
                 if let View::Bordered { thick, view } = &**view {
-                    let inner_area = inner_area::<V::Ui>(titled_area);
+                    let inner_area = inner_area::<Ui>(titled_area);
                     compound!(
                         visitor.visit_titled_bordered(
                             area,
@@ -180,14 +189,14 @@ impl View {
                             *highlighted,
                             *thick
                         ),
-                        view.accept(visitor, inner_area, mouse_position),
+                        view.accept::<Ui, V>(visitor, inner_area, mouse_position),
                     );
                     return;
                 }
 
                 compound!(
                     visitor.visit_titled(area, title, *highlighted),
-                    view.accept(visitor, titled_area, mouse_position),
+                    view.accept::<Ui, V>(visitor, titled_area, mouse_position),
                 );
             }
             View::Window {
@@ -197,7 +206,7 @@ impl View {
                 if let Some(area) = window_area(area, *relative) {
                     compound!(
                         visitor.visit_window(area),
-                        view.accept(visitor, area, mouse_position),
+                        view.accept::<Ui, V>(visitor, area, mouse_position),
                     );
                 }
             }

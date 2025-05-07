@@ -5,6 +5,7 @@ arithmetic-side-effects-allowed = [
     "audio::pair::Pair",
     "audio::sample::Sample",
     "pitch::Pitch",
+    "ui::direction::Direction",
     "ui::length::Length",
     "ui::offset::Offset",
     "ui::point::Point",
@@ -19,6 +20,7 @@ arithmetic-side-effects-allowed = [
 
     # type names for other crates
     "daur::audio::Sample",
+    "daur::ui::Direction",
     "daur::ui::Length",
     "daur::ui::Point",
     "daur::ui::Offset",

@@ -5,7 +5,7 @@ use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
 use daur::view::{Alignment, OnClick, Painter};
-use daur::{App, HoldableObject};
+use daur::{Action, App, HoldableObject};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};
@@ -27,9 +27,11 @@ pub(crate) fn redraw(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Resu
 
             app.ui().set_area(area);
 
-            app.ui()
-                .view(app)
-                .accept(&mut Renderer { buffer }, area, app.ui().mouse_position());
+            app.ui().view(app).accept::<Tui, _>(
+                &mut Renderer { buffer },
+                area,
+                app.ui().mouse_position(),
+            );
         })
         .map(|_| ())
 }
@@ -41,8 +43,6 @@ struct Renderer<'buffer> {
 }
 
 impl Visitor for Renderer<'_> {
-    type Ui = Tui;
-
     fn visit_border(&mut self, area: Rectangle, thick: bool) {
         self.visit_titled_bordered(area, area, "", thick, thick);
     }
@@ -108,6 +108,8 @@ impl Visitor for Renderer<'_> {
         }
         .render(area, self.buffer);
     }
+
+    fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
 
     fn visit_solid(&mut self, area: Rectangle, colour: Colour) {
         let area = from_rectangle(area);

@@ -1,6 +1,6 @@
 use crate::ui::{Length, Offset, Vector};
 use crate::view::Axis;
-use std::ops::Mul;
+use std::ops::{Mul, Neg};
 
 /// A direction in which items can be laid out
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -31,6 +31,19 @@ impl Direction {
         match self {
             Direction::Up | Direction::Left => true,
             Direction::Down | Direction::Right => false,
+        }
+    }
+}
+
+impl Neg for Direction {
+    type Output = Direction;
+
+    fn neg(self) -> Self::Output {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Left => Direction::Right,
+            Direction::Down => Direction::Up,
+            Direction::Right => Direction::Left,
         }
     }
 }

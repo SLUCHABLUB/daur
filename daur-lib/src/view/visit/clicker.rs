@@ -1,10 +1,9 @@
+use crate::Action;
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Length, Point, Rectangle};
+use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
-use crate::{Action, App, UserInterface};
-use std::marker::PhantomData;
 use std::num::NonZeroU64;
 
 /// A visitor for clicking a view.
@@ -13,15 +12,14 @@ use std::num::NonZeroU64;
 /// These need to be processed, for example, by running [`take_actions`](Clicker::take_actions).
 #[must_use = "run `Clicker::take_actions`"]
 #[derive(Clone, Debug)]
-pub struct Clicker<Ui> {
+pub struct Clicker {
     position: Point,
     actions: Vec<Action>,
     right_click: bool,
     captured: bool,
-    phantom: PhantomData<Ui>,
 }
 
-impl<Ui> Clicker<Ui> {
+impl Clicker {
     /// A clicker using the left mouse button.
     pub fn left_click(position: Point) -> Self {
         Clicker {
@@ -29,7 +27,6 @@ impl<Ui> Clicker<Ui> {
             actions: Vec::new(),
             right_click: false,
             captured: false,
-            phantom: PhantomData,
         }
     }
 
@@ -40,25 +37,21 @@ impl<Ui> Clicker<Ui> {
             actions: Vec::new(),
             right_click: true,
             captured: false,
-            phantom: PhantomData,
         }
     }
 
     fn should_click(&self, area: Rectangle) -> bool {
         !self.captured && area.contains(self.position)
     }
-}
 
-impl<Ui: UserInterface> Clicker<Ui> {
-    /// Takes the actions stored in the clicker.
-    pub fn take_actions(self, app: &App<Ui>) {
-        app.take_actions(self.actions);
+    /// Extracts the actions accumulated by the clicker.
+    #[must_use]
+    pub fn actions(self) -> impl IntoIterator<Item = Action> {
+        self.actions
     }
 }
 
-impl<Ui: UserInterface> Visitor for Clicker<Ui> {
-    type Ui = Ui;
-
+impl Visitor for Clicker {
     fn reverse_order() -> bool {
         true
     }
@@ -90,6 +83,8 @@ impl<Ui: UserInterface> Visitor for Clicker<Ui> {
     }
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
+
+    fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
 
     fn visit_solid(&mut self, _: Rectangle, _: Colour) {}
 

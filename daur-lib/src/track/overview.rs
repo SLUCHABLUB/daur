@@ -2,9 +2,9 @@ use crate::app::Action;
 use crate::audio::Player;
 use crate::time::{Instant, Period};
 use crate::track::Track;
-use crate::ui::{Length, Offset};
+use crate::ui::{Direction, Length, Offset};
 use crate::view::context::Menu;
-use crate::view::{CursorWindow, Direction, OnClick, Quotated, View, feed};
+use crate::view::{CursorWindow, OnClick, Quotated, View, feed};
 use crate::{Clip, clip, time, ui};
 use closure::closure;
 use num::Integer as _;
@@ -45,6 +45,7 @@ pub(crate) fn overview(
         ])
     }))
     .contextual(Menu::track_overview())
+        .scrollable(Action::MoveOverview)
 }
 
 /// Returns a function for generating clip-overviews from a feed index.

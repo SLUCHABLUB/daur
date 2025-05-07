@@ -1,7 +1,7 @@
 use crate::app::HoldableObject;
 use crate::popup::{Id, Popup};
 use crate::time::Instant;
-use crate::ui::Point;
+use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{App, Clip, Track, UserInterface, project};
 use derive_more::Debug;
@@ -47,12 +47,11 @@ pub enum Action {
     /// Lets go of the held object.
     LetGo,
 
-    // TODO: use Length
-    /// Scrolls the overview to the left by one cell
-    ScrollLeft,
-    // TODO: use Length
-    /// Scrolls the overview to the right by one cell
-    ScrollRight,
+    /// Moves the overview.
+    MoveOverview(Vector),
+
+    /// Moves the piano roll.
+    MovePianoRoll(Vector),
 
     /// Stop playing
     Pause,
@@ -84,11 +83,16 @@ impl<Ui: UserInterface> App<Ui> {
 
     /// Takes multiple actions on the app.
     pub fn take_actions<Actions: IntoIterator<Item = Action>>(&self, actions: Actions) {
+        let mut should_rerender = false;
+
         for action in actions {
             self.take(action);
+            should_rerender = true;
         }
 
-        self.ui.rerender();
+        if should_rerender {
+            self.ui.rerender();
+        }
     }
 
     /// Takes a single action on the app and return whether the app needs to be rerendered.
@@ -130,13 +134,17 @@ impl<Ui: UserInterface> App<Ui> {
                 }
             }
 
-            Action::ScrollLeft => {
-                self.overview_offset
-                    .set(self.overview_offset.get() - self.grid.cell_width.get());
+            Action::MoveOverview(by) => {
+                self.overview_offset.set(self.overview_offset.get() - by.x);
+                // TODO: scroll tracks vertically
             }
-            Action::ScrollRight => {
-                self.overview_offset
-                    .set(self.overview_offset.get() + self.grid.cell_width.get());
+            Action::MovePianoRoll(by) => {
+                let mut settings = self.piano_roll_settings.get();
+
+                settings.x_offset -= by.x;
+                settings.y_offset += by.y;
+
+                self.piano_roll_settings.set(settings);
             }
 
             Action::TogglePianoRoll => {

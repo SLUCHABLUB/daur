@@ -1,10 +1,10 @@
 use crate::audio::Player;
-use crate::project::{ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Action};
+use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::time::Instant;
 use crate::track::{Track, overview, settings};
 use crate::ui::{Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
-use crate::{Clip, UserInterface, time, ui};
+use crate::{Action, Clip, UserInterface, time, ui};
 use arcstr::literal;
 use std::sync::{Arc, Weak};
 
@@ -44,7 +44,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     track_settings.push(View::described_button(
         ADD_TRACK_LABEL,
         ADD_TRACK_DESCRIPTION,
-        OnClick::from(Action::AddTrack),
+        OnClick::from(project::Action::AddTrack),
     ));
 
     // A "dummy-track" for the row with the add-track button
@@ -64,7 +64,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let ruler = ruler(ui_mapping, overview_offset);
     let ruler_row = View::x_stack([
         empty_space.quotated(track_settings_width.get()),
-        ruler.fill_remaining(),
+        ruler.scrollable(Action::MoveOverview).fill_remaining(),
     ]);
 
     let settings_column = View::balanced_stack::<Ui, _>(Axis::Y, track_settings);

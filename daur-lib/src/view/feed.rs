@@ -1,5 +1,5 @@
-use crate::ui::{Length, Offset};
-use crate::view::{Direction, Quotated, View};
+use crate::ui::{Direction, Length, Offset};
+use crate::view::{Quotated, View};
 use std::cmp::Ordering;
 
 /// A window into an infinite and scrollable stack

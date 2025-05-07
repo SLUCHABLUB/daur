@@ -17,4 +17,5 @@ pub(crate) fn settings(track: &Arc<Track>, selected: bool) -> View {
         .titled(track.name.clone())
         .with_thickness(selected)
         .on_click(on_click)
+        .scrollable(Action::MoveOverview)
 }

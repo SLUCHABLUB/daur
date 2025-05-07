@@ -8,9 +8,9 @@ mod event;
 mod tui;
 
 use crate::draw::redraw;
-use crate::event::handle_event;
+use crate::event::handle_events;
 use crate::tui::Tui;
-use crossterm::event::{DisableMouseCapture, EnableMouseCapture, poll, read};
+use crossterm::event::{DisableMouseCapture, EnableMouseCapture, Event, poll, read};
 use crossterm::execute;
 use daur::App;
 use ratatui::DefaultTerminal;
@@ -47,9 +47,7 @@ fn in_terminal(terminal: &mut DefaultTerminal) -> io::Result<()> {
 /// This ensures that the project is saved if an error occurs.
 fn io_loop(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
     while !app.ui().should_exit() {
-        if poll(Duration::ZERO)? {
-            handle_event(&read()?, app);
-        }
+        handle_events(&available_events()?, app);
 
         if app.ui().should_redraw() {
             redraw(app, terminal)?;
@@ -57,4 +55,15 @@ fn io_loop(app: &App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
     }
 
     Ok(())
+}
+
+/// Returns all available events without blocking.
+fn available_events() -> io::Result<Vec<Event>> {
+    let mut events = Vec::new();
+
+    while poll(Duration::ZERO)? {
+        events.push(read()?);
+    }
+
+    Ok(events)
 }

@@ -1,24 +1,32 @@
 use crate::convert::{to_point, to_size};
 use crate::tui::Tui;
 use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
-use daur::ui::{Length, Point, Rectangle};
-use daur::view::Direction;
-use daur::view::visit::{Clicker, Grabber};
-use daur::{Action, App, UserInterface as _};
+use daur::ui::{Direction, Length, Point, Rectangle};
+use daur::view::visit::{Clicker, Grabber, Scroller};
+use daur::{Action, App, View};
 use ratatui::layout::{Position, Size};
 
-pub(crate) fn handle_event(event: &Event, app: &App<Tui>) {
+pub(crate) fn handle_events(events: &[Event], app: &App<Tui>) {
+    let mut actions = Vec::new();
+    let view = app.ui().view(app);
+
+    for event in events {
+        handle_event(event, app.ui(), &view, &mut actions);
+    }
+
+    app.take_actions(actions);
+}
+
+pub fn handle_event(event: &Event, ui: &Tui, view: &View, actions: &mut Vec<Action>) {
     match *event {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
-        Event::Key(event) => handle_key_event(event, app),
-        Event::Mouse(event) => handle_mouse_event(event, app),
-        Event::Resize(width, height) => app.ui().set_area(Rectangle {
+        Event::Key(event) => handle_key_event(event, ui, actions),
+        Event::Mouse(event) => handle_mouse_event(event, ui, view, actions),
+        Event::Resize(width, height) => ui.set_area(Rectangle {
             position: Point::ZERO,
             size: to_size(Size { width, height }),
         }),
     }
-
-    app.ui().redraw();
 }
 
 fn handle_key_event(
@@ -28,14 +36,15 @@ fn handle_key_event(
         kind,
         state: _,
     }: KeyEvent,
-    app: &App<Tui>,
+    ui: &Tui,
+    actions: &mut Vec<Action>,
 ) {
     if kind != KeyEventKind::Press {
         return;
     }
 
-    if let Some(action) = app.ui().key_action(modifiers, code) {
-        app.take_action(action);
+    if let Some(action) = ui.key_action(modifiers, code) {
+        actions.push(action);
     }
 }
 
@@ -46,15 +55,16 @@ fn handle_mouse_event(
         row,
         modifiers: _,
     }: MouseEvent,
-    app: &App<Tui>,
+    ui: &Tui,
+    view: &View,
+    actions: &mut Vec<Action>,
 ) {
-    app.ui()
-        .set_mouse_position(to_point(Position::new(column, row)));
+    ui.set_mouse_position(to_point(Position::new(column, row)));
 
-    let area = app.ui().area();
-    let position = app.ui().mouse_position();
+    let area = ui.area();
+    let position = ui.mouse_position();
 
-    app.take_action(Action::MoveHand(position));
+    actions.push(Action::MoveHand(position));
 
     match kind {
         MouseEventKind::Down(button) => {
@@ -62,11 +72,11 @@ fn handle_mouse_event(
                 return;
             }
 
-            let mut grabber = Grabber::<Tui>::new(position);
+            let mut grabber = Grabber::new(position);
 
-            app.view().accept(&mut grabber, area, position);
+            view.accept::<Tui, _>(&mut grabber, area, position);
 
-            grabber.take_action(app);
+            actions.extend(grabber.actions());
         }
         MouseEventKind::Up(button) => {
             // click
@@ -77,57 +87,39 @@ fn handle_mouse_event(
                 MouseButton::Middle => return,
             };
 
-            app.view().accept(&mut clicker, area, position);
+            view.accept::<Tui, _>(&mut clicker, area, position);
 
-            clicker.take_actions(app);
+            actions.extend(clicker.actions());
 
             // let go
 
-            app.take_action(Action::LetGo);
+            actions.push(Action::LetGo);
         }
         MouseEventKind::Moved | MouseEventKind::Drag(_) => (),
         MouseEventKind::ScrollDown => {
-            scroll(app, Direction::Down);
+            scroll(Direction::Down, ui, view, actions);
         }
         MouseEventKind::ScrollUp => {
-            scroll(app, Direction::Up);
+            scroll(Direction::Up, ui, view, actions);
         }
         MouseEventKind::ScrollLeft => {
-            scroll(app, Direction::Left);
+            scroll(Direction::Left, ui, view, actions);
         }
         MouseEventKind::ScrollRight => {
-            scroll(app, Direction::Right);
+            scroll(Direction::Right, ui, view, actions);
         }
     }
 }
 
-// TODO: break into parts and move into the library
-fn scroll(app: &App<Tui>, direction: Direction) {
-    let offset = direction * Length::PIXEL;
+fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Vec<Action>) {
+    let offset = -direction * Length::PIXEL;
 
-    let mouse_position = app.ui().mouse_position();
-    let area = app.ui().area();
+    let mouse_position = ui.mouse_position();
+    let area = ui.area();
 
-    let piano_roll_start = area.size.height - app.piano_roll_settings().get().content_height;
+    let mut scroller = Scroller::new(mouse_position, offset);
 
-    if mouse_position.y < app.project_bar_height().get() {
-        // scroll the project bar (do nothing)
-    } else if mouse_position.y < piano_roll_start {
-        // scroll the track overview
-        let new_offset = app.overview_offset().get() + offset.x;
-        app.overview_offset().set(new_offset);
-        // TODO: scroll tracks vertically
-    } else {
-        // scroll the piano roll
+    view.accept::<Tui, _>(&mut scroller, area, mouse_position);
 
-        let mut settings = app.piano_roll_settings().get();
-
-        // The x offset is to the right
-        settings.x_offset -= offset.x;
-        settings.y_offset += offset.y;
-
-        app.piano_roll_settings().set(settings);
-    }
-
-    app.ui().rerender();
+    actions.extend(scroller.actions());
 }

@@ -13,6 +13,12 @@ pub struct Vector {
 }
 
 impl Vector {
+    /// (0, 0)
+    pub const ZERO: Vector = Vector {
+        x: Offset::ZERO,
+        y: Offset::ZERO,
+    };
+
     /// Construct a new vector with y = 0
     #[must_use]
     pub const fn from_x(x: Offset) -> Vector {

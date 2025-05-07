@@ -1,40 +1,39 @@
-use crate::Action;
-use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
+use crate::{Action, HoldableObject};
 use std::num::NonZeroU64;
 
-/// A visitor that grabs objects.
-#[must_use = "run `Grabber::actions`"]
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub struct Grabber {
-    object: Option<HoldableObject>,
+/// A visitor that scrolls (moves) objects.
+#[must_use = "run `Scroller::actions`"]
+#[derive(Debug)]
+pub struct Scroller {
+    /// The position of the mouse when the view was scrolled.
     position: Point,
+    actions: Vec<Action>,
+    /// The offset by which the scrolled view(s) should be moved.
+    offset: Vector,
 }
 
-impl Grabber {
-    /// Constructs a new grabber.
-    pub fn new(position: Point) -> Self {
-        Grabber {
-            object: None,
+impl Scroller {
+    /// Constructs a new scroller that scrolls (moves) views at a position by an offset.  
+    pub fn new(position: Point, offset: Vector) -> Scroller {
+        Scroller {
             position,
+            actions: Vec::new(),
+            offset,
         }
     }
 
-    /// Extracts the actions accumulated by the grabber.
+    /// Extracts the actions accumulated by the scroller.
     #[must_use]
     pub fn actions(self) -> impl IntoIterator<Item = Action> {
-        self.object.map(Action::PickUp)
+        self.actions
     }
 }
 
-impl Visitor for Grabber {
-    fn reverse_order() -> bool {
-        true
-    }
-
+impl Visitor for Scroller {
     fn visit_border(&mut self, _: Rectangle, _: bool) {}
 
     fn visit_canvas(&mut self, _: Rectangle, _: Colour, _: &Painter) {}
@@ -45,15 +44,15 @@ impl Visitor for Grabber {
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
 
-    fn visit_grabbable(&mut self, area: Rectangle, object: HoldableObject) {
-        if area.contains(self.position) {
-            self.object = self.object.or(Some(object));
-        }
-    }
+    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 
-    fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
+    fn visit_scrollable(&mut self, area: Rectangle, action: fn(Vector) -> Action) {
+        if area.contains(self.position) {
+            self.actions.push(action(self.offset));
+        }
+    }
 
     fn visit_solid(&mut self, _: Rectangle, _: Colour) {}
 

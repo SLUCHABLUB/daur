@@ -1,6 +1,7 @@
 //! Types pertaining to [`UserInterface`].
 
 mod colour;
+mod direction;
 mod grid;
 mod length;
 mod mapping;
@@ -11,6 +12,7 @@ mod size;
 mod vector;
 
 pub use colour::Colour;
+pub use direction::Direction;
 pub use grid::Grid;
 pub use length::{Length, NonZeroLength};
 pub use mapping::Mapping;
