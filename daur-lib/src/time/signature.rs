@@ -5,7 +5,7 @@ use std::fmt::{Display, Formatter};
 use std::iter::from_fn;
 use std::num::{NonZeroU8, NonZeroU64};
 
-#[expect(clippy::unwrap_used, reason = "4 is not 0")]
+#[expect(clippy::unwrap_used, reason = "4 != 0")]
 const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
 
 /// A time signature

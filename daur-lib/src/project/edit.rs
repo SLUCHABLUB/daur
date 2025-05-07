@@ -38,13 +38,11 @@ pub struct UnsupportedFormatError {
 }
 
 #[derive(Debug, Error)]
-#[error("Unable to infer the audio format of file `{file}`")]
+#[error("Unable to infer the audio format of the file `{file}`")]
 pub struct NoExtensionError {
     pub file: PathBuf,
 }
 
-// IMPORTANT: don't use any reference counters in here
-//            the history will contain clones of each edit
 #[derive(Clone, Debug)]
 pub enum Edit {
     /// Inserts the clip into the selected track at the cursor

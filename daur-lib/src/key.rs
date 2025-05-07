@@ -13,7 +13,7 @@ pub struct Key {
 }
 
 /// A quite arbitrary choice.
-/// A, since it's the first letter in the latin alphabet.
+/// A, since it is the first letter in the latin alphabet.
 /// Minor since it uses all the white keys on a piano.
 impl Default for Key {
     fn default() -> Self {
@@ -39,7 +39,7 @@ impl Display for Key {
 /// Intervals less than an octave and greater than a perfect unison.
 #[expect(
     non_camel_case_types,
-    reason = "the (standardised?) short names for intervals require case for distinction"
+    reason = "the (standardised?) short names for intervals require casing for distinction"
 )]
 #[derive(Flags)]
 #[repr(u16)]

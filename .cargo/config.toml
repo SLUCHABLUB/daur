@@ -30,7 +30,7 @@ rustflags = [
     "--deny", "clippy::alloc_instead_of_core",
     "--deny", "clippy::allow_attributes",
     "--deny", "clippy::allow_attributes_without_reason",
-    # not `clippy::arbitrary_source_item_ordering` since it wasn't customisable enough
+    # not `clippy::arbitrary_source_item_ordering` since it is not customisable enough
     "--deny", "clippy::arithmetic_side_effects",
     # not `clippy::as_conversions` since it is covered by more specific lints
     "--deny", "clippy::as_underscore",
@@ -54,7 +54,7 @@ rustflags = [
     "--deny", "clippy::expect_used",
     "--deny", "clippy::field_scoped_visibility_modifiers",
     "--deny", "clippy::filetype_is_file",
-    # not `clippy::float_arithmetic` since we're not embedded
+    # not `clippy::float_arithmetic` since we are not embedded
     "--deny", "clippy::float_cmp_const",
     "--deny", "clippy::fn_to_numeric_cast_any",
     # not `clippy::get_unwrap` since it is more explicit
@@ -63,11 +63,11 @@ rustflags = [
     # not `clippy::implicit_return` since explicit returns are ugly
     "--deny", "clippy::indexing_slicing",
     # not `clippy::infinite_loop` until `!` gets stabilised
-    # not `clippy::inline_asm_x86_att_syntax` since we don't use asm
-    # not `clippy::inline_asm_x86_intel_syntax` since we don't use asm
+    # not `clippy::inline_asm_x86_att_syntax` since we do not use assembly
+    # not `clippy::inline_asm_x86_intel_syntax` since we do not use assembly
     "--deny", "clippy::integer_division",
-    # not `clippy::integer_division_remainder_used` since we don't do cryptography
-    # not `clippy::iter_over_hash_type` since if you care about order you don't use a hash type
+    # not `clippy::integer_division_remainder_used` since we are not doing cryptography
+    # not `clippy::iter_over_hash_type`
     # not `clippy::large_include_file` since usage is explicit
     "--deny", "clippy::let_underscore_must_use",
     # not `clippy::little_endian_bytes` since usage is explicit
@@ -89,16 +89,16 @@ rustflags = [
     "--deny", "clippy::mutex_atomic",
     "--deny", "clippy::mutex_integer",
     "--deny", "clippy::needless_raw_strings",
-    "--deny", "clippy::non_ascii_literal", # since some chars look similar but aren't
+    "--deny", "clippy::non_ascii_literal", # since some chars look similar but are not
     "--deny", "clippy::non_zero_suggestions",
     "--deny", "clippy::panic",
     "--deny", "clippy::panic_in_result_fn",
-    # not `clippy::partial_pub_fields` since it saves you from writing getters and setters
+    "--deny", "clippy::partial_pub_fields",
     "--deny", "clippy::pathbuf_init_then_push",
     # not `clippy::pattern_type_mismatch` for now
     "--deny", "clippy::print_stderr",
     "--deny", "clippy::print_stdout",
-    # not `clippy::pub_use` since it allows you to break up code into files without complicating the module structure
+    # not `clippy::pub_use` since it allows one to break up code into files without complicating the module structure
     # not `clippy::pub_with_shorthand` since we deny `clippy::pub_without_shorthand`
     "--deny", "clippy::pub_without_shorthand",
     # not `clippy::question_mark_used` at least on the crate level

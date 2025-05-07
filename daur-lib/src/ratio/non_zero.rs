@@ -140,7 +140,7 @@ impl Div for NonZeroRatio {
     fn div(self, rhs: Self) -> Self::Output {
         #[expect(
             clippy::unwrap_used,
-            reason = "numerator is non-zero, therefore the result will be too"
+            reason = "the numerator is non-zero; therefore, the result will be too"
         )]
         NonZeroRatio::from_ratio(self.get() / rhs).unwrap()
     }
