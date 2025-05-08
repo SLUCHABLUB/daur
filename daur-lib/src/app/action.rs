@@ -98,17 +98,17 @@ impl<Ui: UserInterface> App<Ui> {
 
     fn take(&mut self, action: Action) {
         if let Err(error) = self.try_take(action) {
-            self.popups.open(&Popup::from(error), &self.ui);
+            self.popup_manager.open(&Popup::from(error), &self.ui);
         }
     }
 
     fn try_take(&mut self, action: Action) -> Result<()> {
         match action {
             Action::OpenPopup(popup) => {
-                self.popups.open(&popup, &self.ui);
+                self.popup_manager.open(&popup, &self.ui);
             }
             Action::ClosePopup(popup) => {
-                self.popups.close(popup);
+                self.popup_manager.close(popup);
             }
             Action::OpenContextMenu { menu, position } => {
                 self.context_menu = Some(menu.instantiate::<Ui>(position));

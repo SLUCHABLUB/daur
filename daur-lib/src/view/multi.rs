@@ -1,7 +1,8 @@
 //! A simple multi-selection view
 
+use crate::sync::Cell;
 use crate::view::{Axis, OnClick, View};
-use crate::{Cell, ToArcStr, UserInterface};
+use crate::{ToArcStr, UserInterface};
 use bitbag::{BitBag, Flags};
 use std::sync::Arc;
 

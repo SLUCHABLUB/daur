@@ -41,7 +41,7 @@ pub struct App<Ui: UserInterface> {
     #[debug(skip)]
     audio_config: Config,
 
-    popups: popup::Manager,
+    popup_manager: popup::Manager,
     #[get_clone = "pub(crate)"]
     context_menu: Option<MenuInstance>,
     /// The currently held object.
@@ -89,7 +89,7 @@ impl<Ui: UserInterface> App<Ui> {
 
             audio_config: Config::default(),
 
-            popups: popup::Manager::new(),
+            popup_manager: popup::Manager::new(),
             context_menu: None,
             hand: None,
 
@@ -163,8 +163,8 @@ impl<Ui: UserInterface> App<Ui> {
     fn render_view(&self) -> View {
         let mut layers = vec![self.main_view()];
 
-        for instance in self.popups.to_vec() {
-            layers.push(instance.into_view());
+        for instance in self.popup_manager.popups() {
+            layers.push(instance.view());
         }
 
         if let Some(instance) = self.context_menu() {
