@@ -12,7 +12,6 @@ pub mod ui;
 pub mod view;
 
 mod app;
-mod changing;
 mod chroma;
 mod extension;
 mod interval;
@@ -23,14 +22,11 @@ mod pitch;
 mod ratio;
 mod receiver;
 mod sign;
-mod spaced;
 mod string;
 
 pub use app::{Action, App, HoldableObject};
-pub use changing::Changing;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
-pub use spaced::Spaced;
 pub use string::ToArcStr;
 
 #[doc(inline)]

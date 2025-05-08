@@ -15,10 +15,11 @@ pub(crate) use workspace::workspace;
 
 use crate::audio::Player;
 use crate::key::Key;
-use crate::musical_time::{Instant, Signature, Tempo};
+use crate::musical_time::{Changing, Instant, Signature};
+use crate::real_time::Tempo;
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::{Changing, Clip, UserInterface, View, musical_time, ui};
+use crate::{Clip, UserInterface, View, musical_time, ui};
 use arcstr::{ArcStr, literal};
 use getset::CloneGetters;
 use std::sync::{Arc, Weak};
@@ -34,10 +35,10 @@ pub struct Project {
     #[get_clone = "pub"]
     pub title: ArcStr,
 
-    /// The key of the project
+    /// The key of the project.
     #[get_clone = "pub"]
     pub key: Arc<Changing<Key>>,
-    /// The time signature of the project
+    /// The time signature of the project.
     #[get_clone = "pub"]
     pub time_signature: Arc<Changing<Signature>>,
     // TODO: continuous change

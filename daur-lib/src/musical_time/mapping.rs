@@ -1,7 +1,8 @@
 use crate::musical_time::{
-    Duration, Instant, NonZeroInstant, NonZeroPeriod, Period, Signature, Tempo,
+    Changing, Duration, Instant, NonZeroInstant, NonZeroPeriod, Period, Signature,
 };
-use crate::{Changing, real_time};
+use crate::real_time;
+use crate::real_time::Tempo;
 use itertools::{chain, min};
 use std::iter::from_fn;
 use std::sync::Arc;

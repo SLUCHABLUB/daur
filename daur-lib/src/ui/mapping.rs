@@ -1,5 +1,4 @@
-use crate::Changing;
-use crate::musical_time::{Bar, Instant, Period, Signature};
+use crate::musical_time::{Bar, Changing, Instant, Period, Signature};
 use crate::ui::{Grid, Length};
 use std::sync::Arc;
 

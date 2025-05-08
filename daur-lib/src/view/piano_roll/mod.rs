@@ -10,10 +10,11 @@ pub use settings::Settings;
 
 use crate::interval::Interval;
 use crate::key::Key;
+use crate::musical_time::Changing;
 use crate::pitch::Pitch;
 use crate::ui::{Direction, Length, Mapping, Point, Rectangle};
 use crate::view::{Quotated, ToText as _, View, feed, ruler};
-use crate::{Action, Changing, Clip, HoldableObject, UserInterface};
+use crate::{Action, Clip, HoldableObject, UserInterface};
 use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 use std::sync::Weak;

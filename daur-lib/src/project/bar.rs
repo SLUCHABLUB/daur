@@ -1,7 +1,8 @@
 use crate::app::Action;
 use crate::key::Key;
-use crate::musical_time::{Instant, Signature, Tempo};
+use crate::musical_time::{Instant, Signature};
 use crate::popup::Popup;
+use crate::real_time::Tempo;
 use crate::view::{Axis, OnClick, ToText as _, View};
 use crate::{ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
