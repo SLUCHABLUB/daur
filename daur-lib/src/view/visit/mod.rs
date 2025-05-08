@@ -95,6 +95,7 @@ macro_rules! compound {
 }
 
 impl View {
+    /// Accepts a view visitor.
     #[expect(clippy::too_many_lines, reason = "`View` is a large")]
     pub fn accept<Ui: UserInterface, V: Visitor + ?Sized>(
         &self,

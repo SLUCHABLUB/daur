@@ -50,6 +50,7 @@ pub struct Project {
 }
 
 impl Project {
+    /// Returns the time mapping for the project.
     #[must_use]
     pub fn time_mapping(&self) -> time::Mapping {
         time::Mapping {
@@ -58,6 +59,7 @@ impl Project {
         }
     }
 
+    /// Returns the ui mapping for the project.
     #[must_use]
     pub fn ui_mapping(&self, grid: Grid) -> ui::Mapping {
         ui::Mapping {
@@ -66,6 +68,7 @@ impl Project {
         }
     }
 
+    /// Returns a mutable reference to a track.
     #[must_use]
     pub fn track_mut(&mut self, weak: &Weak<Track>) -> Option<&mut Track> {
         self.tracks

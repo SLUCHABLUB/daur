@@ -5,8 +5,8 @@ mod instance;
 mod manager;
 
 pub use id::Id;
-pub use instance::Instance;
-pub use manager::Manager;
+pub(crate) use instance::Instance;
+pub(crate) use manager::Manager;
 
 use crate::key::Key;
 use crate::time::Instant;
@@ -36,21 +36,31 @@ const KEY_SELECTOR_TITLE: ArcStr = literal!("select key");
 pub enum Popup {
     /// A panel of buttons.
     ButtonPanel {
+        /// The title of the popup.
         title: ArcStr,
         // TODO: make this non empty
+        /// The buttons.
         buttons: Vec<(ArcStr, Action)>,
     },
     /// An error message.
     Error(Arc<Error>),
     /// A file selector.
     FileSelector {
+        /// The title of the popup.
         title: ArcStr,
+        /// The starting path.
         path: Arc<Path>,
+        /// The function for generating the action.
         #[debug(skip)]
         action: Arc<dyn Fn(&Path) -> Action + Send + Sync>,
     },
     /// A window for selecting a key.
-    KeySelector { instant: Instant, key: Key },
+    KeySelector {
+        /// The instant at which the key should be changed.
+        instant: Instant,
+        /// The current key.
+        key: Key,
+    },
 }
 
 impl Popup {
@@ -80,7 +90,7 @@ impl Popup {
     }
 
     /// Returns the popups [view](View) with a border and title.
-    pub fn view<Ui: UserInterface>(&self, id: Id) -> View {
+    fn view<Ui: UserInterface>(&self, id: Id) -> View {
         self.inner_view::<Ui>(id)
             .bordered()
             .titled(self.title())
@@ -88,7 +98,7 @@ impl Popup {
     }
 
     /// Returns the popups inner [view](View), with no border and title.
-    pub fn inner_view<Ui: UserInterface>(&self, id: Id) -> View {
+    fn inner_view<Ui: UserInterface>(&self, id: Id) -> View {
         match self {
             Popup::ButtonPanel { title: _, buttons } => View::balanced_stack::<Ui, _>(
                 Axis::Y,
@@ -186,7 +196,7 @@ impl Popup {
         .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
-    pub fn instantiate<Ui: UserInterface>(&self, id: Id, ui: &Ui) -> Instance {
+    pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id, ui: &Ui) -> Instance {
         let view = Arc::new(self.view::<Ui>(id));
 
         let size = view.minimum_size::<Ui>();
@@ -195,7 +205,7 @@ impl Popup {
         let position = centre + offset;
         let area = Rectangle { position, size };
 
-        Instance { id, area, view }
+        Instance::new(id, area, view)
     }
 }
 

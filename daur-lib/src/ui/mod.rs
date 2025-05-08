@@ -46,6 +46,7 @@ pub trait UserInterface {
     const PLAYBACK_BUTTON_WIDTH: NonZeroLength;
     /// The default height of the project bar.
     const PROJECT_BAR_HEIGHT: NonZeroLength;
+    /// The height of the ruler.
     const RULER_HEIGHT: NonZeroLength;
     /// The default width for the track settings.
     const TRACK_SETTINGS_WITH: NonZeroLength;

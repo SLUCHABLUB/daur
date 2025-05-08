@@ -4,7 +4,7 @@ use crate::{Action, Clip, Track};
 use std::sync::{Arc, Weak};
 
 /// Returns a view of a clip's overview.
-pub fn overview(
+pub(crate) fn overview(
     clip: Arc<Clip>,
     track: Weak<Track>,
     selected: bool,

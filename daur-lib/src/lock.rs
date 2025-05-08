@@ -2,6 +2,7 @@ use parking_lot::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
+// TODO: remove
 /// A lock.
 #[derive(Default)]
 pub struct Lock<T> {

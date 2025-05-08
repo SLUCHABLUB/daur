@@ -19,7 +19,6 @@ mod key;
 mod lock;
 mod note;
 mod notes;
-mod observed;
 mod pitch;
 mod ratio;
 mod receiver;
@@ -30,7 +29,6 @@ pub use app::{Action, App, HoldableObject};
 pub use cell::{ArcCell, Cell};
 pub use changing::Changing;
 pub use lock::Lock;
-pub use observed::Observed;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
 pub use string::ToArcStr;
@@ -49,5 +47,3 @@ pub use track::Track;
 pub use ui::UserInterface;
 #[doc(inline)]
 pub use view::View;
-
-pub use arcstr;

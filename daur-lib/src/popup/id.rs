@@ -5,13 +5,13 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
 pub struct Id {
     /// The numeric id.
-    #[get_copy = "pub"]
+    #[get_copy = "pub(crate)"]
     inner: usize,
 }
 
 impl Id {
     /// Generates a new identifier.
-    pub fn generate() -> Id {
+    pub(crate) fn generate() -> Id {
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
 
         Id {

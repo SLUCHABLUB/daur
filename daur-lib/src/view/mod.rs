@@ -87,9 +87,12 @@ pub enum View {
     Empty,
     /// A function that generates a view.
     Generator(#[debug(skip)] Box<Generator>),
+    /// A view that can be grabbed.
     Grabbable {
+        /// The grabbed object.
         #[debug(skip)]
         object: Box<dyn Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static>,
+        /// The view.
         view: Box<View>,
     },
     /// A view that whose appearance changes when hovered.
@@ -110,11 +113,18 @@ pub enum View {
     },
     /// A scrollable view.
     Scrollable {
+        /// The action to take when scrolled.
         action: fn(Vector) -> Action,
+        /// The view.
         view: Box<View>,
     },
     /// A view with a custom minimum size
-    Sized { minimum_size: Size, view: Box<View> },
+    Sized {
+        /// The minimum size of the view.
+        minimum_size: Size,
+        /// The view.
+        view: Box<View>,
+    },
     /// A view that needs to know its container's size.
     SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
     /// A solid colour.

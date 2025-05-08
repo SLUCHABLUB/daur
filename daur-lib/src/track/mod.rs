@@ -73,8 +73,9 @@ impl Track {
         RenderStream::new(audio)
     }
 
+    /// Returns a mutable reference to a clip.
     #[must_use]
-    pub fn track_mut(&mut self, weak: &Weak<Clip>) -> Option<&mut Clip> {
+    pub fn clip_mut(&mut self, weak: &Weak<Clip>) -> Option<&mut Clip> {
         self.clips
             .values_mut()
             .find(|arc| Arc::as_ptr(arc) == Weak::as_ptr(weak))

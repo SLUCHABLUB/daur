@@ -28,7 +28,7 @@ impl Rectangle {
 
     /// Returns the bottom right corner of the rectangle.
     ///
-    /// If discrete [lengths](Length) are used, this position is *not* within the rectangle.
+    /// If discrete [lengths](super::Length) are used, this position is *not* within the rectangle.
     #[must_use]
     pub fn bottom_right(self) -> Point {
         Point {

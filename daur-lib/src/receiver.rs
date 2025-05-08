@@ -1,5 +1,6 @@
 use std::sync::mpsc::{SendError, Sender};
 
+// TODO: change to ActionQueue
 /// A type that can receive values.
 pub trait Receiver<T> {
     /// Sends a value to the receiver.

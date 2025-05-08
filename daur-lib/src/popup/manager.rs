@@ -4,7 +4,7 @@ use crate::popup::{Id, Instance, Popup};
 
 /// A manager for the open [popups](Popup).
 #[derive(Debug)]
-pub struct Manager {
+pub(crate) struct Manager {
     popups: Lock<Vec<Instance>>,
 }
 
@@ -28,7 +28,7 @@ impl Manager {
     pub fn close(&self, popup: Id) {
         let mut popups = self.popups.write();
 
-        if let Some(index) = popups.iter().position(|instance| instance.id == popup) {
+        if let Some(index) = popups.iter().position(|instance| instance.id() == popup) {
             let popup = popups.remove(index);
             drop(popup);
         }

@@ -7,11 +7,12 @@ mod sample;
 mod sample_rate;
 mod source;
 
-pub(crate) use config::Config;
 pub use pair::Pair;
-pub(crate) use player::Player;
 pub use sample::Sample;
 pub use sample_rate::SampleRate;
+
+pub(crate) use config::Config;
+pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::Ratio;
@@ -59,6 +60,7 @@ pub struct Audio {
 }
 
 impl Audio {
+    /// Constructs an empty audio with the given sample rate.
     #[must_use]
     pub const fn empty(sample_rate: SampleRate) -> Audio {
         Audio {

@@ -7,10 +7,7 @@ use crate::view::{Alignment, OnClick, Painter};
 use std::num::NonZeroU64;
 
 /// A visitor for clicking a view.
-///
-/// It accumulates [actions](Action) when visiting a view.
-/// These need to be processed, for example, by running [`take_actions`](Clicker::take_actions).
-#[must_use = "run `Clicker::take_actions`"]
+#[must_use = "run `Clicker::actions`"]
 #[derive(Clone, Debug)]
 pub struct Clicker {
     position: Point,

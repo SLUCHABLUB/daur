@@ -21,7 +21,7 @@ impl View {
         }
     }
 
-    /// Adds a grabbable object to the view
+    /// Adds a grabbable object to the view.
     pub fn grabbable<F: Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static>(
         self,
         generator: F,
@@ -32,6 +32,7 @@ impl View {
         }
     }
 
+    /// Makes the view scrollable.
     pub fn scrollable(self, action: fn(Vector) -> Action) -> Self {
         View::Scrollable {
             action,

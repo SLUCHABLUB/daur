@@ -16,3 +16,4 @@ check:
     cargo +nightly fmt
     cargo clippy -- -D warnings
     cargo test
+    cargo doc

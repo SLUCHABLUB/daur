@@ -4,7 +4,7 @@ mod content;
 mod overview;
 
 pub use content::Content;
-pub use overview::overview;
+pub(crate) use overview::overview;
 
 use crate::time::{Instant, Mapping, Period};
 use crate::ui::Colour;

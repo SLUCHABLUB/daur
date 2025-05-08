@@ -145,7 +145,7 @@ impl<Ui: UserInterface> App<Ui> {
                     &self.selected_track,
                     &self.selected_clip,
                     self.cursor(),
-                    self.audio_config.player().ok().as_ref(),
+                    self.audio_config.try_player(),
                 )
                 .fill_remaining(),
             piano_roll::view::<Ui>(
