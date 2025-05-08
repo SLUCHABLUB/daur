@@ -12,6 +12,10 @@ use thiserror::Error;
 #[error("No track is selected")]
 struct NoTrackSelected;
 
+#[derive(Debug, Error)]
+#[error("There is already a clip at that position")]
+struct InsertClipError;
+
 /// Manages editing of a [project](Project).
 #[derive(Debug, Getters)]
 pub struct Manager {
@@ -59,7 +63,8 @@ impl Manager {
                     .track_mut(&track)
                     .ok_or(NoTrackSelected)?
                     .clips
-                    .insert(position, Arc::new(clip));
+                    .try_insert(position, Arc::new(clip))
+                    .map_err(|_| InsertClipError)?;
             }
             Edit::AddTrack(track) => self.project.tracks.push(Arc::new(track)),
             Edit::ChangeKey { position, key } => {

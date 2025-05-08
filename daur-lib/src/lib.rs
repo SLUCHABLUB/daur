@@ -23,12 +23,14 @@ mod pitch;
 mod ratio;
 mod receiver;
 mod sign;
+mod spaced;
 mod string;
 
 pub use app::{Action, App, HoldableObject};
 pub use changing::Changing;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
+pub use spaced::Spaced;
 pub use string::ToArcStr;
 
 #[doc(inline)]

@@ -82,16 +82,16 @@ fn feed_generator(
                 .checked_sub(1)
                 .and_then(|index| {
                     let (start, clip) = track.clips.iter().nth(index)?;
-                    let end = clip.period(*start, &time_mapping).end();
+                    let end = clip.period(start, &time_mapping).end();
                     Some(ui_mapping.x_offset(end))
                 })
                 .unwrap_or(Length::ZERO);
 
             let next_clip_start = track
                 .clips
-                .keys()
+                .iter()
                 .nth(clip_index)
-                .map_or(last_clip_end, |instant| ui_mapping.x_offset(*instant));
+                .map_or(last_clip_end, |(instant, _)| ui_mapping.x_offset(instant));
 
             let size = next_clip_start - last_clip_end;
 
@@ -103,7 +103,7 @@ fn feed_generator(
         };
         let clip_reference = Arc::downgrade(clip);
 
-        let clip_period = clip.period(*start, &time_mapping);
+        let clip_period = clip.period(start, &time_mapping);
         let clip_width = ui_mapping.width_of(clip_period);
 
         let Some(visible_period) = Period::intersection(visible_period, clip_period) else {

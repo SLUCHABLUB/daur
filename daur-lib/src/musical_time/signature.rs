@@ -16,7 +16,7 @@ pub struct Signature {
     pub beats_per_bar: NonZeroU8,
     /// The lower number of the time signature.
     /// The number of beats that fit in a whole note.
-    pub beat_size: NonZeroU8,
+    pub beats_per_whole_note: NonZeroU8,
 }
 
 impl Signature {
@@ -26,7 +26,7 @@ impl Signature {
         NonZeroDuration {
             whole_notes: NonZeroRatio::new(
                 NonZeroU64::from(self.beats_per_bar),
-                NonZeroU64::from(self.beat_size),
+                NonZeroU64::from(self.beats_per_whole_note),
             ),
         }
     }
@@ -34,7 +34,9 @@ impl Signature {
     /// The duration of one beat
     #[must_use]
     pub fn beat_duration(self) -> NonZeroDuration {
-        self.bar_duration() / NonZeroRatio::from(self.beats_per_bar)
+        NonZeroDuration {
+            whole_notes: NonZeroRatio::reciprocal_of(NonZeroU64::from(self.beats_per_whole_note)),
+        }
     }
 }
 
@@ -43,14 +45,14 @@ impl Default for Signature {
     fn default() -> Self {
         Signature {
             beats_per_bar: FOUR,
-            beat_size: FOUR,
+            beats_per_whole_note: FOUR,
         }
     }
 }
 
 impl Display for Signature {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{}/{}", self.beats_per_bar, self.beat_size)
+        write!(f, "{}/{}", self.beats_per_bar, self.beats_per_whole_note)
     }
 }
 
