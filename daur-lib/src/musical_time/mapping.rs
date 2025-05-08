@@ -9,9 +9,9 @@ use std::sync::Arc;
 /// A mapping between real and musical time
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Mapping {
-    /// The tempo of the music
+    /// The tempo of the music.
     pub tempo: Arc<Changing<Tempo>>,
-    /// The time signature of the music
+    /// The time signature of the music.
     pub time_signature: Arc<Changing<Signature>>,
 }
 
