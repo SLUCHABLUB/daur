@@ -18,12 +18,10 @@ use std::sync::Weak;
 
 const SPLASH: ArcStr = literal!("DAUR - A DAW");
 
-// TODO: remove internal mutability
 /// A running instance of the DAW.
 #[derive(Debug, Getters, MutGetters, CloneGetters)]
 pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.
-    // TODO: remove getter
     #[getset(get = "pub", get_mut = "pub")]
     ui: Ui,
 

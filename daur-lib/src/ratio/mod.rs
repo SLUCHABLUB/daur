@@ -194,7 +194,6 @@ impl Ratio {
         self.round().try_into().unwrap_or(usize::MAX)
     }
 
-    // TODO: make not public
     pub(crate) fn approximate_big(numerator: u128, denominator: NonZeroU128) -> Ratio {
         let Some(numerator) = NonZeroU128::new(numerator) else {
             return Ratio::ZERO;

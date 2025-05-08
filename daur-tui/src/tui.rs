@@ -16,7 +16,6 @@ macro_rules! non_zero_length {
     };
 }
 
-// TODO: remove internal mutability
 pub(crate) struct Tui {
     pub should_exit: bool,
     // TODO: move to app
