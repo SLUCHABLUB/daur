@@ -1,10 +1,10 @@
 use crate::audio::Audio;
 use crate::clip::{Clip, Content};
 use crate::key::Key;
+use crate::musical_time::{Duration, Instant};
 use crate::notes::Notes;
 use crate::project::Action;
 use crate::ratio::Ratio;
-use crate::time::{Duration, Instant};
 use crate::track::Track;
 use crate::ui::Colour;
 use anyhow::{Result, bail};

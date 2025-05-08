@@ -1,5 +1,5 @@
 use crate::audio::Audio;
-use crate::time::real;
+use crate::real_time;
 use rodio::source::SeekError;
 use std::time::Duration;
 
@@ -58,7 +58,7 @@ impl rodio::Source for Source {
 
     fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
         let sample_delta =
-            (real::Duration::from(pos) / self.audio.sample_rate.sample_duration()).to_usize();
+            (real_time::Duration::from(pos) / self.audio.sample_rate.sample_duration()).to_usize();
         self.sample_index = self.sample_index.saturating_add(sample_delta);
 
         Ok(())

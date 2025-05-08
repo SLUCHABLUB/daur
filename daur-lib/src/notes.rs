@@ -1,6 +1,6 @@
+use crate::musical_time::{Duration, Instant};
 use crate::note::Note;
 use crate::pitch::Pitch;
-use crate::time::{Duration, Instant};
 use crate::view::Context;
 use std::collections::BTreeMap;
 use std::ops::RangeInclusive;

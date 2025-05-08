@@ -1,5 +1,5 @@
 use crate::Ratio;
-use crate::time::real::{Duration, NonZeroDuration};
+use crate::real_time::{Duration, NonZeroDuration};
 use rodio::cpal;
 use std::num::{NonZeroU32, NonZeroU64};
 use thiserror::Error;

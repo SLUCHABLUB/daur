@@ -1,6 +1,6 @@
 use crate::app::HoldableObject;
+use crate::musical_time::Instant;
 use crate::popup::{Id, Popup};
-use crate::time::Instant;
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{App, Clip, Track, UserInterface, project};

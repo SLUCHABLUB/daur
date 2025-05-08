@@ -1,4 +1,4 @@
-use crate::time::{Instant, NonZeroInstant};
+use crate::musical_time::{Instant, NonZeroInstant};
 use std::collections::BTreeMap;
 
 /// A setting that changes over time.

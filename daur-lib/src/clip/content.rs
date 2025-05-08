@@ -1,6 +1,6 @@
 use crate::audio::Audio;
+use crate::musical_time::{Instant, Mapping, Period};
 use crate::notes::Notes;
-use crate::time::{Instant, Mapping, Period};
 use crate::view::Context;
 
 /// The content of a [clip](crate::Clip).

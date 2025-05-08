@@ -16,8 +16,8 @@ pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::Ratio;
-use crate::time::real::Duration;
-use crate::time::{Instant, Mapping, Period};
+use crate::musical_time::{Instant, Mapping, Period};
+use crate::real_time::Duration;
 use crate::view::Context;
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};

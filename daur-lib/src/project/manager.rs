@@ -1,8 +1,8 @@
 use crate::Track;
+use crate::musical_time::{Instant, NonZeroInstant};
 use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
-use crate::time::{Instant, NonZeroInstant};
 use anyhow::Result;
 use getset::Getters;
 use std::sync::{Arc, Weak};

@@ -10,7 +10,7 @@ pub(crate) use settings::settings;
 
 use crate::audio::{Pair, SampleRate};
 use crate::clip::Content;
-use crate::time::{Instant, Mapping};
+use crate::musical_time::{Instant, Mapping};
 use crate::{Audio, Clip};
 use arcstr::{ArcStr, literal};
 use std::collections::BTreeMap;

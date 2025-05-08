@@ -1,7 +1,7 @@
-use crate::Changing;
-use crate::time::{
-    Duration, Instant, NonZeroInstant, NonZeroPeriod, Period, Signature, Tempo, real,
+use crate::musical_time::{
+    Duration, Instant, NonZeroInstant, NonZeroPeriod, Period, Signature, Tempo,
 };
+use crate::{Changing, real_time};
 use itertools::{chain, min};
 use std::iter::from_fn;
 use std::sync::Arc;
@@ -18,8 +18,8 @@ pub struct Mapping {
 impl Mapping {
     /// Calculates a real-time instant from a musical instant.
     #[must_use]
-    pub fn real_time(&self, instant: Instant) -> real::Instant {
-        let mut since_start = real::Duration::ZERO;
+    pub fn real_time(&self, instant: Instant) -> real_time::Instant {
+        let mut since_start = real_time::Duration::ZERO;
 
         for period in self.time_constant_periods(Instant::START, Some(instant)) {
             let tempo = self.tempo.get(period.start);
@@ -30,18 +30,18 @@ impl Mapping {
             since_start += tempo.beat_duration().get() * beat_count;
         }
 
-        real::Instant { since_start }
+        real_time::Instant { since_start }
     }
 
     /// Calculates a musical instant from a real-time instant.
     #[must_use]
-    pub fn musical(&self, instant: real::Instant) -> Instant {
+    pub fn musical(&self, instant: real_time::Instant) -> Instant {
         self.period(Instant::START, instant.since_start).end()
     }
 
     /// Calculates a period from a starting point and a real-time duration.
     #[must_use]
-    pub fn period(&self, start: Instant, duration: real::Duration) -> Period {
+    pub fn period(&self, start: Instant, duration: real_time::Duration) -> Period {
         let mut remaining = duration;
         let mut duration = Duration::ZERO;
 
@@ -58,7 +58,7 @@ impl Mapping {
             if remaining < full_duration.get() {
                 let fraction = remaining / full_duration;
                 duration += period.duration.get() * fraction;
-                remaining = real::Duration::ZERO;
+                remaining = real_time::Duration::ZERO;
                 break;
             }
 
@@ -69,7 +69,7 @@ impl Mapping {
         }
 
         // The period extends after all tempo and time-signature changes
-        if remaining != real::Duration::ZERO {
+        if remaining != real_time::Duration::ZERO {
             let tempo = self.tempo.get(last);
             let time_signature = self.time_signature.get(last);
 

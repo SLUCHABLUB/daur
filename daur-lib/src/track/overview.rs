@@ -1,11 +1,11 @@
 use crate::app::Action;
 use crate::audio::Player;
-use crate::time::{Instant, Period};
+use crate::musical_time::{Instant, Period};
 use crate::track::Track;
 use crate::ui::{Direction, Length, Offset};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, Quotated, View, feed};
-use crate::{Clip, clip, time, ui};
+use crate::{Clip, clip, musical_time, ui};
 use closure::closure;
 use num::Integer as _;
 use std::sync::{Arc, Weak};
@@ -14,7 +14,7 @@ use std::sync::{Arc, Weak};
 pub(crate) fn overview(
     track: Arc<Track>,
     selected_clip: &Weak<Clip>,
-    time_mapping: &time::Mapping,
+    time_mapping: &musical_time::Mapping,
     ui_mapping: &ui::Mapping,
     offset: Length,
     cursor: Instant,
@@ -52,7 +52,7 @@ pub(crate) fn overview(
 fn feed_generator(
     track: &Arc<Track>,
     selected_clip: &Weak<Clip>,
-    time_mapping: &time::Mapping,
+    time_mapping: &musical_time::Mapping,
     ui_mapping: &ui::Mapping,
     offset: Offset,
     visible_period: Period,

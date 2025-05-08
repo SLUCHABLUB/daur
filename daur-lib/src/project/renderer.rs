@@ -1,7 +1,7 @@
 use crate::audio::{Player, SampleRate};
+use crate::musical_time::Mapping;
+use crate::real_time::Instant;
 use crate::sync::Cell;
-use crate::time::Mapping;
-use crate::time::real::Instant;
 use crate::track::RenderStream;
 use crate::{Audio, Track};
 use executors::Executor as _;

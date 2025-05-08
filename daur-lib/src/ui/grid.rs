@@ -1,4 +1,4 @@
-use crate::time::NonZeroDuration;
+use crate::musical_time::NonZeroDuration;
 use crate::ui::NonZeroLength;
 
 /// Settings for the overview/piano-roll grid

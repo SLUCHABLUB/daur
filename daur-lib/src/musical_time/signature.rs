@@ -1,4 +1,4 @@
-use crate::time::{Bar, Instant, NonZeroDuration};
+use crate::musical_time::{Bar, Instant, NonZeroDuration};
 use crate::{Changing, NonZeroRatio};
 use std::fmt;
 use std::fmt::{Display, Formatter};

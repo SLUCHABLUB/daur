@@ -1,4 +1,4 @@
-use crate::time::{Duration, Instant, Period, Signature};
+use crate::musical_time::{Duration, Instant, Period, Signature};
 
 /// A bar, or ui
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

@@ -15,10 +15,10 @@ pub(crate) use workspace::workspace;
 
 use crate::audio::Player;
 use crate::key::Key;
-use crate::time::{Instant, Signature, Tempo};
+use crate::musical_time::{Instant, Signature, Tempo};
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::{Changing, Clip, UserInterface, View, time, ui};
+use crate::{Changing, Clip, UserInterface, View, musical_time, ui};
 use arcstr::{ArcStr, literal};
 use getset::CloneGetters;
 use std::sync::{Arc, Weak};
@@ -52,8 +52,8 @@ pub struct Project {
 impl Project {
     /// Returns the time mapping for the project.
     #[must_use]
-    pub fn time_mapping(&self) -> time::Mapping {
-        time::Mapping {
+    pub fn time_mapping(&self) -> musical_time::Mapping {
+        musical_time::Mapping {
             tempo: self.tempo(),
             time_signature: self.time_signature(),
         }

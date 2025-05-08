@@ -1,6 +1,6 @@
 use crate::audio::{Player, SampleRate};
 use crate::extension::OptionExt as _;
-use crate::time::real::Instant;
+use crate::real_time::Instant;
 use anyhow::Result;
 use rodio::cpal::Host;
 use rodio::cpal::traits::HostTrait as _;

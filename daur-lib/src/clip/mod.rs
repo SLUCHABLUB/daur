@@ -6,7 +6,7 @@ mod overview;
 pub use content::Content;
 pub(crate) use overview::overview;
 
-use crate::time::{Instant, Mapping, Period};
+use crate::musical_time::{Instant, Mapping, Period};
 use crate::ui::Colour;
 use arcstr::ArcStr;
 use getset::CloneGetters;

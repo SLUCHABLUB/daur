@@ -9,8 +9,8 @@ pub(crate) use instance::Instance;
 pub(crate) use manager::Manager;
 
 use crate::key::Key;
+use crate::musical_time::Instant;
 use crate::sync::{ArcCell, Cell};
-use crate::time::Instant;
 use crate::ui::Rectangle;
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Action, Ratio, UserInterface, View, project};

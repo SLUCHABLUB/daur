@@ -1,4 +1,4 @@
-use crate::time::{Mapping, Period};
+use crate::musical_time::{Mapping, Period};
 use crate::view::{OnClick, View};
 use crate::{Action, Clip, Track};
 use std::sync::{Arc, Weak};

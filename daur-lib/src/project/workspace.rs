@@ -1,10 +1,10 @@
 use crate::audio::Player;
+use crate::musical_time::Instant;
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
-use crate::time::Instant;
 use crate::track::{Track, overview, settings};
 use crate::ui::{Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
-use crate::{Action, Clip, UserInterface, time, ui};
+use crate::{Action, Clip, UserInterface, musical_time, ui};
 use arcstr::literal;
 use std::sync::{Arc, Weak};
 
@@ -16,7 +16,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     selected_clip: &Weak<Clip>,
     track_settings_width: NonZeroLength,
     tracks: Vec<Arc<Track>>,
-    time_mapping: &time::Mapping,
+    time_mapping: &musical_time::Mapping,
     ui_mapping: ui::Mapping,
     cursor: Instant,
     player: Option<&Player>,

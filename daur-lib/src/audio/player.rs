@@ -1,5 +1,5 @@
 use crate::Audio;
-use crate::time::real::{Duration, Instant};
+use crate::real_time::{Duration, Instant};
 use rodio::Sink;
 use std::sync::Arc;
 

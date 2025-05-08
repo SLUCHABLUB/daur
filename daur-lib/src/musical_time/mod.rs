@@ -1,7 +1,5 @@
 //! Types pertaining to [musical time](https://en.wikipedia.org/wiki/Metre_(music)).
 
-pub mod real;
-
 mod bar;
 mod duration;
 mod instant;

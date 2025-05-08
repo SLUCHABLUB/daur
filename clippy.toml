@@ -12,11 +12,11 @@ arithmetic-side-effects-allowed = [
     "ui::vector::Vector",
     "ratio::Ratio",
     "ratio::non_zero::NonZeroRatio",
-    "time::duration::Duration",
-    "time::duration::non_zero::NonZeroDuration",
-    "time::instant::Instant",
-    "time::real::instant::Instant",
-    "time::real::duration::Duration",
+    "musical_time::duration::Duration",
+    "musical_time::duration::non_zero::NonZeroDuration",
+    "musical_time::instant::Instant",
+    "real_time::instant::Instant",
+    "real_time::duration::Duration",
 
     # type names for other crates
     "daur::audio::Sample",

@@ -3,7 +3,7 @@ mod non_zero;
 pub use non_zero::NonZeroInstant;
 
 use crate::audio::SampleRate;
-use crate::time::{Duration, Mapping};
+use crate::musical_time::{Duration, Mapping};
 use std::ops::{Add, AddAssign, Sub};
 
 /// An instant in musical time.

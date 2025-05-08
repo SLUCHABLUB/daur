@@ -1,8 +1,8 @@
 use crate::audio::Player;
-use crate::time::Instant;
+use crate::musical_time::Instant;
 use crate::ui::Length;
 use crate::view::OnClick;
-use crate::{Action, View, time, ui};
+use crate::{Action, View, musical_time, ui};
 use derive_more::Debug;
 
 //       |---o---|
@@ -29,7 +29,7 @@ pub struct CursorWindow {
 
     window_offset: Length,
 
-    time_mapping: time::Mapping,
+    time_mapping: musical_time::Mapping,
     ui_mapping: ui::Mapping,
 }
 
@@ -37,7 +37,7 @@ impl CursorWindow {
     pub(crate) fn view(
         player: Option<Player>,
         cursor: Instant,
-        time_mapping: time::Mapping,
+        time_mapping: musical_time::Mapping,
         ui_mapping: ui::Mapping,
         window_offset: Length,
     ) -> View {

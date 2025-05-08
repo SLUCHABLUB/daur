@@ -2,10 +2,11 @@
 
 pub mod audio;
 pub mod clip;
+pub mod musical_time;
 pub mod popup;
 pub mod project;
+pub mod real_time;
 pub mod sync;
-pub mod time;
 pub mod track;
 pub mod ui;
 pub mod view;

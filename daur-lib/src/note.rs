@@ -1,5 +1,5 @@
+use crate::musical_time::Duration;
 use crate::pitch::Pitch;
-use crate::time::Duration;
 
 // TODO: pitch-bends?
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

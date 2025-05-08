@@ -5,7 +5,7 @@ pub use action::Action;
 pub use holdable::HoldableObject;
 
 use crate::audio::Config;
-use crate::time::{Instant, NonZeroDuration};
+use crate::musical_time::{Instant, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;

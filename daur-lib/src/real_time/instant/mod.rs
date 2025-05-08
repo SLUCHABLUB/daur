@@ -2,7 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::time::real::Duration;
+use crate::real_time::Duration;
 use std::ops::{Add, AddAssign, Sub};
 
 /// An instant in real time.
