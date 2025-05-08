@@ -123,10 +123,21 @@ impl Audio {
 
         let mut output = resampler.process(&[left, right], ALL_CHANNELS_ENABLED)?;
 
-        let left = output.pop().unwrap_or_default();
-        let right = output.pop().unwrap_or_default();
+        let left = output
+            .pop()
+            .unwrap_or_default()
+            .into_iter()
+            .map(Sample::new);
+        let right = output
+            .pop()
+            .unwrap_or_default()
+            .into_iter()
+            .map(Sample::new);
 
-        let samples = zip(left, right).map(Pair::from).collect();
+        let samples = zip(left, right)
+            .map_into::<[_; 2]>()
+            .map(Pair::from)
+            .collect();
 
         Ok(Audio {
             sample_rate,
@@ -185,20 +196,13 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
                 .try_collect()?,
         };
 
-        // TODO: use byte muck
-        #[expect(
-            clippy::indexing_slicing,
-            clippy::missing_asserts_for_indexing,
-            reason = "chunks_exact is exact"
-        )]
         let samples = match spec.channels {
             1 => samples.into_iter().map(Pair::from).collect(),
             2 => samples
-                .chunks_exact(2)
-                .map(|chunk| Pair {
-                    left: chunk[0],
-                    right: chunk[1],
-                })
+                .into_iter()
+                .tuples::<(_, _)>()
+                .map_into::<[_; 2]>()
+                .map(Pair::from)
                 .collect(),
             _ => return Err(hound::Error::Unsupported),
         };

@@ -27,12 +27,9 @@ impl From<Sample> for Pair {
     }
 }
 
-impl From<(f64, f64)> for Pair {
-    fn from((left, right): (f64, f64)) -> Self {
-        Pair {
-            left: Sample::new(left),
-            right: Sample::new(right),
-        }
+impl From<[Sample; 2]> for Pair {
+    fn from([left, right]: [Sample; 2]) -> Self {
+        Pair { left, right }
     }
 }
 
