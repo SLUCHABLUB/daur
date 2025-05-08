@@ -3,13 +3,13 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::sync::Arc;
 
-/// A sync containing an [atomically reference counted](Arc) value.
+/// A cell containing an [atomically reference counted](Arc) value.
 pub struct ArcCell<T: ?Sized> {
     lock: Mutex<Arc<T>>,
 }
 
 impl<T: ?Sized> ArcCell<T> {
-    /// Construct a new sync from a pointer.
+    /// Construct a new cell from a pointer.
     pub const fn new(value: Arc<T>) -> ArcCell<T> {
         ArcCell {
             lock: Mutex::new(value),
