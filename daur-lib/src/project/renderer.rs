@@ -1,5 +1,5 @@
 use crate::audio::{Player, SampleRate};
-use crate::musical_time::Mapping;
+use crate::project::Settings;
 use crate::real_time::Instant;
 use crate::sync::Cell;
 use crate::track::RenderStream;
@@ -61,7 +61,7 @@ impl Renderer {
     pub(crate) fn restart(
         &mut self,
         tracks: &[Arc<Track>],
-        mapping: &Mapping,
+        settings: &Settings,
         sample_rate: SampleRate,
     ) {
         let progress = Arc::new(Progress {
@@ -71,7 +71,7 @@ impl Renderer {
         });
 
         for track in tracks {
-            let stream = track.render_stream(mapping, sample_rate);
+            let stream = track.render_stream(settings, sample_rate);
             let progress = Arc::clone(&progress);
             let should_play = Arc::clone(&self.should_play);
 

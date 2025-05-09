@@ -1,6 +1,8 @@
 use crate::audio;
-use crate::musical_time::{Instant, Mapping, NonZeroPeriod, Period};
+use crate::musical_time::{Instant, NonZeroPeriod, Period};
 use crate::notes::Notes;
+use crate::project::Settings;
+use crate::ui::Grid;
 use crate::view::Context;
 
 /// The content of a [clip](crate::Clip).
@@ -19,9 +21,9 @@ pub enum Content {
 impl Content {
     /// Calculates the period of the content.
     #[must_use]
-    pub fn period(&self, start: Instant, mapping: &Mapping) -> NonZeroPeriod {
+    pub fn period(&self, start: Instant, settings: &Settings) -> NonZeroPeriod {
         match self {
-            Content::Audio(audio) => audio.period(start, mapping),
+            Content::Audio(audio) => audio.period(start, settings),
             Content::Notes(notes) => NonZeroPeriod {
                 start,
                 duration: notes.duration(),
@@ -34,11 +36,12 @@ impl Content {
         context: &mut dyn Context,
         full_period: Period,
         visible_period: Period,
-        mapping: &Mapping,
+        settings: &Settings,
+        grid: Grid,
     ) {
         match self {
             Content::Audio(audio) => {
-                audio.draw_overview(context, full_period, visible_period, mapping);
+                audio.draw_overview(context, full_period, visible_period, settings, grid);
             }
             Content::Notes(notes) => notes.draw_overview(context),
         }

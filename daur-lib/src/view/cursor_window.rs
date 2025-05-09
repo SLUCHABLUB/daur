@@ -1,8 +1,9 @@
 use crate::audio::Player;
 use crate::musical_time::Instant;
-use crate::ui::Length;
+use crate::project::Settings;
+use crate::ui::{Grid, Length};
 use crate::view::OnClick;
-use crate::{Action, View, musical_time, ui};
+use crate::{Action, View};
 use derive_more::Debug;
 
 //       |---o---|
@@ -29,31 +30,31 @@ pub struct CursorWindow {
 
     window_offset: Length,
 
-    time_mapping: musical_time::Mapping,
-    ui_mapping: ui::Mapping,
+    project_settings: Settings,
+    grid: Grid,
 }
 
 impl CursorWindow {
     pub(crate) fn view(
         player: Option<Player>,
         cursor: Instant,
-        time_mapping: musical_time::Mapping,
-        ui_mapping: ui::Mapping,
+        project_settings: Settings,
+        grid: Grid,
         window_offset: Length,
     ) -> View {
+        let settings = project_settings.clone();
+
         let window = CursorWindow {
             player,
             cursor,
             window_offset,
-            time_mapping,
-            ui_mapping,
+            project_settings,
+            grid,
         };
-
-        let mapping = window.ui_mapping.clone();
 
         let on_click = OnClick::new(move |_, position, actions| {
             let ui_offset = position.x + window_offset;
-            let instant = mapping.instant_on_grid(ui_offset);
+            let instant = Instant::quantised_from_x_offset(ui_offset, &settings, grid);
 
             actions.send(Action::MoveCursor(instant));
         });
@@ -62,7 +63,12 @@ impl CursorWindow {
     }
 
     fn player_position(&self) -> Option<Instant> {
-        Some(self.time_mapping.musical(self.player.as_ref()?.position()?))
+        Some(
+            self.player
+                .as_ref()?
+                .position()?
+                .to_metre(&self.project_settings),
+        )
     }
 
     /// The cursor's offset from the left of the window.
@@ -71,7 +77,7 @@ impl CursorWindow {
     pub fn offset(&self) -> Option<Length> {
         let position = self.player_position().unwrap_or(self.cursor);
 
-        let offset = self.ui_mapping.x_offset(position);
+        let offset = position.to_x_offset(&self.project_settings, self.grid);
 
         (self.window_offset <= offset).then_some(offset - self.window_offset)
     }

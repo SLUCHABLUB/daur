@@ -17,9 +17,10 @@ pub(crate) use config::Config;
 pub(crate) use player::Player;
 pub(crate) use source::Source;
 
-use crate::Ratio;
-use crate::musical_time::{Instant, Mapping, Period};
-use crate::real_time::Duration;
+use crate::musical_time::Instant;
+use crate::project::Settings;
+use crate::real_time::{Duration, Period};
+use crate::{Ratio, musical_time};
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
@@ -159,8 +160,14 @@ impl Audio {
 
     /// Returns the period of the audio.
     #[must_use]
-    pub(crate) fn period(&self, start: Instant, mapping: &Mapping) -> Period {
-        mapping.period(start, self.duration())
+    pub(crate) fn period(&self, start: Instant, settings: &Settings) -> musical_time::Period {
+        let start = start.to_real_time(settings);
+
+        Period {
+            start,
+            duration: self.duration(),
+        }
+        .to_metre(settings)
     }
 
     /// Returns an [audio source](rodio::Source) for the audio.

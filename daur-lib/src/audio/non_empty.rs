@@ -1,5 +1,7 @@
 use crate::Audio;
-use crate::musical_time::{Instant, Mapping, NonZeroPeriod, Period};
+use crate::musical_time::{Instant, NonZeroPeriod, Period};
+use crate::project::Settings;
+use crate::ui::Grid;
 use crate::view::Context;
 
 /// Some audio of positive length.
@@ -33,11 +35,11 @@ impl NonEmpty {
 
     /// Returns the period of the audio.
     #[must_use]
-    pub(crate) fn period(&self, start: Instant, mapping: &Mapping) -> NonZeroPeriod {
+    pub(crate) fn period(&self, start: Instant, settings: &Settings) -> NonZeroPeriod {
         // TODO: do this more cleanly
-        NonZeroPeriod::from_period(self.inner.period(start, mapping)).unwrap_or_else(|| {
+        NonZeroPeriod::from_period(self.inner.period(start, settings)).unwrap_or_else(|| {
             // This should be unreachable
-            let duration = mapping.time_signature.get(start).beat_duration();
+            let duration = settings.time_signature.get(start).beat_duration();
             NonZeroPeriod { start, duration }
         })
     }
@@ -48,9 +50,10 @@ impl NonEmpty {
         context: &mut dyn Context,
         full_period: Period,
         visible_period: Period,
-        mapping: &Mapping,
+        settings: &Settings,
+        grid: Grid,
     ) {
         // TODO: draw loudness graph
-        let _ = (self, context, full_period, visible_period, mapping);
+        let _ = (self, context, full_period, visible_period, settings, grid);
     }
 }

@@ -3,6 +3,8 @@ mod non_zero;
 pub use non_zero::NonZeroPeriod;
 
 use crate::musical_time::{Duration, Instant};
+use crate::project::Settings;
+use crate::ui::{Grid, Length};
 use std::cmp::{max, min};
 use std::ops::Range;
 
@@ -16,7 +18,7 @@ pub struct Period {
 }
 
 impl Period {
-    /// The instant representing the end of the period
+    /// Returns the end of the period.
     #[must_use]
     pub fn end(&self) -> Instant {
         self.start + self.duration
@@ -57,5 +59,24 @@ impl Period {
     #[must_use]
     pub fn contains(self, instant: Instant) -> bool {
         self.range().contains(&instant)
+    }
+
+    pub(crate) fn from_x_interval(
+        start: Length,
+        length: Length,
+        settings: &Settings,
+        grid: Grid,
+    ) -> Period {
+        let end = Instant::from_x_offset(start + length, settings, grid);
+        let start = Instant::from_x_offset(start, settings, grid);
+
+        Period {
+            start,
+            duration: end - start,
+        }
+    }
+
+    pub(crate) fn width(self, settings: &Settings, grid: Grid) -> Length {
+        self.end().to_x_offset(settings, grid) - self.start.to_x_offset(settings, grid)
     }
 }

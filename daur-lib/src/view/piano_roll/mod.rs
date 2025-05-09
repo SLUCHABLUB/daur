@@ -9,12 +9,11 @@ pub use row::row;
 pub use settings::Settings;
 
 use crate::interval::Interval;
-use crate::key::Key;
-use crate::musical_time::Changing;
+use crate::musical_time::Instant;
 use crate::pitch::Pitch;
-use crate::ui::{Direction, Length, Mapping, Point, Rectangle};
+use crate::ui::{Direction, Grid, Length, Point, Rectangle};
 use crate::view::{Quotated, ToText as _, View, feed, ruler};
-use crate::{Action, Clip, HoldableObject, UserInterface};
+use crate::{Action, Clip, HoldableObject, UserInterface, project};
 use arcstr::{ArcStr, literal};
 use saturating_cast::SaturatingCast as _;
 use std::sync::Weak;
@@ -25,15 +24,15 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 /// Returns the view for the piano roll.
 pub fn view<Ui: UserInterface>(
     clip: &Weak<Clip>,
-    mapping: Mapping,
     settings: Settings,
-    key: &Changing<Key>,
+    project_settings: project::Settings,
+    grid: Grid,
 ) -> Quotated {
     if !settings.open {
         return Quotated::EMPTY;
     }
 
-    let view = content::<Ui>(clip, mapping, settings, key);
+    let view = content::<Ui>(clip, settings, project_settings, grid);
 
     let title = clip.upgrade().as_deref().map_or(PIANO_ROLL, Clip::name);
 
@@ -47,20 +46,20 @@ pub fn view<Ui: UserInterface>(
 
 fn content<Ui: UserInterface>(
     clip: &Weak<Clip>,
-    mapping: Mapping,
     settings: Settings,
-    key: &Changing<Key>,
+    project_settings: project::Settings,
+    grid: Grid,
 ) -> View {
     let Some(_clip) = clip.upgrade() else {
         return NO_CLIP_SELECTED.centred();
     };
 
-    let roll_start = mapping.instant(settings.piano_depth.get());
-    let piano_key_key = key.get(roll_start);
+    let roll_start = Instant::from_x_offset(settings.x_offset, &project_settings, grid);
+    let piano_key_key = project_settings.key.get(roll_start);
 
     let ruler = View::x_stack([
         View::Empty.quotated(settings.piano_depth.get()),
-        ruler(mapping, settings.x_offset).fill_remaining(),
+        ruler(settings.x_offset, project_settings, grid).fill_remaining(),
     ]);
 
     // The piano roll has a fixed lower pitch.

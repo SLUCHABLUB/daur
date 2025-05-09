@@ -1,10 +1,10 @@
 use crate::audio::Player;
 use crate::musical_time::Instant;
-use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
+use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings};
 use crate::track::{Track, overview, settings};
-use crate::ui::{Length, NonZeroLength};
+use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
-use crate::{Action, Clip, UserInterface, musical_time, ui};
+use crate::{Action, Clip, UserInterface};
 use arcstr::literal;
 use std::sync::{Arc, Weak};
 
@@ -16,8 +16,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
     selected_clip: &Weak<Clip>,
     track_settings_width: NonZeroLength,
     tracks: Vec<Arc<Track>>,
-    time_mapping: &musical_time::Mapping,
-    ui_mapping: ui::Mapping,
+    project_settings: Settings,
+    grid: Grid,
     cursor: Instant,
     player: Option<&Player>,
 ) -> View {
@@ -32,8 +32,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
         track_overviews.push(overview(
             track,
             selected_clip,
-            time_mapping,
-            &ui_mapping,
+            &project_settings,
+            grid,
             overview_offset,
             cursor,
             player,
@@ -51,8 +51,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
     track_overviews.push(overview(
         Arc::new(Track::new()),
         selected_clip,
-        time_mapping,
-        &ui_mapping,
+        &project_settings,
+        grid,
         overview_offset,
         cursor,
         player,
@@ -61,7 +61,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     // TODO: put something here?
     let empty_space = literal!(":)").centred();
 
-    let ruler = ruler(ui_mapping, overview_offset);
+    let ruler = ruler(overview_offset, project_settings, grid);
     let ruler_row = View::x_stack([
         empty_space.quotated(track_settings_width.get()),
         ruler.scrollable(Action::MoveOverview).fill_remaining(),

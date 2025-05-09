@@ -10,7 +10,7 @@ use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;
 use crate::view::{ToText as _, View, piano_roll};
-use crate::{Clip, Project, Ratio, Track, UserInterface, popup, project, ui};
+use crate::{Clip, Project, Ratio, Track, UserInterface, popup, project};
 use arcstr::{ArcStr, literal};
 use derive_more::Debug;
 use getset::{CloneGetters, Getters, MutGetters};
@@ -118,10 +118,7 @@ impl<Ui: UserInterface> App<Ui> {
     /// Returns the position of the musical cursor.
     fn cursor(&self) -> Instant {
         if let Some(position) = self.audio_config.player_position() {
-            self.project_manager
-                .project()
-                .time_mapping()
-                .musical(position)
+            position.to_metre(&self.project_manager.project().settings)
         } else {
             self.cursor
         }
@@ -148,12 +145,9 @@ impl<Ui: UserInterface> App<Ui> {
                 .fill_remaining(),
             piano_roll::view::<Ui>(
                 &self.selected_clip,
-                ui::Mapping {
-                    time_signature: self.project_manager.project().time_signature(),
-                    grid: self.grid,
-                },
                 self.piano_roll_settings,
-                &self.project_manager.project().key(),
+                self.project_manager.project().settings.clone(),
+                self.grid,
             ),
         ])
     }

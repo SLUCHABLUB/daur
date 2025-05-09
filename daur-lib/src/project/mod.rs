@@ -5,21 +5,21 @@ mod bar;
 mod edit;
 mod manager;
 mod renderer;
+mod settings;
 mod workspace;
 
 pub use action::Action;
 pub use bar::bar;
 pub use manager::Manager;
 pub(crate) use renderer::Renderer;
+pub use settings::Settings;
 pub(crate) use workspace::workspace;
 
 use crate::audio::Player;
-use crate::key::Key;
-use crate::musical_time::{Changing, Instant, Signature};
-use crate::real_time::Tempo;
+use crate::musical_time::Instant;
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::{Clip, UserInterface, View, musical_time, ui};
+use crate::{Clip, UserInterface, View};
 use arcstr::{ArcStr, literal};
 use getset::CloneGetters;
 use std::sync::{Arc, Weak};
@@ -31,44 +31,18 @@ const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 #[doc(hidden)]
 #[derive(Clone, Debug, Default, CloneGetters)]
 pub struct Project {
-    /// The name of the project
+    /// The name of the project.
     #[get_clone = "pub"]
     pub title: ArcStr,
 
-    /// The key of the project.
-    #[get_clone = "pub"]
-    pub key: Arc<Changing<Key>>,
-    /// The time signature of the project.
-    #[get_clone = "pub"]
-    pub time_signature: Arc<Changing<Signature>>,
-    // TODO: continuous change
-    /// The tempo of the project
-    #[get_clone = "pub"]
-    pub tempo: Arc<Changing<Tempo>>,
+    /// The project settings.
+    pub settings: Settings,
 
-    /// The tracks in the project
+    /// The tracks in the project.
     pub tracks: Vec<Arc<Track>>,
 }
 
 impl Project {
-    /// Returns the time mapping for the project.
-    #[must_use]
-    pub fn time_mapping(&self) -> musical_time::Mapping {
-        musical_time::Mapping {
-            tempo: self.tempo(),
-            time_signature: self.time_signature(),
-        }
-    }
-
-    /// Returns the ui mapping for the project.
-    #[must_use]
-    pub fn ui_mapping(&self, grid: Grid) -> ui::Mapping {
-        ui::Mapping {
-            time_signature: self.time_signature(),
-            grid,
-        }
-    }
-
     /// Returns a mutable reference to a track.
     #[must_use]
     pub fn track_mut(&mut self, weak: &Weak<Track>) -> Option<&mut Track> {
@@ -79,13 +53,7 @@ impl Project {
     }
 
     pub(crate) fn bar<Ui: UserInterface>(&self, playing: bool) -> View {
-        bar::<Ui>(
-            self.title(),
-            self.tempo.start,
-            self.time_signature.start,
-            self.key.start,
-            playing,
-        )
+        bar::<Ui>(self.title(), &self.settings, playing)
     }
 
     // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
@@ -106,8 +74,8 @@ impl Project {
             selected_clip,
             track_settings_size,
             self.tracks.clone(),
-            &self.time_mapping(),
-            self.ui_mapping(grid),
+            self.settings.clone(),
+            grid,
             cursor,
             player,
         )

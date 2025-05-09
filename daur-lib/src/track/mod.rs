@@ -10,7 +10,8 @@ pub(crate) use settings::settings;
 
 use crate::audio::{Pair, SampleRate};
 use crate::clip::Content;
-use crate::musical_time::{Instant, Mapping, Spaced};
+use crate::musical_time::{Instant, Spaced};
+use crate::project::Settings;
 use crate::{Audio, Clip};
 use arcstr::{ArcStr, literal};
 use std::sync::{Arc, Weak};
@@ -38,22 +39,26 @@ impl Track {
     }
 
     /// Renders the track to audio.
-    pub(crate) fn render_stream(&self, mapping: &Mapping, sample_rate: SampleRate) -> RenderStream {
+    pub(crate) fn render_stream(
+        &self,
+        settings: &Settings,
+        sample_rate: SampleRate,
+    ) -> RenderStream {
         // TODO: remove when note processing has been added
         let min_end = self
             .clips
             .iter()
             .last()
             .map_or(Instant::START, |(start, clip)| {
-                clip.content.period(start, mapping).get().end()
+                clip.content.period(start, settings).get().end()
             });
-        let min_duration = mapping.real_time(min_end).since_start;
+        let min_duration = min_end.to_real_time(settings).since_start;
         let min_len = (min_duration / sample_rate.sample_duration()).to_usize();
 
         let mut audio = Audio::empty(sample_rate);
 
         for (start, clip) in self.clips.iter() {
-            let start = mapping.real_time(start);
+            let start = start.to_real_time(settings);
             // TODO: multiply by sample rate instead of dividing by sample duration
             let sample_offset = start.since_start / sample_rate.sample_duration();
             let sample_offset = sample_offset.to_usize();

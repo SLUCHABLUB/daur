@@ -13,7 +13,7 @@ pub struct Tempo {
 }
 
 impl Tempo {
-    /// The duration of a beat at this tempo
+    /// The duration of a beat at this tempo.
     #[must_use]
     pub fn beat_duration(self) -> NonZeroDuration {
         let bpm = NonZeroU64::from(self.bpm);

@@ -1,4 +1,6 @@
-use crate::musical_time::{Mapping, Period};
+use crate::musical_time::Period;
+use crate::project::Settings;
+use crate::ui::Grid;
 use crate::view::{OnClick, View};
 use crate::{Action, Clip, Track};
 use std::sync::{Arc, Weak};
@@ -10,14 +12,16 @@ pub(crate) fn overview(
     selected: bool,
     full_period: Period,
     visible_period: Period,
-    mapping: Mapping,
+    settings: &Settings,
+    grid: Grid,
 ) -> View {
     let title = clip.name.clone();
     let clip_reference = Arc::downgrade(&clip);
+    let settings = settings.clone();
 
     View::canvas(clip.colour, move |context| {
         clip.content
-            .paint_overview(context, full_period, visible_period, &mapping);
+            .paint_overview(context, full_period, visible_period, &settings, grid);
     })
     .titled(title)
     .with_thickness(selected)

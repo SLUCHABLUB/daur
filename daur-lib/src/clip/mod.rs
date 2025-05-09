@@ -6,7 +6,8 @@ mod overview;
 pub use content::Content;
 pub(crate) use overview::overview;
 
-use crate::musical_time::{Instant, Mapping, NonZeroPeriod};
+use crate::musical_time::{Instant, NonZeroPeriod};
+use crate::project::Settings;
 use crate::ui::Colour;
 use arcstr::ArcStr;
 use getset::CloneGetters;
@@ -27,7 +28,7 @@ pub struct Clip {
 impl Clip {
     /// Calculates the [period](NonZeroPeriod) of the clip.
     #[must_use]
-    pub fn period(&self, start: Instant, mapping: &Mapping) -> NonZeroPeriod {
-        self.content.period(start, mapping)
+    pub fn period(&self, start: Instant, settings: &Settings) -> NonZeroPeriod {
+        self.content.period(start, settings)
     }
 }

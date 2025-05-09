@@ -69,11 +69,11 @@ impl Manager {
             Edit::AddTrack(track) => self.project.tracks.push(Arc::new(track)),
             Edit::ChangeKey { position, key } => {
                 if let Some(position) = NonZeroInstant::from_instant(position) {
-                    Arc::make_mut(&mut self.project.key)
+                    Arc::make_mut(&mut self.project.settings.key)
                         .changes
                         .insert(position, key);
                 } else {
-                    Arc::make_mut(&mut self.project.key).start = key;
+                    Arc::make_mut(&mut self.project.settings.key).start = key;
                 }
             }
         }

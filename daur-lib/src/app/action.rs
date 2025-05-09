@@ -157,19 +157,13 @@ impl<Ui: UserInterface> App<Ui> {
 
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
-                    self.cursor = self
-                        .project_manager
-                        .project()
-                        .time_mapping()
-                        .musical(position);
+                    self.cursor = position.to_metre(&self.project_manager.project().settings);
                 }
             }
             Action::Play => {
                 let from = self
-                    .project_manager
-                    .project()
-                    .time_mapping()
-                    .real_time(self.cursor);
+                    .cursor
+                    .to_real_time(&self.project_manager.project().settings);
 
                 let player = self.audio_config.player()?;
 
@@ -188,7 +182,7 @@ impl<Ui: UserInterface> App<Ui> {
 
                 self.renderer.restart(
                     &self.project_manager.project().tracks,
-                    &self.project_manager.project().time_mapping(),
+                    &self.project_manager.project().settings,
                     self.audio_config.sample_rate()?,
                 );
             }

@@ -57,6 +57,13 @@ impl Display for Signature {
 }
 
 impl Changing<Signature> {
+    pub(crate) fn first_bar(&self) -> Bar {
+        Bar {
+            start: Instant::START,
+            time_signature: self.start,
+        }
+    }
+
     pub(crate) fn bars(&self) -> impl Iterator<Item = Bar> + use<'_> {
         let mut start = Instant::START;
 

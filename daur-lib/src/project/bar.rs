@@ -1,8 +1,8 @@
 use crate::app::Action;
 use crate::key::Key;
-use crate::musical_time::{Instant, Signature};
+use crate::musical_time::Instant;
 use crate::popup::Popup;
-use crate::real_time::Tempo;
+use crate::project::Settings;
 use crate::view::{Axis, OnClick, ToText as _, View};
 use crate::{ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
@@ -29,13 +29,7 @@ fn open_key_selector(instant: Instant, key: Key) -> OnClick {
 //  - grid size
 //  - master volume
 /// The bar att the top of the app window.
-pub fn bar<Ui: UserInterface>(
-    title: ArcStr,
-    tempo: Tempo,
-    time_signature: Signature,
-    key: Key,
-    playing: bool,
-) -> View {
+pub fn bar<Ui: UserInterface>(title: ArcStr, settings: &Settings, playing: bool) -> View {
     let playback_button = if playing {
         View::described_button(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
     } else {
@@ -46,16 +40,20 @@ pub fn bar<Ui: UserInterface>(
         Axis::X,
         [
             View::described_button(
-                key.to_arc_str(),
+                settings.key.start.to_arc_str(),
                 KEY_DESCRIPTION,
-                open_key_selector(Instant::START, key),
+                open_key_selector(Instant::START, settings.key.start),
             ),
             View::described_button(
-                time_signature.to_arc_str(),
+                settings.time_signature.start.to_arc_str(),
                 TIME_SIGNATURE_DESCRIPTION,
                 OnClick::default(),
             ),
-            View::described_button(tempo.to_arc_str(), TEMPO_DESCRIPTION, OnClick::default()),
+            View::described_button(
+                settings.tempo.start.to_arc_str(),
+                TEMPO_DESCRIPTION,
+                OnClick::default(),
+            ),
         ],
     );
 
