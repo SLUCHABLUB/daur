@@ -4,10 +4,9 @@ mod key;
 mod row;
 mod settings;
 
-pub use key::piano_key;
-pub use row::row;
 pub use settings::Settings;
 
+use crate::audio::Player;
 use crate::interval::Interval;
 use crate::musical_time::Instant;
 use crate::pitch::Pitch;
@@ -15,6 +14,8 @@ use crate::ui::{Direction, Grid, Length, Point, Rectangle};
 use crate::view::{Quotated, ToText as _, View, feed, ruler};
 use crate::{Action, Clip, HoldableObject, UserInterface, project};
 use arcstr::{ArcStr, literal};
+use key::piano_key;
+use row::row;
 use saturating_cast::SaturatingCast as _;
 use std::sync::Weak;
 
@@ -22,17 +23,19 @@ const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 
 /// Returns the view for the piano roll.
-pub fn view<Ui: UserInterface>(
+pub(crate) fn view<Ui: UserInterface>(
     clip: &Weak<Clip>,
     settings: Settings,
     project_settings: project::Settings,
     grid: Grid,
+    player: Option<Player>,
+    cursor: Instant,
 ) -> Quotated {
     if !settings.open {
         return Quotated::EMPTY;
     }
 
-    let view = content::<Ui>(clip, settings, project_settings, grid);
+    let view = content::<Ui>(clip, settings, project_settings, grid, player, cursor);
 
     let title = clip.upgrade().as_deref().map_or(PIANO_ROLL, Clip::name);
 
@@ -49,6 +52,8 @@ fn content<Ui: UserInterface>(
     settings: Settings,
     project_settings: project::Settings,
     grid: Grid,
+    player: Option<Player>,
+    cursor: Instant,
 ) -> View {
     let Some(_clip) = clip.upgrade() else {
         return NO_CLIP_SELECTED.centred();
@@ -59,7 +64,7 @@ fn content<Ui: UserInterface>(
 
     let ruler = View::x_stack([
         View::Empty.quotated(settings.piano_depth.get()),
-        ruler(settings.x_offset, project_settings, grid).fill_remaining(),
+        ruler(settings.x_offset, project_settings.clone(), grid).fill_remaining(),
     ]);
 
     // The piano roll has a fixed lower pitch.
@@ -70,7 +75,14 @@ fn content<Ui: UserInterface>(
         let pitch = Pitch::A440 + interval;
 
         let key = piano_key(pitch, piano_key_key, settings.black_key_depth);
-        let row = row(pitch);
+        let row = row(
+            pitch,
+            &settings,
+            project_settings.clone(),
+            grid,
+            player.clone(),
+            cursor,
+        );
 
         let stack = View::x_stack([
             key.quotated(settings.piano_depth.get()),

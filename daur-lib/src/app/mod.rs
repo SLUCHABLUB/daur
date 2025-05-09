@@ -148,6 +148,8 @@ impl<Ui: UserInterface> App<Ui> {
                 self.piano_roll_settings,
                 self.project_manager.project().settings.clone(),
                 self.grid,
+                self.audio_config.try_player().cloned(),
+                self.cursor,
             ),
         ])
     }
