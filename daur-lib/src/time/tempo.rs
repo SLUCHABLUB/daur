@@ -25,8 +25,11 @@ impl Tempo {
     }
 }
 
-// TODO: rationale
 impl Default for Tempo {
+    /// Returns 180 beats per minute.
+    ///
+    /// A quite arbitrary choice.
+    // TODO: rationale
     fn default() -> Self {
         Tempo {
             #[expect(clippy::unwrap_used, reason = "180 != 0")]

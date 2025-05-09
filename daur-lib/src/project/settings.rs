@@ -1,5 +1,5 @@
 use crate::key::Key;
-use crate::metre::{Changing, NonZeroInstant, Signature};
+use crate::metre::{Changing, NonZeroInstant, TimeSignature};
 use crate::time::Tempo;
 use getset::CloneGetters;
 use std::cmp::min;
@@ -15,14 +15,16 @@ pub struct Settings {
     pub tempo: Arc<Changing<Tempo>>,
     /// The time signature of the project.
     #[get_clone = "pub"]
-    pub time_signature: Arc<Changing<Signature>>,
+    pub time_signature: Arc<Changing<TimeSignature>>,
     /// The key of the project.
     #[get_clone = "pub"]
     pub key: Arc<Changing<Key>>,
 }
 
 impl Settings {
-    pub(crate) fn time_changes(&self) -> impl Iterator<Item = (NonZeroInstant, Tempo, Signature)> {
+    pub(crate) fn time_changes(
+        &self,
+    ) -> impl Iterator<Item = (NonZeroInstant, Tempo, TimeSignature)> {
         let mut tempo_iter = self.tempo.changes.iter();
         let mut time_signature_iter = self.time_signature.changes.iter();
 

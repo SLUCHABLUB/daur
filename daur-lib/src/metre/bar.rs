@@ -1,4 +1,4 @@
-use crate::metre::{Duration, Instant, Period, Signature};
+use crate::metre::{Duration, Instant, Period, TimeSignature};
 use crate::project::Settings;
 use crate::ui::{Grid, Length};
 
@@ -8,7 +8,7 @@ pub struct Bar {
     /// When the bar starts
     pub start: Instant,
     /// The time signature of the bar
-    pub time_signature: Signature,
+    pub time_signature: TimeSignature,
 }
 
 impl Bar {

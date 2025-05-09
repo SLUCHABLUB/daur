@@ -25,6 +25,7 @@ mod sign;
 mod string;
 
 pub use app::{Action, App, HoldableObject};
+pub use key::Key;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
 pub use string::ToArcStr;

@@ -4,18 +4,23 @@ use bitbag::{BitBag, Flags};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 
+/// A musical [key](https://en.wikipedia.org/wiki/Key_(music)).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Key {
+    /// The tonic.
     pub tonic: Chroma,
-    /// How the "black piano notes" should be displayed
+    /// How the "black piano notes" should be displayed.
     pub sign: Sign,
+    /// The intervals in the key (relative to the tonic).
     pub intervals: BitBag<KeyInterval>,
 }
 
-/// A quite arbitrary choice.
-/// A, since it is the first letter in the latin alphabet.
-/// Minor since it uses all the white keys on a piano.
 impl Default for Key {
+    /// Returns _A minor_.
+    ///
+    /// A quite arbitrary choice.
+    /// _A_, since it is the first letter of the latin alphabet.
+    /// _Minor_, since it uses all the white keys on the piano.
     fn default() -> Self {
         Key {
             tonic: Chroma::A,

@@ -8,9 +8,9 @@ use std::num::{NonZeroU8, NonZeroU64};
 #[expect(clippy::unwrap_used, reason = "4 != 0")]
 const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
 
-/// A time signature
+/// A time signature.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub struct Signature {
+pub struct TimeSignature {
     /// The upper number of the time signature.
     /// The number of beats that fit in a bar.
     pub beats_per_bar: NonZeroU8,
@@ -19,8 +19,8 @@ pub struct Signature {
     pub beats_per_whole_note: NonZeroU8,
 }
 
-impl Signature {
-    /// The duration of one bar
+impl TimeSignature {
+    /// The duration of a bar.
     #[must_use]
     pub fn bar_duration(self) -> NonZeroDuration {
         NonZeroDuration {
@@ -31,7 +31,7 @@ impl Signature {
         }
     }
 
-    /// The duration of one beat
+    /// The duration of a beat.
     #[must_use]
     pub fn beat_duration(self) -> NonZeroDuration {
         NonZeroDuration {
@@ -40,23 +40,23 @@ impl Signature {
     }
 }
 
-/// "Common" time
-impl Default for Signature {
+impl Default for TimeSignature {
+    /// Returns _common time_ (4/4).
     fn default() -> Self {
-        Signature {
+        TimeSignature {
             beats_per_bar: FOUR,
             beats_per_whole_note: FOUR,
         }
     }
 }
 
-impl Display for Signature {
+impl Display for TimeSignature {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}", self.beats_per_bar, self.beats_per_whole_note)
     }
 }
 
-impl Changing<Signature> {
+impl Changing<TimeSignature> {
     pub(crate) fn first_bar(&self) -> Bar {
         Bar {
             start: Instant::START,
