@@ -20,9 +20,9 @@ use crate::metre::Instant;
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::{Clip, UserInterface, View};
+use alloc::sync::{Arc, Weak};
 use arcstr::{ArcStr, literal};
 use getset::CloneGetters;
-use std::sync::{Arc, Weak};
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");

@@ -1,8 +1,8 @@
 use crate::app::Action;
 use crate::track::Track;
 use crate::view::{OnClick, ToText as _, View};
+use alloc::sync::{Arc, Weak};
 use arcstr::literal;
-use std::sync::{Arc, Weak};
 
 /// Returns the track settings.
 pub(crate) fn settings(track: &Arc<Track>, selected: bool) -> View {

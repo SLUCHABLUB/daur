@@ -1,7 +1,7 @@
 use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::{View, feed};
-use std::num::NonZeroU64;
+use core::num::NonZeroU64;
 
 /// A ruler of musical time
 pub fn ruler(offset: Length, settings: Settings, grid: Grid) -> View {

@@ -1,6 +1,8 @@
 use crate::canvas::Context;
 use crate::convert::{approximate_colour, from_rectangle, to_rectangle};
 use crate::tui::Tui;
+use core::cmp::min;
+use core::num::{NonZeroU64, NonZeroUsize};
 use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
@@ -15,9 +17,7 @@ use ratatui::widgets::canvas::Canvas;
 use ratatui::widgets::{Block, Borders, Clear, Paragraph, Widget as _};
 use ratatui::{DefaultTerminal, layout};
 use saturating_cast::SaturatingCast as _;
-use std::cmp::min;
 use std::io;
-use std::num::{NonZeroU64, NonZeroUsize};
 
 pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
     terminal

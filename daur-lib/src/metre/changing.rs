@@ -1,5 +1,5 @@
 use crate::metre::{Instant, NonZeroInstant};
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
 
 /// A setting that changes over time.
 #[derive(Clone, Eq, PartialEq, Debug, Default)]

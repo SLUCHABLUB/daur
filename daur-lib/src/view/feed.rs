@@ -1,6 +1,6 @@
 use crate::ui::{Direction, Length, Offset};
 use crate::view::{Quotated, View};
-use std::cmp::Ordering;
+use core::cmp::Ordering;
 
 /// A window into an infinite and scrollable stack
 pub fn feed<Generator>(direction: Direction, offset: Offset, generator: Generator) -> View

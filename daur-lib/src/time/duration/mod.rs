@@ -1,10 +1,10 @@
 mod non_zero;
 
 use crate::Ratio;
+use core::num::NonZeroU128;
+use core::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
+use core::time;
 pub use non_zero::NonZeroDuration;
-use std::num::NonZeroU128;
-use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
-use std::time;
 
 /// A duration of real time.
 ///

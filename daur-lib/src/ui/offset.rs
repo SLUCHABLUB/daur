@@ -1,7 +1,7 @@
 use crate::Ratio;
 use crate::ui::Length;
+use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 use saturating_cast::SaturatingCast as _;
-use std::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
 
 // TODO: document the not-fully-saturating semantics on overflow.
 /// A signed [length](Length).

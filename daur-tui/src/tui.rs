@@ -11,7 +11,7 @@ use unicode_segmentation::UnicodeSegmentation as _;
 macro_rules! non_zero_length {
     ($pixels:literal) => {
         NonZeroLength {
-            pixels: std::num::NonZeroU16::MIN.saturating_add($pixels - 1),
+            pixels: core::num::NonZeroU16::MIN.saturating_add($pixels - 1),
         }
     };
 }

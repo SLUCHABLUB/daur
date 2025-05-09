@@ -3,7 +3,7 @@ use crate::project::Settings;
 use crate::ui::Grid;
 use crate::view::{OnClick, View};
 use crate::{Action, Clip, Track};
-use std::sync::{Arc, Weak};
+use alloc::sync::{Arc, Weak};
 
 /// Returns a view of a clip's overview.
 pub(crate) fn overview(

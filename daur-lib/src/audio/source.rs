@@ -1,7 +1,7 @@
 use crate::audio::Audio;
 use crate::time;
+use core::time::Duration;
 use rodio::source::SeekError;
-use std::time::Duration;
 
 /// An [audio source](rodio::Source) for an [audio](Audio).
 #[derive(Clone, Debug)]

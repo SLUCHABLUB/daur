@@ -5,7 +5,7 @@ pub use non_zero::NonZeroInstant;
 use crate::metre;
 use crate::project::Settings;
 use crate::time::Duration;
-use std::ops::{Add, AddAssign, Sub};
+use core::ops::{Add, AddAssign, Sub};
 
 /// An instant in real time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

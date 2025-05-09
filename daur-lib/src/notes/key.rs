@@ -1,7 +1,7 @@
 use crate::notes::{Chroma, KeyInterval, Sign};
 use bitbag::BitBag;
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use core::fmt;
+use core::fmt::{Display, Formatter};
 
 /// A musical [key](https://en.wikipedia.org/wiki/Key_(music)).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

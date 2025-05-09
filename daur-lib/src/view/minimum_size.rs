@@ -1,6 +1,6 @@
 use crate::ui::{Length, Size};
 use crate::{Ratio, UserInterface, View};
-use std::cmp::max;
+use core::cmp::max;
 
 impl View {
     /// Returns the minimum size required to fit the entire view.

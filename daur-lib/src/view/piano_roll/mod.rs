@@ -12,11 +12,11 @@ use crate::notes::{Interval, Pitch};
 use crate::ui::{Direction, Grid, Length, Point, Rectangle};
 use crate::view::{Quotated, ToText as _, View, feed, ruler};
 use crate::{Action, Clip, HoldableObject, UserInterface, project};
+use alloc::sync::Weak;
 use arcstr::{ArcStr, literal};
 use key::piano_key;
 use row::row;
 use saturating_cast::SaturatingCast as _;
-use std::sync::Weak;
 
 const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");

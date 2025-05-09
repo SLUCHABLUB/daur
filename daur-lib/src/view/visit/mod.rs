@@ -13,8 +13,8 @@ use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::{Alignment, OnClick, Painter};
 use crate::{Action, Ratio, UserInterface, View};
-use std::iter::zip;
-use std::num::NonZeroU64;
+use core::iter::zip;
+use core::num::NonZeroU64;
 
 /// A type that can visit a [view](View).
 pub trait Visitor {

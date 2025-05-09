@@ -6,9 +6,9 @@ use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, Quotated, View, feed};
 use crate::{Clip, Track, clip};
+use alloc::sync::{Arc, Weak};
 use closure::closure;
 use num::Integer as _;
-use std::sync::{Arc, Weak};
 
 /// Returns the track overview.
 pub(crate) fn overview(

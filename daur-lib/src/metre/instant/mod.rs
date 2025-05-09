@@ -6,7 +6,7 @@ use crate::metre::Duration;
 use crate::project::Settings;
 use crate::time;
 use crate::ui::{Grid, Length};
-use std::ops::{Add, AddAssign, Sub};
+use core::ops::{Add, AddAssign, Sub};
 
 /// An instant in musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

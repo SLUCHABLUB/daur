@@ -1,9 +1,9 @@
 use crate::Ratio;
 use crate::ui::{Offset, Point, Size, Vector};
 use crate::view::{Axis, Quotum};
-use std::cmp::{max, min};
-use std::num::NonZeroU64;
-use std::ops::{Add, AddAssign};
+use core::cmp::{max, min};
+use core::num::NonZeroU64;
+use core::ops::{Add, AddAssign};
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]

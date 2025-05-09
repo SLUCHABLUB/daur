@@ -1,6 +1,6 @@
 use bitbag::{BitBag, Flags};
-use std::fmt;
-use std::fmt::{Display, Formatter};
+use core::fmt;
+use core::fmt::{Display, Formatter};
 
 /// Intervals less than an octave and greater than a perfect unison.
 #[expect(

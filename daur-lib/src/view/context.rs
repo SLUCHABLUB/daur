@@ -3,11 +3,11 @@
 use crate::ui::{Point, Rectangle};
 use crate::view::{Axis, OnClick, View};
 use crate::{Action, Popup, UserInterface, project};
+use alloc::sync::Arc;
 use arcstr::{ArcStr, literal};
-use std::fmt;
-use std::fmt::{Debug, Formatter};
+use core::fmt;
+use core::fmt::{Debug, Formatter};
 use std::path::Path;
-use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");

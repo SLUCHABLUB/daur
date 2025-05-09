@@ -1,7 +1,7 @@
+use alloc::sync::Arc;
+use core::fmt;
+use core::fmt::{Debug, Formatter};
 use parking_lot::Mutex;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
-use std::sync::Arc;
 
 /// A cell containing an [atomically reference counted](Arc) value.
 pub struct ArcCell<T: ?Sized> {

@@ -21,16 +21,16 @@ use crate::metre::Instant;
 use crate::project::Settings;
 use crate::time::{Duration, Period};
 use crate::{Ratio, metre};
+use alloc::borrow::Cow;
 use anyhow::Result;
+use core::cmp::max;
+use core::iter::zip;
+use core::num::NonZeroU32;
+use core::ops::{Add, AddAssign};
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
 use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
-use std::borrow::Cow;
-use std::cmp::max;
 use std::io::Read;
-use std::iter::zip;
-use std::num::NonZeroU32;
-use std::ops::{Add, AddAssign};
 
 // TODO: add sample rate macro to make the test more readable
 /// Some stereo 64-bit floating point audio.

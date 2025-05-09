@@ -13,8 +13,8 @@ use crate::clip::Content;
 use crate::metre::{Instant, Spaced};
 use crate::project::Settings;
 use crate::{Audio, Clip};
+use alloc::sync::{Arc, Weak};
 use arcstr::{ArcStr, literal};
-use std::sync::{Arc, Weak};
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 

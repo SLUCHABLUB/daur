@@ -1,8 +1,8 @@
 use crate::NonZeroRatio;
 use crate::time::Duration;
+use core::num::{NonZeroU64, NonZeroU128};
+use core::ops::Mul;
 use saturating_cast::SaturatingCast as _;
-use std::num::{NonZeroU64, NonZeroU128};
-use std::ops::Mul;
 
 /// A non-zero [duration of real time](Duration).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

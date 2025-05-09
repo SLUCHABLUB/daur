@@ -1,5 +1,5 @@
 use arcstr::ArcStr;
-use std::fmt::Display;
+use core::fmt::Display;
 
 /// Like [`ToString`] but for [`ArcStr`].
 pub trait ToArcStr {

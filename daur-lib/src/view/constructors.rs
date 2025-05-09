@@ -1,8 +1,8 @@
 use crate::ui::{Colour, Size};
 use crate::view::{Axis, Context, Quotated};
 use crate::{Ratio, UserInterface, View};
+use core::cmp::max;
 use itertools::Itertools as _;
-use std::cmp::max;
 
 impl View {
     /// Constructs a new [canvas](View::Canvas).

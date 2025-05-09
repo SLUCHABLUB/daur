@@ -3,7 +3,7 @@ mod non_zero;
 pub use non_zero::NonZeroDuration;
 
 use crate::ratio::{NonZeroRatio, Ratio};
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
+use core::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 /// A musical duration
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

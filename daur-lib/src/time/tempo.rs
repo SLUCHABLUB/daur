@@ -1,7 +1,7 @@
 use crate::time::{Duration, NonZeroDuration};
-use std::fmt;
-use std::fmt::{Display, Formatter};
-use std::num::{NonZeroU16, NonZeroU64};
+use core::fmt;
+use core::fmt::{Display, Formatter};
+use core::num::{NonZeroU16, NonZeroU64};
 
 // TODO move to real time
 // TODO: make transparent

@@ -1,8 +1,8 @@
 use crate::notes::{Chroma, Interval, Sign};
+use core::cmp::Ordering;
+use core::hash::{Hash, Hasher};
+use core::ops::{Add, AddAssign, Sub};
 use num::Integer as _;
-use std::cmp::Ordering;
-use std::hash::{Hash, Hasher};
-use std::ops::{Add, AddAssign, Sub};
 
 // TODO: microtonality?
 #[derive(Copy, Clone, Debug)]

@@ -1,5 +1,5 @@
 use crate::metre::Instant;
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
 
 /// A list of items that are spaced out in (musical) time.
 #[derive(Clone, Eq, PartialEq, Debug)]

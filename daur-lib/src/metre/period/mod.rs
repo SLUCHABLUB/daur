@@ -5,8 +5,8 @@ pub use non_zero::NonZeroPeriod;
 use crate::metre::{Duration, Instant};
 use crate::project::Settings;
 use crate::ui::{Grid, Length};
-use std::cmp::{max, min};
-use std::ops::Range;
+use core::cmp::{max, min};
+use core::ops::Range;
 
 /// A period of musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

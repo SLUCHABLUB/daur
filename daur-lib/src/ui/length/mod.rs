@@ -5,9 +5,9 @@ pub use non_zero::NonZeroLength;
 use crate::Ratio;
 use crate::ui::Offset;
 use crate::view::Quotum;
+use core::num::NonZeroU64;
+use core::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 use saturating_cast::SaturatingCast as _;
-use std::num::NonZeroU64;
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 /// An orthogonal distance between two points
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]

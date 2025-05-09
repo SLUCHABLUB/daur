@@ -2,7 +2,7 @@ use crate::ui::{Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::{Action, HoldableObject, UserInterface, View};
 use arcstr::ArcStr;
-use std::cmp::max;
+use core::cmp::max;
 
 impl View {
     /// Puts a border around the view.

@@ -1,5 +1,7 @@
 //! The inner workings of the DAW.
 
+extern crate alloc;
+
 pub mod audio;
 pub mod clip;
 pub mod metre;

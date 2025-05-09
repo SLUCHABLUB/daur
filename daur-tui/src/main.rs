@@ -10,13 +10,13 @@ mod tui;
 use crate::draw::redraw;
 use crate::event::handle_events;
 use crate::tui::Tui;
+use core::time::Duration;
 use crossterm::event::{DisableMouseCapture, EnableMouseCapture, Event, poll, read};
 use crossterm::execute;
 use daur::App;
 use ratatui::DefaultTerminal;
 use std::io;
 use std::io::stdout;
-use std::time::Duration;
 
 fn main() -> io::Result<()> {
     execute!(stdout(), EnableMouseCapture)?;

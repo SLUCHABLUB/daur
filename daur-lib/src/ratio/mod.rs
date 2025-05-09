@@ -4,13 +4,13 @@ mod util;
 pub use non_zero::NonZeroRatio;
 
 use crate::ratio::util::lcm;
+use core::cmp::Ordering;
+use core::fmt;
+use core::fmt::{Display, Formatter};
+use core::num::{FpCategory, NonZero, NonZeroU64, NonZeroU128};
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
-use std::cmp::Ordering;
-use std::fmt;
-use std::fmt::{Display, Formatter};
-use std::num::{FpCategory, NonZero, NonZeroU64, NonZeroU128};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 const ONE: NonZeroU64 = NonZeroU64::MIN;
 #[expect(clippy::unwrap_used, reason = "2 != 0")]

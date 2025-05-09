@@ -5,8 +5,8 @@ use crate::track::{Track, overview, settings};
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
 use crate::{Action, Clip, UserInterface};
+use alloc::sync::{Arc, Weak};
 use arcstr::literal;
-use std::sync::{Arc, Weak};
 
 // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
 #[expect(clippy::too_many_arguments, reason = "todo")]

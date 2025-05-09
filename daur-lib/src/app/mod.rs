@@ -11,10 +11,10 @@ use crate::view::context::MenuInstance;
 use crate::view::piano_roll::Settings;
 use crate::view::{ToText as _, View, piano_roll};
 use crate::{Clip, Project, Ratio, Track, UserInterface, popup, project};
+use alloc::sync::Weak;
 use arcstr::{ArcStr, literal};
 use derive_more::Debug;
 use getset::{CloneGetters, Getters, MutGetters};
-use std::sync::Weak;
 
 const SPLASH: ArcStr = literal!("DAUR - A DAW");
 

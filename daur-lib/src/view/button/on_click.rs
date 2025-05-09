@@ -1,8 +1,8 @@
 use crate::ui::{Point, Size};
 use crate::{Action, Receiver, project};
-use std::any::type_name;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
+use core::any::type_name;
+use core::fmt;
+use core::fmt::{Debug, Formatter};
 
 type OnClickFunction = dyn Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static;
 

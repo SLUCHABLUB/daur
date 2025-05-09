@@ -1,7 +1,7 @@
 use crate::Ratio;
 use crate::ui::{Offset, Point};
+use core::ops::Mul;
 use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
-use std::ops::Mul;
 
 /// A vector
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Add, Sub, Neg, AddAssign, SubAssign)]

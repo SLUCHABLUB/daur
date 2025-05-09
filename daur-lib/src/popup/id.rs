@@ -1,5 +1,5 @@
+use core::sync::atomic::{AtomicUsize, Ordering};
 use getset::CopyGetters;
-use std::sync::atomic::{AtomicUsize, Ordering};
 
 /// An identifier for a popup.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]

@@ -6,13 +6,13 @@ use crate::notes::{Key, Notes};
 use crate::project::Action;
 use crate::track::Track;
 use crate::ui::Colour;
+use alloc::sync::Weak;
 use anyhow::{Result, anyhow, bail};
 use arcstr::{ArcStr, literal};
 use hound::WavReader;
 use non_zero::non_zero;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
-use std::sync::Weak;
 use thiserror::Error;
 
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");

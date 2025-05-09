@@ -4,7 +4,7 @@ use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
-use std::num::NonZeroU64;
+use core::num::NonZeroU64;
 
 /// A visitor for clicking a view.
 #[must_use = "run `Clicker::actions`"]

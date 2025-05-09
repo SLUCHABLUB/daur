@@ -3,7 +3,7 @@ use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
 use crate::{Action, HoldableObject};
-use std::num::NonZeroU64;
+use core::num::NonZeroU64;
 
 /// A visitor that scrolls (moves) objects.
 #[must_use = "run `Scroller::actions`"]

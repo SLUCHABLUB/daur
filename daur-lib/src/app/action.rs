@@ -4,11 +4,11 @@ use crate::popup::{Id, Popup};
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{App, Clip, Track, UserInterface, project};
+use alloc::sync::Weak;
 use anyhow::Result;
+use core::iter::once;
 use derive_more::Debug;
-use std::iter::once;
 use std::path::PathBuf;
-use std::sync::Weak;
 
 /// An action to take on the app
 #[derive(Clone, Debug)]

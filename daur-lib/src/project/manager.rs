@@ -3,9 +3,9 @@ use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
 use crate::{Clip, Track};
+use alloc::sync::{Arc, Weak};
 use anyhow::Result;
 use getset::Getters;
-use std::sync::{Arc, Weak};
 use thiserror::Error;
 
 #[derive(Debug, Error)]

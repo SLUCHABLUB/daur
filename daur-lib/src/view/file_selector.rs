@@ -1,10 +1,10 @@
 use crate::sync::ArcCell;
 use crate::view::{Alignment, OnClick, Quotated, ToText as _};
 use crate::{ToArcStr as _, UserInterface, View};
+use alloc::sync::Arc;
 use closure::closure;
 use std::fs::DirEntry;
 use std::path::Path;
-use std::sync::Arc;
 
 // TODO: make pretty
 // TODO: add functionality
