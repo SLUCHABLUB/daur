@@ -1,8 +1,11 @@
 [package]
 name = "daur"
 version = "0.1.0"
-authors = ["SLUCHABLUB"]
-edition = "2024"
+
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+license.workspace = true
 
 [dependencies]
 arcstr = "1.2.0"

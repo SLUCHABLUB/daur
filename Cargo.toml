@@ -2,7 +2,11 @@
 resolver = "2"
 members = ["daur-lib", "daur-tui"]
 
-package.license = "Apache-2.0"
+[workspace.package]
+authors = ["SLUCHABLUB"]
+edition = "2024"
+repository = "https://github.com/SLUCHABLUB/daur"
+license = "Apache-2.0"
 
 # TODO: remove when cpal fork gets merged
 [patch.crates-io]
