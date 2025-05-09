@@ -6,6 +6,7 @@ mod duration;
 mod instant;
 mod mapping;
 mod period;
+mod pitch_spaced;
 mod signature;
 mod spaced;
 
@@ -15,5 +16,6 @@ pub use duration::{Duration, NonZeroDuration};
 pub use instant::{Instant, NonZeroInstant};
 pub use mapping::Mapping;
 pub use period::{NonZeroPeriod, Period};
+pub use pitch_spaced::PitchSpaced;
 pub use signature::Signature;
 pub use spaced::Spaced;

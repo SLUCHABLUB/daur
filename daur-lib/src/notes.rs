@@ -1,8 +1,7 @@
-use crate::musical_time::{Instant, NonZeroDuration};
+use crate::musical_time::{NonZeroDuration, PitchSpaced};
 use crate::note::Note;
 use crate::pitch::Pitch;
 use crate::view::Context;
-use std::collections::BTreeMap;
 use std::ops::RangeInclusive;
 
 /// A sequence of musical events.
@@ -11,14 +10,14 @@ use std::ops::RangeInclusive;
 pub struct Notes {
     // INVARIANT: all notes are within `full_duration`
     /// The notes in this clip, the instants are relative to the clip
-    notes: BTreeMap<Instant, Note>,
+    notes: PitchSpaced<Note>,
     full_duration: NonZeroDuration,
 }
 
 impl Notes {
-    pub fn empty(duration: NonZeroDuration) -> Notes {
+    pub const fn empty(duration: NonZeroDuration) -> Notes {
         Notes {
-            notes: BTreeMap::new(),
+            notes: PitchSpaced::new(),
             full_duration: duration,
         }
     }
@@ -31,7 +30,7 @@ impl Notes {
         let mut lowest = None;
         let mut highest = None;
 
-        for note in self.notes.values() {
+        for (_, _, note) in self.notes.iter() {
             if lowest.is_none_or(|lowest| note.pitch < lowest) {
                 lowest = Some(note.pitch);
             }

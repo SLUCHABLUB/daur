@@ -2,7 +2,7 @@ use crate::musical_time::Instant;
 use std::collections::BTreeMap;
 
 /// A list of items that are spaced out in (musical) time.
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Spaced<T> {
     entries: BTreeMap<Instant, T>,
 }
@@ -44,5 +44,11 @@ impl<T> Spaced<T> {
         self.entries
             .iter_mut()
             .map(|(instant, item)| (*instant, item))
+    }
+}
+
+impl<T> Default for Spaced<T> {
+    fn default() -> Self {
+        Spaced::new()
     }
 }

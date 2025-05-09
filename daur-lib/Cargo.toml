@@ -26,3 +26,4 @@ executors = "0.10.0"
 rubato = "0.16.2"
 anyhow = "1.0.98"
 non-zero = "0.1.0"
+mitsein = { version = "0.6.1", features = ["indexmap"] }

@@ -3,6 +3,7 @@ use crate::interval::Interval;
 use crate::sign::Sign;
 use num::Integer as _;
 use std::cmp::Ordering;
+use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Sub};
 
 // TODO: microtonality?
@@ -87,6 +88,12 @@ impl PartialEq for Pitch {
 }
 
 impl Eq for Pitch {}
+
+impl Hash for Pitch {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.from_a440.semitones().hash(state);
+    }
+}
 
 impl PartialOrd for Pitch {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
