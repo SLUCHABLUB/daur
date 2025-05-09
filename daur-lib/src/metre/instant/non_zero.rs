@@ -1,4 +1,4 @@
-use crate::musical_time::{Instant, NonZeroDuration};
+use crate::metre::{Instant, NonZeroDuration};
 
 /// An instant that is strictly after the starting point.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]

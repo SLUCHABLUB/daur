@@ -1,5 +1,5 @@
 use crate::NonZeroRatio;
-use crate::musical_time::{Bar, Changing, Instant, NonZeroDuration};
+use crate::metre::{Bar, Changing, Instant, NonZeroDuration};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::iter::from_fn;

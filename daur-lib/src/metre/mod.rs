@@ -1,4 +1,8 @@
 //! Types pertaining to [musical time](https://en.wikipedia.org/wiki/Metre_(music)).
+//!
+//! It is important to note that they represent note values and not beats.
+//! The duration of a beat depends on the time signature.
+//! In common time it is a quarter note whilst in cut time it is a half note.
 
 mod bar;
 mod changing;

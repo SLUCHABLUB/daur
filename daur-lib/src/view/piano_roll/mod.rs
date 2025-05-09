@@ -8,7 +8,7 @@ pub use settings::Settings;
 
 use crate::audio::Player;
 use crate::interval::Interval;
-use crate::musical_time::Instant;
+use crate::metre::Instant;
 use crate::pitch::Pitch;
 use crate::ui::{Direction, Grid, Length, Point, Rectangle};
 use crate::view::{Quotated, ToText as _, View, feed, ruler};

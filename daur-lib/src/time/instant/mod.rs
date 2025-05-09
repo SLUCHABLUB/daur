@@ -2,9 +2,9 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::musical_time;
+use crate::metre;
 use crate::project::Settings;
-use crate::real_time::Duration;
+use crate::time::Duration;
 use std::ops::{Add, AddAssign, Sub};
 
 /// An instant in real time.
@@ -20,11 +20,11 @@ impl Instant {
         since_start: Duration::ZERO,
     };
 
-    pub(crate) fn to_metre(self, settings: &Settings) -> musical_time::Instant {
+    pub(crate) fn to_metre(self, settings: &Settings) -> metre::Instant {
         let mut remaining = self.since_start;
-        let mut instant = musical_time::Instant::START;
+        let mut instant = metre::Instant::START;
 
-        let mut change = musical_time::Instant::START;
+        let mut change = metre::Instant::START;
         let mut tempo = settings.tempo.start;
         let mut time_signature = settings.time_signature.start;
 

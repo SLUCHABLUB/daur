@@ -1,5 +1,5 @@
 use crate::Audio;
-use crate::musical_time::{Instant, NonZeroPeriod, Period};
+use crate::metre::{Instant, NonZeroPeriod, Period};
 use crate::project::Settings;
 use crate::ui::Grid;
 use crate::view::Context;

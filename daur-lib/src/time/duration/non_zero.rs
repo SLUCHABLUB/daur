@@ -1,5 +1,5 @@
 use crate::NonZeroRatio;
-use crate::real_time::Duration;
+use crate::time::Duration;
 use saturating_cast::SaturatingCast as _;
 use std::num::{NonZeroU64, NonZeroU128};
 use std::ops::Mul;

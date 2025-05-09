@@ -1,4 +1,4 @@
-use crate::musical_time::{Duration, Instant, Period, Signature};
+use crate::metre::{Duration, Instant, Period, Signature};
 use crate::project::Settings;
 use crate::ui::{Grid, Length};
 

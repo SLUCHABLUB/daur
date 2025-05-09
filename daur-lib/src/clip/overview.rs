@@ -1,4 +1,4 @@
-use crate::musical_time::Period;
+use crate::metre::Period;
 use crate::project::Settings;
 use crate::ui::Grid;
 use crate::view::{OnClick, View};

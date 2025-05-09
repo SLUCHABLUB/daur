@@ -1,4 +1,4 @@
-use crate::musical_time::{NonZeroDuration, PitchSpaced};
+use crate::metre::{NonZeroDuration, PitchSpaced};
 use crate::note::Note;
 use crate::pitch::Pitch;
 use crate::view::Context;

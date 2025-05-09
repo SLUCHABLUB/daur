@@ -1,5 +1,5 @@
 use crate::audio::Player;
-use crate::musical_time::Instant;
+use crate::metre::Instant;
 use crate::pitch::Pitch;
 use crate::project;
 use crate::ui::{Colour, Grid};

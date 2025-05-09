@@ -2,9 +2,9 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::musical_time::Duration;
+use crate::metre::Duration;
 use crate::project::Settings;
-use crate::real_time;
+use crate::time;
 use crate::ui::{Grid, Length};
 use std::ops::{Add, AddAssign, Sub};
 
@@ -99,8 +99,8 @@ impl Instant {
 
     /// Converts the instant to real time.
     #[must_use]
-    pub fn to_real_time(self, settings: &Settings) -> real_time::Instant {
-        let mut instant = real_time::Instant::START;
+    pub fn to_real_time(self, settings: &Settings) -> time::Instant {
+        let mut instant = time::Instant::START;
 
         let mut change = Instant::START;
         let mut tempo = settings.tempo.start;

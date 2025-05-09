@@ -1,6 +1,6 @@
 use crate::app::Action;
 use crate::audio::Player;
-use crate::musical_time::{Instant, Period};
+use crate::metre::{Instant, Period};
 use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::context::Menu;

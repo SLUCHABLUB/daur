@@ -16,7 +16,7 @@ pub use settings::Settings;
 pub(crate) use workspace::workspace;
 
 use crate::audio::Player;
-use crate::musical_time::Instant;
+use crate::metre::Instant;
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::{Clip, UserInterface, View};

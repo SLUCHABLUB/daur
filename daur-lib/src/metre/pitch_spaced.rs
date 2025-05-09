@@ -1,4 +1,4 @@
-use crate::musical_time::{Instant, Spaced};
+use crate::metre::{Instant, Spaced};
 use crate::pitch::Pitch;
 use mitsein::index_map1::IndexMap1;
 

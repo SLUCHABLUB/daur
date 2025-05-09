@@ -10,7 +10,7 @@ pub(crate) use settings::settings;
 
 use crate::audio::{Pair, SampleRate};
 use crate::clip::Content;
-use crate::musical_time::{Instant, Spaced};
+use crate::metre::{Instant, Spaced};
 use crate::project::Settings;
 use crate::{Audio, Clip};
 use arcstr::{ArcStr, literal};

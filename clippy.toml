@@ -4,6 +4,9 @@ arithmetic-side-effects-allowed = [
     "audio::Audio",
     "audio::pair::Pair",
     "audio::sample::Sample",
+    "metre::duration::Duration",
+    "metre::duration::non_zero::NonZeroDuration",
+    "metre::instant::Instant",
     "pitch::Pitch",
     "ui::direction::Direction",
     "ui::length::Length",
@@ -12,11 +15,8 @@ arithmetic-side-effects-allowed = [
     "ui::vector::Vector",
     "ratio::Ratio",
     "ratio::non_zero::NonZeroRatio",
-    "musical_time::duration::Duration",
-    "musical_time::duration::non_zero::NonZeroDuration",
-    "musical_time::instant::Instant",
-    "real_time::instant::Instant",
-    "real_time::duration::Duration",
+    "time::instant::Instant",
+    "time::duration::Duration",
 
     # type names for other crates
     "daur::audio::Sample",

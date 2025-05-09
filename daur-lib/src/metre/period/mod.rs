@@ -2,7 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroPeriod;
 
-use crate::musical_time::{Duration, Instant};
+use crate::metre::{Duration, Instant};
 use crate::project::Settings;
 use crate::ui::{Grid, Length};
 use std::cmp::{max, min};

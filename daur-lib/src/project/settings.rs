@@ -1,6 +1,6 @@
 use crate::key::Key;
-use crate::musical_time::{Changing, NonZeroInstant, Signature};
-use crate::real_time::Tempo;
+use crate::metre::{Changing, NonZeroInstant, Signature};
+use crate::time::Tempo;
 use getset::CloneGetters;
 use std::cmp::min;
 use std::iter::from_fn;

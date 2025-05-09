@@ -1,4 +1,4 @@
-use crate::real_time::{Duration, NonZeroDuration};
+use crate::time::{Duration, NonZeroDuration};
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::num::{NonZeroU16, NonZeroU64};

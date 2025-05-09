@@ -1,5 +1,5 @@
 use crate::Track;
-use crate::musical_time::{Instant, NonZeroInstant};
+use crate::metre::{Instant, NonZeroInstant};
 use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;

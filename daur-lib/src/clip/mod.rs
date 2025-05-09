@@ -6,7 +6,7 @@ mod overview;
 pub use content::Content;
 pub(crate) use overview::overview;
 
-use crate::musical_time::{Instant, NonZeroPeriod};
+use crate::metre::{Instant, NonZeroPeriod};
 use crate::project::Settings;
 use crate::ui::Colour;
 use arcstr::ArcStr;

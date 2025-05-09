@@ -1,5 +1,5 @@
 use crate::audio::Player;
-use crate::musical_time::Instant;
+use crate::metre::Instant;
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings};
 use crate::track::{Track, overview, settings};
 use crate::ui::{Grid, Length, NonZeroLength};

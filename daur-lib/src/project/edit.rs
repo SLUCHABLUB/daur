@@ -2,7 +2,7 @@ use crate::NonZeroRatio;
 use crate::audio::{Audio, NonEmpty};
 use crate::clip::{Clip, Content};
 use crate::key::Key;
-use crate::musical_time::{Instant, NonZeroDuration};
+use crate::metre::{Instant, NonZeroDuration};
 use crate::notes::Notes;
 use crate::project::Action;
 use crate::track::Track;

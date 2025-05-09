@@ -1,4 +1,4 @@
-use crate::musical_time::Instant;
+use crate::metre::Instant;
 use std::collections::BTreeMap;
 
 /// A list of items that are spaced out in (musical) time.

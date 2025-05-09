@@ -1,4 +1,4 @@
-use crate::musical_time::Duration;
+use crate::metre::Duration;
 use crate::pitch::Pitch;
 
 // TODO: pitch-bends?
