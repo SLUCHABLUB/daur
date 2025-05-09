@@ -156,10 +156,7 @@ impl View {
                 visitor.visit_scrollable(area, *action),
                 view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
-            View::Sized {
-                minimum_size: _,
-                view,
-            } => view.accept::<Ui, V>(visitor, area, mouse_position),
+            View::Sized { view, .. } => view.accept::<Ui, V>(visitor, area, mouse_position),
             View::SizeInformed(generator) => {
                 generator(area.size).accept::<Ui, V>(visitor, area, mouse_position);
             }

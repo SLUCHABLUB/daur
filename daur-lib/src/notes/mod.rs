@@ -3,6 +3,7 @@
 mod chroma;
 mod interval;
 mod key;
+mod key_interval;
 mod note;
 mod pitch;
 mod sign;
@@ -10,6 +11,7 @@ mod sign;
 pub use chroma::Chroma;
 pub use interval::Interval;
 pub use key::Key;
+pub use key_interval::KeyInterval;
 pub use note::Note;
 pub use pitch::Pitch;
 pub use sign::Sign;
@@ -44,9 +46,8 @@ impl Notes {
         self.full_duration
     }
 
-    pub(crate) fn draw_overview(&self, context: &mut dyn Context) {
+    pub(crate) fn draw_overview(&self, _context: &mut dyn Context) {
         // TODO: draw the notes
-
-        let _ = (self, context);
+        let _: &Self = self;
     }
 }

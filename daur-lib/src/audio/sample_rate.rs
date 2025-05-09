@@ -23,6 +23,7 @@ impl SampleRate {
     }
 }
 
+/// An error raised when a sample rate of zero is attempted to be constructed.
 #[derive(Copy, Clone, Debug, Error)]
 #[error("sample rates cannot be zero")]
 pub struct ZeroSampleRateError;

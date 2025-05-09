@@ -7,6 +7,9 @@ edition.workspace = true
 repository.workspace = true
 license.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 arcstr = "1.2.0"
 bitbag = "0.3.0"

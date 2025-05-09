@@ -11,7 +11,7 @@ mod source;
 pub use non_empty::NonEmpty;
 pub use pair::Pair;
 pub use sample::Sample;
-pub use sample_rate::SampleRate;
+pub use sample_rate::{SampleRate, ZeroSampleRateError};
 
 pub(crate) use config::Config;
 pub(crate) use player::Player;

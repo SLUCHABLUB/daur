@@ -1,20 +1,20 @@
-use crate::Track;
 use crate::metre::{Instant, NonZeroInstant};
 use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
+use crate::{Clip, Track};
 use anyhow::Result;
 use getset::Getters;
 use std::sync::{Arc, Weak};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-#[error("No track is selected")]
+#[error("no track is selected")]
 struct NoTrackSelected;
 
 #[derive(Debug, Error)]
-#[error("There is already a clip at that position")]
-struct InsertClipError;
+#[error("there is already a clip at that position")]
+struct InsertClipError(Arc<Clip>);
 
 /// Manages editing of a [project](Project).
 #[derive(Debug, Getters)]
@@ -64,7 +64,7 @@ impl Manager {
                     .ok_or(NoTrackSelected)?
                     .clips
                     .try_insert(position, Arc::new(clip))
-                    .map_err(|_| InsertClipError)?;
+                    .map_err(InsertClipError)?;
             }
             Edit::AddTrack(track) => self.project.tracks.push(Arc::new(track)),
             Edit::ChangeKey { position, key } => {

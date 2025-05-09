@@ -14,7 +14,7 @@ impl View {
 /// Used to minimise indentation.
 fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
     match view {
-        View::Bordered { thick: _, view } => {
+        View::Bordered { view, .. } => {
             let mut size = view.minimum_size::<Ui>();
             size.height += Ui::BORDER_THICKNESS * Ratio::integer(2);
             size.width += Ui::BORDER_THICKNESS * Ratio::integer(2);
@@ -67,18 +67,11 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
 
             Size::from_parallel_orthogonal(parallel, orthogonal, *axis)
         }
-        View::Text {
-            string,
-            alignment: _,
-        } => Size {
+        View::Text { string, .. } => Size {
             width: Ui::string_width(string),
             height: Ui::string_height(string),
         },
-        View::Titled {
-            title,
-            highlighted: _,
-            view,
-        } => {
+        View::Titled { title, view, .. } => {
             let mut size = view.minimum_size::<Ui>();
 
             // The title gets cropped if the view is narrower than it.
@@ -86,6 +79,6 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
 
             size
         }
-        View::Window { area: _, view } => view.minimum_size::<Ui>(),
+        View::Window { view, .. } => view.minimum_size::<Ui>(),
     }
 }

@@ -101,7 +101,7 @@ impl Popup {
     /// Returns the popups inner [view](View), with no border and title.
     fn inner_view<Ui: UserInterface>(&self, id: Id) -> View {
         match self {
-            Popup::ButtonPanel { title: _, buttons } => View::balanced_stack::<Ui, _>(
+            Popup::ButtonPanel { buttons, .. } => View::balanced_stack::<Ui, _>(
                 Axis::Y,
                 buttons.iter().map(|(label, action)| {
                     View::simple_button(label.clone(), OnClick::from(action.clone()))
@@ -119,11 +119,7 @@ impl Popup {
                     ],
                 )
             }
-            Popup::FileSelector {
-                title: _,
-                path,
-                action,
-            } => {
+            Popup::FileSelector { path, action, .. } => {
                 let selected_file = Arc::new(ArcCell::new(Arc::clone(path)));
 
                 let path = Arc::clone(&selected_file);

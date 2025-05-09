@@ -65,17 +65,12 @@ impl View {
     ///
     /// Also sets highlights the title if the view is [titled](View::Titled).
     pub fn with_thickness(self, thickness: bool) -> Self {
-        if let View::Bordered { thick: _, view } = self {
+        if let View::Bordered { view, .. } = self {
             View::Bordered {
                 thick: thickness,
                 view,
             }
-        } else if let View::Titled {
-            title,
-            highlighted: _,
-            view,
-        } = self
-        {
+        } else if let View::Titled { title, view, .. } = self {
             View::Titled {
                 title,
                 highlighted: thickness,

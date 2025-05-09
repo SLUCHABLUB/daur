@@ -47,13 +47,13 @@ impl NonEmpty {
     /// Draws an overview of the audio.
     pub(crate) fn draw_overview(
         &self,
-        context: &mut dyn Context,
-        full_period: Period,
-        visible_period: Period,
-        settings: &Settings,
-        grid: Grid,
+        _context: &mut dyn Context,
+        _full_period: Period,
+        _visible_period: Period,
+        _settings: &Settings,
+        _grid: Grid,
     ) {
         // TODO: draw loudness graph
-        let _ = (self, context, full_period, visible_period, settings, grid);
+        let _: &Self = self;
     }
 }

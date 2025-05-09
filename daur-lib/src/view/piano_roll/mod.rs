@@ -103,6 +103,7 @@ fn grabber(
     move |area, position| {
         let relative_position = position - area.position.position();
 
+        #[expect(clippy::if_then_some_else_none, reason = "see todo")]
         if relative_position.y < title_height {
             Some(HoldableObject::PianoRollHandle {
                 y: relative_position.y,

@@ -35,7 +35,7 @@ fn handle_key_event(
         code,
         modifiers,
         kind,
-        state: _,
+        ..
     }: KeyEvent,
     ui: &Tui,
     actions: &mut Vec<Action>,
@@ -51,10 +51,7 @@ fn handle_key_event(
 
 fn handle_mouse_event(
     MouseEvent {
-        kind,
-        column,
-        row,
-        modifiers: _,
+        kind, column, row, ..
     }: MouseEvent,
     app: &mut App<Tui>,
     actions: &mut Vec<Action>,
