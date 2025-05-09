@@ -1,6 +1,4 @@
-use crate::chroma::Chroma;
-use crate::interval::Interval;
-use crate::sign::Sign;
+use crate::notes::{Chroma, Interval, Sign};
 use num::Integer as _;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
@@ -8,17 +6,21 @@ use std::ops::{Add, AddAssign, Sub};
 
 // TODO: microtonality?
 #[derive(Copy, Clone, Debug)]
+/// A pitch / frequency.
 pub struct Pitch {
-    from_a440: Interval,
+    from_a_440: Interval,
 }
 
 impl Pitch {
-    pub const A440: Pitch = Pitch {
-        from_a440: Interval::PERFECT_UNISON,
+    /// A<sub>4</sub> (440 Hz)
+    pub const A_440: Pitch = Pitch {
+        from_a_440: Interval::PERFECT_UNISON,
     };
 
+    /// Returns the croma of the pitch.
+    #[must_use]
     pub fn chroma(self) -> Chroma {
-        match self.from_a440.semitones().rem_euclid(12) {
+        match self.from_a_440.semitones().rem_euclid(12) {
             0 => Chroma::A,
             1 => Chroma::Bb,
             2 => Chroma::B,
@@ -31,12 +33,13 @@ impl Pitch {
             9 => Chroma::Gb,
             10 => Chroma::G,
             11 => Chroma::Ab,
+            // unreachable
             _ => Chroma::default(),
         }
     }
 
     fn octave_number(self) -> i16 {
-        let semitones_from_c4 = self.from_a440.semitones().saturating_add(9);
+        let semitones_from_c4 = self.from_a_440.semitones().saturating_add(9);
         #[expect(
             unstable_name_collisions,
             reason = "we will use the std version when it gets stabilised"
@@ -45,8 +48,38 @@ impl Pitch {
         octaves_from_c4.saturating_add(4)
     }
 
+    /// Returns the name of the pitch.
+    #[must_use]
     pub fn name(self, sign: Sign) -> String {
         format!("{}{}", self.chroma().name(sign), self.octave_number())
+    }
+}
+
+impl PartialEq for Pitch {
+    fn eq(&self, other: &Self) -> bool {
+        self.from_a_440.semitones() == other.from_a_440.semitones()
+    }
+}
+
+impl Eq for Pitch {}
+
+impl PartialOrd for Pitch {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Pitch {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.from_a_440
+            .semitones()
+            .cmp(&other.from_a_440.semitones())
+    }
+}
+
+impl Hash for Pitch {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.from_a_440.semitones().hash(state);
     }
 }
 
@@ -55,9 +88,9 @@ impl Add<Interval> for Pitch {
 
     fn add(self, rhs: Interval) -> Self::Output {
         // Saturating here is fine since it is ca. 3000 octaves outside the range of the piano.
-        let semitones = self.from_a440.semitones().saturating_add(rhs.semitones());
+        let semitones = self.from_a_440.semitones().saturating_add(rhs.semitones());
         Pitch {
-            from_a440: Interval::from_semitones(semitones),
+            from_a_440: Interval::from_semitones(semitones),
         }
     }
 }
@@ -74,35 +107,9 @@ impl Sub for Pitch {
     fn sub(self, rhs: Self) -> Self::Output {
         // Saturating here is fine since it is ca. 3000 octaves outside the range of the piano
         let semitones = self
-            .from_a440
+            .from_a_440
             .semitones()
-            .saturating_sub(rhs.from_a440.semitones());
+            .saturating_sub(rhs.from_a_440.semitones());
         Interval::from_semitones(semitones)
-    }
-}
-
-impl PartialEq for Pitch {
-    fn eq(&self, other: &Self) -> bool {
-        self.from_a440.semitones() == other.from_a440.semitones()
-    }
-}
-
-impl Eq for Pitch {}
-
-impl Hash for Pitch {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.from_a440.semitones().hash(state);
-    }
-}
-
-impl PartialOrd for Pitch {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for Pitch {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.from_a440.semitones().cmp(&other.from_a440.semitones())
     }
 }

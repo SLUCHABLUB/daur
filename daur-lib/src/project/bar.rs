@@ -1,6 +1,6 @@
 use crate::app::Action;
-use crate::key::Key;
 use crate::metre::Instant;
+use crate::notes::Key;
 use crate::popup::Popup;
 use crate::project::Settings;
 use crate::view::{Axis, OnClick, ToText as _, View};

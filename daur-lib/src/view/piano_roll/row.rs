@@ -1,6 +1,6 @@
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::pitch::Pitch;
+use crate::notes::Pitch;
 use crate::project;
 use crate::ui::{Colour, Grid};
 use crate::view::piano_roll::Settings;
@@ -19,7 +19,7 @@ pub(crate) fn row(
     //  - draw notes
     //  - draw grid
     //  - highlight key based on settings
-    let colour = if (pitch - Pitch::A440).semitones() % 2 == 0 {
+    let colour = if (pitch - Pitch::A_440).semitones() % 2 == 0 {
         Colour::gray_scale(0xAA)
     } else {
         Colour::gray_scale(0x55)

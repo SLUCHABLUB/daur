@@ -7,9 +7,8 @@ mod settings;
 pub use settings::Settings;
 
 use crate::audio::Player;
-use crate::interval::Interval;
 use crate::metre::Instant;
-use crate::pitch::Pitch;
+use crate::notes::{Interval, Pitch};
 use crate::ui::{Direction, Grid, Length, Point, Rectangle};
 use crate::view::{Quotated, ToText as _, View, feed, ruler};
 use crate::{Action, Clip, HoldableObject, UserInterface, project};
@@ -72,7 +71,7 @@ fn content<Ui: UserInterface>(
     // Since the top is the thing being moved, this seems intuitive.
     let workspace = feed(Direction::Up, -settings.y_offset, move |index| {
         let interval = Interval::from_semitones(index.saturating_cast());
-        let pitch = Pitch::A440 + interval;
+        let pitch = Pitch::A_440 + interval;
 
         let key = piano_key(pitch, piano_key_key, settings.black_key_depth);
         let row = row(

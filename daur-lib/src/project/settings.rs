@@ -1,5 +1,5 @@
-use crate::key::Key;
 use crate::metre::{Changing, NonZeroInstant, TimeSignature};
+use crate::notes::Key;
 use crate::time::Tempo;
 use getset::CloneGetters;
 use std::cmp::min;

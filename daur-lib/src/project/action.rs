@@ -1,5 +1,5 @@
-use crate::key::Key;
 use crate::metre::Instant;
+use crate::notes::Key;
 use std::path::PathBuf;
 
 /// An action to take on an [app](crate::App).

@@ -9,12 +9,17 @@ pub struct Interval {
 }
 
 impl Interval {
+    /// An interval of 0 semitones.
     pub const PERFECT_UNISON: Interval = Interval::from_semitones(0);
 
+    /// Constructs a new interval from a number of semitones.
+    #[must_use]
     pub const fn from_semitones(semitones: i16) -> Interval {
         Interval { semitones }
     }
 
+    /// Returns the number of semitones in the interval.
+    #[must_use]
     pub fn semitones(self) -> i16 {
         self.semitones
     }

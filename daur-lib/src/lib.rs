@@ -3,6 +3,7 @@
 pub mod audio;
 pub mod clip;
 pub mod metre;
+pub mod notes;
 pub mod popup;
 pub mod project;
 pub mod sync;
@@ -12,20 +13,12 @@ pub mod ui;
 pub mod view;
 
 mod app;
-mod chroma;
 mod extension;
-mod interval;
-mod key;
-mod note;
-mod notes;
-mod pitch;
 mod ratio;
 mod receiver;
-mod sign;
 mod string;
 
 pub use app::{Action, App, HoldableObject};
-pub use key::Key;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use receiver::Receiver;
 pub use string::ToArcStr;

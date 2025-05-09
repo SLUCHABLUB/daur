@@ -1,5 +1,4 @@
-use crate::chroma::Chroma;
-use crate::sign::Sign;
+use crate::notes::{Chroma, Sign};
 use bitbag::{BitBag, Flags};
 use std::fmt;
 use std::fmt::{Display, Formatter};

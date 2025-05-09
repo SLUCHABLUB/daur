@@ -1,27 +1,42 @@
-use crate::sign::{FLAT, SHARP, Sign};
+use crate::notes::{FLAT, SHARP, Sign};
 use arcstr::{ArcStr, literal};
 use const_str::concat;
 use strum::VariantArray;
 
+/// A [pitch class](https://en.wikipedia.org/wiki/Pitch_class).
 #[expect(clippy::min_ident_chars, reason = "Chromas are named after letters")]
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, VariantArray)]
 pub enum Chroma {
     #[default]
+    /// A
     A,
+    /// B♭ / A♯
     Bb,
+    /// B
     B,
+    /// C
     C,
+    /// D♭ / C♯
     Db,
+    /// D
     D,
+    /// E♭ / D♯
     Eb,
+    /// E
     E,
+    /// F
     F,
+    /// G♭ / F♯
     Gb,
+    /// G
     G,
+    /// A♭ / G♯
     Ab,
 }
 
 impl Chroma {
+    /// Returns the name of the chroma.
+    #[must_use]
     pub fn name(self, sign: Sign) -> ArcStr {
         match sign {
             Sign::Sharp => self.sharp_name(),
@@ -29,10 +44,14 @@ impl Chroma {
         }
     }
 
+    /// Whether the chroma represents a black key on the piano.
+    #[must_use]
     pub fn is_black_key(self) -> bool {
         self.sharp_name() != self.flat_name()
     }
 
+    /// Moves the chroma by one semitone.
+    #[must_use]
     pub fn with_sign(self, sign: Sign) -> Chroma {
         #![expect(
             clippy::wildcard_enum_match_arm,

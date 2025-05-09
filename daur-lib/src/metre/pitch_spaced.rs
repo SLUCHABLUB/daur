@@ -1,5 +1,5 @@
-use crate::metre::{Instant, Spaced};
-use crate::pitch::Pitch;
+use crate::metre::Spaced;
+use crate::notes::Pitch;
 use mitsein::index_map1::IndexMap1;
 
 /// Values spaced in both time and pitch.
@@ -17,6 +17,7 @@ impl<T> PitchSpaced<T> {
         }
     }
 
+    /*
     pub(crate) fn iter(&self) -> impl Iterator<Item = (Instant, Pitch, &T)> {
         self.inner.iter().flat_map(|(instant, pitches)| {
             pitches
@@ -25,6 +26,7 @@ impl<T> PitchSpaced<T> {
                 .map(move |(pitch, item)| (instant, *pitch, item))
         })
     }
+    */
 }
 
 impl<T> Default for PitchSpaced<T> {

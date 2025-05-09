@@ -1,10 +1,10 @@
 use crate::metre::Duration;
-use crate::pitch::Pitch;
 
 // TODO: pitch-bends?
+/// A [note](https://en.wikipedia.org/wiki/Musical_note).
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Note {
-    pub pitch: Pitch,
+    /// The duration of the note.
     pub duration: Duration,
     // TODO: articulation
 }

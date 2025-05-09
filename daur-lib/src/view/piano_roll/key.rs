@@ -1,5 +1,4 @@
-use crate::key::Key;
-use crate::pitch::Pitch;
+use crate::notes::{Key, Pitch};
 use crate::ui::{Colour, NonZeroLength};
 use crate::view::{Alignment, ToText as _, View};
 use arcstr::ArcStr;
