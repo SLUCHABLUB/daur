@@ -45,7 +45,7 @@ impl Track {
             .iter()
             .last()
             .map_or(Instant::START, |(start, clip)| {
-                clip.content.period(start, mapping).end()
+                clip.content.period(start, mapping).get().end()
             });
         let min_duration = mapping.real_time(min_end).since_start;
         let min_len = (min_duration / sample_rate.sample_duration()).to_usize();
@@ -60,7 +60,7 @@ impl Track {
 
             match &clip.content {
                 Content::Audio(clip) => {
-                    audio += &clip.resample(sample_rate).offset(sample_offset);
+                    audio += &clip.as_audio().resample(sample_rate).offset(sample_offset);
                 }
                 Content::Notes(_) => {}
             }

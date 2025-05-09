@@ -1,4 +1,4 @@
-use crate::musical_time::{Duration, Instant};
+use crate::musical_time::{Instant, NonZeroDuration};
 use crate::note::Note;
 use crate::pitch::Pitch;
 use crate::view::Context;
@@ -12,18 +12,18 @@ pub struct Notes {
     // INVARIANT: all notes are within `full_duration`
     /// The notes in this clip, the instants are relative to the clip
     notes: BTreeMap<Instant, Note>,
-    full_duration: Duration,
+    full_duration: NonZeroDuration,
 }
 
 impl Notes {
-    pub fn empty(duration: Duration) -> Notes {
+    pub fn empty(duration: NonZeroDuration) -> Notes {
         Notes {
             notes: BTreeMap::new(),
             full_duration: duration,
         }
     }
 
-    pub fn duration(&self) -> Duration {
+    pub fn duration(&self) -> NonZeroDuration {
         self.full_duration
     }
 

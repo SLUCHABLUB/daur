@@ -1,15 +1,16 @@
-use crate::audio::Audio;
+use crate::NonZeroRatio;
+use crate::audio::{Audio, NonEmpty};
 use crate::clip::{Clip, Content};
 use crate::key::Key;
-use crate::musical_time::{Duration, Instant};
+use crate::musical_time::{Instant, NonZeroDuration};
 use crate::notes::Notes;
 use crate::project::Action;
-use crate::ratio::Ratio;
 use crate::track::Track;
 use crate::ui::Colour;
-use anyhow::{Result, bail};
+use anyhow::{Result, anyhow, bail};
 use arcstr::{ArcStr, literal};
 use hound::WavReader;
+use non_zero::non_zero;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 use std::sync::Weak;
@@ -21,8 +22,8 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
     green: 0,
     blue: 255,
 };
-const DEFAULT_NOTES_DURATION: Duration = Duration {
-    whole_notes: Ratio::integer(4),
+const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
+    whole_notes: NonZeroRatio::integer(non_zero!(4)),
 };
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour {
@@ -58,6 +59,7 @@ pub enum Edit {
 }
 
 impl Edit {
+    // TODO: EditError?
     pub fn from_action(
         action: Action,
         cursor: Instant,
@@ -91,6 +93,9 @@ impl Edit {
                         });
                     }
                 };
+
+                let audio = NonEmpty::from_audio(audio)
+                    .ok_or(anyhow!("cannot insert an empty audio clip"))?;
 
                 let name = file
                     .file_stem()

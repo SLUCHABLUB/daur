@@ -1,12 +1,14 @@
 //! Type pertaining to [`Audio`].
 
 mod config;
+mod non_empty;
 mod pair;
 mod player;
 mod sample;
 mod sample_rate;
 mod source;
 
+pub use non_empty::NonEmpty;
 pub use pair::Pair;
 pub use sample::Sample;
 pub use sample_rate::SampleRate;
@@ -18,7 +20,6 @@ pub(crate) use source::Source;
 use crate::Ratio;
 use crate::musical_time::{Instant, Mapping, Period};
 use crate::real_time::Duration;
-use crate::view::Context;
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
@@ -156,22 +157,10 @@ impl Audio {
         }
     }
 
-    /// Returns the period of the audio
+    /// Returns the period of the audio.
     #[must_use]
     pub(crate) fn period(&self, start: Instant, mapping: &Mapping) -> Period {
         mapping.period(start, self.duration())
-    }
-
-    /// Draws an overview of the audio.
-    pub fn draw_overview(
-        &self,
-        context: &mut dyn Context,
-        full_period: Period,
-        visible_period: Period,
-        mapping: &Mapping,
-    ) {
-        // TODO: draw loudness graph
-        let _ = (self, context, full_period, visible_period, mapping);
     }
 
     /// Returns an [audio source](rodio::Source) for the audio.
