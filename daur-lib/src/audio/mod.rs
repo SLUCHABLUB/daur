@@ -71,7 +71,6 @@ impl Audio {
         }
     }
 
-    // TODO: use a mapping
     /// Returns the duration of the audio.
     #[must_use]
     pub fn duration(&self) -> Duration {

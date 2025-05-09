@@ -2,8 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::audio::SampleRate;
-use crate::musical_time::{Duration, Mapping};
+use crate::musical_time::Duration;
 use crate::project::Settings;
 use crate::real_time;
 use crate::ui::{Grid, Length};
@@ -21,16 +20,6 @@ impl Instant {
     pub const START: Instant = Instant {
         since_start: Duration::ZERO,
     };
-
-    /// Gets the offset in samples from the staring point.
-    #[must_use]
-    pub fn to_sample_index(self, mapping: &Mapping, sample_rate: SampleRate) -> usize {
-        let instant = mapping.real_time(self);
-
-        let sample = instant.since_start / sample_rate.sample_duration();
-
-        sample.to_usize()
-    }
 
     pub(crate) fn to_x_offset(self, settings: &Settings, grid: Grid) -> Length {
         let mut remaining = self.since_start;

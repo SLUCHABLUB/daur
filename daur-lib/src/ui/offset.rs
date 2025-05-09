@@ -47,7 +47,7 @@ impl Offset {
 
     /// Convert the offset to a [length](Length).
     ///
-    /// Negative values are mapped to 0;
+    /// Negative values are mapped to 0.
     #[must_use]
     pub fn rectify(self) -> Length {
         Length {
