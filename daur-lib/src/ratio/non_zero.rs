@@ -1,9 +1,10 @@
+use crate::ratio::Ratio;
 use crate::ratio::util::make_coprime;
-use crate::ratio::{FOUR, ONE, Ratio};
 use core::cmp::Ordering;
 use core::num::{NonZeroU64, NonZeroU128};
 use core::ops::{Div, DivAssign};
 use getset::CopyGetters;
+use non_zero::non_zero;
 
 /// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
@@ -18,10 +19,10 @@ pub struct NonZeroRatio {
 
 impl NonZeroRatio {
     /// 1 / 4
-    pub const QUARTER: NonZeroRatio = NonZeroRatio::reciprocal_of(FOUR);
+    pub const QUARTER: NonZeroRatio = NonZeroRatio::reciprocal_of(non_zero!(4));
 
     /// 1
-    pub const ONE: NonZeroRatio = NonZeroRatio::integer(ONE);
+    pub const ONE: NonZeroRatio = NonZeroRatio::integer(non_zero!(1));
 
     const MIN: NonZeroRatio = NonZeroRatio::reciprocal_of(NonZeroU64::MAX);
     const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU64::MAX);
@@ -46,7 +47,7 @@ impl NonZeroRatio {
     pub const fn integer(integer: NonZeroU64) -> NonZeroRatio {
         NonZeroRatio {
             numerator: integer,
-            denominator: ONE,
+            denominator: non_zero!(1),
         }
     }
 
@@ -54,7 +55,7 @@ impl NonZeroRatio {
     #[must_use]
     pub const fn reciprocal_of(integer: NonZeroU64) -> NonZeroRatio {
         NonZeroRatio {
-            numerator: ONE,
+            numerator: non_zero!(1),
             denominator: integer,
         }
     }

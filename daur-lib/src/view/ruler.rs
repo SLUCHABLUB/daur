@@ -2,6 +2,7 @@ use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::{View, feed};
 use core::num::NonZeroU64;
+use non_zero::non_zero;
 
 /// A ruler of musical time
 pub fn ruler(offset: Length, settings: Settings, grid: Grid) -> View {
@@ -22,7 +23,7 @@ pub fn ruler(offset: Length, settings: Settings, grid: Grid) -> View {
 
             View::Rule {
                 index,
-                cells: NonZeroU64::MIN,
+                cells: non_zero!(1),
             }
             .quotated(width)
         }

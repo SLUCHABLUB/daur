@@ -3,18 +3,11 @@ use crate::convert::to_length;
 use crossterm::event::{KeyCode, KeyModifiers};
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use daur::{Action, Ratio, UserInterface, View};
+use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use std::collections::HashMap;
 use std::path::Path;
 use unicode_segmentation::UnicodeSegmentation as _;
-
-macro_rules! non_zero_length {
-    ($pixels:literal) => {
-        NonZeroLength {
-            pixels: core::num::NonZeroU16::MIN.saturating_add($pixels - 1),
-        }
-    };
-}
 
 pub(crate) struct Tui {
     pub should_exit: bool,
@@ -32,15 +25,31 @@ impl Tui {
 }
 
 impl UserInterface for Tui {
-    const BLACK_KEY_DEPTH: NonZeroLength = non_zero_length!(6);
-    const BORDER_THICKNESS: Length = Length::PIXEL;
-    const CELL_WIDTH: NonZeroLength = non_zero_length!(4);
-    const KEY_WIDTH: NonZeroLength = non_zero_length!(1);
-    const PIANO_DEPTH: NonZeroLength = non_zero_length!(10);
-    const PLAYBACK_BUTTON_WIDTH: NonZeroLength = non_zero_length!(7);
-    const PROJECT_BAR_HEIGHT: NonZeroLength = non_zero_length!(5);
-    const RULER_HEIGHT: NonZeroLength = non_zero_length!(2);
-    const TRACK_SETTINGS_WITH: NonZeroLength = non_zero_length!(20);
+    const BLACK_KEY_DEPTH: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(6),
+    };
+    const BORDER_THICKNESS: Length = Length { pixels: 1 };
+    const CELL_WIDTH: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(4),
+    };
+    const KEY_WIDTH: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(1),
+    };
+    const PIANO_DEPTH: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(10),
+    };
+    const PLAYBACK_BUTTON_WIDTH: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(7),
+    };
+    const PROJECT_BAR_HEIGHT: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(5),
+    };
+    const RULER_HEIGHT: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(2),
+    };
+    const TRACK_SETTINGS_WITH: NonZeroLength = NonZeroLength {
+        pixels: non_zero!(20),
+    };
 
     fn exit(&mut self) {
         self.should_exit = true;

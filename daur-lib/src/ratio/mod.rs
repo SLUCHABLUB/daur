@@ -4,19 +4,14 @@ mod util;
 pub use non_zero::NonZeroRatio;
 
 use crate::ratio::util::lcm;
+use ::non_zero::non_zero;
 use core::cmp::Ordering;
 use core::fmt;
 use core::fmt::{Display, Formatter};
-use core::num::{FpCategory, NonZero, NonZeroU64, NonZeroU128};
+use core::num::{FpCategory, NonZeroU64, NonZeroU128};
 use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
-
-const ONE: NonZeroU64 = NonZeroU64::MIN;
-#[expect(clippy::unwrap_used, reason = "2 != 0")]
-const TWO: NonZeroU64 = NonZero::new(2).unwrap();
-#[expect(clippy::unwrap_used, reason = "4 != 0")]
-const FOUR: NonZeroU64 = NonZero::new(4).unwrap();
 
 /// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.
@@ -37,10 +32,10 @@ impl Ratio {
     pub const ZERO: Ratio = Ratio::integer(0);
 
     /// 1 / 2
-    pub const HALF: Ratio = Ratio::reciprocal_of(TWO);
+    pub const HALF: Ratio = Ratio::reciprocal_of(non_zero!(2));
 
     /// 1 / 4
-    pub const QUARTER: Ratio = Ratio::reciprocal_of(FOUR);
+    pub const QUARTER: Ratio = Ratio::reciprocal_of(non_zero!(4));
 
     /// 1
     pub const ONE: Ratio = Ratio::integer(1);
@@ -63,7 +58,7 @@ impl Ratio {
     pub const fn integer(integer: u64) -> Ratio {
         Ratio {
             numerator: integer,
-            denominator: ONE,
+            denominator: non_zero!(1),
         }
     }
 

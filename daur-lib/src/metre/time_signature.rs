@@ -4,9 +4,7 @@ use core::fmt;
 use core::fmt::{Display, Formatter};
 use core::iter::from_fn;
 use core::num::{NonZeroU8, NonZeroU64};
-
-#[expect(clippy::unwrap_used, reason = "4 != 0")]
-const FOUR: NonZeroU8 = NonZeroU8::new(4).unwrap();
+use non_zero::non_zero;
 
 /// A time signature.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -44,8 +42,8 @@ impl Default for TimeSignature {
     /// Returns _common time_ (4/4).
     fn default() -> Self {
         TimeSignature {
-            beats_per_bar: FOUR,
-            beats_per_whole_note: FOUR,
+            beats_per_bar: non_zero!(4),
+            beats_per_whole_note: non_zero!(4),
         }
     }
 }

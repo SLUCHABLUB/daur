@@ -2,6 +2,7 @@ use crate::time::{Duration, NonZeroDuration};
 use core::fmt;
 use core::fmt::{Display, Formatter};
 use core::num::{NonZeroU16, NonZeroU64};
+use non_zero::non_zero;
 
 // TODO move to real time
 // TODO: make transparent
@@ -32,8 +33,7 @@ impl Default for Tempo {
     // TODO: rationale
     fn default() -> Self {
         Tempo {
-            #[expect(clippy::unwrap_used, reason = "180 != 0")]
-            bpm: NonZeroU16::new(180).unwrap(),
+            bpm: non_zero!(180),
         }
     }
 }
