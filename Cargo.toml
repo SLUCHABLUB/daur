@@ -6,7 +6,7 @@ members = ["daur-lib", "daur-tui"]
 authors = ["SLUCHABLUB"]
 edition = "2024"
 repository = "https://github.com/SLUCHABLUB/daur"
-license = "Apache-2.0"
+license = "GPL-3"
 
 # TODO: remove when cpal fork gets merged
 [patch.crates-io]
