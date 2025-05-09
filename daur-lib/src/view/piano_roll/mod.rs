@@ -81,7 +81,10 @@ fn content<Ui: UserInterface>(
         stack.quotated(settings.key_width.get())
     });
 
-    View::y_stack([ruler.quotated_minimally::<Ui>(), workspace.fill_remaining()])
+    View::y_stack([
+        ruler.quotated(Ui::RULER_HEIGHT.get()),
+        workspace.fill_remaining(),
+    ])
 }
 
 fn grabber(
