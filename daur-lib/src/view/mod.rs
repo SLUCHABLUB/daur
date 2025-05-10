@@ -33,7 +33,6 @@ pub use text::ToText;
 
 use crate::Action;
 use crate::app::HoldableObject;
-use crate::sync::Cell;
 use crate::ui::{Colour, Point, Rectangle, Size, Vector};
 use crate::view::context::Menu;
 use alloc::sync::Arc;
@@ -98,7 +97,6 @@ pub enum View {
     },
     /// A view that whose appearance changes when hovered.
     Hoverable {
-        is_hovered: Cell<bool>,
         /// The view to use when not hovered.
         default: Box<Self>,
         /// The view to use when hovered.

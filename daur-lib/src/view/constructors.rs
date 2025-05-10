@@ -1,5 +1,4 @@
 use crate::View;
-use crate::sync::Cell;
 use crate::ui::{Colour, Size};
 use crate::view::{Axis, Context, Quotated};
 use itertools::Itertools as _;
@@ -24,7 +23,6 @@ impl View {
     /// Constructs a new [hoverable](View::Hoverable) view.
     pub fn hoverable(default: View, hovered: View) -> Self {
         View::Hoverable {
-            is_hovered: Cell::new(false),
             default: Box::new(default),
             hovered: Box::new(hovered),
         }

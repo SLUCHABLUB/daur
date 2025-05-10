@@ -135,16 +135,10 @@ impl View {
                 },
                 view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
-            View::Hoverable {
-                is_hovered,
-                default,
-                hovered,
-            } => {
+            View::Hoverable { default, hovered } => {
                 if area.contains(mouse_position) {
-                    is_hovered.set(true);
                     hovered.accept::<Ui, V>(visitor, area, mouse_position);
                 } else {
-                    is_hovered.set(false);
                     default.accept::<Ui, V>(visitor, area, mouse_position);
                 }
             }

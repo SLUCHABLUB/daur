@@ -7,12 +7,13 @@ use crate::view::{Axis, OnClick, ToText as _, View};
 use crate::{ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
 
+// TODO: add a symbol view instead of using chars
 const PLAY: ArcStr = literal!("\u{25B6}");
 const PAUSE: ArcStr = literal!("\u{23F8}");
-const EDIT: ArcStr = literal!(" \u{270E} ");
+const EDIT: ArcStr = literal!("\u{270E}");
 // spaces to make the buttons centred
-const SELECT: ArcStr = literal!(" \u{1FBB0} ");
-const PIANO: ArcStr = literal!(" \u{1F3B9}  ");
+const SELECT: ArcStr = literal!("\u{1FBB0}");
+const PIANO: ArcStr = literal!("\u{1F3B9}");
 
 const PLAY_DESCRIPTION: ArcStr = literal!("play");
 const PAUSE_DESCRIPTION: ArcStr = literal!("pause");
