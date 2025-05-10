@@ -9,9 +9,15 @@ use arcstr::{ArcStr, literal};
 
 const PLAY: ArcStr = literal!("\u{25B6}");
 const PAUSE: ArcStr = literal!("\u{23F8}");
+const EDIT: ArcStr = literal!("\u{270E}");
+const SELECT: ArcStr = literal!("\u{1FBB0}");
+const PIANO: ArcStr = literal!("\u{1F3B9}");
 
 const PLAY_DESCRIPTION: ArcStr = literal!("play");
 const PAUSE_DESCRIPTION: ArcStr = literal!("pause");
+const EDIT_DESCRIPTION: ArcStr = literal!("edit mode");
+const SELECT_DESCRIPTION: ArcStr = literal!("select mode");
+const PIANO_DESCRIPTION: ArcStr = literal!("piano roll");
 
 const KEY_DESCRIPTION: ArcStr = literal!("key");
 const TIME_SIGNATURE_DESCRIPTION: ArcStr = literal!("time sig.");
@@ -29,14 +35,29 @@ fn open_key_selector(instant: Instant, key: Key) -> OnClick {
 //  - grid size
 //  - master volume
 /// The bar att the top of the app window.
-pub fn bar<Ui: UserInterface>(title: ArcStr, settings: &Settings, playing: bool) -> View {
+pub fn bar<Ui: UserInterface>(
+    title: ArcStr,
+    settings: &Settings,
+    playing: bool,
+    edit_mode: bool,
+) -> View {
     let playback_button = if playing {
         View::described_button(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
     } else {
         View::described_button(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
     };
+    let edit_button = if edit_mode {
+        View::described_button(
+            SELECT,
+            SELECT_DESCRIPTION,
+            OnClick::from(Action::ExitEditMode),
+        )
+    } else {
+        View::described_button(EDIT, EDIT_DESCRIPTION, OnClick::from(Action::EnterEditMode))
+    };
 
-    let start_settings = View::balanced_stack::<Ui, _>(
+    // TODO: show current settings?
+    let project_settings = View::balanced_stack::<Ui, _>(
         Axis::X,
         [
             View::described_button(
@@ -57,10 +78,22 @@ pub fn bar<Ui: UserInterface>(title: ArcStr, settings: &Settings, playing: bool)
         ],
     );
 
-    let left_side =
-        View::spaced_stack::<Ui, _>(Axis::X, vec![literal!("TODO").centred(), start_settings]);
+    let toggles = View::spaced_stack::<Ui, _>(
+        Axis::X,
+        [
+            edit_button,
+            View::described_button(
+                PIANO,
+                PIANO_DESCRIPTION,
+                OnClick::from(Action::TogglePianoRoll),
+            ),
+        ],
+    );
 
-    let right_side = literal!("TODO").centred();
+    let left_side =
+        View::spaced_stack::<Ui, _>(Axis::X, [literal!("TODO").centred(), project_settings]);
+
+    let right_side = View::spaced_stack::<Ui, _>(Axis::X, [literal!("TODO").centred(), toggles]);
 
     View::x_stack([
         left_side.fill_remaining(),

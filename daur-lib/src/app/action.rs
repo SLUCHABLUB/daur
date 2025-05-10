@@ -41,6 +41,11 @@ pub enum Action {
     /// Sets the piano roll's height to half of the screen height.
     TogglePianoRoll,
 
+    /// Enters _edit mode_.
+    EnterEditMode,
+    /// Exits _edit mode_.
+    ExitEditMode,
+
     /// Picks up an object.
     PickUp(HoldableObject),
     /// Moves the held object.
@@ -138,6 +143,9 @@ impl<Ui: UserInterface> App<Ui> {
             Action::TogglePianoRoll => {
                 self.piano_roll_settings.open = !self.piano_roll_settings.open;
             }
+
+            Action::EnterEditMode => self.edit_mode = true,
+            Action::ExitEditMode => self.edit_mode = false,
 
             Action::PickUp(object) => {
                 if let Some(old) = self.hand.replace(object) {

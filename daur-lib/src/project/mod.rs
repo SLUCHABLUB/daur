@@ -52,8 +52,8 @@ impl Project {
             .map(Arc::make_mut)
     }
 
-    pub(crate) fn bar<Ui: UserInterface>(&self, playing: bool) -> View {
-        bar::<Ui>(self.title(), &self.settings, playing)
+    pub(crate) fn bar<Ui: UserInterface>(&self, playing: bool, edit_mode: bool) -> View {
+        bar::<Ui>(self.title(), &self.settings, playing, edit_mode)
     }
 
     // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect

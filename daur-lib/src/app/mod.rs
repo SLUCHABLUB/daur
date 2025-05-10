@@ -61,6 +61,9 @@ pub struct App<Ui: UserInterface> {
     /// but the position of the cursor at the time when audio playback started.
     cursor: Instant,
 
+    // TODO: move to temporary settings
+    /// Whether _edit mode_ is enabled.
+    edit_mode: bool,
     /// The settings for the overview grid.
     // TODO: move to temporary settings
     grid: Grid,
@@ -98,6 +101,7 @@ impl<Ui: UserInterface> App<Ui> {
             selected_clip: Weak::new(),
             cursor: Instant::START,
 
+            edit_mode: false,
             grid: Grid {
                 cell_duration: NonZeroDuration::QUARTER,
                 cell_width: Ui::CELL_WIDTH,
@@ -129,7 +133,7 @@ impl<Ui: UserInterface> App<Ui> {
         View::y_stack([
             self.project_manager
                 .project()
-                .bar::<Ui>(self.audio_config.is_player_playing())
+                .bar::<Ui>(self.audio_config.is_player_playing(), self.edit_mode)
                 .quotated(self.project_bar_height.get()),
             self.project_manager
                 .project()
