@@ -29,7 +29,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
         let selected = selected_track.as_ptr() == track_reference.as_ptr();
 
         track_settings.push(settings(&track, selected));
-        track_overviews.push(overview(
+        track_overviews.push(overview::<Ui>(
             track,
             selected_clip,
             &project_settings,
@@ -48,7 +48,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     ));
 
     // A "dummy-track" for the row with the add-track button
-    track_overviews.push(overview(
+    track_overviews.push(overview::<Ui>(
         Arc::new(Track::new()),
         selected_clip,
         &project_settings,
@@ -61,14 +61,14 @@ pub(crate) fn workspace<Ui: UserInterface>(
     // TODO: put something here?
     let empty_space = literal!(":)").centred();
 
-    let ruler = ruler(overview_offset, project_settings, grid);
+    let ruler = ruler::<Ui>(overview_offset, project_settings, grid);
     let ruler_row = View::x_stack([
         empty_space.quotated(track_settings_width.get()),
         ruler.scrollable(Action::MoveOverview).fill_remaining(),
     ]);
 
-    let settings_column = View::balanced_stack::<Ui, _>(Axis::Y, track_settings);
-    let overview_column = View::balanced_stack::<Ui, _>(Axis::Y, track_overviews);
+    let settings_column = View::balanced_stack(Axis::Y, track_settings);
+    let overview_column = View::balanced_stack(Axis::Y, track_overviews);
 
     let track_area = View::x_stack([
         settings_column.quotated(track_settings_width.get()),

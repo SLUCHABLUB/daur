@@ -42,8 +42,8 @@ impl Menu {
     }
 
     /// Returns the view of the menu.
-    pub fn into_view<Ui: UserInterface>(self) -> View {
-        View::balanced_stack::<Ui, _>(
+    pub fn into_view(self) -> View {
+        View::balanced_stack(
             Axis::Y,
             self.buttons
                 .into_iter()
@@ -56,7 +56,7 @@ impl Menu {
     /// Constructs a new [`MenuInstance`].
     #[must_use]
     pub fn instantiate<Ui: UserInterface>(self, position: Point) -> MenuInstance {
-        let view = Arc::new(self.into_view::<Ui>());
+        let view = Arc::new(self.into_view());
         let size = view.minimum_size::<Ui>();
         let area = Rectangle { position, size };
         MenuInstance { area, view }

@@ -5,13 +5,13 @@ use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, Quotated, View, feed};
-use crate::{Clip, Track, clip};
+use crate::{Clip, Track, UserInterface, clip};
 use alloc::sync::{Arc, Weak};
 use closure::closure;
 use num::Integer as _;
 
 /// Returns the track overview.
-pub(crate) fn overview(
+pub(crate) fn overview<Ui: UserInterface>(
     track: Arc<Track>,
     selected_clip: &Weak<Clip>,
     project_settings: &Settings,
@@ -39,7 +39,7 @@ pub(crate) fn overview(
         );
 
         View::Layers(vec![
-            feed(Direction::Right, Offset::negative(offset), generator),
+            feed::<Ui, _>(Direction::Right, Offset::negative(offset), generator),
             CursorWindow::view(player.clone(), cursor, project_settings.clone(), grid, offset),
         ])
     }))

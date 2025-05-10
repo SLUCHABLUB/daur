@@ -1,9 +1,14 @@
+use crate::UserInterface;
 use crate::ui::{Direction, Length, Offset};
 use crate::view::{Quotated, View};
 use core::cmp::Ordering;
 
 /// A window into an infinite and scrollable stack
-pub fn feed<Generator>(direction: Direction, offset: Offset, generator: Generator) -> View
+pub fn feed<Ui: UserInterface, Generator>(
+    direction: Direction,
+    offset: Offset,
+    generator: Generator,
+) -> View
 where
     Generator: Fn(isize) -> Quotated + Send + Sync + 'static,
 {
@@ -20,8 +25,7 @@ where
             Ordering::Less => loop {
                 let quotated = generator(index);
                 offset += quotated
-                    .quotum
-                    .size_parallel_to(direction.axis())
+                    .size_parallel_to::<Ui>(direction.axis())
                     .unwrap_or(full_size);
                 index = index.saturating_add(1);
 
@@ -37,15 +41,15 @@ where
             Ordering::Greater => loop {
                 let new = index.saturating_sub(1);
 
-                let Quotated { quotum, view } = generator(new);
-                let quotum_size = quotum.size_parallel_to(direction.axis());
+                let quotated = generator(new);
+                let quotum_size = quotated.size_parallel_to::<Ui>(direction.axis());
                 offset -= quotum_size.unwrap_or(full_size);
 
                 if offset < Offset::ZERO {
                     first = if let Some(size) = quotum_size {
-                        view.quotated((offset + size).rectify())
+                        quotated.view.quotated((offset + size).rectify())
                     } else {
-                        view.fill_remaining()
+                        quotated.view.fill_remaining()
                     };
                     break;
                 }
@@ -55,8 +59,7 @@ where
         }
 
         let used_size = first
-            .quotum
-            .size_parallel_to(direction.axis())
+            .size_parallel_to::<Ui>(direction.axis())
             .unwrap_or(full_size);
 
         let mut remaining = full_size - used_size;
@@ -68,8 +71,7 @@ where
 
             let new_remaining = remaining
                 - quotated
-                    .quotum
-                    .size_parallel_to(direction.axis())
+                    .size_parallel_to::<Ui>(direction.axis())
                     .unwrap_or(full_size);
 
             index = index.saturating_add(1);

@@ -135,10 +135,16 @@ impl View {
                 },
                 view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
-            View::Hoverable { default, hovered } => {
+            View::Hoverable {
+                is_hovered,
+                default,
+                hovered,
+            } => {
                 if area.contains(mouse_position) {
+                    is_hovered.set(true);
                     hovered.accept::<Ui, V>(visitor, area, mouse_position);
                 } else {
+                    is_hovered.set(false);
                     default.accept::<Ui, V>(visitor, area, mouse_position);
                 }
             }
@@ -156,14 +162,12 @@ impl View {
                 visitor.visit_scrollable(area, *action),
                 view.accept::<Ui, V>(visitor, area, mouse_position),
             ),
-            View::Sized { view, .. } => view.accept::<Ui, V>(visitor, area, mouse_position),
             View::SizeInformed(generator) => {
                 generator(area.size).accept::<Ui, V>(visitor, area, mouse_position);
             }
             View::Solid(colour) => visitor.visit_solid(area, *colour),
             View::Stack { axis, elements } => {
-                let quota: Vec<_> = elements.iter().map(|quotated| quotated.quotum).collect();
-                let rectangles = area.split(*axis, &quota);
+                let rectangles = area.split::<Ui>(*axis, elements);
 
                 for (area, quoted) in zip(rectangles, elements) {
                     quoted.view.accept::<Ui, V>(visitor, area, mouse_position);
@@ -174,6 +178,7 @@ impl View {
                 title,
                 highlighted,
                 view,
+                ..
             } => {
                 let titled_area = titled_area::<Ui>(area, title, view);
 

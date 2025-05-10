@@ -1,6 +1,6 @@
-use crate::Ratio;
-use crate::ui::{Offset, Point, Size, Vector};
-use crate::view::{Axis, Quotum};
+use crate::ui::{Length, Offset, Point, Size, Vector};
+use crate::view::{Axis, Quotated};
+use crate::{Ratio, UserInterface};
 use core::cmp::{max, min};
 use core::num::NonZeroU64;
 use core::ops::{Add, AddAssign};
@@ -70,23 +70,29 @@ impl Rectangle {
 
     /// Splits the rectangle.
     #[must_use]
-    pub fn split(
+    pub(crate) fn split<Ui: UserInterface>(
         self,
         axis: Axis,
-        quota: &[Quotum],
-    ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_> {
+        views: &[Quotated],
+    ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_, Ui> {
+        // cache the sizes or None if Quotum::Remaining is used
+        let sizes: Vec<Option<Length>> = views
+            .iter()
+            .map(|quotated| quotated.size_parallel_to::<Ui>(axis))
+            .collect();
+
         let orthogonal = self.size.orthogonal_to(axis);
 
-        // the size that will be allocated to `Quotum::Remaining` quota
+        // the size that will be allocated to the `Quotum::Remaining` quota
         let mut fill_size = self.size.parallel_to(axis);
 
         let mut fill_count: u64 = 0;
 
-        for quotum in quota {
-            match quotum {
-                Quotum::Remaining => fill_count = fill_count.saturating_add(1),
-                Quotum::Exact(length) => fill_size -= *length,
-                Quotum::DirectionDependent(size) => fill_size -= size.parallel_to(axis),
+        for size in &sizes {
+            if let Some(size) = *size {
+                fill_size -= size;
+            } else {
+                fill_count = fill_count.saturating_add(1);
             }
         }
 
@@ -96,12 +102,8 @@ impl Rectangle {
 
         let mut offset = Offset::ZERO;
 
-        quota.iter().filter_map(move |quotum| {
-            let parallel = match quotum {
-                Quotum::Remaining => fill_size,
-                Quotum::Exact(length) => *length,
-                Quotum::DirectionDependent(size) => size.parallel_to(axis),
-            };
+        sizes.into_iter().filter_map(move |size| {
+            let parallel = size.unwrap_or(fill_size);
 
             let position = self.position + axis * offset;
 

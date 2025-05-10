@@ -61,8 +61,6 @@ fn handle_mouse_event(
     let ui = app.ui();
     let view = app.view();
 
-    actions.push(Action::MoveHand(ui.mouse_position));
-
     match kind {
         MouseEventKind::Down(button) => {
             if button != MouseButton::Left {
@@ -92,7 +90,8 @@ fn handle_mouse_event(
 
             actions.push(Action::LetGo);
         }
-        MouseEventKind::Moved | MouseEventKind::Drag(_) => (),
+        MouseEventKind::Moved => (),
+        MouseEventKind::Drag(_) => actions.push(Action::MoveHand(ui.mouse_position)),
         MouseEventKind::ScrollDown => {
             scroll(Direction::Down, ui, view, actions);
         }

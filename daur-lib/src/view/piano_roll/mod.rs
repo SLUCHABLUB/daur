@@ -63,13 +63,13 @@ fn content<Ui: UserInterface>(
 
     let ruler = View::x_stack([
         View::Empty.quotated(settings.piano_depth.get()),
-        ruler(settings.x_offset, project_settings.clone(), grid).fill_remaining(),
+        ruler::<Ui>(settings.x_offset, project_settings.clone(), grid).fill_remaining(),
     ]);
 
     // The piano roll has a fixed lower pitch.
     // Resizing it will thus cause the bottom to be fixed.
     // Since the top is the thing being moved, this seems intuitive.
-    let workspace = feed(Direction::Up, -settings.y_offset, move |index| {
+    let workspace = feed::<Ui, _>(Direction::Up, -settings.y_offset, move |index| {
         let interval = Interval::from_semitones(index.saturating_cast());
         let pitch = Pitch::A_440 + interval;
 

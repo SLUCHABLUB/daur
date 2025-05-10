@@ -1,3 +1,4 @@
+use crate::UserInterface;
 use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::{View, feed};
@@ -5,9 +6,9 @@ use core::num::NonZeroU64;
 use non_zero::non_zero;
 
 /// A ruler of musical time
-pub fn ruler(offset: Length, settings: Settings, grid: Grid) -> View {
+pub fn ruler<Ui: UserInterface>(offset: Length, settings: Settings, grid: Grid) -> View {
     // TODO: don't use feed
-    feed(Direction::Right, Offset::negative(offset), move |index| {
+    feed::<Ui, _>(Direction::Right, Offset::negative(offset), move |index| {
         if let Ok(bar_index) = usize::try_from(index) {
             let bar = settings.time_signature.bar_n(bar_index);
             let bar_width = bar.width(grid);

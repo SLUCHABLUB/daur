@@ -1,8 +1,7 @@
 use crate::ui::{Point, Rectangle, Vector};
 use crate::view::context::Menu;
-use crate::{Action, HoldableObject, UserInterface, View};
+use crate::{Action, HoldableObject, View};
 use arcstr::ArcStr;
-use core::cmp::max;
 
 impl View {
     /// Puts a border around the view.
@@ -45,19 +44,18 @@ impl View {
         View::Titled {
             title,
             highlighted: false,
+            croppable: true,
             view: Box::new(self),
         }
     }
 
     /// Puts a title on the view where the title influences the [minimum size](View::minimum_size).
-    pub fn hard_titled<Ui: UserInterface>(self, title: ArcStr) -> Self {
-        let mut minimum_size = self.minimum_size::<Ui>();
-        minimum_size.width = max(minimum_size.width, Ui::title_width(&title, &self));
-        minimum_size.height += Ui::title_height(&title, &self);
-
-        View::Sized {
-            minimum_size,
-            view: Box::new(self.titled(title)),
+    pub fn titled_non_cropping(self, title: ArcStr) -> Self {
+        View::Titled {
+            title,
+            highlighted: false,
+            croppable: false,
+            view: Box::new(self),
         }
     }
 
@@ -70,11 +68,18 @@ impl View {
                 thick: thickness,
                 view,
             }
-        } else if let View::Titled { title, view, .. } = self {
+        } else if let View::Titled {
+            title,
+            view,
+            croppable,
+            ..
+        } = self
+        {
             View::Titled {
                 title,
                 highlighted: thickness,
                 view,
+                croppable,
             }
         } else {
             // TODO: log that nothing happened

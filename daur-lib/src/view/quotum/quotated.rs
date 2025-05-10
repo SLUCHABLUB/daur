@@ -1,5 +1,5 @@
 use crate::ui::Length;
-use crate::view::Quotum;
+use crate::view::{Axis, Quotum};
 use crate::{UserInterface, View};
 
 /// A [view](View) with a [quotum](Quotum).
@@ -15,6 +15,14 @@ pub struct Quotated {
 impl Quotated {
     /// An [empty view](View::Empty) with a zero quotum.
     pub const EMPTY: Quotated = View::Empty.quotated(Length::ZERO);
+
+    pub(crate) fn size_parallel_to<Ui: UserInterface>(&self, axis: Axis) -> Option<Length> {
+        match self.quotum {
+            Quotum::Remaining => None,
+            Quotum::Exact(length) => Some(length),
+            Quotum::Minimum => Some(self.view.minimum_size::<Ui>().parallel_to(axis)),
+        }
+    }
 }
 
 impl View {
@@ -34,8 +42,7 @@ impl View {
     }
 
     /// Adds a quotum to the view using [`minimum_size`](View::minimum_size).
-    pub fn quotated_minimally<Ui: UserInterface>(self) -> Quotated {
-        let size = self.minimum_size::<Ui>();
-        self.with_quotum(Quotum::DirectionDependent(size))
+    pub fn quotated_minimally(self) -> Quotated {
+        self.with_quotum(Quotum::Minimum)
     }
 }

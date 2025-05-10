@@ -33,6 +33,7 @@ pub use text::ToText;
 
 use crate::Action;
 use crate::app::HoldableObject;
+use crate::sync::Cell;
 use crate::ui::{Colour, Point, Rectangle, Size, Vector};
 use crate::view::context::Menu;
 use alloc::sync::Arc;
@@ -97,6 +98,7 @@ pub enum View {
     },
     /// A view that whose appearance changes when hovered.
     Hoverable {
+        is_hovered: Cell<bool>,
         /// The view to use when not hovered.
         default: Box<Self>,
         /// The view to use when hovered.
@@ -115,13 +117,6 @@ pub enum View {
     Scrollable {
         /// The action to take when scrolled.
         action: fn(Vector) -> Action,
-        /// The view.
-        view: Box<View>,
-    },
-    /// A view with a custom minimum size
-    Sized {
-        /// The minimum size of the view.
-        minimum_size: Size,
         /// The view.
         view: Box<View>,
     },
@@ -149,6 +144,8 @@ pub enum View {
         title: ArcStr,
         /// Whether the title is highlighted.
         highlighted: bool,
+        /// Whether the title is allowed to be cropped.
+        croppable: bool,
         /// The view.
         view: Box<View>,
     },

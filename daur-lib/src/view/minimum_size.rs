@@ -30,13 +30,21 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         | View::Grabbable { view, .. }
         | View::Scrollable { view, .. } => view.minimum_size::<Ui>(),
         View::Generator(generator) => generator().minimum_size::<Ui>(),
-        View::Hoverable { default, hovered } => {
-            let default = default.minimum_size::<Ui>();
-            let hovered = hovered.minimum_size::<Ui>();
+        View::Hoverable {
+            is_hovered,
+            default,
+            hovered,
+        } => {
+            if is_hovered.get() {
+                let default = default.minimum_size::<Ui>();
+                let hovered = hovered.minimum_size::<Ui>();
 
-            Size {
-                width: max(default.width, hovered.width),
-                height: max(default.height, hovered.height),
+                Size {
+                    width: max(default.width, hovered.width),
+                    height: max(default.height, hovered.height),
+                }
+            } else {
+                default.minimum_size::<Ui>()
             }
         }
         View::Layers(layers) => {
@@ -54,7 +62,6 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             width: Length::ZERO,
             height: Ui::RULER_HEIGHT.get(),
         },
-        View::Sized { minimum_size, .. } => *minimum_size,
         View::Stack { axis, elements } => {
             let mut parallel = Length::ZERO;
             let mut orthogonal = Length::ZERO;

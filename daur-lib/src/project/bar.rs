@@ -9,9 +9,10 @@ use arcstr::{ArcStr, literal};
 
 const PLAY: ArcStr = literal!("\u{25B6}");
 const PAUSE: ArcStr = literal!("\u{23F8}");
-const EDIT: ArcStr = literal!("\u{270E}");
-const SELECT: ArcStr = literal!("\u{1FBB0}");
-const PIANO: ArcStr = literal!("\u{1F3B9}");
+const EDIT: ArcStr = literal!(" \u{270E} ");
+// spaces to make the buttons centred
+const SELECT: ArcStr = literal!(" \u{1FBB0} ");
+const PIANO: ArcStr = literal!(" \u{1F3B9}  ");
 
 const PLAY_DESCRIPTION: ArcStr = literal!("play");
 const PAUSE_DESCRIPTION: ArcStr = literal!("pause");
@@ -57,7 +58,7 @@ pub fn bar<Ui: UserInterface>(
     };
 
     // TODO: show current settings?
-    let project_settings = View::balanced_stack::<Ui, _>(
+    let project_settings = View::spaced_stack(
         Axis::X,
         [
             View::described_button(
@@ -78,7 +79,7 @@ pub fn bar<Ui: UserInterface>(
         ],
     );
 
-    let toggles = View::spaced_stack::<Ui, _>(
+    let toggles = View::spaced_stack(
         Axis::X,
         [
             edit_button,
@@ -90,10 +91,9 @@ pub fn bar<Ui: UserInterface>(
         ],
     );
 
-    let left_side =
-        View::spaced_stack::<Ui, _>(Axis::X, [literal!("TODO").centred(), project_settings]);
+    let left_side = View::spaced_stack(Axis::X, [literal!("TODO").centred(), project_settings]);
 
-    let right_side = View::spaced_stack::<Ui, _>(Axis::X, [literal!("TODO").centred(), toggles]);
+    let right_side = View::spaced_stack(Axis::X, [literal!("TODO").centred(), toggles]);
 
     View::x_stack([
         left_side.fill_remaining(),

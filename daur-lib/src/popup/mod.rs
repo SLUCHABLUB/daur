@@ -91,17 +91,17 @@ impl Popup {
     }
 
     /// Returns the popups [view](View) with a border and title.
-    fn view<Ui: UserInterface>(&self, id: Id) -> View {
-        self.inner_view::<Ui>(id)
+    fn view(&self, id: Id) -> View {
+        self.inner_view(id)
             .bordered()
             .titled(self.title())
             .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
     /// Returns the popups inner [view](View), with no border and title.
-    fn inner_view<Ui: UserInterface>(&self, id: Id) -> View {
+    fn inner_view(&self, id: Id) -> View {
         match self {
-            Popup::ButtonPanel { buttons, .. } => View::balanced_stack::<Ui, _>(
+            Popup::ButtonPanel { buttons, .. } => View::balanced_stack(
                 Axis::Y,
                 buttons.iter().map(|(label, action)| {
                     View::simple_button(label.clone(), OnClick::from(action.clone()))
@@ -111,7 +111,7 @@ impl Popup {
             Popup::Error(error) => {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
-                View::spaced_stack::<Ui, _>(
+                View::spaced_stack(
                     Axis::Y,
                     [
                         format!("{error:#}").aligned_to(Alignment::TopLeft),
@@ -136,11 +136,11 @@ impl Popup {
                 .terminating(id);
                 let cancel = CANCEL.centred().bordered().terminating(id);
 
-                let buttons = View::spaced_stack::<Ui, _>(Axis::X, vec![cancel, confirm]);
+                let buttons = View::spaced_stack(Axis::X, vec![cancel, confirm]);
 
                 View::y_stack([
-                    file_selector::<Ui>(&selected_file).fill_remaining(),
-                    buttons.quotated_minimally::<Ui>(),
+                    file_selector(&selected_file).fill_remaining(),
+                    buttons.quotated_minimally(),
                 ])
             }
             Popup::KeySelector { instant, key } => {
@@ -150,7 +150,7 @@ impl Popup {
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
 
-                let buttons = View::spaced_stack::<Ui, _>(
+                let buttons = View::spaced_stack(
                     Axis::X,
                     vec![
                         CANCEL.centred().bordered().terminating(id),
@@ -173,18 +173,18 @@ impl Popup {
                     ],
                 );
 
-                View::spaced_stack::<Ui, _>(
+                View::spaced_stack(
                     Axis::Y,
                     vec![
-                        single::selector_with_formatter::<Ui, _, _>(
+                        single::selector_with_formatter(
                             &tonic,
                             Axis::X,
                             closure!([clone sign] move |chroma| {
                                 chroma.name(sign.get())
                             }),
                         ),
-                        single::selector::<Ui, _>(&sign, Axis::X),
-                        multi::selector::<Ui, _>(&intervals, Axis::X),
+                        single::selector(&sign, Axis::X),
+                        multi::selector(&intervals, Axis::X),
                         buttons,
                     ],
                 )
@@ -194,7 +194,7 @@ impl Popup {
     }
 
     pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id, ui: &Ui) -> Instance {
-        let view = Arc::new(self.view::<Ui>(id));
+        let view = Arc::new(self.view(id));
 
         let size = view.minimum_size::<Ui>();
         let centre = (ui.size().diagonal() * Ratio::HALF).point();
