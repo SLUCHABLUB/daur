@@ -8,9 +8,9 @@ edition = "2024"
 repository = "https://github.com/SLUCHABLUB/daur"
 license = "GPL-3"
 
-# TODO: remove when cpal fork gets merged
+# TODO: remove when 15.4 is released
 [patch.crates-io]
-cpal = { git = "https://github.com/SLUCHABLUB/cpal.git" }
+cpal = { git = "https://github.com/RustAudio/cpal.git" }
 
 [workspace.lints.rust]
 unstable_name_collisions = "allow" # if the code breaks, it is an easy fix
