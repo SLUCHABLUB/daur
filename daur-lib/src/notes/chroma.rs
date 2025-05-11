@@ -10,27 +10,27 @@ pub enum Chroma {
     #[default]
     /// A
     A,
-    /// B♭ / A♯
+    /// A♯ / B♭
     Bb,
     /// B
     B,
     /// C
     C,
-    /// D♭ / C♯
+    /// C♯ / D♭
     Db,
     /// D
     D,
-    /// E♭ / D♯
+    /// D♯ / E♭
     Eb,
     /// E
     E,
     /// F
     F,
-    /// G♭ / F♯
+    /// F♯ / G♭
     Gb,
     /// G
     G,
-    /// A♭ / G♯
+    /// G♯ / A♭
     Ab,
 }
 
