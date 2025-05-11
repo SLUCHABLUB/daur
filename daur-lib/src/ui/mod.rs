@@ -39,7 +39,7 @@ pub trait UserInterface {
     const KEY_WIDTH: NonZeroLength;
     /// The default depth of the piano-roll piano.
     const PIANO_DEPTH: NonZeroLength;
-    /// The default width of the playback button.
+    /// The width of the playback button.
     const PLAYBACK_BUTTON_WIDTH: NonZeroLength;
     /// The default height of the project bar.
     const PROJECT_BAR_HEIGHT: NonZeroLength;

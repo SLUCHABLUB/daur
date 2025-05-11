@@ -1,4 +1,5 @@
 use crate::ui::{Length, Size};
+use crate::view::Quotum;
 use crate::{Ratio, UserInterface, View};
 use core::cmp::max;
 
@@ -58,11 +59,25 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             let mut parallel = Length::ZERO;
             let mut orthogonal = Length::ZERO;
 
+            let mut fill_size = Length::ZERO;
+            let mut fill_count: u64 = 0;
+
             for quoted in elements {
-                let child = quoted.view.minimum_size::<Ui>();
-                parallel += child.parallel_to(*axis);
-                orthogonal = max(orthogonal, child.orthogonal_to(*axis));
+                let minimum = quoted.view.minimum_size::<Ui>();
+
+                match quoted.quotum {
+                    Quotum::Remaining => {
+                        fill_size = max(fill_size, minimum.parallel_to(*axis));
+                        fill_count = fill_count.saturating_add(1);
+                    }
+                    Quotum::Exact(length) => parallel += length,
+                    Quotum::Minimum => parallel += minimum.parallel_to(*axis),
+                }
+
+                orthogonal = max(orthogonal, minimum.orthogonal_to(*axis));
             }
+
+            parallel += fill_size * Ratio::from(fill_count);
 
             Size::from_parallel_orthogonal(parallel, orthogonal, *axis)
         }

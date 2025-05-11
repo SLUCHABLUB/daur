@@ -3,98 +3,91 @@ use crate::metre::Instant;
 use crate::notes::Key;
 use crate::popup::Popup;
 use crate::project::Settings;
-use crate::view::{Axis, OnClick, ToText as _, View};
+use crate::view::{Axis, OnClick, View};
 use crate::{ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
 
 // TODO: add a symbol view instead of using chars
-const PLAY: ArcStr = literal!("\u{25B6}");
-const PAUSE: ArcStr = literal!("\u{23F8}");
-const EDIT: ArcStr = literal!("\u{270E}");
-// spaces to make the buttons centred
-const SELECT: ArcStr = literal!("\u{1FBB0}");
-const PIANO: ArcStr = literal!("\u{1F3B9}");
-
-const PLAY_DESCRIPTION: ArcStr = literal!("play");
-const PAUSE_DESCRIPTION: ArcStr = literal!("pause");
-const EDIT_DESCRIPTION: ArcStr = literal!("edit mode");
-const SELECT_DESCRIPTION: ArcStr = literal!("select mode");
-const PIANO_DESCRIPTION: ArcStr = literal!("piano roll");
-
-const KEY_DESCRIPTION: ArcStr = literal!("key");
-const TIME_SIGNATURE_DESCRIPTION: ArcStr = literal!("time sig.");
-const TEMPO_DESCRIPTION: ArcStr = literal!("tempo");
+// there is sadly no "single" variant
+/// "BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR"
+const TO_START: ArcStr = literal!(" \u{23EE} ");
+/// "BLACK RIGHT-POINTING TRIANGLE"
+const PLAY: ArcStr = literal!(" \u{25B6} ");
+/// "DOUBLE VERTICAL BAR"
+const PAUSE: ArcStr = literal!(" \u{23F8} ");
+/// "BLACK CIRCLE FOR RECORD"
+const RECORD: ArcStr = literal!(" \u{23FA} ");
+/// "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS"
+const LOOP: ArcStr = literal!("loop");
+/// "LOWER RIGHT PENCIL"
+const EDIT: ArcStr = literal!("edit mode");
+/// "MUSICAL KEYBOARD"
+const PIANO: ArcStr = literal!("piano roll");
+/// "CONTROL KNOBS"
+const NODES: ArcStr = literal!("plugins");
 
 fn open_key_selector(instant: Instant, key: Key) -> OnClick {
     OnClick::from(Action::OpenPopup(Popup::KeySelector { instant, key }))
 }
 
-// TODO:
-//  - window controls (opening instrument rack, piano roll, et.c)
-//  -
-//  - record, loop, metronome
-//  - cursor fine positioning
-//  - grid size
-//  - master volume
-/// The bar att the top of the app window.
+/// The bar att the top of the window.
 pub fn bar<Ui: UserInterface>(
     title: ArcStr,
     settings: &Settings,
     playing: bool,
     edit_mode: bool,
 ) -> View {
+    let key_button = View::standard_button(
+        settings.key.start.to_arc_str(),
+        open_key_selector(Instant::START, settings.key.start),
+    );
+    // TODO: add functionality
+    let time_signature_button = View::standard_button(
+        settings.time_signature.start.to_arc_str(),
+        OnClick::default(),
+    );
+    // TODO: add functionality
+    let tempo_button = View::standard_button(settings.tempo.start.to_arc_str(), OnClick::default());
+
+    let to_start_button =
+        View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));
     let playback_button = if playing {
-        View::described_button(PAUSE, PAUSE_DESCRIPTION, OnClick::from(Action::Pause))
+        View::standard_button(PAUSE, OnClick::from(Action::Pause))
     } else {
-        View::described_button(PLAY, PLAY_DESCRIPTION, OnClick::from(Action::Play))
+        View::standard_button(PLAY, OnClick::from(Action::Play))
     };
-    let edit_button = if edit_mode {
-        View::described_button(
-            SELECT,
-            SELECT_DESCRIPTION,
-            OnClick::from(Action::ExitEditMode),
-        )
+    // TODO: add functionality
+    let record_button = View::standard_button(RECORD, OnClick::default());
+    // TODO: add functionality
+    let loop_button = View::standard_button(LOOP, OnClick::default());
+
+    let edit_mode_button_on_click = OnClick::from(if edit_mode {
+        Action::ExitEditMode
     } else {
-        View::described_button(EDIT, EDIT_DESCRIPTION, OnClick::from(Action::EnterEditMode))
-    };
+        Action::EnterEditMode
+    });
+
+    let edit_mode_button =
+        View::standard_button(EDIT, edit_mode_button_on_click).with_selection_status(edit_mode);
+    let piano_roll_button = View::standard_button(PIANO, OnClick::from(Action::TogglePianoRoll));
+    // TODO: add functionality
+    let nodes_button = View::standard_button(NODES, OnClick::default());
 
     // TODO: show current settings?
-    let project_settings = View::spaced_stack(
-        Axis::X,
-        [
-            View::described_button(
-                settings.key.start.to_arc_str(),
-                KEY_DESCRIPTION,
-                open_key_selector(Instant::START, settings.key.start),
-            ),
-            View::described_button(
-                settings.time_signature.start.to_arc_str(),
-                TIME_SIGNATURE_DESCRIPTION,
-                OnClick::default(),
-            ),
-            View::described_button(
-                settings.tempo.start.to_arc_str(),
-                TEMPO_DESCRIPTION,
-                OnClick::default(),
-            ),
-        ],
-    );
+    let project_settings =
+        View::balanced_stack(Axis::X, [key_button, time_signature_button, tempo_button])
+            .quotated_minimally();
 
-    let toggles = View::spaced_stack(
-        Axis::X,
-        [
-            edit_button,
-            View::described_button(
-                PIANO,
-                PIANO_DESCRIPTION,
-                OnClick::from(Action::TogglePianoRoll),
-            ),
-        ],
-    );
+    let left_playback_buttons = to_start_button.quotated_minimally();
 
-    let left_side = View::spaced_stack(Axis::X, [literal!("TODO").centred(), project_settings]);
+    let right_playback_buttons = View::minimal_stack(Axis::X, [record_button, loop_button]);
 
-    let right_side = View::spaced_stack(Axis::X, [literal!("TODO").centred(), toggles]);
+    let miscellaneous_buttons =
+        View::minimal_stack(Axis::X, [edit_mode_button, piano_roll_button, nodes_button]);
+
+    let left_side = View::x_stack([project_settings, left_playback_buttons]);
+
+    let right_side = View::minimal_stack(Axis::X, [right_playback_buttons, miscellaneous_buttons]);
 
     View::x_stack([
         left_side.fill_remaining(),

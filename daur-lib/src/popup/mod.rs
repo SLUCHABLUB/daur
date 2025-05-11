@@ -111,7 +111,7 @@ impl Popup {
             Popup::Error(error) => {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
-                View::spaced_stack(
+                View::minimal_stack(
                     Axis::Y,
                     [
                         format!("{error:#}").aligned_to(Alignment::TopLeft),
@@ -136,7 +136,7 @@ impl Popup {
                 .terminating(id);
                 let cancel = CANCEL.centred().bordered().terminating(id);
 
-                let buttons = View::spaced_stack(Axis::X, vec![cancel, confirm]);
+                let buttons = View::minimal_stack(Axis::X, vec![cancel, confirm]);
 
                 View::y_stack([
                     file_selector(&selected_file).fill_remaining(),
@@ -150,7 +150,7 @@ impl Popup {
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
 
-                let buttons = View::spaced_stack(
+                let buttons = View::minimal_stack(
                     Axis::X,
                     vec![
                         CANCEL.centred().bordered().terminating(id),
@@ -173,7 +173,7 @@ impl Popup {
                     ],
                 );
 
-                View::spaced_stack(
+                View::minimal_stack(
                     Axis::Y,
                     vec![
                         single::selector_with_formatter(

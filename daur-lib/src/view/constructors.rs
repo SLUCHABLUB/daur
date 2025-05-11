@@ -1,7 +1,6 @@
 use crate::View;
 use crate::ui::{Colour, Size};
 use crate::view::{Axis, Context, Quotated};
-use itertools::Itertools as _;
 
 impl View {
     /// Constructs a new [canvas](View::Canvas).
@@ -57,15 +56,11 @@ impl View {
         }
     }
 
-    /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size and spread out evenly.
-    pub fn spaced_stack<E: IntoIterator<Item = Self>>(axis: Axis, elements: E) -> Self {
+    /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size.
+    pub fn minimal_stack<E: IntoIterator<Item = Self>>(axis: Axis, elements: E) -> Self {
         View::Stack {
             axis,
-            elements: elements
-                .into_iter()
-                .map(View::quotated_minimally)
-                .intersperse_with(|| View::Empty.fill_remaining())
-                .collect(),
+            elements: elements.into_iter().map(View::quotated_minimally).collect(),
         }
     }
 }

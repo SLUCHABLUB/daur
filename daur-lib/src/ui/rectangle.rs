@@ -4,6 +4,8 @@ use crate::{Ratio, UserInterface};
 use core::cmp::{max, min};
 use core::num::NonZeroU64;
 use core::ops::{Add, AddAssign};
+use non_zero::non_zero;
+use saturating_cast::SaturatingCast as _;
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]
@@ -96,8 +98,16 @@ impl Rectangle {
             }
         }
 
+        // the space between elements
+        let spacing;
+
         if let Some(fill_count) = NonZeroU64::new(fill_count) {
             fill_size *= Ratio::reciprocal_of(fill_count);
+            spacing = Length::ZERO;
+        } else {
+            let space_count = NonZeroU64::new(views.len().saturating_sub(1).saturating_cast())
+                .unwrap_or(non_zero!(1));
+            spacing = fill_size * Ratio::reciprocal_of(space_count);
         }
 
         let mut offset = Offset::ZERO;
@@ -108,6 +118,7 @@ impl Rectangle {
             let position = self.position + axis * offset;
 
             offset += parallel;
+            offset += spacing;
 
             self.intersection(Rectangle {
                 position,
