@@ -138,12 +138,12 @@ impl<Ui: UserInterface> App<Ui> {
                 // TODO: scroll tracks vertically
             }
             Action::MovePianoRoll(by) => {
-                self.piano_roll_settings.x_offset -= by.x;
-                self.piano_roll_settings.y_offset += by.y;
+                self.piano_roll.negative_x_offset -= by.x;
+                self.piano_roll.y_offset += by.y;
             }
 
             Action::TogglePianoRoll => {
-                self.piano_roll_settings.open = !self.piano_roll_settings.open;
+                self.piano_roll.is_open = !self.piano_roll.is_open;
             }
 
             Action::EnterEditMode => self.edit_mode = true,

@@ -30,25 +30,26 @@ pub struct CursorWindow {
 
     window_offset: Length,
 
-    project_settings: Settings,
+    project: Settings,
     grid: Grid,
 }
 
 impl CursorWindow {
+    // TODO: make this a method
     pub(crate) fn view(
         player: Option<Player>,
         cursor: Instant,
-        project_settings: Settings,
+        project: Settings,
         grid: Grid,
         window_offset: Length,
     ) -> View {
-        let settings = project_settings.clone();
+        let settings = project.clone();
 
         let window = CursorWindow {
             player,
             cursor,
             window_offset,
-            project_settings,
+            project,
             grid,
         };
 
@@ -63,12 +64,7 @@ impl CursorWindow {
     }
 
     fn player_position(&self) -> Option<Instant> {
-        Some(
-            self.player
-                .as_ref()?
-                .position()?
-                .to_metre(&self.project_settings),
-        )
+        Some(self.player.as_ref()?.position()?.to_metre(&self.project))
     }
 
     /// The cursor's offset from the left of the window.
@@ -77,7 +73,7 @@ impl CursorWindow {
     pub fn offset(&self) -> Option<Length> {
         let position = self.player_position().unwrap_or(self.cursor);
 
-        let offset = position.to_x_offset(&self.project_settings, self.grid);
+        let offset = position.to_x_offset(&self.project, self.grid);
 
         (self.window_offset <= offset).then_some(offset - self.window_offset)
     }

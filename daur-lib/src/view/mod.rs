@@ -2,7 +2,6 @@
 
 pub mod context;
 pub mod multi;
-pub mod piano_roll;
 pub mod single;
 pub mod visit;
 

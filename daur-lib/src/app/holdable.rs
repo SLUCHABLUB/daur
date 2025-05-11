@@ -17,7 +17,7 @@ impl HoldableObject {
     pub(crate) fn update<Ui: UserInterface>(self, app: &mut App<Ui>, position: Point) {
         match self {
             HoldableObject::PianoRollHandle { y } => {
-                app.piano_roll_settings.content_height =
+                app.piano_roll.content_height =
                     app.ui.size().height - position.y + y - Length::PIXEL;
             }
         }

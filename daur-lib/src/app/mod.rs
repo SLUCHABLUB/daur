@@ -8,9 +8,8 @@ use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
-use crate::view::piano_roll::Settings;
-use crate::view::{ToText as _, View, piano_roll};
-use crate::{Clip, Project, Ratio, Track, UserInterface, popup, project};
+use crate::view::{ToText as _, View};
+use crate::{Clip, PianoRoll, Project, Ratio, Track, UserInterface, popup, project};
 use alloc::sync::Weak;
 use arcstr::{ArcStr, literal};
 use derive_more::Debug;
@@ -72,7 +71,7 @@ pub struct App<Ui: UserInterface> {
     overview_offset: Length,
     // TODO: move to temporary settings
     /// The settings regarding the piano roll.
-    piano_roll_settings: Settings,
+    piano_roll: PianoRoll,
 }
 
 impl<Ui: UserInterface> App<Ui> {
@@ -107,11 +106,11 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_width: Ui::CELL_WIDTH,
             },
             overview_offset: Length::ZERO,
-            piano_roll_settings: Settings {
-                x_offset: Length::ZERO,
+            piano_roll: PianoRoll {
+                negative_x_offset: Length::ZERO,
                 y_offset: Offset::ZERO,
                 content_height: height * Ratio::HALF,
-                open: false,
+                is_open: false,
                 key_width: Ui::KEY_WIDTH,
                 piano_depth: Ui::PIANO_DEPTH,
                 black_key_depth: Ui::BLACK_KEY_DEPTH,
@@ -135,7 +134,7 @@ impl<Ui: UserInterface> App<Ui> {
                 .bar::<Ui>(
                     self.audio_config.is_player_playing(),
                     self.edit_mode,
-                    self.piano_roll_settings.open,
+                    self.piano_roll.is_open,
                 )
                 .quotated(self.project_bar_height.get()),
             self.project_manager
@@ -150,9 +149,8 @@ impl<Ui: UserInterface> App<Ui> {
                     self.audio_config.try_player(),
                 )
                 .fill_remaining(),
-            piano_roll::view::<Ui>(
+            self.piano_roll.view::<Ui>(
                 &self.selected_clip,
-                self.piano_roll_settings,
                 self.project_manager.project().settings.clone(),
                 self.grid,
                 self.audio_config.try_player().cloned(),
