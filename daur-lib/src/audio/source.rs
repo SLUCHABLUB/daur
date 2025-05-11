@@ -5,7 +5,7 @@ use rodio::source::SeekError;
 
 /// An [audio source](rodio::Source) for an [audio](Audio).
 #[derive(Clone, Debug)]
-#[must_use = "AudioSource is an iterator"]
+#[must_use = "`Source` is an iterator"]
 pub struct Source {
     audio: Audio,
     right: bool,
