@@ -45,6 +45,8 @@ pub enum Action {
     EnterEditMode,
     /// Exits _edit mode_.
     ExitEditMode,
+    /// Toggles _edit mode_.
+    ToggleEditMode,
 
     /// Picks up an object.
     PickUp(HoldableObject),
@@ -146,6 +148,7 @@ impl<Ui: UserInterface> App<Ui> {
 
             Action::EnterEditMode => self.edit_mode = true,
             Action::ExitEditMode => self.edit_mode = false,
+            Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
 
             Action::PickUp(object) => {
                 if let Some(old) = self.hand.replace(object) {

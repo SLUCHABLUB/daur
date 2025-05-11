@@ -36,6 +36,7 @@ pub fn bar<Ui: UserInterface>(
     settings: &Settings,
     playing: bool,
     edit_mode: bool,
+    piano_roll_open: bool,
 ) -> View {
     let key_button = View::standard_button(
         settings.key.start.to_arc_str(),
@@ -61,15 +62,10 @@ pub fn bar<Ui: UserInterface>(
     // TODO: add functionality
     let loop_button = View::standard_button(LOOP, OnClick::default());
 
-    let edit_mode_button_on_click = OnClick::from(if edit_mode {
-        Action::ExitEditMode
-    } else {
-        Action::EnterEditMode
-    });
-
-    let edit_mode_button =
-        View::standard_button(EDIT, edit_mode_button_on_click).with_selection_status(edit_mode);
-    let piano_roll_button = View::standard_button(PIANO, OnClick::from(Action::TogglePianoRoll));
+    let edit_mode_button = View::standard_button(EDIT, OnClick::from(Action::ToggleEditMode))
+        .with_selection_status(edit_mode);
+    let piano_roll_button = View::standard_button(PIANO, OnClick::from(Action::TogglePianoRoll))
+        .with_selection_status(piano_roll_open);
     // TODO: add functionality
     let nodes_button = View::standard_button(NODES, OnClick::default());
 

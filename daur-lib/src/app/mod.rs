@@ -133,7 +133,11 @@ impl<Ui: UserInterface> App<Ui> {
         View::y_stack([
             self.project_manager
                 .project()
-                .bar::<Ui>(self.audio_config.is_player_playing(), self.edit_mode)
+                .bar::<Ui>(
+                    self.audio_config.is_player_playing(),
+                    self.edit_mode,
+                    self.piano_roll_settings.open,
+                )
                 .quotated(self.project_bar_height.get()),
             self.project_manager
                 .project()
