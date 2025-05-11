@@ -128,9 +128,8 @@ impl<Ui: UserInterface> App<Ui> {
         }
     }
 
-    /// The main view of the app behind any popups
-    fn main_view(&self) -> View {
-        View::y_stack([
+    fn render_view(&self) -> View {
+        let background = View::y_stack([
             self.project_manager
                 .project()
                 .bar::<Ui>(
@@ -159,11 +158,9 @@ impl<Ui: UserInterface> App<Ui> {
                 self.audio_config.try_player().cloned(),
                 self.cursor,
             ),
-        ])
-    }
+        ]);
 
-    fn render_view(&self) -> View {
-        let mut layers = vec![self.main_view()];
+        let mut layers = vec![background];
 
         for instance in self.popup_manager.popups() {
             layers.push(instance.view());
