@@ -1,6 +1,7 @@
 use crate::Ratio;
-use crate::ui::Length;
-use core::ops::{Add, AddAssign, Mul, Neg, Sub, SubAssign};
+use crate::ui::{Length, NonZeroLength};
+use core::num::NonZeroI32;
+use core::ops::{Add, AddAssign, Mul, Neg, Rem, Sub, SubAssign};
 use saturating_cast::SaturatingCast as _;
 
 // TODO: document the not-fully-saturating semantics on overflow.
@@ -94,6 +95,20 @@ impl SubAssign for Offset {
     }
 }
 
+impl Mul<Ratio> for Offset {
+    type Output = Offset;
+
+    fn mul(self, rhs: Ratio) -> Self::Output {
+        let length = self.abs() * rhs;
+
+        if self.pixels.is_negative() {
+            Offset::negative(length)
+        } else {
+            Offset::positive(length)
+        }
+    }
+}
+
 impl Neg for Offset {
     type Output = Offset;
 
@@ -120,20 +135,6 @@ impl Sub<Length> for Offset {
     }
 }
 
-impl Mul<Ratio> for Offset {
-    type Output = Offset;
-
-    fn mul(self, rhs: Ratio) -> Self::Output {
-        let length = self.abs() * rhs;
-
-        if self.pixels.is_negative() {
-            Offset::negative(length)
-        } else {
-            Offset::positive(length)
-        }
-    }
-}
-
 impl AddAssign<Length> for Offset {
     fn add_assign(&mut self, rhs: Length) {
         *self = *self + rhs;
@@ -143,5 +144,18 @@ impl AddAssign<Length> for Offset {
 impl SubAssign<Length> for Offset {
     fn sub_assign(&mut self, rhs: Length) {
         *self = *self - rhs;
+    }
+}
+
+impl Rem<NonZeroLength> for Offset {
+    type Output = Length;
+
+    fn rem(self, rhs: NonZeroLength) -> Length {
+        Length {
+            pixels: self
+                .pixels
+                .rem_euclid(NonZeroI32::from(rhs.pixels).get())
+                .saturating_cast(),
+        }
     }
 }

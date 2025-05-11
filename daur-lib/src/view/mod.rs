@@ -24,11 +24,12 @@ pub use axis::Axis;
 pub use button::OnClick;
 pub use canvas::Context;
 pub use cursor_window::CursorWindow;
-pub use feed::feed;
 pub use file_selector::file_selector;
 pub use quotum::{Quotated, Quotum};
 pub use ruler::ruler;
 pub use text::ToText;
+
+pub(crate) use feed::feed;
 
 use crate::Action;
 use crate::app::HoldableObject;

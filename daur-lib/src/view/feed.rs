@@ -4,7 +4,7 @@ use crate::view::{Quotated, View};
 use core::cmp::Ordering;
 
 /// A window into an infinite and scrollable stack
-pub fn feed<Ui: UserInterface, Generator>(
+pub(crate) fn feed<Ui: UserInterface, Generator>(
     direction: Direction,
     offset: Offset,
     generator: Generator,

@@ -2,15 +2,21 @@ use crate::audio::Player;
 use crate::metre::Instant;
 use crate::notes::{Interval, Key, Pitch};
 use crate::project::Settings;
-use crate::ui::{Colour, Direction, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
-use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, feed, ruler};
+use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
+use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
 use crate::{Action, Clip, HoldableObject, UserInterface, View};
-use alloc::sync::Weak;
+use alloc::sync::{Arc, Weak};
 use arcstr::{ArcStr, literal};
+use core::cmp::Ordering;
 use saturating_cast::SaturatingCast as _;
 
 const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
+
+/// The pitch at the bottom of the piano roll (before scrolling).
+/// Due to the way we calculate the lowest key's width (using modulo),
+/// this is one semitone lower than the actual bottom pitch.
+const BOTTOM: Pitch = Pitch::a_440_plus(-1);
 
 /// Settings for the piano roll.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -30,6 +36,15 @@ pub struct PianoRoll {
     pub piano_depth: NonZeroLength,
     /// The depth of the black keys
     pub black_key_depth: NonZeroLength,
+}
+
+#[derive(Copy, Clone)]
+struct Keys {
+    lowest_key_width: Length,
+    lowest_key_pitch: Pitch,
+    highest_key_pitch: Pitch,
+    #[expect(clippy::struct_field_names, reason = "this reads better")]
+    number_of_full_keys: u64,
 }
 
 impl PianoRoll {
@@ -54,7 +69,7 @@ impl PianoRoll {
 
         view.scrollable(Action::MovePianoRoll)
             .titled(title)
-            .grabbable(grabber(title_height))
+            .grabbable(Self::grabber(title_height))
             .quotated(self.content_height + title_height)
     }
 
@@ -66,32 +81,19 @@ impl PianoRoll {
         player: Option<Player>,
         cursor: Instant,
     ) -> View {
-        let Some(_clip) = clip.upgrade() else {
+        let Some(clip) = clip.upgrade() else {
             return NO_CLIP_SELECTED.centred();
         };
-
-        let roll_start = Instant::from_x_offset(self.negative_x_offset, &project, grid);
-        let piano_key_key = project.key.get(roll_start);
-
-        let ruler = View::x_stack([
-            View::Empty.quotated(self.piano_depth.get()),
-            ruler::<Ui>(self.negative_x_offset, project.clone(), grid).fill_remaining(),
-        ]);
 
         // The piano roll has a fixed lower pitch.
         // Resizing it will thus cause the bottom to be fixed.
         // Since the top is the thing being moved, this seems intuitive.
-        let workspace = feed::<Ui, _>(Direction::Up, -self.y_offset, move |index| {
-            let interval = Interval::from_semitones(index.saturating_cast());
-            let pitch = Pitch::A_440 + interval;
+        let workspace = self.workspace::<Ui>(clip, &project, grid, player, cursor);
 
-            let key = self.piano_key(pitch, piano_key_key);
-            let row = self.row(pitch, &project, grid, player.clone(), cursor);
-
-            let stack = View::x_stack([key.quotated(self.piano_depth.get()), row.fill_remaining()]);
-
-            stack.quotated(self.key_width.get())
-        });
+        let ruler = View::x_stack([
+            View::Empty.quotated(self.piano_depth.get()),
+            ruler::<Ui>(self.negative_x_offset, project, grid).fill_remaining(),
+        ]);
 
         View::y_stack([
             ruler.quotated(Ui::RULER_HEIGHT.get()),
@@ -99,15 +101,76 @@ impl PianoRoll {
         ])
     }
 
-    /// Return the view for a (non-piano) row of the piano roll.
-    fn row(
+    fn workspace<Ui: UserInterface>(
         self,
-        pitch: Pitch,
+        _clip: Arc<Clip>,
         project: &Settings,
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
     ) -> View {
+        let keys = self.keys::<Ui>();
+
+        let piano = self.piano(keys, project, grid);
+        let roll = self.roll(keys, project, grid);
+        let cursor_window = CursorWindow::view(
+            player,
+            cursor,
+            project.clone(),
+            grid,
+            self.negative_x_offset,
+        );
+
+        View::x_stack([
+            piano.quotated(self.piano_depth.get()),
+            View::Layers(vec![roll, cursor_window]).fill_remaining(),
+        ])
+    }
+
+    fn piano(self, keys: Keys, project: &Settings, grid: Grid) -> View {
+        let roll_start = Instant::from_x_offset(self.negative_x_offset, project, grid);
+        let key = project.key.get(roll_start);
+
+        let highest_key = self.piano_key(keys.highest_key_pitch, key).fill_remaining();
+        let lowest_key = self
+            .piano_key(keys.lowest_key_pitch, key)
+            .quotated(keys.lowest_key_width);
+
+        let mut piano = vec![highest_key];
+
+        for semitones in (1..=keys.number_of_full_keys).rev() {
+            let interval = Interval::from_semitones(semitones.saturating_cast());
+            let pitch = keys.lowest_key_pitch + interval;
+            let key = self.piano_key(pitch, key).quotated(self.key_width.get());
+            piano.push(key);
+        }
+
+        piano.push(lowest_key);
+
+        View::y_stack(piano)
+    }
+
+    fn roll(self, keys: Keys, project: &Settings, grid: Grid) -> View {
+        let highest_row = Self::row(keys.highest_key_pitch, project, grid).fill_remaining();
+        let lowest_row =
+            Self::row(keys.lowest_key_pitch, project, grid).quotated(keys.lowest_key_width);
+
+        let mut rows = vec![highest_row];
+
+        for semitones in (1..=keys.number_of_full_keys).rev() {
+            let interval = Interval::from_semitones(semitones.saturating_cast());
+            let pitch = keys.lowest_key_pitch + interval;
+            let row = Self::row(pitch, project, grid).quotated(self.key_width.get());
+            rows.push(row);
+        }
+
+        rows.push(lowest_row);
+
+        View::y_stack(rows)
+    }
+
+    /// Return the view for a (non-piano) row of the piano roll.
+    fn row(pitch: Pitch, _project: &Settings, _grid: Grid) -> View {
         // TODO:
         //  - draw notes
         //  - draw grid
@@ -123,16 +186,7 @@ impl PianoRoll {
         //  - selecting notes
         //  - moving the cursor
         // TODO: move the cursor window up (so there is only one cursor window)
-        View::Layers(vec![
-            View::Solid(colour),
-            CursorWindow::view(
-                player,
-                cursor,
-                project.clone(),
-                grid,
-                self.negative_x_offset,
-            ),
-        ])
+        View::Solid(colour)
     }
 
     // TODO: use `Button` for:
@@ -160,16 +214,48 @@ impl PianoRoll {
             bottom.fill_remaining(),
         ])
     }
-}
 
-fn grabber(
-    title_height: Length,
-) -> impl Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static {
-    move |area, position| {
-        let relative_position = position - area.position.position();
+    fn keys<Ui: UserInterface>(self) -> Keys {
+        let lowest_key_width = self.y_offset % self.key_width;
+        // = floor(y_offset / key_width)
+        let lowest_key_semitones = match self.y_offset.cmp(&Offset::ZERO) {
+            Ordering::Less => (self.y_offset.abs() / self.key_width)
+                .ceil()
+                .saturating_cast::<i16>()
+                .saturating_neg(),
+            Ordering::Equal => 0,
+            Ordering::Greater => (self.y_offset.rectify() / self.key_width)
+                .floor()
+                .saturating_cast(),
+        };
+        let lowest_key_pitch = BOTTOM + Interval::from_semitones(lowest_key_semitones);
 
-        (relative_position.y < title_height).then_some(HoldableObject::PianoRollHandle {
-            y: relative_position.y,
-        })
+        let workspace_height = self.content_height - Ui::RULER_HEIGHT.get();
+        let remaining_key_space = workspace_height - lowest_key_width;
+
+        let number_of_full_keys = (remaining_key_space / self.key_width).floor();
+
+        let visible_interval =
+            Interval::from_semitones(number_of_full_keys.saturating_add(1).saturating_cast());
+        let highest_key_pitch = lowest_key_pitch + visible_interval;
+
+        Keys {
+            lowest_key_width,
+            lowest_key_pitch,
+            highest_key_pitch,
+            number_of_full_keys,
+        }
+    }
+
+    fn grabber(
+        title_height: Length,
+    ) -> impl Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static {
+        move |area, position| {
+            let relative_position = position - area.position.position();
+
+            (relative_position.y < title_height).then_some(HoldableObject::PianoRollHandle {
+                y: relative_position.y,
+            })
+        }
     }
 }

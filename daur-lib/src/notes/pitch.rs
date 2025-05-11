@@ -53,6 +53,12 @@ impl Pitch {
     pub fn name(self, sign: Sign) -> String {
         format!("{}{}", self.chroma().name(sign), self.octave_number())
     }
+
+    pub(crate) const fn a_440_plus(semitones: i16) -> Pitch {
+        Pitch {
+            from_a_440: Interval::from_semitones(semitones),
+        }
+    }
 }
 
 impl PartialEq for Pitch {
