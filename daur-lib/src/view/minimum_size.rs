@@ -85,8 +85,17 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             width: Ui::string_width(string),
             height: Ui::string_height(string),
         },
-        View::Titled { title, view, .. } => {
+        View::Titled {
+            title,
+            croppable,
+            view,
+            ..
+        } => {
             let mut size = view.minimum_size::<Ui>();
+
+            if !croppable {
+                size.width = max(size.width, Ui::title_width(title, view));
+            }
 
             // The title gets cropped if the view is narrower than it.
             size.height += Ui::title_height(title, view);
