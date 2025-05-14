@@ -2,38 +2,31 @@ use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
-use crate::{Action, HoldableObject};
+use crate::{Action, Actions, HoldableObject};
 use core::num::NonZeroU64;
 
 /// A visitor that scrolls (moves) objects.
-#[must_use = "run `Scroller::actions`"]
 #[derive(Debug)]
-pub struct Scroller {
+pub struct Scroller<'actions> {
     /// The position of the mouse when the view was scrolled.
     position: Point,
-    actions: Vec<Action>,
+    actions: &'actions mut Actions,
     /// The offset by which the scrolled view(s) should be moved.
     offset: Vector,
 }
 
-impl Scroller {
+impl<'actions> Scroller<'actions> {
     /// Constructs a new scroller that scrolls (moves) views at a position by an offset.  
-    pub fn new(position: Point, offset: Vector) -> Scroller {
+    pub fn new(position: Point, offset: Vector, actions: &'actions mut Actions) -> Self {
         Scroller {
             position,
-            actions: Vec::new(),
+            actions,
             offset,
         }
     }
-
-    /// Extracts the actions accumulated by the scroller.
-    #[must_use]
-    pub fn actions(self) -> impl IntoIterator<Item = Action> {
-        self.actions
-    }
 }
 
-impl Visitor for Scroller {
+impl Visitor for Scroller<'_> {
     fn visit_border(&mut self, _: Rectangle, _: bool) {}
 
     fn visit_canvas(&mut self, _: Rectangle, _: Colour, _: &Painter) {}

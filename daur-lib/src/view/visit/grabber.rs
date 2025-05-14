@@ -1,36 +1,26 @@
-use crate::Action;
 use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
+use crate::{Action, Actions};
 use core::num::NonZeroU64;
 
 /// A visitor that grabs objects.
-#[must_use = "run `Grabber::actions`"]
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-pub struct Grabber {
-    object: Option<HoldableObject>,
+#[derive(Debug)]
+pub struct Grabber<'actions> {
+    actions: &'actions mut Actions,
     position: Point,
 }
 
-impl Grabber {
+impl<'actions> Grabber<'actions> {
     /// Constructs a new grabber.
-    pub fn new(position: Point) -> Self {
-        Grabber {
-            object: None,
-            position,
-        }
-    }
-
-    /// Extracts the actions accumulated by the grabber.
-    #[must_use]
-    pub fn actions(self) -> impl IntoIterator<Item = Action> {
-        self.object.map(Action::PickUp)
+    pub fn new(position: Point, actions: &'actions mut Actions) -> Self {
+        Grabber { actions, position }
     }
 }
 
-impl Visitor for Grabber {
+impl Visitor for Grabber<'_> {
     fn reverse_order() -> bool {
         true
     }
@@ -47,7 +37,7 @@ impl Visitor for Grabber {
 
     fn visit_grabbable(&mut self, area: Rectangle, object: HoldableObject) {
         if area.contains(self.position) {
-            self.object = self.object.or(Some(object));
+            self.actions.push(Action::PickUp(object));
         }
     }
 

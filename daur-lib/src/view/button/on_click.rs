@@ -1,10 +1,10 @@
 use crate::ui::{Point, Size};
-use crate::{Action, Receiver, project};
+use crate::{Action, Actions, project};
 use core::any::type_name;
 use core::fmt;
 use core::fmt::{Debug, Formatter};
 
-type OnClickFunction = dyn Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static;
+type OnClickFunction = dyn Fn(Size, Point, &mut Actions) + Send + Sync + 'static;
 
 /// A function to run when a button is (left) clicked.
 #[derive(Default)]
@@ -14,9 +14,7 @@ pub struct OnClick {
 
 impl OnClick {
     /// Construct a new function.
-    pub fn new<F: Fn(Size, Point, &mut dyn Receiver<Action>) + Send + Sync + 'static>(
-        function: F,
-    ) -> Self {
+    pub fn new<F: Fn(Size, Point, &mut Actions) + Send + Sync + 'static>(function: F) -> Self {
         OnClick {
             function: Some(Box::new(function)),
         }
@@ -27,11 +25,11 @@ impl OnClick {
     /// [`OnClick`] also implements [`From<Action>`] so if the action is available at call-time,
     /// [`from`](From::<Action>::from) is preferred.
     pub fn action<F: Fn() -> Action + Send + Sync + 'static>(generator: F) -> Self {
-        OnClick::new(move |_, _, actions| actions.send(generator()))
+        OnClick::new(move |_, _, actions| actions.push(generator()))
     }
 
     /// Runs the function.
-    pub fn run(&self, size: Size, position: Point, receiver: &mut dyn Receiver<Action>) {
+    pub fn run(&self, size: Size, position: Point, receiver: &mut Actions) {
         if let Some(function) = self.function.as_ref() {
             function(size, position, receiver);
         }

@@ -1,37 +1,36 @@
-use crate::Action;
 use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, OnClick, Painter};
+use crate::{Action, Actions};
 use core::num::NonZeroU64;
 
 /// A visitor for clicking a view.
-#[must_use = "run `Clicker::actions`"]
-#[derive(Clone, Debug)]
-pub struct Clicker {
+#[derive(Debug)]
+pub struct Clicker<'actions> {
     position: Point,
-    actions: Vec<Action>,
+    actions: &'actions mut Actions,
     right_click: bool,
     captured: bool,
 }
 
-impl Clicker {
+impl<'actions> Clicker<'actions> {
     /// A clicker using the left mouse button.
-    pub fn left_click(position: Point) -> Self {
+    pub fn left_click(position: Point, actions: &'actions mut Actions) -> Self {
         Clicker {
             position,
-            actions: Vec::new(),
+            actions,
             right_click: false,
             captured: false,
         }
     }
 
     /// A clicker using the right mouse button.
-    pub fn right_click(position: Point) -> Self {
+    pub fn right_click(position: Point, actions: &'actions mut Actions) -> Self {
         Clicker {
             position,
-            actions: Vec::new(),
+            actions,
             right_click: true,
             captured: false,
         }
@@ -40,15 +39,9 @@ impl Clicker {
     fn should_click(&self, area: Rectangle) -> bool {
         !self.captured && area.contains(self.position)
     }
-
-    /// Extracts the actions accumulated by the clicker.
-    #[must_use]
-    pub fn actions(self) -> impl IntoIterator<Item = Action> {
-        self.actions
-    }
 }
 
-impl Visitor for Clicker {
+impl Visitor for Clicker<'_> {
     fn reverse_order() -> bool {
         true
     }
@@ -60,7 +53,7 @@ impl Visitor for Clicker {
     fn visit_clickable(&mut self, area: Rectangle, on_click: &OnClick) {
         if !self.right_click && self.should_click(area) {
             let position = self.position - area.position.position();
-            on_click.run(area.size, position, &mut self.actions);
+            on_click.run(area.size, position, self.actions);
         }
     }
 

@@ -3,10 +3,9 @@ use crate::metre::Instant;
 use crate::popup::{Id, Popup};
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
-use crate::{App, Clip, Track, UserInterface, project};
+use crate::{Actions, App, Clip, Track, UserInterface, project};
 use alloc::sync::Weak;
 use anyhow::Result;
-use core::iter::once;
 use derive_more::Debug;
 use std::path::PathBuf;
 
@@ -86,16 +85,16 @@ impl Action {
 impl<Ui: UserInterface> App<Ui> {
     /// Takes an action on the app.
     pub fn take_action(&mut self, action: Action) {
-        self.take_actions(once(action));
+        self.take(action);
+        self.view = self.render_view();
     }
 
     /// Takes multiple actions on the app.
-    pub fn take_actions<Actions: IntoIterator<Item = Action>>(&mut self, actions: Actions) {
-        let mut should_rerender = false;
+    pub fn take_actions(&mut self, actions: Actions) {
+        let should_rerender = !actions.is_empty();
 
-        for action in actions {
+        for action in actions.into_vec() {
             self.take(action);
-            should_rerender = true;
         }
 
         if should_rerender {

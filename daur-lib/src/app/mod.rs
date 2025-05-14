@@ -1,7 +1,9 @@
 mod action;
+mod actions;
 mod holdable;
 
 pub use action::Action;
+pub use actions::Actions;
 pub use holdable::HoldableObject;
 
 use crate::audio::Config;

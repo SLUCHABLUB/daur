@@ -18,13 +18,11 @@ mod app;
 mod extension;
 mod piano_roll;
 mod ratio;
-mod receiver;
 mod string;
 
-pub use app::{Action, App, HoldableObject};
+pub use app::{Action, Actions, App, HoldableObject};
 pub use piano_roll::PianoRoll;
 pub use ratio::{NonZeroRatio, Ratio};
-pub use receiver::Receiver;
 pub use string::ToArcStr;
 
 #[doc(inline)]

@@ -130,7 +130,7 @@ impl Popup {
                     OnClick::new(move |_, _, actions| {
                         let path = path.get();
                         let action = action(&path);
-                        actions.send(action);
+                        actions.push(action);
                     }),
                 )
                 .terminating(id);

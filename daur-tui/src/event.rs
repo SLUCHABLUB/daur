@@ -3,11 +3,11 @@ use crate::tui::Tui;
 use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
 use daur::ui::{Direction, Length, Point, Rectangle};
 use daur::view::visit::{Clicker, Grabber, Scroller};
-use daur::{Action, App, View};
+use daur::{Action, Actions, App, View};
 use ratatui::layout::{Position, Size};
 
 pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
-    let mut actions = Vec::new();
+    let mut actions = Actions::new();
 
     for event in events {
         handle_event(event, app, &mut actions);
@@ -16,7 +16,7 @@ pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
     app.take_actions(actions);
 }
 
-pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Vec<Action>) {
+pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Actions) {
     match *event {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
         Event::Key(event) => handle_key_event(event, app.ui(), actions),
@@ -38,7 +38,7 @@ fn handle_key_event(
         ..
     }: KeyEvent,
     ui: &Tui,
-    actions: &mut Vec<Action>,
+    actions: &mut Actions,
 ) {
     if kind != KeyEventKind::Press {
         return;
@@ -54,7 +54,7 @@ fn handle_mouse_event(
         kind, column, row, ..
     }: MouseEvent,
     app: &mut App<Tui>,
-    actions: &mut Vec<Action>,
+    actions: &mut Actions,
 ) {
     app.ui_mut().mouse_position = to_point(Position::new(column, row));
 
@@ -67,24 +67,20 @@ fn handle_mouse_event(
                 return;
             }
 
-            let mut grabber = Grabber::new(ui.mouse_position);
+            let mut grabber = Grabber::new(ui.mouse_position, actions);
 
             view.accept::<Tui, _>(&mut grabber, ui.area, ui.mouse_position);
-
-            actions.extend(grabber.actions());
         }
         MouseEventKind::Up(button) => {
             // click
 
             let mut clicker = match button {
-                MouseButton::Left => Clicker::left_click(ui.mouse_position),
-                MouseButton::Right => Clicker::right_click(ui.mouse_position),
+                MouseButton::Left => Clicker::left_click(ui.mouse_position, actions),
+                MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),
                 MouseButton::Middle => return,
             };
 
             view.accept::<Tui, _>(&mut clicker, ui.area, ui.mouse_position);
-
-            actions.extend(clicker.actions());
 
             // let go
 
@@ -107,12 +103,10 @@ fn handle_mouse_event(
     }
 }
 
-fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Vec<Action>) {
+fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Actions) {
     let offset = -direction * Length::PIXEL;
 
-    let mut scroller = Scroller::new(ui.mouse_position, offset);
+    let mut scroller = Scroller::new(ui.mouse_position, offset, actions);
 
     view.accept::<Tui, _>(&mut scroller, ui.area, ui.mouse_position);
-
-    actions.extend(scroller.actions());
 }
