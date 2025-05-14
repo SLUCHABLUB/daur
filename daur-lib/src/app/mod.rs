@@ -132,7 +132,7 @@ impl<Ui: UserInterface> App<Ui> {
             self.project_manager
                 .project()
                 .bar::<Ui>(
-                    self.audio_config.is_player_playing(),
+                    self.audio_config.try_player().cloned(),
                     self.edit_mode,
                     self.piano_roll.is_open,
                 )

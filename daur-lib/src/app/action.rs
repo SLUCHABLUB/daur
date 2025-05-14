@@ -130,6 +130,8 @@ impl<Ui: UserInterface> App<Ui> {
 
                 if self.audio_config.is_player_playing() {
                     self.take(Action::Play);
+                } else {
+                    self.audio_config.pause_player();
                 }
             }
 
@@ -173,7 +175,7 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::Play => {
                 let from = self
-                    .cursor
+                    .cursor()
                     .to_real_time(&self.project_manager.project().settings);
 
                 let player = self.audio_config.player()?;

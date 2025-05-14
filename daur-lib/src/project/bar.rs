@@ -1,4 +1,5 @@
 use crate::app::Action;
+use crate::audio::Player;
 use crate::metre::Instant;
 use crate::notes::Key;
 use crate::popup::Popup;
@@ -31,10 +32,10 @@ fn open_key_selector(instant: Instant, key: Key) -> OnClick {
 }
 
 /// The bar att the top of the window.
-pub fn bar<Ui: UserInterface>(
+pub(crate) fn bar<Ui: UserInterface>(
     title: ArcStr,
     settings: &Settings,
-    playing: bool,
+    player: Option<Player>,
     edit_mode: bool,
     piano_roll_open: bool,
 ) -> View {
@@ -52,11 +53,15 @@ pub fn bar<Ui: UserInterface>(
 
     let to_start_button =
         View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));
-    let playback_button = if playing {
-        View::standard_button(PAUSE, OnClick::from(Action::Pause))
-    } else {
-        View::standard_button(PLAY, OnClick::from(Action::Play))
-    };
+    let playback_button = View::generator(move || {
+        let is_playing = player.as_ref().is_some_and(Player::is_playing);
+
+        if is_playing {
+            View::standard_button(PAUSE, OnClick::from(Action::Pause))
+        } else {
+            View::standard_button(PLAY, OnClick::from(Action::Play))
+        }
+    });
     // TODO: add functionality
     let record_button = View::standard_button(RECORD, OnClick::default());
     // TODO: add functionality

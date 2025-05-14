@@ -80,6 +80,10 @@ impl Renderer {
                 .execute(render_job(stream, progress, should_play));
         }
 
+        if tracks.is_empty() {
+            master(Vec::new(), sample_rate, &progress, &self.should_play);
+        }
+
         let old_progress = replace(&mut self.progress, progress);
 
         // Stop the threads that are rendering the old project

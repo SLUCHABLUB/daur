@@ -168,11 +168,6 @@ impl Audio {
         }
         .to_metre(settings)
     }
-
-    /// Returns an [audio source](rodio::Source) for the audio.
-    pub(crate) fn into_source(self) -> Source {
-        Source::new(self)
-    }
 }
 
 impl<R: Read> TryFrom<WavReader<R>> for Audio {

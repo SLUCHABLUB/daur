@@ -9,10 +9,11 @@ mod settings;
 mod workspace;
 
 pub use action::Action;
-pub use bar::bar;
 pub use manager::Manager;
-pub(crate) use renderer::Renderer;
 pub use settings::Settings;
+
+pub(crate) use bar::bar;
+pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
 use crate::audio::Player;
@@ -54,14 +55,14 @@ impl Project {
 
     pub(crate) fn bar<Ui: UserInterface>(
         &self,
-        playing: bool,
+        player: Option<Player>,
         edit_mode: bool,
         piano_roll_open: bool,
     ) -> View {
         bar::<Ui>(
             self.title(),
             &self.settings,
-            playing,
+            player,
             edit_mode,
             piano_roll_open,
         )

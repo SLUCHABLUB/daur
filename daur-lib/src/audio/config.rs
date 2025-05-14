@@ -53,7 +53,6 @@ impl Config {
             .get_or_try_insert_with(|| {
                 let (stream, handle) = OutputStream::try_from_device(device)?;
                 let sink = Sink::try_new(&handle)?;
-                sink.pause();
                 let player = Player::from(sink);
 
                 Ok(StreamCache { stream, player })
@@ -83,6 +82,6 @@ impl Config {
     }
 
     pub(crate) fn pause_player(&mut self) -> Option<Instant> {
-        self.player().ok()?.pause()
+        self.try_player().and_then(Player::pause)
     }
 }

@@ -1,5 +1,4 @@
-use crate::audio::Audio;
-use crate::time;
+use crate::{Audio, time};
 use core::time::Duration;
 use rodio::source::SeekError;
 
@@ -26,8 +25,8 @@ impl Source {
 impl Iterator for Source {
     type Item = f32;
 
-    fn next(&mut self) -> Option<Self::Item> {
-        let pair = *self.audio.samples.get(self.sample_index)?;
+    fn next(&mut self) -> Option<f32> {
+        let pair = self.audio.samples.get(self.sample_index)?;
         let sample = if self.right { pair.right } else { pair.left };
 
         if self.right {
