@@ -11,7 +11,10 @@ use crate::draw::redraw;
 use crate::event::handle_events;
 use crate::tui::Tui;
 use core::time::Duration;
-use crossterm::event::{DisableMouseCapture, EnableMouseCapture, Event, poll, read};
+use crossterm::event::{
+    DisableMouseCapture, EnableMouseCapture, Event, KeyboardEnhancementFlags,
+    PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags, poll, read,
+};
 use crossterm::execute;
 use daur::App;
 use ratatui::DefaultTerminal;
@@ -21,9 +24,14 @@ use std::io::stdout;
 fn main() -> io::Result<()> {
     execute!(stdout(), EnableMouseCapture)?;
     let terminal = &mut ratatui::init();
+    execute!(
+        stdout(),
+        PushKeyboardEnhancementFlags(KeyboardEnhancementFlags::all())
+    )?;
 
     let result = in_terminal(terminal);
 
+    execute!(stdout(), PopKeyboardEnhancementFlags)?;
     ratatui::restore();
     execute!(stdout(), DisableMouseCapture)?;
 
