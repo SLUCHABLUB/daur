@@ -50,9 +50,7 @@ pub enum Action {
     /// Picks up an object.
     PickUp(HoldableObject),
     /// Moves the held object.
-    MoveHand(Point),
-    /// Lets go of the held object.
-    LetGo,
+    MoveHeldObject(Point),
 
     /// Moves the overview.
     MoveOverview(Vector),
@@ -86,7 +84,7 @@ impl<Ui: UserInterface> App<Ui> {
     /// Takes an action on the app.
     pub fn take_action(&mut self, action: Action) {
         self.take(action);
-        self.view = self.render_view();
+        self.rerender();
     }
 
     /// Takes multiple actions on the app.
@@ -98,7 +96,7 @@ impl<Ui: UserInterface> App<Ui> {
         }
 
         if should_rerender {
-            self.view = self.render_view();
+            self.rerender();
         }
     }
 
@@ -151,19 +149,11 @@ impl<Ui: UserInterface> App<Ui> {
             Action::ExitEditMode => self.edit_mode = false,
             Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
 
-            Action::PickUp(object) => {
-                if let Some(old) = self.hand.replace(object) {
-                    old.let_go(self);
-                }
-            }
-            Action::MoveHand(point) => {
-                if let Some(object) = self.hand {
+            // the currently held object should already have been let go.
+            Action::PickUp(object) => self.held_object = Some(object),
+            Action::MoveHeldObject(point) => {
+                if let Some(object) = self.held_object {
                     object.update(self, point);
-                }
-            }
-            Action::LetGo => {
-                if let Some(object) = self.hand.take() {
-                    object.let_go(self);
                 }
             }
 
@@ -190,7 +180,7 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::Project(action) => {
                 self.project_manager
-                    .take(action, self.cursor, self.selected_track())?;
+                    .take(action, self.cursor, &self.selection)?;
 
                 self.renderer.restart(
                     &self.project_manager.project().tracks,
@@ -199,8 +189,8 @@ impl<Ui: UserInterface> App<Ui> {
                 );
             }
             Action::SelectClip { track, clip, .. } => {
-                self.selected_track = track;
-                self.selected_clip = clip;
+                self.selection.set_track(track);
+                self.selection.set_clip(clip);
             }
         }
 

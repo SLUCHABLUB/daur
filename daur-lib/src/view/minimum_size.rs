@@ -29,7 +29,8 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         View::Clickable { view, .. }
         | View::Contextual { view, .. }
         | View::Grabbable { view, .. }
-        | View::Scrollable { view, .. } => view.minimum_size::<Ui>(),
+        | View::Scrollable { view, .. }
+        | View::ObjectAcceptor { view, .. } => view.minimum_size::<Ui>(),
         View::Generator(generator) => generator().minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {
             let default = default.minimum_size::<Ui>();

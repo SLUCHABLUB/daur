@@ -31,7 +31,7 @@ pub struct Track {
 impl Track {
     /// Constructs a new, empty, track.
     #[must_use]
-    pub fn new() -> Track {
+    pub const fn new() -> Track {
         Track {
             name: DEFAULT_TITLE,
             clips: Spaced::new(),
@@ -80,12 +80,11 @@ impl Track {
 
     /// Returns a mutable reference to a clip.
     #[must_use]
-    pub fn clip_mut(&mut self, weak: &Weak<Clip>) -> Option<&mut Clip> {
+    pub fn clip_mut(&mut self, weak: &Weak<Clip>) -> Option<(Instant, &mut Clip)> {
         self.clips
             .iter_mut()
-            .map(|(_, clip)| clip)
-            .find(|arc| Arc::as_ptr(arc) == Weak::as_ptr(weak))
-            .map(Arc::make_mut)
+            .find(|(_, arc)| Arc::as_ptr(arc) == Weak::as_ptr(weak))
+            .map(|(position, clip)| (position, Arc::make_mut(clip)))
     }
 }
 

@@ -6,7 +6,7 @@ use core::num::{NonZeroU64, NonZeroUsize};
 use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
-use daur::view::{Alignment, OnClick, Painter};
+use daur::view::{Alignment, DropAction, OnClick, Painter};
 use daur::{Action, App, HoldableObject};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -86,6 +86,8 @@ impl Visitor for Renderer<'_> {
     }
 
     fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
+
+    fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64) {
         let area = from_rectangle(area);

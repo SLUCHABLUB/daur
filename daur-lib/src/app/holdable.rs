@@ -1,3 +1,4 @@
+use crate::metre::Instant;
 use crate::ui::{Length, Point};
 use crate::{App, UserInterface};
 
@@ -10,6 +11,11 @@ pub enum HoldableObject {
         /// How far down, on the handle, it was grabbed.
         y: Length,
     },
+    /// A note in the process of being created.
+    NoteCreation {
+        /// Where the note should start.
+        start: Instant,
+    },
 }
 
 impl HoldableObject {
@@ -20,13 +26,7 @@ impl HoldableObject {
                 app.piano_roll.content_height =
                     app.ui.size().height - position.y + y - Length::PIXEL;
             }
-        }
-    }
-
-    /// Lets go of the object.
-    pub(crate) fn let_go<Ui: UserInterface>(self, _app: &mut App<Ui>) {
-        match self {
-            HoldableObject::PianoRollHandle { .. } => (),
+            HoldableObject::NoteCreation { .. } => (),
         }
     }
 }

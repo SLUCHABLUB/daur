@@ -6,7 +6,7 @@ use crate::metre::Duration;
 use crate::project::Settings;
 use crate::time;
 use crate::ui::{Grid, Length};
-use core::ops::{Add, AddAssign, Sub};
+use core::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// An instant in musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -140,6 +140,21 @@ impl Add<Duration> for Instant {
 impl AddAssign<Duration> for Instant {
     fn add_assign(&mut self, rhs: Duration) {
         self.since_start += rhs;
+    }
+}
+
+impl Sub<Duration> for Instant {
+    type Output = Instant;
+
+    fn sub(mut self, rhs: Duration) -> Self::Output {
+        self -= rhs;
+        self
+    }
+}
+
+impl SubAssign<Duration> for Instant {
+    fn sub_assign(&mut self, rhs: Duration) {
+        self.since_start -= rhs;
     }
 }
 

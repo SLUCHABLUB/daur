@@ -31,6 +31,18 @@ impl View {
         }
     }
 
+    pub fn object_accepting<
+        F: Fn(HoldableObject, Rectangle, Point) -> Option<Action> + Send + Sync + 'static,
+    >(
+        self,
+        dropper: F,
+    ) -> Self {
+        View::ObjectAcceptor {
+            drop: Box::new(dropper),
+            view: Box::new(self),
+        }
+    }
+
     /// Makes the view scrollable.
     pub fn scrollable(self, action: fn(Vector) -> Action) -> Self {
         View::Scrollable {

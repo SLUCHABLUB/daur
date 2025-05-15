@@ -1,30 +1,30 @@
-use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter};
-use crate::{Action, Actions};
+use crate::{Action, Actions, HoldableObject};
 use core::num::NonZeroU64;
 
-/// A visitor that grabs objects.
+/// A [visitor](Visitor) for dropping an [object](HoldableObject).
 #[derive(Debug)]
-pub struct Grabber<'actions> {
+pub struct Dropper<'actions> {
     actions: &'actions mut Actions,
+    object: HoldableObject,
     position: Point,
 }
 
-impl<'actions> Grabber<'actions> {
-    /// Constructs a new grabber.
-    pub fn new(position: Point, actions: &'actions mut Actions) -> Self {
-        Grabber { actions, position }
+impl<'actions> Dropper<'actions> {
+    /// Constructs a new dropper.
+    pub fn new(object: HoldableObject, position: Point, actions: &'actions mut Actions) -> Self {
+        Dropper {
+            actions,
+            object,
+            position,
+        }
     }
 }
 
-impl Visitor for Grabber<'_> {
-    fn reverse_order() -> bool {
-        true
-    }
-
+impl Visitor for Dropper<'_> {
     fn visit_border(&mut self, _: Rectangle, _: bool) {}
 
     fn visit_canvas(&mut self, _: Rectangle, _: Colour, _: &Painter) {}
@@ -35,13 +35,15 @@ impl Visitor for Grabber<'_> {
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
 
-    fn visit_grabbable(&mut self, area: Rectangle, object: HoldableObject) {
+    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
+
+    fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction) {
         if area.contains(self.position) {
-            self.actions.push(Action::PickUp(object));
+            if let Some(action) = action(self.object, area, self.position) {
+                self.actions.push(action);
+            }
         }
     }
-
-    fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 

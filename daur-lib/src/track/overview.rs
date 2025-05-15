@@ -1,11 +1,11 @@
-use crate::app::Action;
+use crate::app::{Action, Selection};
 use crate::audio::Player;
 use crate::metre::{Instant, Period};
 use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, Quotated, View, feed};
-use crate::{Clip, Track, UserInterface, clip};
+use crate::{Track, UserInterface, clip};
 use alloc::sync::{Arc, Weak};
 use closure::closure;
 use num::Integer as _;
@@ -13,7 +13,7 @@ use num::Integer as _;
 /// Returns the track overview.
 pub(crate) fn overview<Ui: UserInterface>(
     track: Arc<Track>,
-    selected_clip: &Weak<Clip>,
+    selection: &Selection,
     project_settings: &Settings,
     grid: Grid,
     offset: Length,
@@ -21,7 +21,7 @@ pub(crate) fn overview<Ui: UserInterface>(
     player: Option<&Player>,
 ) -> View {
     View::size_informed(closure!([
-        clone selected_clip,
+        clone selection,
         clone project_settings,
         cloned player,
     ] move |size| {
@@ -31,7 +31,7 @@ pub(crate) fn overview<Ui: UserInterface>(
         // TODO: don't use a feed here
         let generator = feed_generator(
             &track,
-            &selected_clip,
+            &selection,
             &project_settings,
             grid,
             Offset::negative(offset),
@@ -50,7 +50,7 @@ pub(crate) fn overview<Ui: UserInterface>(
 /// Returns a function for generating clip-overviews from a feed index.
 fn feed_generator(
     track: &Arc<Track>,
-    selected_clip: &Weak<Clip>,
+    selection: &Selection,
     settings: &Settings,
     grid: Grid,
     offset: Offset,
@@ -65,7 +65,7 @@ fn feed_generator(
         }))
     };
 
-    closure!([clone track, clone selected_clip, clone settings, clone empty] move |index| {
+    closure!([clone track, clone selection, clone settings, clone empty] move |index| {
         let Ok(index) = usize::try_from(index) else {
             return empty().quotated(offset.abs());
         };
@@ -109,7 +109,7 @@ fn feed_generator(
             return empty().quotated(clip_width);
         };
 
-        let selected = selected_clip.as_ptr() == clip_reference.as_ptr();
+        let selected = selection.clip().as_ptr() == clip_reference.as_ptr();
 
         clip::overview(Arc::clone(clip), Arc::downgrade(&track), selected, clip_period.get(), visible_period, &settings, grid)
         .quotated(clip_width)

@@ -1,9 +1,10 @@
-use crate::metre::{Instant, NonZeroInstant};
+use crate::Clip;
+use crate::app::Selection;
+use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
 use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
-use crate::{Clip, Track};
-use alloc::sync::{Arc, Weak};
+use alloc::sync::Arc;
 use anyhow::Result;
 use getset::Getters;
 use thiserror::Error;
@@ -11,6 +12,14 @@ use thiserror::Error;
 #[derive(Debug, Error)]
 #[error("no track is selected")]
 struct NoTrackSelected;
+
+#[derive(Debug, Error)]
+#[error("no clip is selected")]
+struct NoClipSelected;
+
+#[derive(Debug, Error)]
+#[error("the selected clip is not a notes-clip")]
+struct NoNotesSelected;
 
 #[derive(Debug, Error)]
 #[error("there is already a clip at that position")]
@@ -41,19 +50,46 @@ impl Manager {
     /// # Errors
     ///
     /// If the action cannot be completed, a popup to open will be returned.
-    pub fn take(
-        &mut self,
-        action: Action,
-        cursor: Instant,
-        selected_track: Weak<Track>,
-    ) -> Result<()> {
-        self.edit(Edit::from_action(action, cursor, selected_track)?)
+    pub fn take(&mut self, action: Action, cursor: Instant, selection: &Selection) -> Result<()> {
+        self.edit(Edit::from_action(action, cursor, selection)?)
     }
 
     fn edit(&mut self, edit: Edit) -> Result<()> {
         self.history.push(edit.clone());
 
         match edit {
+            Edit::AddNote {
+                track,
+                clip,
+                position: note_position,
+                pitch,
+                mut note,
+            } => {
+                let (clip_position, clip) = self
+                    .project
+                    .track_mut(&track)
+                    .ok_or(NoTrackSelected)?
+                    .clip_mut(&clip)
+                    .ok_or(NoClipSelected)?;
+
+                if note_position < clip_position {
+                    let difference = clip_position - note_position;
+                    let Some(duration) =
+                        NonZeroDuration::from_duration(note.duration.get() - difference)
+                    else {
+                        return Ok(());
+                    };
+
+                    note.duration = duration;
+                }
+
+                let relative_position = note_position - clip_position.since_start;
+
+                clip.content
+                    .as_notes_mut()
+                    .ok_or(NoNotesSelected)?
+                    .try_insert(relative_position, pitch, note);
+            }
             Edit::AddClip {
                 track,
                 position,

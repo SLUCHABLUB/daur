@@ -31,6 +31,26 @@ impl Content {
         }
     }
 
+    /// Tries to resolve the content to a notes-clip.
+    #[must_use]
+    pub fn as_notes(&self) -> Option<&Notes> {
+        // TODO: also return notes if self is a linked clip
+        match self {
+            Content::Audio(_) => None,
+            Content::Notes(notes) => Some(notes),
+        }
+    }
+
+    /// Tries to resolve the content to a notes-clip.
+    #[must_use]
+    pub fn as_notes_mut(&mut self) -> Option<&mut Notes> {
+        // TODO: also return notes if self is a linked clip
+        match self {
+            Content::Audio(_) => None,
+            Content::Notes(notes) => Some(notes),
+        }
+    }
+
     pub(super) fn paint_overview(
         &self,
         context: &mut dyn Context,

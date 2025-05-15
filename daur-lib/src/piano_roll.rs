@@ -1,17 +1,23 @@
+use crate::app::Selection;
 use crate::audio::Player;
-use crate::metre::Instant;
-use crate::notes::{Interval, Key, Pitch};
+use crate::metre::{Instant, NonZeroDuration};
+use crate::notes::{Interval, Key, Note, Notes, Pitch};
 use crate::project::Settings;
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
-use crate::{Action, Clip, HoldableObject, UserInterface, View};
-use alloc::sync::{Arc, Weak};
+use crate::{Action, HoldableObject, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
+use closure::closure;
 use core::cmp::Ordering;
+use core::iter::once;
+use core::mem::swap;
+use itertools::chain;
 use saturating_cast::SaturatingCast as _;
 
 const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
+// TODO: add audio clip "editing"
+const AUDIO_CLIP_SELECTED: ArcStr = literal!("cannot edit audio clips (yet)");
 
 /// The pitch at the bottom of the piano roll (before scrolling).
 /// Due to the way we calculate the lowest key's width (using modulo),
@@ -51,7 +57,7 @@ impl PianoRoll {
     /// Returns the view for the piano roll.
     pub(crate) fn view<Ui: UserInterface>(
         self,
-        clip: &Weak<Clip>,
+        selection: &Selection,
         project: Settings,
         grid: Grid,
         player: Option<Player>,
@@ -61,34 +67,50 @@ impl PianoRoll {
             return Quotated::EMPTY;
         }
 
-        let view = self.content::<Ui>(clip, project, grid, player, cursor);
+        let title = selection
+            .clip()
+            .upgrade()
+            .as_deref()
+            .map_or(PIANO_ROLL, |clip| clip.settings.name());
 
-        let title = clip.upgrade().as_deref().map_or(PIANO_ROLL, Clip::name);
+        let view = self.content::<Ui>(selection, project, grid, player, cursor);
 
         let title_height = Ui::title_height(&title, &view);
 
         view.scrollable(Action::MovePianoRoll)
             .titled(title)
-            .grabbable(Self::grabber(title_height))
+            .grabbable(Self::handle_grabber(title_height))
             .quotated(self.content_height + title_height)
     }
 
     fn content<Ui: UserInterface>(
         self,
-        clip: &Weak<Clip>,
+        selection: &Selection,
         project: Settings,
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
     ) -> View {
-        let Some(clip) = clip.upgrade() else {
+        let Some((clip_position, clip)) = selection.resolve_clip_and_position() else {
             return NO_CLIP_SELECTED.centred();
+        };
+
+        let Some(notes) = clip.content.as_notes() else {
+            return AUDIO_CLIP_SELECTED.centred();
         };
 
         // The piano roll has a fixed lower pitch.
         // Resizing it will thus cause the bottom to be fixed.
         // Since the top is the thing being moved, this seems intuitive.
-        let workspace = self.workspace::<Ui>(clip, &project, grid, player, cursor);
+        let workspace = self.workspace::<Ui>(
+            clip_position,
+            notes,
+            clip.settings.colour,
+            &project,
+            grid,
+            player,
+            cursor,
+        );
 
         let ruler = View::x_stack([
             View::Empty.quotated(self.piano_depth.get()),
@@ -101,9 +123,12 @@ impl PianoRoll {
         ])
     }
 
+    #[expect(clippy::too_many_arguments, reason = "the method is internal")]
     fn workspace<Ui: UserInterface>(
         self,
-        _clip: Arc<Clip>,
+        clip_start: Instant,
+        notes: &Notes,
+        clip_colour: Colour,
         project: &Settings,
         grid: Grid,
         player: Option<Player>,
@@ -112,7 +137,7 @@ impl PianoRoll {
         let keys = self.keys::<Ui>();
 
         let piano = self.piano(keys, project, grid);
-        let roll = self.roll(keys, project, grid);
+        let roll = self.roll(clip_start, notes, clip_colour, keys, project, grid);
         let cursor_window = CursorWindow::view(
             player,
             cursor,
@@ -150,17 +175,44 @@ impl PianoRoll {
         View::y_stack(piano)
     }
 
-    fn roll(self, keys: Keys, project: &Settings, grid: Grid) -> View {
-        let highest_row = Self::row(keys.highest_key_pitch, project, grid).fill_remaining();
-        let lowest_row =
-            Self::row(keys.lowest_key_pitch, project, grid).quotated(keys.lowest_key_width);
+    fn roll(
+        self,
+        clip_start: Instant,
+        notes: &Notes,
+        clip_colour: Colour,
+        keys: Keys,
+        project: &Settings,
+        grid: Grid,
+    ) -> View {
+        let highest_row = self
+            .row(
+                clip_start,
+                notes,
+                clip_colour,
+                keys.highest_key_pitch,
+                project.clone(),
+                grid,
+            )
+            .fill_remaining();
+        let lowest_row = self
+            .row(
+                clip_start,
+                notes,
+                clip_colour,
+                keys.lowest_key_pitch,
+                project.clone(),
+                grid,
+            )
+            .quotated(keys.lowest_key_width);
 
         let mut rows = vec![highest_row];
 
         for semitones in (1..=keys.number_of_full_keys).rev() {
             let interval = Interval::from_semitones(semitones.saturating_cast());
             let pitch = keys.lowest_key_pitch + interval;
-            let row = Self::row(pitch, project, grid).quotated(self.key_width.get());
+            let row = self
+                .row(clip_start, notes, clip_colour, pitch, project.clone(), grid)
+                .quotated(self.key_width.get());
             rows.push(row);
         }
 
@@ -170,30 +222,91 @@ impl PianoRoll {
     }
 
     /// Return the view for a (non-piano) row of the piano roll.
-    fn row(pitch: Pitch, _project: &Settings, _grid: Grid) -> View {
+    fn row(
+        self,
+        clip_start: Instant,
+        notes: &Notes,
+        clip_colour: Colour,
+        pitch: Pitch,
+        project: Settings,
+        grid: Grid,
+    ) -> View {
         // TODO:
-        //  - draw notes
+        //  - colour for out-of-bounds
         //  - draw grid
         //  - highlight key based on settings
-        let colour = if (pitch - Pitch::A_440).semitones() % 2 == 0 {
+        let background_colour = if (pitch - Pitch::A_440).semitones() % 2 == 0 {
             Colour::gray_scale(0xAA)
         } else {
             Colour::gray_scale(0x55)
         };
 
-        // TODO: use `Grabbable` for
-        //  - adding notes
-        //  - selecting notes
-        //  - moving the cursor
-        // TODO: move the cursor window up (so there is only one cursor window)
-        View::Solid(colour)
+        let background = View::Solid(background_colour);
+
+        let view = View::Layers(
+            chain(
+                once(background),
+                notes.with_pitch(pitch).map(|(note_start, note)| {
+                    let start = (clip_start + note_start.since_start).to_x_offset(&project, grid)
+                        - self.negative_x_offset;
+                    let end = (clip_start + note_start.since_start + note.duration.get())
+                        .to_x_offset(&project, grid)
+                        - self.negative_x_offset;
+
+                    let width = end - start;
+
+                    View::x_stack([
+                        View::Empty.quotated(start),
+                        View::Solid(clip_colour).quotated(width),
+                        View::Empty.fill_remaining(),
+                    ])
+                }),
+            )
+            .collect(),
+        );
+
+        // TODO: selecting notes
+        let grabber = closure!([clone project] move |area: Rectangle, position: Point| {
+            let start = Instant::quantised_from_x_offset(
+                position.x - area.position.x + self.negative_x_offset,
+                &project,
+                grid,
+            );
+
+            Some(HoldableObject::NoteCreation { start })
+        });
+
+        let dropper = move |object, area: Rectangle, position: Point| {
+            let HoldableObject::NoteCreation { mut start } = object else {
+                return None;
+            };
+            let mut end = Instant::quantised_from_x_offset(
+                position.x - area.position.x + self.negative_x_offset,
+                &project,
+                grid,
+            );
+
+            if end < start {
+                swap(&mut start, &mut end);
+            }
+
+            let duration = NonZeroDuration::from_duration(end - start)?;
+
+            Some(Action::Project(project::Action::AddNote {
+                position: start,
+                pitch,
+                note: Note { duration },
+            }))
+        };
+
+        view.grabbable(grabber).object_accepting(dropper)
     }
 
     // TODO: use `Button` for:
     //  - plinking the key
     //  - selecting all notes with the key's pitch
     /// Return the view for a key on the piano-roll piano.
-    fn piano_key(&self, pitch: Pitch, key: Key) -> View {
+    fn piano_key(self, pitch: Pitch, key: Key) -> View {
         let top = View::Solid(if pitch.chroma().is_black_key() {
             Colour::BLACK
         } else {
@@ -247,7 +360,7 @@ impl PianoRoll {
         }
     }
 
-    fn grabber(
+    fn handle_grabber(
         title_height: Length,
     ) -> impl Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static {
         move |area, position| {

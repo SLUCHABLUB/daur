@@ -1,7 +1,7 @@
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
-use crate::view::{Alignment, OnClick, Painter};
+use crate::view::{Alignment, DropAction, OnClick, Painter};
 use crate::{Action, Actions, HoldableObject};
 use core::num::NonZeroU64;
 
@@ -38,6 +38,8 @@ impl Visitor for Scroller<'_> {
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
 
     fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
+
+    fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 

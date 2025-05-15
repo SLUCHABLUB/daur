@@ -1,5 +1,5 @@
 /// An 8-bit per channel (opaque) colour.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Colour {
     /// The red channel.
     pub red: u8,

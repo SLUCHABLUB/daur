@@ -1,19 +1,19 @@
+use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings};
 use crate::track::{Track, overview, settings};
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
-use crate::{Action, Clip, UserInterface};
-use alloc::sync::{Arc, Weak};
+use crate::{Action, UserInterface};
+use alloc::sync::Arc;
 use arcstr::literal;
 
 // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
 #[expect(clippy::too_many_arguments, reason = "todo")]
 pub(crate) fn workspace<Ui: UserInterface>(
     overview_offset: Length,
-    selected_track: &Weak<Track>,
-    selected_clip: &Weak<Clip>,
+    selection: &Selection,
     track_settings_width: NonZeroLength,
     tracks: Vec<Arc<Track>>,
     project_settings: Settings,
@@ -26,12 +26,12 @@ pub(crate) fn workspace<Ui: UserInterface>(
 
     for track in tracks {
         let track_reference = Arc::downgrade(&track);
-        let selected = selected_track.as_ptr() == track_reference.as_ptr();
+        let selected = selection.track().as_ptr() == track_reference.as_ptr();
 
         track_settings.push(settings(&track, selected));
         track_overviews.push(overview::<Ui>(
             track,
-            selected_clip,
+            selection,
             &project_settings,
             grid,
             overview_offset,
@@ -50,7 +50,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     // A "dummy-track" for the row with the add-track button
     track_overviews.push(overview::<Ui>(
         Arc::new(Track::new()),
-        selected_clip,
+        selection,
         &project_settings,
         grid,
         overview_offset,

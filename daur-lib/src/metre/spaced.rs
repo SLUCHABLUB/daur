@@ -32,6 +32,11 @@ impl<T> Spaced<T> {
         Ok(())
     }
 
+    /// Tres retrieving the item at the given position.
+    pub fn get_mut(&mut self, position: Instant) -> Option<&mut T> {
+        self.entries.get_mut(&position)
+    }
+
     /// Returns an iterator over the list.
     #[must_use]
     pub fn iter(&self) -> impl ExactSizeIterator<Item = (Instant, &T)> {

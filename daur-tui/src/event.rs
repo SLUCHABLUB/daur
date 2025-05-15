@@ -2,7 +2,7 @@ use crate::convert::{to_point, to_size};
 use crate::tui::Tui;
 use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
 use daur::ui::{Direction, Length, Point, Rectangle};
-use daur::view::visit::{Clicker, Grabber, Scroller};
+use daur::view::visit::{Clicker, Dropper, Grabber, Scroller};
 use daur::{Action, Actions, App, View};
 use ratatui::layout::{Position, Size};
 
@@ -84,10 +84,14 @@ fn handle_mouse_event(
 
             // let go
 
-            actions.push(Action::LetGo);
+            if let Some(object) = app.held_object() {
+                let mut dropper = Dropper::new(object, ui.mouse_position, actions);
+
+                view.accept::<Tui, _>(&mut dropper, ui.area, ui.mouse_position);
+            }
         }
         MouseEventKind::Moved => (),
-        MouseEventKind::Drag(_) => actions.push(Action::MoveHand(ui.mouse_position)),
+        MouseEventKind::Drag(_) => actions.push(Action::MoveHeldObject(ui.mouse_position)),
         MouseEventKind::ScrollDown => {
             scroll(Direction::Down, ui, view, actions);
         }

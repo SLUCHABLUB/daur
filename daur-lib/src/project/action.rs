@@ -1,10 +1,19 @@
 use crate::metre::Instant;
-use crate::notes::Key;
+use crate::notes::{Key, Note, Pitch};
 use std::path::PathBuf;
 
 /// An action to take on an [app](crate::App).
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Debug)]
 pub enum Action {
+    /// Adds a note to a clip.
+    AddNote {
+        /// The position of the note.
+        position: Instant,
+        /// The pitch of the note.
+        pitch: Pitch,
+        /// The note.
+        note: Note,
+    },
     /// Inserts an empty note clip into the selected track at the cursor.
     AddNotes,
     /// Adds an empty track.

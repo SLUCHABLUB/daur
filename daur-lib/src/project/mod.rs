@@ -16,11 +16,12 @@ pub(crate) use bar::bar;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
+use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::{Clip, UserInterface, View};
+use crate::{UserInterface, View};
 use alloc::sync::{Arc, Weak};
 use arcstr::{ArcStr, literal};
 use getset::CloneGetters;
@@ -37,6 +38,7 @@ pub struct Project {
     pub title: ArcStr,
 
     /// The project settings.
+    #[get_clone = "pub"]
     pub settings: Settings,
 
     /// The tracks in the project.
@@ -68,22 +70,18 @@ impl Project {
         )
     }
 
-    // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
-    #[expect(clippy::too_many_arguments, reason = "todo")]
     pub(crate) fn workspace<Ui: UserInterface>(
         &self,
         track_settings_size: NonZeroLength,
         grid: Grid,
         overview_offset: Length,
-        selected_track: &Weak<Track>,
-        selected_clip: &Weak<Clip>,
+        selection: &Selection,
         cursor: Instant,
         player: Option<&Player>,
     ) -> View {
         workspace::<Ui>(
             overview_offset,
-            selected_track,
-            selected_clip,
+            selection,
             track_settings_size,
             self.tracks.clone(),
             self.settings.clone(),

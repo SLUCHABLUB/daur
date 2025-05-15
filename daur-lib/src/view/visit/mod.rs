@@ -1,17 +1,19 @@
 //! Types pertaining to [`Visitor`].
 
 mod clicker;
+mod dropper;
 mod grabber;
 mod scroller;
 
 pub use clicker::Clicker;
+pub use dropper::Dropper;
 pub use grabber::Grabber;
 pub use scroller::Scroller;
 
 use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
-use crate::view::{Alignment, OnClick, Painter};
+use crate::view::{Alignment, DropAction, OnClick, Painter};
 use crate::{Action, Ratio, UserInterface, View};
 use core::iter::zip;
 use core::num::NonZeroU64;
@@ -42,6 +44,9 @@ pub trait Visitor {
 
     /// Visits a grabbable view.
     fn visit_grabbable(&mut self, area: Rectangle, object: HoldableObject);
+
+    /// Visits a view that accepts objects.
+    fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction);
 
     /// Visits a rule.
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64);
@@ -151,6 +156,10 @@ impl View {
                     layers.iter().for_each(visit);
                 }
             }
+            View::ObjectAcceptor { drop, view } => compound!(
+                visitor.visit_object_acceptor(area, drop),
+                view.accept::<Ui, V>(visitor, area, mouse_position),
+            ),
             View::Rule { index, cells } => visitor.visit_rule(area, *index, *cells),
             View::Scrollable { action, view } => compound!(
                 visitor.visit_scrollable(area, *action),

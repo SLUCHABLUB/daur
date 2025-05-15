@@ -44,6 +44,10 @@ use derive_more::Debug;
 pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 /// A function for generating a view.
 pub type Generator = dyn Fn() -> View + Send + Sync;
+/// A function for getting an action when dropping an object on a view.
+pub type DropAction = dyn Fn(HoldableObject, Rectangle, Point) -> Option<Action> + Send + Sync;
+/// A function for getting an object when grabbing a view.
+pub type GrabObject = dyn Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync;
 
 /// A UI element.
 #[doc(hidden)]
@@ -89,9 +93,9 @@ pub enum View {
     Generator(#[debug(skip)] Box<Generator>),
     /// A view that can be grabbed.
     Grabbable {
-        /// The grabbed object.
+        /// The grabbable object.
         #[debug(skip)]
-        object: Box<dyn Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static>,
+        object: Box<GrabObject>,
         /// The view.
         view: Box<View>,
     },
@@ -104,6 +108,13 @@ pub enum View {
     },
     /// Multiple views layered on each other.
     Layers(Vec<Self>),
+    /// A view on which an [object](HoldableObject) may be dropped.
+    ObjectAcceptor {
+        #[debug(skip)]
+        drop: Box<DropAction>,
+        /// The view.
+        view: Box<View>,
+    },
     /// A rule of a ruler.
     Rule {
         /// The display-index of the rule.

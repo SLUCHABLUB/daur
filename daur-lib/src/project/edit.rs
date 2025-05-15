@@ -1,8 +1,9 @@
 use crate::NonZeroRatio;
+use crate::app::Selection;
 use crate::audio::{Audio, NonEmpty};
-use crate::clip::{Clip, Content};
+use crate::clip::{Clip, Content, Settings};
 use crate::metre::{Instant, NonZeroDuration};
-use crate::notes::{Key, Notes};
+use crate::notes::{Key, Note, Notes, Pitch};
 use crate::project::Action;
 use crate::track::Track;
 use crate::ui::Colour;
@@ -45,10 +46,26 @@ pub struct NoExtensionError {
 
 #[derive(Clone, Debug)]
 pub enum Edit {
-    /// Inserts the clip into the selected track at the cursor
-    AddClip {
+    /// Inserts a note into a clip.
+    AddNote {
+        /// The track.
         track: Weak<Track>,
+        /// The clip.
+        clip: Weak<Clip>,
+        /// The position at which to insert the clip.
         position: Instant,
+        /// The pitch at which to insert the note.
+        pitch: Pitch,
+        /// The note.
+        note: Note,
+    },
+    /// Inserts a clip into a track.
+    AddClip {
+        /// The track.
+        track: Weak<Track>,
+        /// The position at which to insert the clip.
+        position: Instant,
+        /// The clip to insert.
         clip: Clip,
     },
     /// Adds a track
@@ -59,18 +76,27 @@ pub enum Edit {
 
 impl Edit {
     // TODO: EditError?
-    pub fn from_action(
-        action: Action,
-        cursor: Instant,
-        selected_track: Weak<Track>,
-    ) -> Result<Edit> {
+    pub fn from_action(action: Action, cursor: Instant, selection: &Selection) -> Result<Edit> {
         Ok(match action {
+            Action::AddNote {
+                position,
+                pitch,
+                note,
+            } => Edit::AddNote {
+                track: selection.track(),
+                clip: selection.clip(),
+                position,
+                pitch,
+                note,
+            },
             Action::AddNotes => Edit::AddClip {
-                track: selected_track,
+                track: selection.track(),
                 position: cursor,
                 clip: Clip {
-                    name: DEFAULT_NOTES_NAME,
-                    colour: DEFAULT_NOTES_COLOUR,
+                    settings: Settings {
+                        name: DEFAULT_NOTES_NAME,
+                        colour: DEFAULT_NOTES_COLOUR,
+                    },
                     content: Content::Notes(Notes::empty(DEFAULT_NOTES_DURATION)),
                 },
             },
@@ -103,11 +129,13 @@ impl Edit {
                     .unwrap_or_default();
 
                 Edit::AddClip {
-                    track: selected_track,
+                    track: selection.track(),
                     position: cursor,
                     clip: Clip {
-                        name,
-                        colour: DEFAULT_AUDIO_COLOUR,
+                        settings: Settings {
+                            name,
+                            colour: DEFAULT_AUDIO_COLOUR,
+                        },
                         content: Content::Audio(audio),
                     },
                 }
