@@ -1,11 +1,9 @@
 //! Types pertaining to [`Popup`].
 
-mod id;
 mod instance;
 mod manager;
 
-pub use id::Id;
-pub(crate) use instance::Instance;
+pub use instance::Instance;
 pub(crate) use manager::Manager;
 
 use crate::metre::Instant;
@@ -13,7 +11,7 @@ use crate::notes::Key;
 use crate::sync::{ArcCell, Cell};
 use crate::ui::Rectangle;
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
-use crate::{Action, Ratio, UserInterface, View, project};
+use crate::{Action, Id, Ratio, UserInterface, View, project};
 use alloc::sync::Arc;
 use anyhow::Error;
 use arcstr::{ArcStr, format, literal};
@@ -91,7 +89,7 @@ impl Popup {
     }
 
     /// Returns the popups [view](View) with a border and title.
-    fn view(&self, id: Id) -> View {
+    fn view(&self, id: Id<Instance>) -> View {
         self.inner_view(id)
             .bordered()
             .titled(self.title())
@@ -99,7 +97,7 @@ impl Popup {
     }
 
     /// Returns the popups inner [view](View), with no border and title.
-    fn inner_view(&self, id: Id) -> View {
+    fn inner_view(&self, id: Id<Instance>) -> View {
         match self {
             Popup::ButtonPanel { buttons, .. } => View::balanced_stack(
                 Axis::Y,
@@ -193,7 +191,7 @@ impl Popup {
         .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
-    pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id, ui: &Ui) -> Instance {
+    pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Instance>, ui: &Ui) -> Instance {
         let view = Arc::new(self.view(id));
 
         let size = view.minimum_size::<Ui>();
@@ -214,7 +212,7 @@ impl<E: Into<Error>> From<E> for Popup {
 
 impl View {
     /// Makes the view close a popup when clicked.
-    fn terminating(self, popup: Id) -> View {
+    fn terminating(self, popup: Id<Instance>) -> View {
         self.on_click(OnClick::from(Action::ClosePopup(popup)))
     }
 }

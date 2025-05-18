@@ -16,11 +16,13 @@ pub mod view;
 
 mod app;
 mod extension;
+mod id;
 mod piano_roll;
 mod ratio;
 mod string;
 
 pub use app::{Action, Actions, App, HoldableObject, Selection};
+pub use id::Id;
 pub use piano_roll::PianoRoll;
 pub use ratio::{NonZeroRatio, Ratio};
 pub use string::ToArcStr;

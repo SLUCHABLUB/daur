@@ -1,5 +1,5 @@
-use crate::UserInterface;
-use crate::popup::{Id, Instance, Popup};
+use crate::popup::{Instance, Popup};
+use crate::{Id, UserInterface};
 use getset::Getters;
 
 /// A manager for the open [popups](Popup).
@@ -24,7 +24,7 @@ impl Manager {
     }
 
     /// Closes a [popup](Popup).
-    pub fn close(&mut self, popup: Id) {
+    pub fn close(&mut self, popup: Id<Instance>) {
         if let Some(index) = self
             .popups
             .iter()

@@ -24,25 +24,26 @@ use crate::ui::{Grid, Length, NonZeroLength};
 use crate::{UserInterface, View};
 use alloc::sync::{Arc, Weak};
 use arcstr::{ArcStr, literal};
-use getset::CloneGetters;
+use getset::{CloneGetters, Getters};
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 
 /// A musical piece consisting of multiple [tracks](Track).
 #[doc(hidden)]
-#[derive(Clone, Debug, Default, CloneGetters)]
+#[derive(Clone, Debug, Default, Getters, CloneGetters)]
 pub struct Project {
     /// The name of the project.
     #[get_clone = "pub"]
-    pub title: ArcStr,
+    title: ArcStr,
 
     /// The project settings.
-    #[get_clone = "pub"]
-    pub settings: Settings,
+    #[get = "pub(crate)"]
+    settings: Settings,
 
     /// The tracks in the project.
-    pub tracks: Vec<Arc<Track>>,
+    #[get = "pub(crate)"]
+    tracks: Vec<Arc<Track>>,
 }
 
 impl Project {

@@ -122,7 +122,7 @@ impl<Ui: UserInterface> App<Ui> {
     /// Returns the position of the musical cursor.
     fn cursor(&self) -> Instant {
         if let Some(position) = self.audio_config.player_position() {
-            position.to_metre(&self.project_manager.project().settings)
+            position.to_metre(self.project_manager.project().settings())
         } else {
             self.cursor
         }
@@ -151,7 +151,7 @@ impl<Ui: UserInterface> App<Ui> {
                 .fill_remaining(),
             self.piano_roll.view::<Ui>(
                 &self.selection,
-                self.project_manager.project().settings(),
+                self.project_manager.project().settings().clone(),
                 self.grid,
                 self.audio_config.try_player().cloned(),
                 self.cursor,

@@ -1,15 +1,15 @@
 use crate::View;
-use crate::popup::Id;
+use crate::id::Id;
 use crate::ui::Rectangle;
 use alloc::sync::Arc;
 use getset::{CloneGetters, CopyGetters};
 
 /// An instance of a popup window.
 #[derive(Clone, Debug, CopyGetters, CloneGetters)]
-pub(crate) struct Instance {
+pub struct Instance {
     /// The id of the popup.
     #[get_copy = "pub(crate)"]
-    id: Id,
+    id: Id<Instance>,
     /// The area of the popup.
     area: Rectangle,
     /// The view of the popup.
@@ -18,7 +18,7 @@ pub(crate) struct Instance {
 
 impl Instance {
     /// Constructs a new `Instance`.
-    pub(crate) fn new(id: Id, area: Rectangle, view: Arc<View>) -> Instance {
+    pub(crate) fn new(id: Id<Instance>, area: Rectangle, view: Arc<View>) -> Instance {
         Instance { id, area, view }
     }
 

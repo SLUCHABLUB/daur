@@ -1,9 +1,9 @@
 use crate::app::HoldableObject;
 use crate::metre::Instant;
-use crate::popup::{Id, Popup};
+use crate::popup::Instance;
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
-use crate::{Actions, App, Clip, Track, UserInterface, project};
+use crate::{Actions, App, Clip, Id, Popup, Track, UserInterface, project};
 use alloc::sync::Weak;
 use anyhow::Result;
 use derive_more::Debug;
@@ -15,7 +15,7 @@ pub enum Action {
     /// Opens a popup.
     OpenPopup(Popup),
     /// Closes a popup.
-    ClosePopup(Id),
+    ClosePopup(Id<Instance>),
     /// Opens a context menu.
     OpenContextMenu {
         /// The context menu to open.
@@ -159,13 +159,13 @@ impl<Ui: UserInterface> App<Ui> {
 
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
-                    self.cursor = position.to_metre(&self.project_manager.project().settings);
+                    self.cursor = position.to_metre(self.project_manager.project().settings());
                 }
             }
             Action::Play => {
                 let from = self
                     .cursor()
-                    .to_real_time(&self.project_manager.project().settings);
+                    .to_real_time(self.project_manager.project().settings());
 
                 let player = self.audio_config.player()?;
 
@@ -183,8 +183,8 @@ impl<Ui: UserInterface> App<Ui> {
                     .take(action, self.cursor, &self.selection)?;
 
                 self.renderer.restart(
-                    &self.project_manager.project().tracks,
-                    &self.project_manager.project().settings,
+                    self.project_manager.project().tracks(),
+                    self.project_manager.project().settings(),
                     self.audio_config.sample_rate()?,
                 );
             }
