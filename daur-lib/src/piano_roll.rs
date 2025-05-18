@@ -5,7 +5,7 @@ use crate::notes::{Interval, Key, Note, Notes, Pitch};
 use crate::project::Settings;
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
-use crate::{Action, HoldableObject, UserInterface, View, project};
+use crate::{Action, Clip, HoldableObject, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use core::cmp::Ordering;
@@ -71,7 +71,7 @@ impl PianoRoll {
             .clip()
             .upgrade()
             .as_deref()
-            .map_or(PIANO_ROLL, |clip| clip.settings.name());
+            .map_or(PIANO_ROLL, Clip::name);
 
         let view = self.content::<Ui>(selection, project, grid, player, cursor);
 
@@ -95,7 +95,7 @@ impl PianoRoll {
             return NO_CLIP_SELECTED.centred();
         };
 
-        let Some(notes) = clip.content.as_notes() else {
+        let Some(notes) = clip.content().as_notes() else {
             return AUDIO_CLIP_SELECTED.centred();
         };
 
@@ -105,7 +105,7 @@ impl PianoRoll {
         let workspace = self.workspace::<Ui>(
             clip_position,
             notes,
-            clip.settings.colour,
+            clip.colour(),
             &project,
             grid,
             player,

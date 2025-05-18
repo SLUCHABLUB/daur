@@ -7,6 +7,7 @@ use crate::view::Context;
 /// Some audio of positive length.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct NonEmpty {
+    // TODO: use Vec1
     inner: Audio,
 }
 

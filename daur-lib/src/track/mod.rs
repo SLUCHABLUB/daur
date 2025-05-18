@@ -15,17 +15,21 @@ use crate::project::Settings;
 use crate::{Audio, Clip};
 use alloc::sync::{Arc, Weak};
 use arcstr::{ArcStr, literal};
+use getset::{Getters, MutGetters};
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 
 /// A musical track.
 #[doc(hidden)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Getters, MutGetters)]
 pub struct Track {
     /// The name of the track.
-    pub name: ArcStr,
+    name: ArcStr,
     /// The clips in the track.
-    pub clips: Spaced<Arc<Clip>>,
+    // TODO: remove getter
+    #[get = "pub(crate)"]
+    #[get_mut = "pub(crate)"]
+    clips: Spaced<Arc<Clip>>,
 }
 
 impl Track {
@@ -50,7 +54,7 @@ impl Track {
             .iter()
             .last()
             .map_or(Instant::START, |(start, clip)| {
-                clip.content.period(start, settings).get().end()
+                clip.period(start, settings).get().end()
             });
         let min_duration = min_end.to_real_time(settings).since_start;
         let min_len = (min_duration / sample_rate.sample_duration()).to_usize();
@@ -63,11 +67,13 @@ impl Track {
             let sample_offset = start.since_start / sample_rate.sample_duration();
             let sample_offset = sample_offset.to_usize();
 
-            match &clip.content {
+            match clip.content() {
                 Content::Audio(clip) => {
                     audio += &clip.as_audio().resample(sample_rate).offset(sample_offset);
                 }
-                Content::Notes(_) => {}
+                Content::Notes(_) => {
+                    // TODO: render notes
+                }
             }
         }
 

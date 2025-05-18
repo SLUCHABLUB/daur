@@ -18,7 +18,7 @@ impl Selection {
     pub(crate) fn resolve_clip_and_position(&self) -> Option<(Instant, Arc<Clip>)> {
         self.track
             .upgrade()?
-            .clips
+            .clips()
             .iter()
             .find(|(_, clip)| Arc::as_ptr(clip) == self.clip.as_ptr())
             .map(|(position, clip)| (position, Arc::clone(clip)))

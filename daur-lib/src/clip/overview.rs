@@ -15,11 +15,11 @@ pub(crate) fn overview(
     settings: &Settings,
     grid: Grid,
 ) -> View {
-    let title = clip.settings.name();
+    let title = clip.name();
     let clip_reference = Arc::downgrade(&clip);
     let settings = settings.clone();
 
-    View::canvas(clip.settings.colour, move |context| {
+    View::canvas(clip.colour, move |context| {
         clip.content
             .paint_overview(context, full_period, visible_period, &settings, grid);
     })

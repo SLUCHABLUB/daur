@@ -1,35 +1,21 @@
-use crate::NonZeroRatio;
 use crate::app::Selection;
 use crate::audio::{Audio, NonEmpty};
-use crate::clip::{Clip, Content, Settings};
 use crate::metre::{Instant, NonZeroDuration};
-use crate::notes::{Key, Note, Notes, Pitch};
+use crate::notes::{Key, Note, Pitch};
 use crate::project::Action;
 use crate::track::Track;
-use crate::ui::Colour;
+use crate::{Clip, NonZeroRatio};
 use alloc::sync::Weak;
 use anyhow::{Result, anyhow, bail};
-use arcstr::{ArcStr, literal};
+use arcstr::ArcStr;
 use hound::WavReader;
 use non_zero::non_zero;
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
 use thiserror::Error;
 
-const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
-const DEFAULT_NOTES_COLOUR: Colour = Colour {
-    red: 255,
-    green: 0,
-    blue: 255,
-};
 const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
     whole_notes: NonZeroRatio::integer(non_zero!(4)),
-};
-
-const DEFAULT_AUDIO_COLOUR: Colour = Colour {
-    red: 0,
-    green: 255,
-    blue: 0,
 };
 
 #[derive(Debug, Error)]
@@ -92,13 +78,7 @@ impl Edit {
             Action::AddNotes => Edit::AddClip {
                 track: selection.track(),
                 position: cursor,
-                clip: Clip {
-                    settings: Settings {
-                        name: DEFAULT_NOTES_NAME,
-                        colour: DEFAULT_NOTES_COLOUR,
-                    },
-                    content: Content::Notes(Notes::empty(DEFAULT_NOTES_DURATION)),
-                },
+                clip: Clip::empty_notes(DEFAULT_NOTES_DURATION),
             },
             Action::AddTrack => Edit::AddTrack(Track::new()),
             Action::ImportAudio { file } => {
@@ -131,13 +111,7 @@ impl Edit {
                 Edit::AddClip {
                     track: selection.track(),
                     position: cursor,
-                    clip: Clip {
-                        settings: Settings {
-                            name,
-                            colour: DEFAULT_AUDIO_COLOUR,
-                        },
-                        content: Content::Audio(audio),
-                    },
+                    clip: Clip::from_audio(name, audio),
                 }
             }
             Action::SetKey { instant, key } => Edit::ChangeKey {

@@ -54,6 +54,7 @@ impl Manager {
         self.edit(Edit::from_action(action, cursor, selection)?)
     }
 
+    // TODO: Split this into `try_edit` and `edit` so tahat the history only gets updated if the edit succeeds.
     fn edit(&mut self, edit: Edit) -> Result<()> {
         self.history.push(edit.clone());
 
@@ -85,7 +86,7 @@ impl Manager {
 
                 let relative_position = note_position - clip_position.since_start;
 
-                clip.content
+                clip.content_mut()
                     .as_notes_mut()
                     .ok_or(NoNotesSelected)?
                     .try_insert(relative_position, pitch, note);
@@ -98,7 +99,7 @@ impl Manager {
                 self.project
                     .track_mut(&track)
                     .ok_or(NoTrackSelected)?
-                    .clips
+                    .clips_mut()
                     .try_insert(position, Arc::new(clip))
                     .map_err(InsertClipError)?;
             }

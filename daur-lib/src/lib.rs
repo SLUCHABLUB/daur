@@ -32,6 +32,8 @@ pub use audio::Audio;
 #[doc(inline)]
 pub use clip::Clip;
 #[doc(inline)]
+pub use notes::Notes;
+#[doc(inline)]
 pub use popup::Popup;
 #[doc(inline)]
 pub use project::Project;
