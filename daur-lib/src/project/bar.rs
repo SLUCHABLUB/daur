@@ -2,7 +2,7 @@ use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::notes::Key;
-use crate::popup::Popup;
+use crate::popup::Specification;
 use crate::project::Settings;
 use crate::view::{Axis, OnClick, View};
 use crate::{ToArcStr as _, UserInterface};
@@ -28,7 +28,10 @@ const PIANO: ArcStr = literal!("piano roll");
 const NODES: ArcStr = literal!("plugins");
 
 fn open_key_selector(instant: Instant, key: Key) -> OnClick {
-    OnClick::from(Action::OpenPopup(Popup::KeySelector { instant, key }))
+    OnClick::from(Action::OpenPopup(Specification::KeySelector {
+        instant,
+        key,
+    }))
 }
 
 /// The bar att the top of the window.

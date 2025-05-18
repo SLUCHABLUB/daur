@@ -1,8 +1,9 @@
 //! Types pertaining to context menus.
 
+use crate::popup::Specification;
 use crate::ui::{Point, Rectangle};
 use crate::view::{Axis, OnClick, View};
-use crate::{Action, Popup, UserInterface, project};
+use crate::{Action, UserInterface, project};
 use alloc::sync::Arc;
 use arcstr::{ArcStr, literal};
 use core::fmt;
@@ -18,7 +19,7 @@ const TOGGLE_PIANO_ROLL: ArcStr = literal!("toggle piano roll");
 pub fn open_import_audio_popup() -> Action {
     let action = move |file: &Path| Action::import_audio(file);
 
-    Action::OpenPopup(Popup::file_selector(IMPORT_AUDIO, action))
+    Action::OpenPopup(Specification::file_selector(IMPORT_AUDIO, action))
 }
 
 /// A context (right-click) menu specification.

@@ -1,6 +1,6 @@
 use crate::app::HoldableObject;
 use crate::metre::Instant;
-use crate::popup::Instance;
+use crate::popup::Specification;
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{Actions, App, Clip, Id, Popup, Track, UserInterface, project};
@@ -13,9 +13,9 @@ use std::path::PathBuf;
 #[derive(Clone, Debug)]
 pub enum Action {
     /// Opens a popup.
-    OpenPopup(Popup),
+    OpenPopup(Specification),
     /// Closes a popup.
-    ClosePopup(Id<Instance>),
+    ClosePopup(Id<Popup>),
     /// Opens a context menu.
     OpenContextMenu {
         /// The context menu to open.
@@ -102,7 +102,8 @@ impl<Ui: UserInterface> App<Ui> {
 
     fn take(&mut self, action: Action) {
         if let Err(error) = self.try_take(action) {
-            self.popup_manager.open(&Popup::from(error), &self.ui);
+            self.popup_manager
+                .open(&Specification::from(error), &self.ui);
         }
     }
 
