@@ -11,6 +11,7 @@ use arcstr::{ArcStr, literal};
 use closure::closure;
 use derive_more::Debug;
 use dirs::home_dir;
+use mitsein::vec1::Vec1;
 use std::env::current_dir;
 use std::path::Path;
 
@@ -30,9 +31,8 @@ pub enum Specification {
     ButtonPanel {
         /// The title of the popup.
         title: ArcStr,
-        // TODO: make this non empty
         /// The buttons.
-        buttons: Vec<(ArcStr, Action)>,
+        buttons: Vec1<(ArcStr, Action)>,
     },
     /// An error message.
     Error(Arc<Error>),
