@@ -12,11 +12,26 @@ use std::path::PathBuf;
 
 /// An action to take on the app
 #[derive(Clone, Debug)]
+#[remain::sorted]
 pub enum Action {
-    /// Opens a popup.
-    OpenPopup(Specification),
+    /// Opens the context menu.
+    CloseContextMenu,
     /// Closes a popup.
     ClosePopup(Id<Popup>),
+    /// Enters _edit mode_.
+    EnterEditMode,
+    /// Saves and exits the program
+    Exit,
+    /// Exits _edit mode_.
+    ExitEditMode,
+    /// Moves the (musical) cursor.
+    MoveCursor(Instant),
+    /// Moves the held object.
+    MoveHeldObject(Point),
+    /// Moves the overview.
+    MoveOverview(Vector),
+    /// Moves the piano roll.
+    MovePianoRoll(Vector),
     /// Opens a context menu.
     OpenContextMenu {
         /// The context menu to open.
@@ -25,13 +40,16 @@ pub enum Action {
         /// (The mouse position.)
         position: Point,
     },
-    /// Opens the context menu.
-    CloseContextMenu,
-
-    /// Moves the (musical) cursor.
-    MoveCursor(Instant),
-    /// Selects a track.
-    SelectTrack(Id<Track>),
+    /// Opens a popup.
+    OpenPopup(Specification),
+    /// Stop playing.
+    Pause,
+    /// Picks up an object.
+    PickUp(HoldableObject),
+    /// Start playing.
+    Play,
+    /// A project action.
+    Project(project::Action),
     /// Selects a clip in a track.
     SelectClip {
         /// The index of the track in which the clip resides
@@ -39,40 +57,14 @@ pub enum Action {
         /// The index of the clip to select
         clip: Id<Clip>,
     },
-
-    /// Sets the piano roll's height to half of the screen height.
-    TogglePianoRoll,
-
-    /// Enters _edit mode_.
-    EnterEditMode,
-    /// Exits _edit mode_.
-    ExitEditMode,
+    /// Selects a track.
+    SelectTrack(Id<Track>),
     /// Toggles _edit mode_.
     ToggleEditMode,
-
-    /// Picks up an object.
-    PickUp(HoldableObject),
-    /// Moves the held object.
-    MoveHeldObject(Point),
-
-    /// Moves the overview.
-    MoveOverview(Vector),
-
-    /// Moves the piano roll.
-    MovePianoRoll(Vector),
-
-    /// Stop playing.
-    Pause,
-    /// Start playing.
-    Play,
+    /// Sets the piano roll's height to half of the screen height.
+    TogglePianoRoll,
     /// Toggles whether the app is playing.
     TogglePlayback,
-
-    /// A project action.
-    Project(project::Action),
-
-    /// Saves and exits the program
-    Exit,
     // TODO: add scripting
 }
 
@@ -112,22 +104,19 @@ impl<Ui: UserInterface> App<Ui> {
         }
     }
 
+    #[remain::check]
     fn try_take(&mut self, action: Action) -> Result<()> {
+        #[sorted]
         match action {
-            Action::OpenPopup(popup) => {
-                self.popup_manager.open(&popup, &self.ui);
+            Action::CloseContextMenu => {
+                self.context_menu = None;
             }
             Action::ClosePopup(popup) => {
                 self.popup_manager.close(popup);
             }
-            Action::OpenContextMenu { menu, position } => {
-                self.context_menu = Some(menu.instantiate::<Ui>(position));
-            }
-            Action::CloseContextMenu => {
-                self.context_menu = None;
-            }
-
+            Action::EnterEditMode => self.edit_mode = true,
             Action::Exit => self.ui.exit(),
+            Action::ExitEditMode => self.edit_mode = false,
             Action::MoveCursor(instant) => {
                 self.cursor = instant;
 
@@ -137,7 +126,11 @@ impl<Ui: UserInterface> App<Ui> {
                     self.audio_config.pause_player();
                 }
             }
-
+            Action::MoveHeldObject(point) => {
+                if let Some(object) = self.held_object {
+                    object.update(self, point);
+                }
+            }
             Action::MoveOverview(by) => {
                 self.negative_overview_offset -= by.x;
                 // TODO: scroll tracks vertically
@@ -146,28 +139,19 @@ impl<Ui: UserInterface> App<Ui> {
                 self.piano_roll.negative_x_offset -= by.x;
                 self.piano_roll.y_offset += by.y;
             }
-
-            Action::TogglePianoRoll => {
-                self.piano_roll.is_open = !self.piano_roll.is_open;
+            Action::OpenContextMenu { menu, position } => {
+                self.context_menu = Some(menu.instantiate::<Ui>(position));
             }
-
-            Action::EnterEditMode => self.edit_mode = true,
-            Action::ExitEditMode => self.edit_mode = false,
-            Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
-
-            // the currently held object should already have been let go.
-            Action::PickUp(object) => self.held_object = Some(object),
-            Action::MoveHeldObject(point) => {
-                if let Some(object) = self.held_object {
-                    object.update(self, point);
-                }
+            Action::OpenPopup(popup) => {
+                self.popup_manager.open(&popup, &self.ui);
             }
-
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
                     self.cursor = position.to_metre(self.project_manager.project().settings());
                 }
             }
+            // the currently held object should already have been let go.
+            Action::PickUp(object) => self.held_object = Some(object),
             Action::Play => {
                 let from = self
                     .cursor()
@@ -176,13 +160,6 @@ impl<Ui: UserInterface> App<Ui> {
                 let player = self.audio_config.player()?;
 
                 self.renderer.play_when_finished(from, player);
-            }
-            Action::TogglePlayback => {
-                if self.audio_config.is_player_playing() {
-                    self.take(Action::Pause);
-                } else {
-                    self.take(Action::Play);
-                }
             }
             Action::Project(action) => {
                 self.project_manager
@@ -194,12 +171,23 @@ impl<Ui: UserInterface> App<Ui> {
                     self.audio_config.sample_rate()?,
                 );
             }
-            Action::SelectTrack(track) => {
-                self.selection.set_track(track);
-            }
             Action::SelectClip { track, clip, .. } => {
                 self.selection.set_track(track);
                 self.selection.set_clip(clip);
+            }
+            Action::SelectTrack(track) => {
+                self.selection.set_track(track);
+            }
+            Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
+            Action::TogglePianoRoll => {
+                self.piano_roll.is_open = !self.piano_roll.is_open;
+            }
+            Action::TogglePlayback => {
+                if self.audio_config.is_player_playing() {
+                    self.take(Action::Pause);
+                } else {
+                    self.take(Action::Play);
+                }
             }
         }
 

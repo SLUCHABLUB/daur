@@ -80,7 +80,9 @@ impl Clip {
         self.content.period(start, settings)
     }
 
+    #[remain::check]
     pub(crate) fn take_action(&mut self, clip_position: Instant, action: Action) -> Result<()> {
+        #[sorted]
         match action {
             Action::AddNote {
                 position: note_position,

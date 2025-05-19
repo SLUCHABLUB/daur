@@ -159,13 +159,18 @@ impl Track {
         Ok(())
     }
 
+    #[remain::check]
     pub(super) fn take_action(
         &mut self,
         action: Action,
         cursor: Instant,
         selection: &mut Selection,
     ) -> Result<()> {
+        #[sorted]
         match action {
+            Action::AddNotes => {
+                self.try_insert_clip(cursor, Clip::empty_notes(DEFAULT_NOTES_DURATION))
+            }
             Action::Clip(action) => {
                 let clip = self
                     .clips
@@ -175,9 +180,6 @@ impl Track {
                 let clip_start = *self.clip_starts.get(&clip.id()).ok_or(NoClipSelected)?;
 
                 clip.take_action(clip_start, action)
-            }
-            Action::AddNotes => {
-                self.try_insert_clip(cursor, Clip::empty_notes(DEFAULT_NOTES_DURATION))
             }
             Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {

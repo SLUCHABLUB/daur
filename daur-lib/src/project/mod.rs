@@ -60,18 +60,15 @@ impl Project {
     }
 
     // TODO: return a history entry
+    #[remain::check]
     pub(crate) fn take_action(
         &mut self,
         action: Action,
         cursor: Instant,
         selection: &mut Selection,
     ) -> Result<()> {
+        #[sorted]
         match action {
-            Action::Track(action) => self
-                .tracks
-                .get_mut(&selection.track())
-                .ok_or(NoTrackSelected)?
-                .take_action(action, cursor, selection),
             Action::AddTrack => {
                 let track = Track::new();
                 selection.set_track(track.id());
@@ -88,6 +85,11 @@ impl Project {
                 }
                 Ok(())
             }
+            Action::Track(action) => self
+                .tracks
+                .get_mut(&selection.track())
+                .ok_or(NoTrackSelected)?
+                .take_action(action, cursor, selection),
         }
     }
 }

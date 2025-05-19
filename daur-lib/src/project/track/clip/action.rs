@@ -3,6 +3,7 @@ use crate::notes::{Note, Pitch};
 
 /// An action to take on a [clip](super::Clip).
 #[derive(Copy, Clone, Debug)]
+#[remain::sorted]
 pub enum Action {
     /// Adds a note to the selected.
     AddNote {
