@@ -1,9 +1,9 @@
-use crate::Clip;
 use crate::app::Selection;
 use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
 use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
+use crate::track::Clip;
 use anyhow::Result;
 use getset::Getters;
 use std::sync::Arc;

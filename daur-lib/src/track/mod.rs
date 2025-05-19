@@ -1,18 +1,22 @@
 //! Items pertaining to [`Track`].
 
+pub mod clip;
 mod overview;
 mod render_stream;
 mod settings;
+
+#[doc(inline)]
+pub use clip::Clip;
 
 pub(crate) use overview::overview;
 pub(crate) use render_stream::RenderStream;
 pub(crate) use settings::settings;
 
 use crate::audio::{Pair, SampleRate};
-use crate::clip::Content;
 use crate::metre::Instant;
 use crate::project::Settings;
-use crate::{Audio, Clip, Id};
+use crate::track::clip::Content;
+use crate::{Audio, Id};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
 use indexmap::IndexMap;

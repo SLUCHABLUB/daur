@@ -1,7 +1,6 @@
 //! The inner workings of the DAW.
 
 pub mod audio;
-pub mod clip;
 pub mod metre;
 pub mod notes;
 pub mod popup;
@@ -27,8 +26,6 @@ pub use string::ToArcStr;
 
 #[doc(inline)]
 pub use audio::Audio;
-#[doc(inline)]
-pub use clip::Clip;
 #[doc(inline)]
 pub use notes::Notes;
 #[doc(inline)]

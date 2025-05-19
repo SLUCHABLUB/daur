@@ -1,4 +1,5 @@
-use crate::{Clip, Id, Track};
+use crate::track::Clip;
+use crate::{Id, Track};
 use getset::{CopyGetters, Setters};
 
 /// The selection state of the app.
