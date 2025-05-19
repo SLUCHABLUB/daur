@@ -194,7 +194,7 @@ impl Specification {
         let position = centre + offset;
         let area = Rectangle { position, size };
 
-        Popup::new(id, area, view)
+        Popup::new(view, area)
     }
 }
 

@@ -1,38 +1,38 @@
 use crate::popup::Specification;
 use crate::{Id, Popup, UserInterface};
-use getset::Getters;
+use indexmap::IndexMap;
 
 /// A manager for the open [popups](PopupSpecification).
-#[derive(Debug, Getters)]
+#[derive(Debug)]
 pub(crate) struct Manager {
-    #[get = "pub(crate)"]
-    popups: Vec<Popup>,
+    popups: IndexMap<Id<Popup>, Popup>,
 }
 
 impl Manager {
     /// Constructs a new manager with no popups.
     #[must_use]
     pub fn new() -> Self {
-        Manager { popups: Vec::new() }
+        Manager {
+            popups: IndexMap::new(),
+        }
+    }
+
+    pub(crate) fn popups(&self) -> impl Iterator<Item = &Popup> {
+        self.popups.values()
     }
 
     /// Opens a new [popup](Popup).
     pub fn open<Ui: UserInterface>(&mut self, specification: &Specification, ui: &Ui) {
         let id = Id::generate();
 
-        self.popups.push(specification.instantiate::<Ui>(id, ui));
+        self.popups
+            .insert(id, specification.instantiate::<Ui>(id, ui));
     }
 
     /// Closes a [popup](Popup).
-    pub fn close(&mut self, popup: Id<Popup>) {
-        if let Some(index) = self
-            .popups
-            .iter()
-            .position(|instance| instance.id() == popup)
-        {
-            let popup = self.popups.remove(index);
-            drop(popup);
-        }
+    pub fn close(&mut self, id: Id<Popup>) {
+        let popup = self.popups.shift_remove(&id);
+        drop(popup);
     }
 }
 
