@@ -26,7 +26,7 @@ struct NoNotesSelected;
 struct InsertClipError(Clip);
 
 /// Manages editing of a [project](Project).
-#[derive(Debug, Getters)]
+#[derive(Debug, Default, Getters)]
 pub struct Manager {
     /// The project.
     #[get = "pub"]
@@ -37,21 +37,12 @@ pub struct Manager {
 }
 
 impl Manager {
-    /// Wraps a project in a new manager.
-    #[must_use]
-    pub fn new(project: Project) -> Manager {
-        Manager {
-            project,
-            _history: Vec::new(),
-        }
-    }
-
     /// Take an action on the project.
     ///
     /// # Errors
     ///
     /// If the action cannot be completed, a popup to open will be returned.
-    pub fn take(&mut self, action: Action, cursor: Instant, selection: &Selection) -> Result<()> {
+    pub fn take(&mut self, action: Action, cursor: Instant, selection: Selection) -> Result<()> {
         self.edit(Edit::from_action(action, cursor, selection)?)
     }
 

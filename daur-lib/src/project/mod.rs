@@ -46,16 +46,13 @@ pub struct Project {
     settings: Settings,
 
     /// The tracks in the project.
-    // TODO: remove getter / make pub(super)
-    #[get = "pub(crate)"]
     tracks: IndexMap<Id<Track>, Track>,
 }
 
 impl Project {
-    // TODO: pub(super)
     /// Returns a reference to a track.
     #[must_use]
-    pub(crate) fn track(&self, id: Id<Track>) -> Option<&Track> {
+    pub(super) fn track(&self, id: Id<Track>) -> Option<&Track> {
         self.tracks.get(&id)
     }
 
@@ -66,6 +63,7 @@ impl Project {
         self.tracks.get_mut(&id)
     }
 
+    // TODO: remove
     pub(crate) fn bar<Ui: UserInterface>(
         &self,
         player: Option<Player>,
@@ -81,12 +79,13 @@ impl Project {
         )
     }
 
+    // TODO: remove
     pub(crate) fn workspace<Ui: UserInterface>(
         &self,
         track_settings_size: NonZeroLength,
         grid: Grid,
         overview_offset: Length,
-        selection: &Selection,
+        selection: Selection,
         cursor: Instant,
         player: Option<&Player>,
     ) -> View {

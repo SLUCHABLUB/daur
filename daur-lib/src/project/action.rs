@@ -5,7 +5,7 @@ use std::path::PathBuf;
 /// An action to take on an [app](crate::App).
 #[derive(Clone, Debug)]
 pub enum Action {
-    /// Adds a note to a clip.
+    /// Adds a note to the selected.
     AddNote {
         /// The position of the note.
         position: Instant,

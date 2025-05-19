@@ -182,10 +182,10 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::Project(action) => {
                 self.project_manager
-                    .take(action, self.cursor, &self.selection)?;
+                    .take(action, self.cursor, self.selection)?;
 
                 self.renderer.restart(
-                    self.project_manager.project().tracks().values(),
+                    self.project_manager.project(),
                     self.project_manager.project().settings(),
                     self.audio_config.sample_rate()?,
                 );

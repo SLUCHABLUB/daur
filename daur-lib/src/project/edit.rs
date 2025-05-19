@@ -61,7 +61,7 @@ pub enum Edit {
 
 impl Edit {
     // TODO: EditError?
-    pub fn from_action(action: Action, cursor: Instant, selection: &Selection) -> Result<Edit> {
+    pub fn from_action(action: Action, cursor: Instant, selection: Selection) -> Result<Edit> {
         Ok(match action {
             Action::AddNote {
                 position,

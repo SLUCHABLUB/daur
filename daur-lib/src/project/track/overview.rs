@@ -11,7 +11,7 @@ use crate::view::{CursorWindow, OnClick, View};
 /// Returns the track overview.
 pub(crate) fn overview(
     track: &Track,
-    selection: &Selection,
+    selection: Selection,
     project: Settings,
     grid: Grid,
     negative_overview_offset: Length,

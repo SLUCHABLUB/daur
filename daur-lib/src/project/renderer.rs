@@ -1,13 +1,12 @@
 use crate::audio::{Player, SampleRate};
+use crate::project::Settings;
 use crate::project::track::RenderStream;
-use crate::project::{Settings, Track};
 use crate::sync::Cell;
 use crate::time::Instant;
-use crate::{Audio, Id};
+use crate::{Audio, Project};
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
-use indexmap::map::Values;
 use parking_lot::Mutex;
 use std::mem::{replace, take};
 use std::sync::{Arc, OnceLock};
@@ -61,19 +60,19 @@ impl Renderer {
     // TODO: the audio up to the point of the change may be reused
     pub(crate) fn restart(
         &mut self,
-        tracks: Values<Id<Track>, Track>,
+        project: &Project,
         settings: &Settings,
         sample_rate: SampleRate,
     ) {
         let progress = Arc::new(Progress {
             should_stop: Cell::new(false),
-            unmastered_tracks: Mutex::new(Vec::with_capacity(tracks.len())),
+            unmastered_tracks: Mutex::new(Vec::with_capacity(project.tracks.len())),
             audio: OnceLock::new(),
         });
 
-        let zero_tracks = tracks.len() == 0;
+        let zero_tracks = project.tracks.is_empty();
 
-        for track in tracks {
+        for track in project.tracks.values() {
             let stream = track.render_stream(settings, sample_rate);
             let progress = Arc::clone(&progress);
             let should_play = Arc::clone(&self.should_play);

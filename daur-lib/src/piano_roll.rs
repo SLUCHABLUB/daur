@@ -58,7 +58,7 @@ impl PianoRoll {
     /// Returns the view for the piano roll.
     pub(crate) fn view<Ui: UserInterface>(
         self,
-        selection: &Selection,
+        selection: Selection,
         project: &Project,
         grid: Grid,
         player: Option<Player>,

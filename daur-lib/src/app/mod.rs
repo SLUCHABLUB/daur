@@ -12,7 +12,7 @@ use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
-use crate::{PianoRoll, Project, Ratio, UserInterface, View, popup, project};
+use crate::{PianoRoll, Ratio, UserInterface, View, popup, project};
 use derive_more::Debug;
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
@@ -50,7 +50,6 @@ pub struct App<Ui: UserInterface> {
     project_bar_height: NonZeroLength,
     track_settings_width: NonZeroLength,
 
-    #[get_clone = "pub(crate)"]
     selection: Selection,
 
     /// The position of the musical cursor.
@@ -83,7 +82,7 @@ impl<Ui: UserInterface> App<Ui> {
             ui,
             view: View::Empty,
 
-            project_manager: project::Manager::new(Project::default()),
+            project_manager: project::Manager::default(),
             renderer: project::Renderer::default(),
 
             audio_config: Config::default(),
@@ -145,13 +144,13 @@ impl<Ui: UserInterface> App<Ui> {
                     self.track_settings_width,
                     self.grid,
                     self.overview_offset,
-                    &self.selection,
+                    self.selection,
                     self.cursor(),
                     self.audio_config.try_player(),
                 )
                 .fill_remaining(),
             self.piano_roll.view::<Ui>(
-                &self.selection,
+                self.selection,
                 self.project_manager.project(),
                 self.grid,
                 self.audio_config.try_player().cloned(),

@@ -32,8 +32,7 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct Clip {
-    // TODO: pub(super)
-    #[get_copy = "pub(crate)"]
+    #[get_copy = "pub(super)"]
     id: Id<Clip>,
     /// The name of the clip.
     #[get_clone = "pub"]

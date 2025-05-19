@@ -12,6 +12,7 @@ pub struct Selection {
     #[set = "pub(super)"]
     #[get_copy = "pub(crate)"]
     clip: Id<Clip>,
+    // TODO: add a set of notes, and remove clone
 }
 
 impl Default for Selection {

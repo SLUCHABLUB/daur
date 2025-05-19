@@ -13,7 +13,7 @@ use indexmap::map::Values;
 #[expect(clippy::too_many_arguments, reason = "todo")]
 pub(crate) fn workspace<Ui: UserInterface>(
     overview_offset: Length,
-    selection: &Selection,
+    selection: Selection,
     track_settings_width: NonZeroLength,
     tracks: Values<Id<Track>, Track>,
     project_settings: Settings,

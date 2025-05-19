@@ -29,8 +29,7 @@ const DEFAULT_TITLE: ArcStr = literal!("a track");
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters)]
 pub struct Track {
-    // TODO: pub(super)
-    #[get_copy = "pub(crate)"]
+    #[get_copy = "pub(super)"]
     id: Id<Track>,
     /// The name of the track.
     name: ArcStr,
@@ -101,7 +100,6 @@ impl Track {
         RenderStream::new(audio)
     }
 
-    // TODO: pub(super)
     /// Returns a reference to a clip.
     #[must_use]
     pub(crate) fn clip(&self, id: Id<Clip>) -> Option<(Instant, &Clip)> {
@@ -119,8 +117,7 @@ impl Track {
         Some((*start, clip))
     }
 
-    // TODO: pub(super)
-    pub(crate) fn try_insert_clip(&mut self, position: Instant, clip: Clip) -> Result<(), Clip> {
+    pub(super) fn try_insert_clip(&mut self, position: Instant, clip: Clip) -> Result<(), Clip> {
         if self.clips.contains_key(&clip.id()) {
             return Err(clip);
         }
