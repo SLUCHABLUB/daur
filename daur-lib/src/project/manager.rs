@@ -4,9 +4,9 @@ use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
 use crate::project::Project;
 use crate::project::action::Action;
 use crate::project::edit::Edit;
-use alloc::sync::Arc;
 use anyhow::Result;
 use getset::Getters;
+use std::sync::Arc;
 use thiserror::Error;
 
 #[derive(Debug, Error)]

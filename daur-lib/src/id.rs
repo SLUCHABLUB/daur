@@ -1,9 +1,9 @@
-use alloc::sync::Weak;
-use core::fmt;
-use core::fmt::{Debug, Formatter};
-use core::hash::{Hash, Hasher};
-use core::marker::PhantomData;
-use core::sync::atomic::{AtomicUsize, Ordering};
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+use std::hash::{Hash, Hasher};
+use std::marker::PhantomData;
+use std::sync::Weak;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 // TODO: Test that this is not `Serialize` and `Deserialize`.
 /// An identifier.

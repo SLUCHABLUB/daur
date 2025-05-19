@@ -1,11 +1,11 @@
 use crate::ui::{Length, Offset, Point, Size, Vector};
 use crate::view::{Axis, Quotated};
 use crate::{Ratio, UserInterface};
-use core::cmp::{max, min};
-use core::num::NonZeroU64;
-use core::ops::{Add, AddAssign};
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
+use std::cmp::{max, min};
+use std::num::NonZeroU64;
+use std::ops::{Add, AddAssign};
 
 /// A rectangle on the screen
 #[derive(Copy, Clone, Default, Debug)]

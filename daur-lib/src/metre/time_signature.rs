@@ -1,10 +1,10 @@
 use crate::NonZeroRatio;
 use crate::metre::{Bar, Changing, Instant, NonZeroDuration};
-use core::fmt;
-use core::fmt::{Display, Formatter};
-use core::iter::from_fn;
-use core::num::{NonZeroU8, NonZeroU64};
 use non_zero::non_zero;
+use std::fmt;
+use std::fmt::{Display, Formatter};
+use std::iter::from_fn;
+use std::num::{NonZeroU8, NonZeroU64};
 
 /// A time signature.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

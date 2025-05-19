@@ -1,5 +1,5 @@
 use crate::ui::Length;
-use core::num::NonZeroU16;
+use std::num::NonZeroU16;
 
 /// A non-zero orthogonal distance between two points
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

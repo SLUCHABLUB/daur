@@ -1,5 +1,5 @@
 use crate::ui::{Offset, Vector};
-use core::ops::Mul;
+use std::ops::Mul;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 /// An axis along which view can be aligned.

@@ -1,8 +1,8 @@
 #![expect(clippy::min_ident_chars, reason = "we are doing math")]
 
-use core::num::{NonZeroU64, NonZeroU128};
 use non_zero::non_zero;
 use num::Integer;
+use std::num::{NonZeroU64, NonZeroU128};
 
 fn gcd(a: NonZeroU64, b: NonZeroU64) -> NonZeroU64 {
     NonZeroU64::new(Integer::gcd(&a.get(), &b.get())).unwrap_or(non_zero!(1))

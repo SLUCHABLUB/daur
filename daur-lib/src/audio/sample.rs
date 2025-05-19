@@ -1,5 +1,5 @@
-use core::fmt::{self, Debug, Formatter};
-use core::ops::{Add, AddAssign, Div};
+use std::fmt::{self, Debug, Formatter};
+use std::ops::{Add, AddAssign, Div};
 
 /// 2^31
 const I32_ABS_MAX: f64 = i32::MAX as f64 + 1.0;
@@ -109,7 +109,7 @@ impl Div<i32> for Sample {
 fn test_losslessness() {
     #![allow(clippy::unreadable_literal, reason = "the numbers are not important")]
 
-    use core::hint::black_box;
+    use std::hint::black_box;
 
     fn back_and_fourth(sample: i32) -> i32 {
         let sample = Sample::from_i32(sample);

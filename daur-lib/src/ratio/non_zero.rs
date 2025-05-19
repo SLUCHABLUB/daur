@@ -1,10 +1,10 @@
 use crate::ratio::Ratio;
 use crate::ratio::util::make_coprime;
-use core::cmp::Ordering;
-use core::num::{NonZeroU64, NonZeroU128};
-use core::ops::{Div, DivAssign};
 use getset::CopyGetters;
 use non_zero::non_zero;
+use std::cmp::Ordering;
+use std::num::{NonZeroU64, NonZeroU128};
+use std::ops::{Div, DivAssign};
 
 /// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]

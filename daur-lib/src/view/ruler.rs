@@ -2,8 +2,8 @@ use crate::UserInterface;
 use crate::project::Settings;
 use crate::ui::{Direction, Grid, Length, Offset};
 use crate::view::{View, feed};
-use core::num::NonZeroU64;
 use non_zero::non_zero;
+use std::num::NonZeroU64;
 
 /// A ruler of musical time
 pub fn ruler<Ui: UserInterface>(offset: Length, settings: Settings, grid: Grid) -> View {

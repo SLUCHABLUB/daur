@@ -3,8 +3,8 @@ mod non_zero;
 pub use non_zero::NonZeroPeriod;
 
 use crate::metre::{Duration, Instant};
-use core::cmp::{max, min};
-use core::ops::Range;
+use std::cmp::{max, min};
+use std::ops::Range;
 
 /// A period of musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

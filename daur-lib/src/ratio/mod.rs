@@ -5,13 +5,13 @@ pub use non_zero::NonZeroRatio;
 
 use crate::ratio::util::lcm;
 use ::non_zero::non_zero;
-use core::cmp::Ordering;
-use core::fmt;
-use core::fmt::{Display, Formatter};
-use core::num::{FpCategory, NonZeroU64, NonZeroU128};
-use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
+use std::cmp::Ordering;
+use std::fmt;
+use std::fmt::{Display, Formatter};
+use std::num::{FpCategory, NonZeroU64, NonZeroU128};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.

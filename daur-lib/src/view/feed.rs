@@ -1,7 +1,7 @@
 use crate::UserInterface;
 use crate::ui::{Direction, Length, Offset};
 use crate::view::{Quotated, View};
-use core::cmp::Ordering;
+use std::cmp::Ordering;
 
 /// A window into an infinite and scrollable stack
 pub(crate) fn feed<Ui: UserInterface, Generator>(

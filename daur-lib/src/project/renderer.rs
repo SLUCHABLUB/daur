@@ -4,14 +4,13 @@ use crate::sync::Cell;
 use crate::time::Instant;
 use crate::track::RenderStream;
 use crate::{Audio, Id, Track};
-use alloc::sync::Arc;
-use core::mem::{replace, take};
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
 use indexmap::map::Values;
 use parking_lot::Mutex;
-use std::sync::OnceLock;
+use std::mem::{replace, take};
+use std::sync::{Arc, OnceLock};
 
 #[derive(Default)]
 pub(crate) struct Renderer {

@@ -1,10 +1,10 @@
 use crate::metre::{Changing, NonZeroInstant, TimeSignature};
 use crate::notes::Key;
 use crate::time::Tempo;
-use alloc::sync::Arc;
-use core::cmp::min;
-use core::iter::from_fn;
 use getset::CloneGetters;
+use std::cmp::min;
+use std::iter::from_fn;
+use std::sync::Arc;
 
 /// Settings for a project.
 #[derive(Clone, Eq, PartialEq, Debug, Default, CloneGetters)]

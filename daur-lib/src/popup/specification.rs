@@ -5,7 +5,6 @@ use crate::sync::{ArcCell, Cell};
 use crate::ui::Rectangle;
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Action, Id, Ratio, UserInterface, View, project};
-use alloc::sync::Arc;
 use anyhow::Error;
 use arcstr::{ArcStr, literal};
 use closure::closure;
@@ -14,6 +13,7 @@ use dirs::home_dir;
 use mitsein::vec1::Vec1;
 use std::env::current_dir;
 use std::path::Path;
+use std::sync::Arc;
 
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 const CANCEL: ArcStr = literal!("cancel");

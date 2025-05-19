@@ -1,5 +1,5 @@
 use crate::audio::Sample;
-use core::ops::{Add, AddAssign};
+use std::ops::{Add, AddAssign};
 
 /// A sample pair.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]

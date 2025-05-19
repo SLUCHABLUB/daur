@@ -35,10 +35,10 @@ use crate::Action;
 use crate::app::HoldableObject;
 use crate::ui::{Colour, Point, Rectangle, Size, Vector};
 use crate::view::context::Menu;
-use alloc::sync::Arc;
 use arcstr::ArcStr;
-use core::num::NonZeroU64;
 use derive_more::Debug;
+use std::num::NonZeroU64;
+use std::sync::Arc;
 
 /// A function for painting a canvas.
 pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;

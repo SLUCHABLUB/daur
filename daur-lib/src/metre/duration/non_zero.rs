@@ -1,6 +1,6 @@
 use crate::NonZeroRatio;
 use crate::metre::Duration;
-use core::ops::{Div, DivAssign};
+use std::ops::{Div, DivAssign};
 
 /// A non-zero duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

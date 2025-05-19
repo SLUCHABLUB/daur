@@ -13,11 +13,10 @@ use crate::clip::Content;
 use crate::metre::Instant;
 use crate::project::Settings;
 use crate::{Audio, Clip, Id};
-use alloc::collections::BTreeMap;
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
 use indexmap::IndexMap;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 const DEFAULT_TITLE: ArcStr = literal!("a track");
 

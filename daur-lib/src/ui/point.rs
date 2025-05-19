@@ -1,5 +1,5 @@
 use crate::ui::{Length, Offset, Vector};
-use core::ops::{Add, AddAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// A point on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

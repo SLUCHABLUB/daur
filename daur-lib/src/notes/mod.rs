@@ -9,13 +9,13 @@ mod pitch;
 mod sign;
 
 pub use chroma::Chroma;
-use core::cmp::min;
 pub use interval::Interval;
 pub use key::Key;
 pub use key_interval::KeyInterval;
 pub use note::Note;
 pub use pitch::Pitch;
 pub use sign::Sign;
+use std::cmp::min;
 
 use crate::metre::{Instant, NonZeroDuration, PitchSpaced};
 use crate::view::Context;

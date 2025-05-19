@@ -1,5 +1,5 @@
 use crate::metre::Instant;
-use alloc::collections::BTreeMap;
+use std::collections::BTreeMap;
 
 // TODO: remove?
 /// A list of items that are spaced out in (musical) time.

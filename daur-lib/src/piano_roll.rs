@@ -8,11 +8,11 @@ use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
 use crate::{Action, Clip, HoldableObject, Project, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
 use closure::closure;
-use core::cmp::Ordering;
-use core::iter::once;
-use core::mem::swap;
 use itertools::chain;
 use saturating_cast::SaturatingCast as _;
+use std::cmp::Ordering;
+use std::iter::once;
+use std::mem::swap;
 
 const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");

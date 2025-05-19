@@ -3,8 +3,8 @@
 use crate::ToArcStr;
 use crate::sync::Cell;
 use crate::view::{Axis, OnClick, View};
-use alloc::sync::Arc;
 use bitbag::{BitBag, Flags};
+use std::sync::Arc;
 
 /// A simple multi-selection view
 pub fn selector<T: Copy + Flags + ToArcStr + Send + Sync>(

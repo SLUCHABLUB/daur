@@ -3,10 +3,10 @@
 use crate::ToArcStr;
 use crate::sync::Cell;
 use crate::view::{Axis, OnClick, View};
-use alloc::sync::Arc;
 use arcstr::ArcStr;
 use closure::closure;
-use core::fmt::Display;
+use std::fmt::Display;
+use std::sync::Arc;
 use strum::VariantArray;
 
 /// A simple single-selection view

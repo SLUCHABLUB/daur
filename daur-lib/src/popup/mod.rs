@@ -9,8 +9,8 @@ pub use specification::Specification;
 use crate::View;
 use crate::id::Id;
 use crate::ui::Rectangle;
-use alloc::sync::Arc;
 use getset::{CloneGetters, CopyGetters};
+use std::sync::Arc;
 
 /// An instance of a popup window.
 #[derive(Clone, Debug, CopyGetters, CloneGetters)]

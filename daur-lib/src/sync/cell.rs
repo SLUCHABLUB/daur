@@ -1,6 +1,6 @@
-use core::fmt;
-use core::fmt::{Debug, Formatter};
 use crossbeam::atomic::AtomicCell;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
 
 /// A thread-safe version of [`Cell`](std::cell::Cell).
 #[derive(Default)]

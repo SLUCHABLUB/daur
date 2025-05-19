@@ -1,9 +1,9 @@
 use crate::Audio;
 use crate::audio::Source;
 use crate::time::{Duration, Instant};
-use alloc::sync::Arc;
 use derive_more::Debug;
 use rodio::Sink;
+use std::sync::Arc;
 
 #[derive(Clone, Debug)]
 pub(crate) struct Player {
