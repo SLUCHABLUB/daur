@@ -2,15 +2,16 @@ mod action;
 mod actions;
 mod holdable;
 mod selection;
+mod view;
 
 pub use action::Action;
 pub use actions::Actions;
 pub use holdable::HoldableObject;
 pub use selection::Selection;
 
+use crate::app::view::view;
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::project::{bar, workspace};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::{PianoRoll, Ratio, UserInterface, View, popup, project};
@@ -130,43 +131,6 @@ impl<Ui: UserInterface> App<Ui> {
     }
 
     fn rerender(&mut self) {
-        let background = View::y_stack([
-            bar::<Ui>(
-                self.project_manager.project(),
-                self.audio_config.try_player().cloned(),
-                self.edit_mode,
-                self.piano_roll.is_open,
-            )
-            .quotated(self.project_bar_height.get()),
-            workspace::<Ui>(
-                self.project_manager.project(),
-                self.selection,
-                self.track_settings_width,
-                self.negative_overview_offset,
-                self.grid,
-                self.cursor(),
-                self.audio_config.try_player(),
-            )
-            .fill_remaining(),
-            self.piano_roll.view::<Ui>(
-                self.selection,
-                self.project_manager.project(),
-                self.grid,
-                self.audio_config.try_player().cloned(),
-                self.cursor,
-            ),
-        ]);
-
-        let mut layers = vec![background];
-
-        for instance in self.popup_manager.popups() {
-            layers.push(instance.view());
-        }
-
-        if let Some(instance) = self.context_menu() {
-            layers.push(instance.into_view());
-        }
-
-        self.view = View::Layers(layers);
+        self.view = view(self);
     }
 }
