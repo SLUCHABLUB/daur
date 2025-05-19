@@ -10,6 +10,7 @@ pub use selection::Selection;
 
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
+use crate::project::{bar, workspace};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
 use crate::{PianoRoll, Ratio, UserInterface, View, popup, project};
@@ -66,7 +67,7 @@ pub struct App<Ui: UserInterface> {
     grid: Grid,
     // TODO: move to temporary settings
     /// How far to the left the overview has been moved.
-    overview_offset: Length,
+    negative_overview_offset: Length,
     // TODO: move to temporary settings
     /// The settings regarding the piano roll.
     piano_roll: PianoRoll,
@@ -102,7 +103,7 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_duration: NonZeroDuration::QUARTER,
                 cell_width: Ui::CELL_WIDTH,
             },
-            overview_offset: Length::ZERO,
+            negative_overview_offset: Length::ZERO,
             piano_roll: PianoRoll {
                 negative_x_offset: Length::ZERO,
                 y_offset: Offset::ZERO,
@@ -130,25 +131,23 @@ impl<Ui: UserInterface> App<Ui> {
 
     fn rerender(&mut self) {
         let background = View::y_stack([
-            self.project_manager
-                .project()
-                .bar::<Ui>(
-                    self.audio_config.try_player().cloned(),
-                    self.edit_mode,
-                    self.piano_roll.is_open,
-                )
-                .quotated(self.project_bar_height.get()),
-            self.project_manager
-                .project()
-                .workspace::<Ui>(
-                    self.track_settings_width,
-                    self.grid,
-                    self.overview_offset,
-                    self.selection,
-                    self.cursor(),
-                    self.audio_config.try_player(),
-                )
-                .fill_remaining(),
+            bar::<Ui>(
+                self.project_manager.project(),
+                self.audio_config.try_player().cloned(),
+                self.edit_mode,
+                self.piano_roll.is_open,
+            )
+            .quotated(self.project_bar_height.get()),
+            workspace::<Ui>(
+                self.project_manager.project(),
+                self.selection,
+                self.track_settings_width,
+                self.negative_overview_offset,
+                self.grid,
+                self.cursor(),
+                self.audio_config.try_player(),
+            )
+            .fill_remaining(),
             self.piano_roll.view::<Ui>(
                 self.selection,
                 self.project_manager.project(),

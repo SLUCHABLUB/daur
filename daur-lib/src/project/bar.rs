@@ -3,9 +3,8 @@ use crate::audio::Player;
 use crate::metre::Instant;
 use crate::notes::Key;
 use crate::popup::Specification;
-use crate::project::Settings;
 use crate::view::{Axis, OnClick, View};
-use crate::{ToArcStr as _, UserInterface};
+use crate::{Project, ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
 
 // TODO: add a symbol view instead of using chars
@@ -36,23 +35,25 @@ fn open_key_selector(instant: Instant, key: Key) -> OnClick {
 
 /// The bar att the top of the window.
 pub(crate) fn bar<Ui: UserInterface>(
-    title: ArcStr,
-    settings: &Settings,
+    project: &Project,
     player: Option<Player>,
     edit_mode: bool,
     piano_roll_open: bool,
 ) -> View {
     let key_button = View::standard_button(
-        settings.key.start.to_arc_str(),
-        open_key_selector(Instant::START, settings.key.start),
+        project.settings.key.start.to_arc_str(),
+        open_key_selector(Instant::START, project.settings.key.start),
     );
     // TODO: add functionality
     let time_signature_button = View::standard_button(
-        settings.time_signature.start.to_arc_str(),
+        project.settings.time_signature.start.to_arc_str(),
         OnClick::default(),
     );
     // TODO: add functionality
-    let tempo_button = View::standard_button(settings.tempo.start.to_arc_str(), OnClick::default());
+    let tempo_button = View::standard_button(
+        project.settings.tempo.start.to_arc_str(),
+        OnClick::default(),
+    );
 
     let to_start_button =
         View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));
@@ -99,6 +100,6 @@ pub(crate) fn bar<Ui: UserInterface>(
         right_side.fill_remaining(),
     ])
     .bordered()
-    .titled(title)
+    .titled(project.title())
     .with_thickness(true)
 }

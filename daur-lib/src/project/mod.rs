@@ -20,11 +20,7 @@ pub(crate) use bar::bar;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
-use crate::app::Selection;
-use crate::audio::Player;
-use crate::metre::Instant;
-use crate::ui::{Grid, Length, NonZeroLength};
-use crate::{Id, UserInterface, View};
+use crate::Id;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
@@ -61,43 +57,5 @@ impl Project {
     #[must_use]
     pub(crate) fn track_mut(&mut self, id: Id<Track>) -> Option<&mut Track> {
         self.tracks.get_mut(&id)
-    }
-
-    // TODO: remove
-    pub(crate) fn bar<Ui: UserInterface>(
-        &self,
-        player: Option<Player>,
-        edit_mode: bool,
-        piano_roll_open: bool,
-    ) -> View {
-        bar::<Ui>(
-            self.title(),
-            &self.settings,
-            player,
-            edit_mode,
-            piano_roll_open,
-        )
-    }
-
-    // TODO: remove
-    pub(crate) fn workspace<Ui: UserInterface>(
-        &self,
-        track_settings_size: NonZeroLength,
-        grid: Grid,
-        overview_offset: Length,
-        selection: Selection,
-        cursor: Instant,
-        player: Option<&Player>,
-    ) -> View {
-        workspace::<Ui>(
-            overview_offset,
-            selection,
-            track_settings_size,
-            self.tracks.values(),
-            self.settings.clone(),
-            grid,
-            cursor,
-            player,
-        )
     }
 }

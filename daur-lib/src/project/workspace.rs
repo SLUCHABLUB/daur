@@ -2,21 +2,17 @@ use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::project::track::{overview, settings};
-use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings, Track};
+use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Track};
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
-use crate::{Action, Id, UserInterface};
+use crate::{Action, Project, UserInterface};
 use arcstr::literal;
-use indexmap::map::Values;
 
-// TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
-#[expect(clippy::too_many_arguments, reason = "todo")]
 pub(crate) fn workspace<Ui: UserInterface>(
-    overview_offset: Length,
+    project: &Project,
     selection: Selection,
     track_settings_width: NonZeroLength,
-    tracks: Values<Id<Track>, Track>,
-    project_settings: Settings,
+    negative_overview_offset: Length,
     grid: Grid,
     cursor: Instant,
     player: Option<&Player>,
@@ -24,16 +20,16 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let mut track_settings = Vec::new();
     let mut track_overviews = Vec::new();
 
-    for track in tracks {
+    for track in project.tracks.values() {
         let selected = selection.track() == track.id();
 
         track_settings.push(settings(track, selected));
         track_overviews.push(overview(
             track,
             selection,
-            project_settings.clone(),
+            project.settings.clone(),
             grid,
-            overview_offset,
+            negative_overview_offset,
             cursor,
             player.cloned(),
         ));
@@ -51,9 +47,9 @@ pub(crate) fn workspace<Ui: UserInterface>(
     track_overviews.push(overview(
         &Track::new(),
         selection,
-        project_settings.clone(),
+        project.settings.clone(),
         grid,
-        overview_offset,
+        negative_overview_offset,
         cursor,
         player.cloned(),
     ));
@@ -61,7 +57,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     // TODO: put something here?
     let empty_space = literal!(":)").centred();
 
-    let ruler = ruler::<Ui>(overview_offset, project_settings, grid);
+    let ruler = ruler::<Ui>(negative_overview_offset, project.settings.clone(), grid);
     let ruler_row = View::x_stack([
         empty_space.quotated(track_settings_width.get()),
         ruler.scrollable(Action::MoveOverview).fill_remaining(),
