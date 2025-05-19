@@ -32,7 +32,6 @@ use std::iter::zip;
 use std::num::NonZeroU32;
 use std::ops::{Add, AddAssign};
 
-// TODO: add sample rate macro to make the test more readable
 /// Some stereo 64-bit floating point audio.
 ///
 /// # Addition
@@ -41,16 +40,18 @@ use std::ops::{Add, AddAssign};
 /// When this is done, the sample rate is taken from the audio on the left.
 /// See example:
 ///
-/// ```ignore
-/// let audio_one = ...;
-/// let audio_two = ...;
+/// ```
+/// # use daur::{sample_rate, Audio};
 ///
-/// assert_eq!(audio_one.sample_rate.samples_per_second.get(), 44_100);
-/// assert_eq!(audio_two.sample_rate.samples_per_second.get(), 48_000);
+/// # let audio_one = Audio::empty(sample_rate!(44_100 Hz));
+/// # let audio_two = &Audio::empty(sample_rate!(48_000 Hz));
+///
+/// assert_eq!(audio_one.sample_rate, sample_rate!(44_100 Hz));
+/// assert_eq!(audio_two.sample_rate, sample_rate!(48_000 Hz));
 ///
 /// let output = audio_one + audio_two;
 ///
-/// assert_eq!(output.sample_rate.samples_per_second.get(), 44_100);
+/// assert_eq!(output.sample_rate, sample_rate!(44_100 Hz));
 /// ```
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Clone, Eq, PartialEq, Debug)]

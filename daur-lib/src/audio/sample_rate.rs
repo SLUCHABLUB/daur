@@ -4,6 +4,19 @@ use rodio::cpal;
 use std::num::{NonZeroU32, NonZeroU64};
 use thiserror::Error;
 
+/// Constructs a new sample rate at compile time.
+#[macro_export]
+macro_rules! sample_rate {
+    ($f:literal Hz) => {
+        const {
+            $crate::audio::SampleRate {
+                samples_per_second: ::core::num::NonZeroU32::new($f)
+                    .expect("sample rates cannot be zero"),
+            }
+        }
+    };
+}
+
 /// A sample rate.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct SampleRate {
