@@ -31,6 +31,7 @@ impl View {
         }
     }
 
+    /// Adds a function that accepts droppable objects to the view.
     pub fn object_accepting<
         F: Fn(HoldableObject, Rectangle, Point) -> Option<Action> + Send + Sync + 'static,
     >(

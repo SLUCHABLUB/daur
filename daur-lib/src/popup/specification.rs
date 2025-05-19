@@ -24,7 +24,7 @@ const KEY_SELECTOR_TITLE: ArcStr = literal!("select key");
 
 // TODO: keyboard navigation of popups
 /// A specification for a popup window.
-#[doc(hidden)]
+#[cfg_attr(doc, doc(hidden))]
 #[derive(Clone, Debug)]
 pub enum Specification {
     /// A panel of buttons.

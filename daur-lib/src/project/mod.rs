@@ -31,7 +31,7 @@ const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 
 // TODO: Test that this isn't `Clone` (bc. id).
 /// A musical piece consisting of multiple [tracks](Track).
-#[doc(hidden)]
+#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Default, Getters, CloneGetters)]
 pub struct Project {
     /// The name of the project.

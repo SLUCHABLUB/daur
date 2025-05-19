@@ -28,7 +28,7 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
 
 /// A part of a [track](crate::Track).
 // TODO: Test that this isn't `Clone` (bc. id).
-#[doc(hidden)]
+#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct Clip {
     // TODO: pub(super)

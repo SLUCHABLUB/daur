@@ -50,8 +50,8 @@ pub type DropAction = dyn Fn(HoldableObject, Rectangle, Point) -> Option<Action>
 pub type GrabObject = dyn Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync;
 
 /// A UI element.
-#[doc(hidden)]
-#[must_use = "A view must be processed in some way"]
+#[cfg_attr(doc, doc(hidden))]
+#[must_use]
 #[derive(Debug, Default)]
 pub enum View {
     /// A view with a border.
@@ -110,6 +110,7 @@ pub enum View {
     Layers(Vec<Self>),
     /// A view on which an [object](HoldableObject) may be dropped.
     ObjectAcceptor {
+        /// The action to take when an object is dropped on the view.
         #[debug(skip)]
         drop: Box<DropAction>,
         /// The view.

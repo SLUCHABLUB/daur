@@ -24,7 +24,7 @@ use crate::View;
 use std::path::Path;
 
 /// A user interface for the DAW.
-#[doc(hidden)]
+#[cfg_attr(doc, doc(hidden))]
 pub trait UserInterface {
     /// The default depth of the black keys on the piano roll.
     const BLACK_KEY_DEPTH: NonZeroLength;

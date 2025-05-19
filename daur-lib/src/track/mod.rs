@@ -22,7 +22,7 @@ const DEFAULT_TITLE: ArcStr = literal!("a track");
 
 /// A musical track.
 // TODO: Test that this isn't `Clone` (bc. id).
-#[doc(hidden)]
+#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters)]
 pub struct Track {
     // TODO: pub(super)

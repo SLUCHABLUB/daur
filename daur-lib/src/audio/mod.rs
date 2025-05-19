@@ -52,7 +52,7 @@ use std::ops::{Add, AddAssign};
 ///
 /// assert_eq!(output.sample_rate.samples_per_second.get(), 44_100);
 /// ```
-#[doc(hidden)]
+#[cfg_attr(doc, doc(hidden))]
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
     /// The sample rate of the audio.
