@@ -5,7 +5,7 @@ use getset::Getters;
 /// A manager for the open [popups](PopupSpecification).
 #[derive(Debug, Getters)]
 pub(crate) struct Manager {
-    #[getset(get = "pub(crate)")]
+    #[get = "pub(crate)"]
     popups: Vec<Popup>,
 }
 

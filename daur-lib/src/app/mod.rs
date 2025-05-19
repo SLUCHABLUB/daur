@@ -20,14 +20,15 @@ use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.
-    #[getset(get = "pub", get_mut = "pub")]
+    #[get = "pub"]
+    #[get_mut = "pub"]
     ui: Ui,
 
     /// The view of the app.
     ///
     /// This includes popups and the context menu.
     /// The view may need to be reacquired if an action is taken on the app.
-    #[getset(get = "pub")]
+    #[get = "pub"]
     view: View,
 
     project_manager: project::Manager,
