@@ -30,7 +30,9 @@ pub enum Action {
 
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
-    /// Selects a clip and track
+    /// Selects a track.
+    SelectTrack(Id<Track>),
+    /// Selects a clip in a track.
     SelectClip {
         /// The index of the track in which the clip resides
         track: Id<Track>,
@@ -189,6 +191,9 @@ impl<Ui: UserInterface> App<Ui> {
                     self.project_manager.project().settings(),
                     self.audio_config.sample_rate()?,
                 );
+            }
+            Action::SelectTrack(track) => {
+                self.selection.set_track(track);
             }
             Action::SelectClip { track, clip, .. } => {
                 self.selection.set_track(track);

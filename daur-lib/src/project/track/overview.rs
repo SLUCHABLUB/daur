@@ -1,4 +1,3 @@
-use crate::Id;
 use crate::app::{Action, Selection};
 use crate::audio::Player;
 use crate::metre::Instant;
@@ -57,10 +56,7 @@ pub(crate) fn overview(
         clips,
         CursorWindow::view(player, cursor, project, grid, negative_overview_offset),
     ])
-    .on_click(OnClick::from(Action::SelectClip {
-        track: track.id,
-        clip: Id::NONE,
-    }))
+    .on_click(OnClick::from(Action::SelectTrack(track.id)))
     .contextual(Menu::track_overview())
     .scrollable(Action::MoveOverview)
 }
