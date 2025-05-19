@@ -6,10 +6,10 @@ use getset::{CopyGetters, Setters};
 /// The selection state of the app.
 #[derive(Copy, Clone, Debug, Setters, CopyGetters)]
 pub struct Selection {
-    #[set = "pub(super)"]
+    #[set = "pub(crate)"]
     #[get_copy = "pub(crate)"]
     track: Id<Track>,
-    #[set = "pub(super)"]
+    #[set = "pub(crate)"]
     #[get_copy = "pub(crate)"]
     clip: Id<Clip>,
     // TODO: add a set of notes, and remove clone

@@ -4,7 +4,6 @@ pub mod track;
 
 mod action;
 mod bar;
-mod edit;
 mod manager;
 mod renderer;
 mod settings;
@@ -13,6 +12,7 @@ mod workspace;
 pub use action::Action;
 pub use manager::Manager;
 pub use settings::Settings;
+use std::sync::Arc;
 #[doc(inline)]
 pub use track::Track;
 
@@ -20,13 +20,20 @@ pub(crate) use bar::bar;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
-use crate::Id;
+use crate::metre::{Instant, NonZeroInstant};
+use crate::{Id, Selection};
+use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
+use thiserror::Error;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
+
+#[derive(Debug, Error)]
+#[error("no track is selected")]
+struct NoTrackSelected;
 
 // TODO: Test that this isn't `Clone` (bc. id).
 /// A musical piece consisting of multiple [tracks](Track).
@@ -52,10 +59,35 @@ impl Project {
         self.tracks.get(&id)
     }
 
-    // TODO: remove (track edit)
-    /// Returns a mutable reference to a track.
-    #[must_use]
-    pub(crate) fn track_mut(&mut self, id: Id<Track>) -> Option<&mut Track> {
-        self.tracks.get_mut(&id)
+    // TODO: return a history entry
+    pub(crate) fn take_action(
+        &mut self,
+        action: Action,
+        cursor: Instant,
+        selection: &mut Selection,
+    ) -> Result<()> {
+        match action {
+            Action::Track(action) => self
+                .tracks
+                .get_mut(&selection.track())
+                .ok_or(NoTrackSelected)?
+                .take_action(action, cursor, selection),
+            Action::AddTrack => {
+                let track = Track::new();
+                selection.set_track(track.id());
+                self.tracks.insert(track.id(), track);
+                Ok(())
+            }
+            Action::SetKey { instant, key } => {
+                if let Some(position) = NonZeroInstant::from_instant(instant) {
+                    Arc::make_mut(&mut self.settings.key)
+                        .changes
+                        .insert(position, key);
+                } else {
+                    Arc::make_mut(&mut self.settings.key).start = key;
+                }
+                Ok(())
+            }
+        }
     }
 }

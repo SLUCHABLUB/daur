@@ -1,6 +1,7 @@
 //! Types pertaining to context menus.
 
 use crate::popup::Specification;
+use crate::project::track;
 use crate::ui::{Point, Rectangle};
 use crate::view::{Axis, OnClick, View};
 use crate::{Action, UserInterface, project};
@@ -36,7 +37,10 @@ impl Menu {
         Menu {
             buttons: vec![
                 (IMPORT_AUDIO, open_import_audio_popup()),
-                (ADD_NOTES, Action::Project(project::Action::AddNotes)),
+                (
+                    ADD_NOTES,
+                    Action::Project(project::Action::Track(track::Action::AddNotes)),
+                ),
                 (TOGGLE_PIANO_ROLL, Action::TogglePianoRoll),
             ],
         }

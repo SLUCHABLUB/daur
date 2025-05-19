@@ -1,8 +1,10 @@
 //! Items pertaining to [`Clip`].
 
+mod action;
 mod content;
 mod overview;
 
+pub use action::Action;
 pub use content::Content;
 
 pub(crate) use overview::overview;
@@ -11,8 +13,10 @@ use crate::audio::NonEmpty;
 use crate::metre::{Instant, NonZeroDuration, NonZeroPeriod};
 use crate::ui::Colour;
 use crate::{Id, Notes, project};
+use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
+use thiserror::Error;
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour {
     red: 0,
@@ -26,6 +30,10 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
     green: 0,
     blue: 255,
 };
+
+#[derive(Debug, Error)]
+#[error("the selected clip is not a notes-clip")]
+struct NoNotesSelected;
 
 /// A part of a [track](super::Track).
 // TODO: Test that this isn't `Clone` (bc. id).
@@ -42,7 +50,6 @@ pub struct Clip {
     colour: Colour,
     /// The content of the clip.
     #[get = "pub(crate)"]
-    #[get_mut = "pub(crate)"]
     content: Content,
 }
 
@@ -71,5 +78,35 @@ impl Clip {
     #[must_use]
     pub fn period(&self, start: Instant, settings: &project::Settings) -> NonZeroPeriod {
         self.content.period(start, settings)
+    }
+
+    pub(crate) fn take_action(&mut self, clip_position: Instant, action: Action) -> Result<()> {
+        match action {
+            Action::AddNote {
+                position: note_position,
+                pitch,
+                mut note,
+            } => {
+                if note_position < clip_position {
+                    let difference = clip_position - note_position;
+                    let Some(duration) =
+                        NonZeroDuration::from_duration(note.duration.get() - difference)
+                    else {
+                        return Ok(());
+                    };
+
+                    note.duration = duration;
+                }
+
+                let relative_position = note_position - clip_position.since_start;
+
+                self.content
+                    .as_notes_mut()
+                    .ok_or(NoNotesSelected)?
+                    .try_insert(relative_position, pitch, note);
+
+                Ok(())
+            }
+        }
     }
 }

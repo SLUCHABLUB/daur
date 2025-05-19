@@ -1,8 +1,8 @@
 use crate::app::HoldableObject;
 use crate::metre::Instant;
 use crate::popup::Specification;
-use crate::project::Track;
 use crate::project::track::Clip;
+use crate::project::{Track, track};
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{Actions, App, Id, Popup, UserInterface, project};
@@ -61,14 +61,14 @@ pub enum Action {
     /// Moves the piano roll.
     MovePianoRoll(Vector),
 
-    /// Stop playing
+    /// Stop playing.
     Pause,
-    /// Start playing
+    /// Start playing.
     Play,
     /// Toggles whether the app is playing.
     TogglePlayback,
 
-    /// Takes a project action
+    /// A project action.
     Project(project::Action),
 
     /// Saves and exits the program
@@ -79,7 +79,9 @@ pub enum Action {
 impl Action {
     /// Returns an action for importing audio
     pub fn import_audio<P: Into<PathBuf>>(file: P) -> Action {
-        Action::Project(project::Action::ImportAudio { file: file.into() })
+        Action::Project(project::Action::Track(track::Action::ImportAudio {
+            file: file.into(),
+        }))
     }
 }
 
@@ -184,7 +186,7 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::Project(action) => {
                 self.project_manager
-                    .take(action, self.cursor, self.selection)?;
+                    .take_action(action, self.cursor(), &mut self.selection)?;
 
                 self.renderer.restart(
                     self.project_manager.project(),
