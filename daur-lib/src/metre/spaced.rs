@@ -1,6 +1,7 @@
 use crate::metre::Instant;
 use alloc::collections::BTreeMap;
 
+// TODO: remove?
 /// A list of items that are spaced out in (musical) time.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Spaced<T> {

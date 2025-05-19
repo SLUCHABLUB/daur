@@ -4,7 +4,6 @@ use crate::popup::Specification;
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
 use crate::{Actions, App, Clip, Id, Popup, Track, UserInterface, project};
-use alloc::sync::Weak;
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -32,9 +31,9 @@ pub enum Action {
     /// Selects a clip and track
     SelectClip {
         /// The index of the track in which the clip resides
-        track: Weak<Track>,
+        track: Id<Track>,
         /// The index of the clip to select
-        clip: Weak<Clip>,
+        clip: Id<Clip>,
     },
 
     /// Sets the piano roll's height to half of the screen height.
@@ -184,7 +183,7 @@ impl<Ui: UserInterface> App<Ui> {
                     .take(action, self.cursor, &self.selection)?;
 
                 self.renderer.restart(
-                    self.project_manager.project().tracks(),
+                    self.project_manager.project().tracks().values(),
                     self.project_manager.project().settings(),
                     self.audio_config.sample_rate()?,
                 );

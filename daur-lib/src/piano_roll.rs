@@ -5,7 +5,7 @@ use crate::notes::{Interval, Key, Note, Notes, Pitch};
 use crate::project::Settings;
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
-use crate::{Action, Clip, HoldableObject, UserInterface, View, project};
+use crate::{Action, Clip, HoldableObject, Project, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use core::cmp::Ordering;
@@ -58,7 +58,7 @@ impl PianoRoll {
     pub(crate) fn view<Ui: UserInterface>(
         self,
         selection: &Selection,
-        project: Settings,
+        project: &Project,
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
@@ -67,13 +67,14 @@ impl PianoRoll {
             return Quotated::EMPTY;
         }
 
-        let title = selection
-            .clip()
-            .upgrade()
-            .as_deref()
-            .map_or(PIANO_ROLL, Clip::name);
+        let (clip_start, clip) = project
+            .track(selection.track())
+            .and_then(|track| track.clip(selection.clip()))
+            .map_or((Instant::START, None), |(start, clip)| (start, Some(clip)));
 
-        let view = self.content::<Ui>(selection, project, grid, player, cursor);
+        let title = clip.map_or(PIANO_ROLL, Clip::name);
+
+        let view = self.content::<Ui>(clip, clip_start, project, grid, player, cursor);
 
         let title_height = Ui::title_height(&title, &view);
 
@@ -85,13 +86,14 @@ impl PianoRoll {
 
     fn content<Ui: UserInterface>(
         self,
-        selection: &Selection,
-        project: Settings,
+        clip: Option<&Clip>,
+        clip_start: Instant,
+        project: &Project,
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
     ) -> View {
-        let Some((clip_position, clip)) = selection.resolve_clip_and_position() else {
+        let Some(clip) = clip else {
             return NO_CLIP_SELECTED.centred();
         };
 
@@ -103,10 +105,10 @@ impl PianoRoll {
         // Resizing it will thus cause the bottom to be fixed.
         // Since the top is the thing being moved, this seems intuitive.
         let workspace = self.workspace::<Ui>(
-            clip_position,
+            clip_start,
             notes,
             clip.colour(),
-            &project,
+            project.settings(),
             grid,
             player,
             cursor,
@@ -114,7 +116,7 @@ impl PianoRoll {
 
         let ruler = View::x_stack([
             View::Empty.quotated(self.piano_depth.get()),
-            ruler::<Ui>(self.negative_x_offset, project, grid).fill_remaining(),
+            ruler::<Ui>(self.negative_x_offset, project.settings().clone(), grid).fill_remaining(),
         ]);
 
         View::y_stack([

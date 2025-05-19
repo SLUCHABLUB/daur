@@ -16,6 +16,7 @@ pub enum Action {
     },
     /// Inserts an empty note clip into the selected track at the cursor.
     AddNotes,
+    // TODO: select the newly added track
     /// Adds an empty track.
     AddTrack,
     /// Imports an audio file into the selected track at the cursor.

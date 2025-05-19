@@ -1,117 +1,65 @@
 use crate::app::{Action, Selection};
 use crate::audio::Player;
-use crate::metre::{Instant, Period};
+use crate::metre::Instant;
 use crate::project::Settings;
-use crate::ui::{Direction, Grid, Length, Offset};
+use crate::ui::{Grid, Length};
 use crate::view::context::Menu;
-use crate::view::{CursorWindow, OnClick, Quotated, View, feed};
-use crate::{Track, UserInterface, clip};
-use alloc::sync::{Arc, Weak};
-use closure::closure;
-use num::Integer as _;
+use crate::view::{CursorWindow, OnClick, View};
+use crate::{Id, Track, clip};
 
 /// Returns the track overview.
-pub(crate) fn overview<Ui: UserInterface>(
-    track: Arc<Track>,
+pub(crate) fn overview(
+    track: &Track,
     selection: &Selection,
-    project_settings: &Settings,
+    project: Settings,
     grid: Grid,
-    offset: Length,
+    negative_overview_offset: Length,
     cursor: Instant,
-    player: Option<&Player>,
+    player: Option<Player>,
 ) -> View {
-    View::size_informed(closure!([
-        clone selection,
-        clone project_settings,
-        cloned player,
-    ] move |size| {
-        let vissible_period_start = offset;
-        let vissible_period = Period::from_x_interval(vissible_period_start, size.width, &project_settings, grid);
+    let clips = View::Layers(
+        track
+            .clips
+            .values()
+            .map(|clip| {
+                let clip_start = track
+                    .clip_starts
+                    .get(&clip.id())
+                    .copied()
+                    .unwrap_or_default();
+                let absolute_clip_offset = clip_start.to_x_offset(&project, grid);
 
-        // TODO: don't use a feed here
-        let generator = feed_generator(
-            &track,
-            &selection,
-            &project_settings,
-            grid,
-            Offset::negative(offset),
-            vissible_period,
-        );
+                let start_crop = negative_overview_offset - absolute_clip_offset;
 
-        View::Layers(vec![
-            feed::<Ui, _>(Direction::Right, Offset::negative(offset), generator),
-            CursorWindow::view(player.clone(), cursor, project_settings.clone(), grid, offset),
-        ])
+                let clip_offset = absolute_clip_offset - negative_overview_offset;
+
+                let clip_end = clip.period(clip_start, &project).get().end();
+                let clip_end_offset =
+                    clip_end.to_x_offset(&project, grid) - negative_overview_offset;
+
+                let selected = selection.clip() == clip.id();
+
+                let clip_width = clip_end_offset - clip_offset;
+
+                let overview = clip::overview(clip, track.id, selected, &project, grid, start_crop);
+
+                View::x_stack([
+                    View::Empty.quotated(clip_offset),
+                    overview.quotated(clip_width),
+                    View::Empty.fill_remaining(),
+                ])
+            })
+            .collect(),
+    );
+
+    View::Layers(vec![
+        clips,
+        CursorWindow::view(player, cursor, project, grid, negative_overview_offset),
+    ])
+    .on_click(OnClick::from(Action::SelectClip {
+        track: track.id,
+        clip: Id::NONE,
     }))
     .contextual(Menu::track_overview())
-        .scrollable(Action::MoveOverview)
-}
-
-/// Returns a function for generating clip-overviews from a feed index.
-fn feed_generator(
-    track: &Arc<Track>,
-    selection: &Selection,
-    settings: &Settings,
-    grid: Grid,
-    offset: Offset,
-    visible_period: Period,
-) -> impl Fn(isize) -> Quotated + 'static {
-    let track_reference = Arc::downgrade(track);
-
-    let empty = move || {
-        View::Empty.on_click(OnClick::from(Action::SelectClip {
-            track: Weak::clone(&track_reference),
-            clip: Weak::new(),
-        }))
-    };
-
-    closure!([clone track, clone selection, clone settings, clone empty] move |index| {
-        let Ok(index) = usize::try_from(index) else {
-            return empty().quotated(offset.abs());
-        };
-
-        let (clip_index, parity) = index.div_rem(&2);
-
-        // TODO: add spacing to feed
-        // if index is even
-        if parity == 0 {
-            // Return the space between clips
-
-            let last_clip_end = clip_index
-                .checked_sub(1)
-                .and_then(|index| {
-                    let (start, clip) = track.clips.iter().nth(index)?;
-                    let end = clip.period(start, &settings).get().end();
-                    Some(end.to_x_offset(&settings, grid))
-                })
-                .unwrap_or(Length::ZERO);
-
-            let next_clip_start = track
-                .clips
-                .iter()
-                .nth(clip_index)
-                .map_or(last_clip_end, |(instant, _)| instant.to_x_offset(&settings, grid));
-
-            let size = next_clip_start - last_clip_end;
-
-            return empty().quotated(size);
-        }
-
-        let Some((start, clip)) = track.clips.iter().nth(clip_index) else {
-            return empty().fill_remaining();
-        };
-        let clip_reference = Arc::downgrade(clip);
-
-        let clip_period = clip.period(start, &settings);
-        let clip_width = clip_period.get().width(&settings, grid);
-
-        let Some(visible_period) = Period::intersection(visible_period, clip_period.get()) else {
-            return empty().quotated(clip_width);
-        };
-
-        let selected = selection.clip().as_ptr() == clip_reference.as_ptr();
-
-        clip::overview(Arc::clone(clip), Arc::downgrade(&track), selected, clip_period.get(), visible_period, &settings, grid)
-        .quotated(clip_width)
-    })
+    .scrollable(Action::MoveOverview)
 }

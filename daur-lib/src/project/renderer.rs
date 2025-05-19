@@ -3,12 +3,13 @@ use crate::project::Settings;
 use crate::sync::Cell;
 use crate::time::Instant;
 use crate::track::RenderStream;
-use crate::{Audio, Track};
+use crate::{Audio, Id, Track};
 use alloc::sync::Arc;
 use core::mem::{replace, take};
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
+use indexmap::map::Values;
 use parking_lot::Mutex;
 use std::sync::OnceLock;
 
@@ -61,7 +62,7 @@ impl Renderer {
     // TODO: the audio up to the point of the change may be reused
     pub(crate) fn restart(
         &mut self,
-        tracks: &[Arc<Track>],
+        tracks: Values<Id<Track>, Track>,
         settings: &Settings,
         sample_rate: SampleRate,
     ) {
@@ -70,6 +71,8 @@ impl Renderer {
             unmastered_tracks: Mutex::new(Vec::with_capacity(tracks.len())),
             audio: OnceLock::new(),
         });
+
+        let zero_tracks = tracks.len() == 0;
 
         for track in tracks {
             let stream = track.render_stream(settings, sample_rate);
@@ -80,7 +83,7 @@ impl Renderer {
                 .execute(render_job(stream, progress, should_play));
         }
 
-        if tracks.is_empty() {
+        if zero_tracks {
             master(Vec::new(), sample_rate, &progress, &self.should_play);
         }
 

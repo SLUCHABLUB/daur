@@ -13,12 +13,10 @@ pub struct NonZeroDuration {
 
 impl NonZeroDuration {
     /// One nanosecond.
-    #[expect(clippy::unwrap_used, reason = "1 second != 0")]
     pub const NANOSECOND: NonZeroDuration =
         NonZeroDuration::from_duration(Duration::NANOSECOND).unwrap();
 
     /// One second.
-    #[expect(clippy::unwrap_used, reason = "1 second != 0")]
     pub const SECOND: NonZeroDuration = NonZeroDuration::from_duration(Duration::SECOND).unwrap();
 
     /// Converts the duration to a [zeroable one](Duration).

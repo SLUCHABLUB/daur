@@ -151,7 +151,7 @@ impl<Ui: UserInterface> App<Ui> {
                 .fill_remaining(),
             self.piano_roll.view::<Ui>(
                 &self.selection,
-                self.project_manager.project().settings().clone(),
+                self.project_manager.project(),
                 self.grid,
                 self.audio_config.try_player().cloned(),
                 self.cursor,

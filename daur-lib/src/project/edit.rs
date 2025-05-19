@@ -4,8 +4,7 @@ use crate::metre::{Instant, NonZeroDuration};
 use crate::notes::{Key, Note, Pitch};
 use crate::project::Action;
 use crate::track::Track;
-use crate::{Clip, NonZeroRatio};
-use alloc::sync::Weak;
+use crate::{Clip, Id, NonZeroRatio};
 use anyhow::{Result, anyhow, bail};
 use arcstr::ArcStr;
 use hound::WavReader;
@@ -30,14 +29,14 @@ pub struct NoExtensionError {
     pub file: PathBuf,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum Edit {
     /// Inserts a note into a clip.
     AddNote {
         /// The track.
-        track: Weak<Track>,
+        track: Id<Track>,
         /// The clip.
-        clip: Weak<Clip>,
+        clip: Id<Clip>,
         /// The position at which to insert the clip.
         position: Instant,
         /// The pitch at which to insert the note.
@@ -48,7 +47,7 @@ pub enum Edit {
     /// Inserts a clip into a track.
     AddClip {
         /// The track.
-        track: Weak<Track>,
+        track: Id<Track>,
         /// The position at which to insert the clip.
         position: Instant,
         /// The clip to insert.

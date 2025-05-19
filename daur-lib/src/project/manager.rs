@@ -23,7 +23,7 @@ struct NoNotesSelected;
 
 #[derive(Debug, Error)]
 #[error("there is already a clip at that position")]
-struct InsertClipError(Arc<Clip>);
+struct InsertClipError(Clip);
 
 /// Manages editing of a [project](Project).
 #[derive(Debug, Getters)]
@@ -31,8 +31,9 @@ pub struct Manager {
     /// The project.
     #[get = "pub"]
     project: Project,
+    // TODO: use
     // TODO: allow undoing
-    history: Vec<Edit>,
+    _history: Vec<Edit>,
 }
 
 impl Manager {
@@ -41,7 +42,7 @@ impl Manager {
     pub fn new(project: Project) -> Manager {
         Manager {
             project,
-            history: Vec::new(),
+            _history: Vec::new(),
         }
     }
 
@@ -56,7 +57,7 @@ impl Manager {
 
     // TODO: Split this into `try_edit` and `edit` so tahat the history only gets updated if the edit succeeds.
     fn edit(&mut self, edit: Edit) -> Result<()> {
-        self.history.push(edit.clone());
+        // TODO: write to history
 
         match edit {
             Edit::AddNote {
@@ -68,9 +69,9 @@ impl Manager {
             } => {
                 let (clip_position, clip) = self
                     .project
-                    .track_mut(&track)
+                    .track_mut(track)
                     .ok_or(NoTrackSelected)?
-                    .clip_mut(&clip)
+                    .clip_mut(clip)
                     .ok_or(NoClipSelected)?;
 
                 if note_position < clip_position {
@@ -97,13 +98,14 @@ impl Manager {
                 clip,
             } => {
                 self.project
-                    .track_mut(&track)
+                    .track_mut(track)
                     .ok_or(NoTrackSelected)?
-                    .clips_mut()
-                    .try_insert(position, Arc::new(clip))
+                    .try_insert_clip(position, clip)
                     .map_err(InsertClipError)?;
             }
-            Edit::AddTrack(track) => self.project.tracks.push(Arc::new(track)),
+            Edit::AddTrack(track) => {
+                self.project.tracks.insert(track.id(), track);
+            }
             Edit::ChangeKey { position, key } => {
                 if let Some(position) = NonZeroInstant::from_instant(position) {
                     Arc::make_mut(&mut self.project.settings.key)

@@ -5,9 +5,9 @@ use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings};
 use crate::track::{Track, overview, settings};
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
-use crate::{Action, UserInterface};
-use alloc::sync::Arc;
+use crate::{Action, Id, UserInterface};
 use arcstr::literal;
+use indexmap::map::Values;
 
 // TODO: merge `overview_offset` and `track_settings_width` into temporary settings and remove expect
 #[expect(clippy::too_many_arguments, reason = "todo")]
@@ -15,7 +15,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     overview_offset: Length,
     selection: &Selection,
     track_settings_width: NonZeroLength,
-    tracks: Vec<Arc<Track>>,
+    tracks: Values<Id<Track>, Track>,
     project_settings: Settings,
     grid: Grid,
     cursor: Instant,
@@ -25,18 +25,17 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let mut track_overviews = Vec::new();
 
     for track in tracks {
-        let track_reference = Arc::downgrade(&track);
-        let selected = selection.track().as_ptr() == track_reference.as_ptr();
+        let selected = selection.track() == track.id();
 
-        track_settings.push(settings(&track, selected));
-        track_overviews.push(overview::<Ui>(
+        track_settings.push(settings(track, selected));
+        track_overviews.push(overview(
             track,
             selection,
-            &project_settings,
+            project_settings.clone(),
             grid,
             overview_offset,
             cursor,
-            player,
+            player.cloned(),
         ));
     }
 
@@ -47,15 +46,16 @@ pub(crate) fn workspace<Ui: UserInterface>(
         OnClick::from(project::Action::AddTrack),
     ));
 
+    // TODO: don't use a dummy here, make a dedicated function
     // A "dummy-track" for the row with the add-track button
-    track_overviews.push(overview::<Ui>(
-        Arc::new(Track::new()),
+    track_overviews.push(overview(
+        &Track::new(),
         selection,
-        &project_settings,
+        project_settings.clone(),
         grid,
         overview_offset,
         cursor,
-        player,
+        player.cloned(),
     ));
 
     // TODO: put something here?

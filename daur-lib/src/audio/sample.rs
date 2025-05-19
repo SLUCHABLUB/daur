@@ -33,7 +33,7 @@ impl Sample {
     /// Calculates the average of two samples.
     #[must_use]
     pub const fn average(self, other: Sample) -> Sample {
-        Sample::new((self.inner + other.inner) / 2.0)
+        Sample::new(f64::midpoint(self.inner, other.inner))
     }
 
     /// Losslessly constructs a new float sample from a 32-bit integral sample.

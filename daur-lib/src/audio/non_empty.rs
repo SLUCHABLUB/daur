@@ -1,7 +1,7 @@
 use crate::Audio;
-use crate::metre::{Instant, NonZeroPeriod, Period};
+use crate::metre::{Instant, NonZeroPeriod};
 use crate::project::Settings;
-use crate::ui::Grid;
+use crate::ui::{Grid, Length};
 use crate::view::Context;
 
 /// Some audio of positive length.
@@ -49,10 +49,9 @@ impl NonEmpty {
     pub(crate) fn draw_overview(
         &self,
         _context: &mut dyn Context,
-        _full_period: Period,
-        _visible_period: Period,
         _settings: &Settings,
         _grid: Grid,
+        _crop_start: Length,
     ) {
         // TODO: draw loudness graph
         let _: &Self = self;

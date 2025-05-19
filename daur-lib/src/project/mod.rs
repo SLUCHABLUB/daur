@@ -21,17 +21,18 @@ use crate::audio::Player;
 use crate::metre::Instant;
 use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::{UserInterface, View};
-use alloc::sync::{Arc, Weak};
+use crate::{Id, UserInterface, View};
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
+use indexmap::IndexMap;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
 
+// TODO: Test that this isn't `Clone` (bc. id).
 /// A musical piece consisting of multiple [tracks](Track).
 #[doc(hidden)]
-#[derive(Clone, Debug, Default, Getters, CloneGetters)]
+#[derive(Debug, Default, Getters, CloneGetters)]
 pub struct Project {
     /// The name of the project.
     #[get_clone = "pub"]
@@ -42,18 +43,24 @@ pub struct Project {
     settings: Settings,
 
     /// The tracks in the project.
+    // TODO: remove getter / make pub(super)
     #[get = "pub(crate)"]
-    tracks: Vec<Arc<Track>>,
+    tracks: IndexMap<Id<Track>, Track>,
 }
 
 impl Project {
+    // TODO: pub(super)
+    /// Returns a reference to a track.
+    #[must_use]
+    pub(crate) fn track(&self, id: Id<Track>) -> Option<&Track> {
+        self.tracks.get(&id)
+    }
+
+    // TODO: remove (track edit)
     /// Returns a mutable reference to a track.
     #[must_use]
-    pub fn track_mut(&mut self, weak: &Weak<Track>) -> Option<&mut Track> {
-        self.tracks
-            .iter_mut()
-            .find(|arc| Arc::as_ptr(arc) == Weak::as_ptr(weak))
-            .map(Arc::make_mut)
+    pub(crate) fn track_mut(&mut self, id: Id<Track>) -> Option<&mut Track> {
+        self.tracks.get_mut(&id)
     }
 
     pub(crate) fn bar<Ui: UserInterface>(
@@ -84,7 +91,7 @@ impl Project {
             overview_offset,
             selection,
             track_settings_size,
-            self.tracks.clone(),
+            self.tracks.values(),
             self.settings.clone(),
             grid,
             cursor,

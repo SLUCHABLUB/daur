@@ -1,8 +1,8 @@
 use crate::audio;
-use crate::metre::{Instant, NonZeroPeriod, Period};
+use crate::metre::{Instant, NonZeroPeriod};
 use crate::notes::Notes;
 use crate::project::Settings;
-use crate::ui::Grid;
+use crate::ui::{Grid, Length};
 use crate::view::Context;
 
 /// The content of a [clip](crate::Clip).
@@ -54,14 +54,13 @@ impl Content {
     pub(super) fn paint_overview(
         &self,
         context: &mut dyn Context,
-        full_period: Period,
-        visible_period: Period,
         settings: &Settings,
         grid: Grid,
+        crop_start: Length,
     ) {
         match self {
             Content::Audio(audio) => {
-                audio.draw_overview(context, full_period, visible_period, settings, grid);
+                audio.draw_overview(context, settings, grid, crop_start);
             }
             Content::Notes(notes) => notes.draw_overview(context),
         }

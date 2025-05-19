@@ -1,32 +1,28 @@
-use crate::metre::Period;
 use crate::project::Settings;
-use crate::ui::Grid;
+use crate::ui::{Grid, Length};
 use crate::view::{OnClick, View};
-use crate::{Action, Clip, Track};
-use alloc::sync::{Arc, Weak};
+use crate::{Action, Clip, Id, Track};
+use closure::closure;
 
 /// Returns a view of a clip's overview.
 pub(crate) fn overview(
-    clip: Arc<Clip>,
-    track: Weak<Track>,
+    clip: &Clip,
+    track: Id<Track>,
     selected: bool,
-    full_period: Period,
-    visible_period: Period,
     settings: &Settings,
     grid: Grid,
+    crop_start: Length,
 ) -> View {
-    let title = clip.name();
-    let clip_reference = Arc::downgrade(&clip);
-    let settings = settings.clone();
-
-    View::canvas(clip.colour, move |context| {
-        clip.content
-            .paint_overview(context, full_period, visible_period, &settings, grid);
-    })
-    .titled(title)
+    View::canvas(
+        clip.colour,
+        closure!([clone clip.content, clone settings] move |context| {
+            content.paint_overview(context, &settings, grid, crop_start);
+        }),
+    )
+    .titled(clip.name())
     .with_thickness(selected)
     .on_click(OnClick::from(Action::SelectClip {
         track,
-        clip: clip_reference,
+        clip: clip.id,
     }))
 }

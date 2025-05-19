@@ -5,6 +5,7 @@ use core::hash::{Hash, Hasher};
 use core::marker::PhantomData;
 use core::sync::atomic::{AtomicUsize, Ordering};
 
+// TODO: Test that this is not `Serialize` and `Deserialize`.
 /// An identifier.
 pub struct Id<Item> {
     /// The numeric id.
@@ -22,6 +23,12 @@ impl<Item> Id<Item> {
             phantom: PhantomData,
         }
     }
+
+    /// The maximum id. Will in practice never identify anything.
+    pub(crate) const NONE: Self = Id {
+        inner: usize::MAX,
+        phantom: PhantomData,
+    };
 }
 
 impl<Item> Copy for Id<Item> {}

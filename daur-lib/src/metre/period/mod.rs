@@ -3,8 +3,6 @@ mod non_zero;
 pub use non_zero::NonZeroPeriod;
 
 use crate::metre::{Duration, Instant};
-use crate::project::Settings;
-use crate::ui::{Grid, Length};
 use core::cmp::{max, min};
 use core::ops::Range;
 
@@ -59,24 +57,5 @@ impl Period {
     #[must_use]
     pub fn contains(self, instant: Instant) -> bool {
         self.range().contains(&instant)
-    }
-
-    pub(crate) fn from_x_interval(
-        start: Length,
-        length: Length,
-        settings: &Settings,
-        grid: Grid,
-    ) -> Period {
-        let end = Instant::from_x_offset(start + length, settings, grid);
-        let start = Instant::from_x_offset(start, settings, grid);
-
-        Period {
-            start,
-            duration: end - start,
-        }
-    }
-
-    pub(crate) fn width(self, settings: &Settings, grid: Grid) -> Length {
-        self.end().to_x_offset(settings, grid) - self.start.to_x_offset(settings, grid)
     }
 }
