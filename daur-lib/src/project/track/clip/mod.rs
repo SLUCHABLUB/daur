@@ -3,14 +3,15 @@
 mod content;
 mod overview;
 
-use arcstr::{ArcStr, literal};
 pub use content::Content;
+
 pub(crate) use overview::overview;
 
 use crate::audio::NonEmpty;
 use crate::metre::{Instant, NonZeroDuration, NonZeroPeriod};
 use crate::ui::Colour;
 use crate::{Id, Notes, project};
+use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour {
@@ -26,7 +27,7 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
     blue: 255,
 };
 
-/// A part of a [track](crate::Track).
+/// A part of a [track](super::Track).
 // TODO: Test that this isn't `Clone` (bc. id).
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]

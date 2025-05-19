@@ -7,7 +7,6 @@ pub mod popup;
 pub mod project;
 pub mod sync;
 pub mod time;
-pub mod track;
 pub mod ui;
 pub mod view;
 
@@ -32,8 +31,6 @@ pub use notes::Notes;
 pub use popup::Popup;
 #[doc(inline)]
 pub use project::Project;
-#[doc(inline)]
-pub use track::Track;
 #[doc(inline)]
 pub use ui::UserInterface;
 #[doc(inline)]

@@ -5,7 +5,7 @@ use crate::project::Settings;
 use crate::ui::{Grid, Length};
 use crate::view::Context;
 
-/// The content of a [clip](crate::track::Clip).
+/// The content of a [clip](super::Clip).
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum Content {
     /// An audio clip.

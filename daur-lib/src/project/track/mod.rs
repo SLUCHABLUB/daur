@@ -15,7 +15,7 @@ pub(crate) use settings::settings;
 use crate::audio::{Pair, SampleRate};
 use crate::metre::Instant;
 use crate::project::Settings;
-use crate::track::clip::Content;
+use crate::project::track::clip::Content;
 use crate::{Audio, Id};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};

@@ -3,7 +3,7 @@ use crate::audio::{Audio, NonEmpty};
 use crate::metre::{Instant, NonZeroDuration};
 use crate::notes::{Key, Note, Pitch};
 use crate::project::Action;
-use crate::track::{Clip, Track};
+use crate::project::track::{Clip, Track};
 use crate::{Id, NonZeroRatio};
 use anyhow::{Result, anyhow, bail};
 use arcstr::ArcStr;

@@ -1,8 +1,8 @@
 use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings};
-use crate::track::{Track, overview, settings};
+use crate::project::track::{overview, settings};
+use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Settings, Track};
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::view::{Axis, OnClick, ToText as _, View, ruler};
 use crate::{Action, Id, UserInterface};

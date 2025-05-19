@@ -1,6 +1,6 @@
 use crate::Id;
 use crate::app::Action;
-use crate::track::Track;
+use crate::project::Track;
 use crate::view::{OnClick, ToText as _, View};
 use arcstr::literal;
 

@@ -1,12 +1,12 @@
+use crate::Id;
 use crate::app::{Action, Selection};
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::project::Settings;
-use crate::track::clip;
+use crate::project::track::clip;
+use crate::project::{Settings, Track};
 use crate::ui::{Grid, Length};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, View};
-use crate::{Id, Track};
 
 /// Returns the track overview.
 pub(crate) fn overview(

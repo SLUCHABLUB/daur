@@ -1,5 +1,7 @@
 //! Items pertaining to [`Project`].
 
+pub mod track;
+
 mod action;
 mod bar;
 mod edit;
@@ -11,6 +13,8 @@ mod workspace;
 pub use action::Action;
 pub use manager::Manager;
 pub use settings::Settings;
+#[doc(inline)]
+pub use track::Track;
 
 pub(crate) use bar::bar;
 pub(crate) use renderer::Renderer;
@@ -19,7 +23,6 @@ pub(crate) use workspace::workspace;
 use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::track::Track;
 use crate::ui::{Grid, Length, NonZeroLength};
 use crate::{Id, UserInterface, View};
 use arcstr::{ArcStr, literal};

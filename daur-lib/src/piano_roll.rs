@@ -3,7 +3,7 @@ use crate::audio::Player;
 use crate::metre::{Instant, NonZeroDuration};
 use crate::notes::{Interval, Key, Note, Notes, Pitch};
 use crate::project::Settings;
-use crate::track::Clip;
+use crate::project::track::Clip;
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
 use crate::{Action, HoldableObject, Project, UserInterface, View, project};

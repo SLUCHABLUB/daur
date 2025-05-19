@@ -1,9 +1,9 @@
 use crate::audio::{Player, SampleRate};
-use crate::project::Settings;
+use crate::project::track::RenderStream;
+use crate::project::{Settings, Track};
 use crate::sync::Cell;
 use crate::time::Instant;
-use crate::track::RenderStream;
-use crate::{Audio, Id, Track};
+use crate::{Audio, Id};
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;

@@ -1,10 +1,11 @@
 use crate::app::HoldableObject;
 use crate::metre::Instant;
 use crate::popup::Specification;
-use crate::track::Clip;
+use crate::project::Track;
+use crate::project::track::Clip;
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
-use crate::{Actions, App, Id, Popup, Track, UserInterface, project};
+use crate::{Actions, App, Id, Popup, UserInterface, project};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
