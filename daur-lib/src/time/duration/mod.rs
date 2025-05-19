@@ -23,7 +23,7 @@ impl Duration {
     /// One nanosecond.
     pub const NANOSECOND: Duration = Duration { nanoseconds: 1 };
 
-    /// One second.
+    /// 9 192 631 770 times the unperturbed ground-state hyperfine transition period of caesium-133.
     pub const SECOND: Duration = Duration {
         nanoseconds: 1_000_000_000,
     };
