@@ -33,8 +33,16 @@ impl Content {
 
     /// Tries to resolve the content to a notes-clip.
     #[must_use]
+    pub fn as_audio(&self) -> Option<&audio::NonEmpty> {
+        match self {
+            Content::Audio(audio) => Some(audio),
+            Content::Notes(_) => None,
+        }
+    }
+
+    /// Tries to resolve the content to a notes-clip.
+    #[must_use]
     pub fn as_notes(&self) -> Option<&Notes> {
-        // TODO: also return notes if self is a linked clip
         match self {
             Content::Audio(_) => None,
             Content::Notes(notes) => Some(notes),
@@ -44,7 +52,6 @@ impl Content {
     /// Tries to resolve the content to a notes-clip.
     #[must_use]
     pub fn as_notes_mut(&mut self) -> Option<&mut Notes> {
-        // TODO: also return notes if self is a linked clip
         match self {
             Content::Audio(_) => None,
             Content::Notes(notes) => Some(notes),

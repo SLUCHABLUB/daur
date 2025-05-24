@@ -3,6 +3,7 @@ use num::Integer as _;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 use std::ops::{Add, AddAssign, Sub};
+use ux::u7;
 
 // TODO: microtonality?
 #[derive(Copy, Clone, Debug)]
@@ -36,6 +37,20 @@ impl Pitch {
             // unreachable
             _ => Chroma::default(),
         }
+    }
+
+    pub(crate) fn midi_number(self) -> Option<u7> {
+        const A440_MIDI_NUMBER: i16 = 69;
+
+        // TODO: open a pr for `ux` to add `From<i16>` to `u7`
+        let u8: u8 = self
+            .from_a_440
+            .semitones()
+            .saturating_add(A440_MIDI_NUMBER)
+            .try_into()
+            .ok()?;
+
+        u8.try_into().ok()
     }
 
     fn octave_number(self) -> i16 {

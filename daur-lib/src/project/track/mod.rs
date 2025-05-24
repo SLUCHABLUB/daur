@@ -3,7 +3,6 @@
 mod action;
 pub mod clip;
 mod overview;
-mod render_stream;
 mod settings;
 
 pub use action::Action;
@@ -11,20 +10,19 @@ pub use action::Action;
 pub use clip::Clip;
 
 pub(crate) use overview::overview;
-pub(crate) use render_stream::RenderStream;
 pub(crate) use settings::settings;
 
 use crate::audio::{NonEmpty, Pair, SampleRate};
-use crate::metre::{Instant, NonZeroDuration};
-use crate::project::Settings;
-use crate::project::track::clip::Content;
-use crate::{Audio, Id, NonZeroRatio, Selection};
+use crate::metre::{Duration, Instant, NonZeroDuration};
+use crate::notes::Event;
+use crate::{Audio, Id, NonZeroRatio, Selection, project};
 use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
 use hound::WavReader;
 use indexmap::IndexMap;
 use non_zero::non_zero;
+use sorted_vec::SortedVec;
 use std::collections::{BTreeMap, HashMap};
 use std::ffi::{OsStr, OsString};
 use std::path::PathBuf;
@@ -89,25 +87,27 @@ impl Track {
         }
     }
 
-    // TODO: move?
-    /// Renders the track to audio.
-    pub(crate) fn render_stream(
-        &self,
-        settings: &Settings,
-        sample_rate: SampleRate,
-    ) -> RenderStream {
-        // TODO: remove when note processing has been added
-        let min_end = self
-            .clip_ids
-            .last_key_value()
-            .and_then(|(start, clip_id)| {
-                let clip = &self.clips.get(clip_id)?;
-                Some(clip.period(*start, settings).get().end())
-            })
-            .unwrap_or(Instant::START);
-        let min_duration = min_end.to_real_time(settings).since_start;
-        let min_len = (min_duration / sample_rate.sample_duration()).to_usize();
+    /// Returns a reference to a clip.
+    #[must_use]
+    pub(crate) fn clip(&self, id: Id<Clip>) -> Option<(Instant, &Clip)> {
+        let clip = self.clips.get(&id)?;
+        let start = self.clip_starts.get(&id)?;
+        Some((*start, clip))
+    }
 
+    fn minimum_duration(&self, settings: &project::Settings) -> Duration {
+        let Some((start, clip_id)) = self.clip_ids.last_key_value() else {
+            return Duration::ZERO;
+        };
+
+        let Some(clip) = self.clips.get(clip_id) else {
+            return Duration::ZERO;
+        };
+
+        clip.period(*start, settings).get().end().since_start
+    }
+
+    pub(crate) fn audio_sum(&self, settings: &project::Settings, sample_rate: SampleRate) -> Audio {
         let mut audio = Audio::empty(sample_rate);
 
         for (start, clip_id) in &self.clip_ids {
@@ -115,34 +115,42 @@ impl Track {
                 continue;
             };
 
-            let start = start.to_real_time(settings);
-            // TODO: multiply by sample rate instead of dividing by sample duration
-            let sample_offset = start.since_start / sample_rate.sample_duration();
-            let sample_offset = sample_offset.to_usize();
+            if let Some(clip) = clip.content().as_audio() {
+                let clip_start = start.to_real_time(settings) * sample_rate;
 
-            match clip.content() {
-                Content::Audio(clip) => {
-                    audio += &clip.as_audio().resample(sample_rate).offset(sample_offset);
-                }
-                Content::Notes(_) => {
-                    // TODO: render notes
-                }
+                audio.add_assign_at(clip.as_audio(), clip_start.index);
             }
         }
 
-        if audio.samples.len() < min_len {
-            audio.samples.resize(min_len, Pair::ZERO);
+        let minimum_end = Instant {
+            since_start: self.minimum_duration(settings),
+        };
+        let minimum_end = minimum_end.to_real_time(settings);
+        let minimum_end = minimum_end * sample_rate;
+
+        if audio.samples.len() < minimum_end.index {
+            audio.samples.resize(minimum_end.index, Pair::ZERO);
         }
 
-        RenderStream::new(audio)
+        audio
     }
 
-    /// Returns a reference to a clip.
-    #[must_use]
-    pub(crate) fn clip(&self, id: Id<Clip>) -> Option<(Instant, &Clip)> {
-        let clip = self.clips.get(&id)?;
-        let start = self.clip_starts.get(&id)?;
-        Some((*start, clip))
+    pub(crate) fn events(
+        &self,
+        settings: &project::Settings,
+        sample_rate: SampleRate,
+    ) -> SortedVec<Event> {
+        let mut events = SortedVec::new();
+
+        for (start, clip_id) in &self.clip_ids {
+            let Some(clip) = self.clips.get(clip_id) else {
+                continue;
+            };
+
+            events.extend(clip.events(*start, settings, sample_rate));
+        }
+
+        events
     }
 
     fn try_insert_clip(&mut self, position: Instant, clip: Clip) -> Result<()> {

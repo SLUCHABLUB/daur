@@ -1,13 +1,23 @@
-use crate::audio::{Player, SampleRate};
+use crate::audio::{Pair, Player, Sample, SampleInstant, SampleRate};
+use crate::node::Chain;
+use crate::notes::Event;
 use crate::project::Settings;
-use crate::project::track::RenderStream;
 use crate::sync::Cell;
 use crate::time::Instant;
 use crate::{Audio, Project};
+use clack_host::events::UnknownEvent;
+use clack_host::prelude::{
+    AudioPortBuffer, AudioPortBufferType, AudioPorts, InputChannel, InputEvents,
+};
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
+use itertools::Itertools as _;
 use parking_lot::Mutex;
+use saturating_cast::SaturatingCast as _;
+use sorted_vec::SortedVec;
+use std::array::from_fn;
+use std::iter::zip;
 use std::mem::{replace, take};
 use std::sync::{Arc, OnceLock};
 
@@ -73,12 +83,16 @@ impl Renderer {
         let zero_tracks = project.tracks.is_empty();
 
         for track in project.tracks.values() {
-            let stream = track.render_stream(settings, sample_rate);
+            let audio = track.audio_sum(settings, sample_rate);
+            let events = track.events(settings, sample_rate);
+            // TODO: take from the track
+            let chain = Chain::default();
+
             let progress = Arc::clone(&progress);
             let should_play = Arc::clone(&self.should_play);
 
             self.thread_pool
-                .execute(render_job(stream, progress, should_play));
+                .execute(rendering_job(audio, events, chain, progress, should_play));
         }
 
         if zero_tracks {
@@ -92,18 +106,79 @@ impl Renderer {
     }
 }
 
-fn render_job(
-    stream: RenderStream,
+fn rendering_job(
+    input_audio: Audio,
+    events: SortedVec<Event>,
+    chain: Chain,
     progress: Arc<Progress>,
     should_play: Arc<Cell<Option<ShouldPlay>>>,
 ) -> impl FnOnce() {
-    let sample_rate = stream.sample_rate();
-
     move || {
-        let mut audio = Audio::empty(sample_rate);
+        let sample_rate = input_audio.sample_rate;
 
-        for sample in stream {
-            audio.samples.push(sample);
+        let mut input_ports = AudioPorts::with_capacity(2, 1);
+        let mut output_ports = AudioPorts::with_capacity(2, 1);
+
+        // TODO: un-hardcode
+        let batch_size = sample_rate.samples_per_second.get().saturating_cast();
+
+        let mut instance = chain.instantiate(sample_rate);
+
+        let mut events = events.iter().map(Event::as_ref);
+
+        let mut output_audio = Audio::empty(sample_rate);
+
+        for (batch_index, audio_batch) in input_audio.samples.chunks(batch_size).enumerate() {
+            // TODO: use 64-bit if the plugin supports it
+            let mut input_buffers: [Vec<f32>; 2] = from_fn(|_| vec![0.0; batch_size]);
+            let mut output_buffers: [Vec<f32>; 2] = from_fn(|_| vec![0.0; batch_size]);
+
+            for (index, pair) in audio_batch.iter().enumerate() {
+                if let Some(buffer) = input_buffers[0].get_mut(index) {
+                    *buffer = pair.left.to_f32();
+                }
+                if let Some(buffer) = input_buffers[1].get_mut(index) {
+                    *buffer = pair.right.to_f32();
+                }
+            }
+
+            let audio_input = input_ports.with_input_buffers([AudioPortBuffer {
+                latency: 0,
+                channels: AudioPortBufferType::f32_input_only(
+                    input_buffers.iter_mut().map(InputChannel::constant),
+                ),
+            }]);
+
+            let mut audio_output = output_ports.with_output_buffers([AudioPortBuffer {
+                latency: 0,
+                channels: AudioPortBufferType::f32_output_only(
+                    output_buffers.iter_mut().map(Vec::as_mut_slice),
+                ),
+            }]);
+
+            // TODO: break this into {usize * duration} + duration
+            let next_batch_start = SampleInstant {
+                index: batch_index
+                    .saturating_mul(batch_size)
+                    .saturating_add(audio_batch.len()),
+            };
+
+            let events: Vec<_> = events
+                .take_while_ref(|event| start_of(event) < next_batch_start)
+                .collect();
+
+            let events = InputEvents::from_buffer(&events);
+
+            // TODO: check the return value to see if we should continue
+            // TODO: open a popup somehow
+            let _result = instance.process(&audio_input, &mut audio_output, &events);
+
+            for (left, right) in zip(&output_buffers[0], &output_buffers[1]) {
+                output_audio.samples.push(Pair {
+                    left: Sample::from_f32(*left),
+                    right: Sample::from_f32(*right),
+                });
+            }
 
             if progress.should_stop.get() {
                 return;
@@ -111,7 +186,7 @@ fn render_job(
         }
 
         let mut tracks = progress.unmastered_tracks.lock();
-        tracks.push(audio);
+        tracks.push(output_audio);
         if tracks.len() == tracks.capacity() {
             let tracks = take(&mut *tracks);
 
@@ -138,5 +213,12 @@ fn master(
 
     if let Some(should_play) = should_play.replace(None) {
         should_play.player.play(audio.clone(), should_play.from);
+    }
+}
+
+// TODO: move (maybe to an extension trait)
+fn start_of(event: &UnknownEvent) -> SampleInstant {
+    SampleInstant {
+        index: event.header().time().saturating_cast(),
     }
 }

@@ -9,13 +9,15 @@ pub use content::Content;
 
 pub(crate) use overview::overview;
 
-use crate::audio::NonEmpty;
+use crate::audio::{NonEmpty, SampleRate};
 use crate::metre::{Instant, NonZeroDuration, NonZeroPeriod};
+use crate::notes::Event;
 use crate::ui::Colour;
 use crate::{Id, Notes, project};
 use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
+use sorted_vec::SortedVec;
 use thiserror::Error;
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour {
@@ -78,6 +80,19 @@ impl Clip {
     #[must_use]
     pub fn period(&self, start: Instant, settings: &project::Settings) -> NonZeroPeriod {
         self.content.period(start, settings)
+    }
+
+    pub(crate) fn events(
+        &self,
+        clip_start: Instant,
+        settings: &project::Settings,
+        sample_rate: SampleRate,
+    ) -> SortedVec<Event> {
+        let Some(notes) = self.content.as_notes() else {
+            return SortedVec::new();
+        };
+
+        notes.to_events(clip_start, settings, sample_rate)
     }
 
     #[remain::check]

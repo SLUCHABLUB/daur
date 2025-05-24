@@ -5,12 +5,14 @@ mod non_empty;
 mod pair;
 mod player;
 mod sample;
+mod sample_instant;
 mod sample_rate;
 mod source;
 
 pub use non_empty::NonEmpty;
 pub use pair::Pair;
 pub use sample::Sample;
+pub use sample_instant::SampleInstant;
 pub use sample_rate::{SampleRate, ZeroSampleRateError};
 
 pub(crate) use config::Config;
@@ -147,17 +149,6 @@ impl Audio {
         })
     }
 
-    // TODO: remove
-    pub(crate) fn offset(&self, offset: usize) -> Audio {
-        let mut samples = vec![Pair::ZERO; offset];
-        samples.extend_from_slice(&self.samples);
-
-        Audio {
-            sample_rate: self.sample_rate,
-            samples,
-        }
-    }
-
     /// Returns the period of the audio.
     #[must_use]
     pub(crate) fn period(&self, start: Instant, settings: &Settings) -> metre::Period {
@@ -168,6 +159,26 @@ impl Audio {
             duration: self.duration(),
         }
         .to_metre(settings)
+    }
+
+    // TODO: use sample time
+    pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: usize) {
+        let other = other.resample(self.sample_rate);
+
+        if self.samples.len() < offset {
+            self.samples.resize(offset, Pair::ZERO);
+        }
+
+        for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset), &other.samples) {
+            *lhs += *rhs;
+        }
+
+        // The tail of the audio being added.
+        let tail_start = self.samples.len().saturating_sub(offset);
+
+        if let Some(tail) = other.samples.get(tail_start..) {
+            self.samples.extend_from_slice(tail);
+        }
     }
 }
 

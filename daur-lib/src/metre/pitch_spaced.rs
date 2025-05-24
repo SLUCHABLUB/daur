@@ -49,16 +49,14 @@ impl<T> PitchSpaced<T> {
             .filter_map(move |(instant, column)| Some((instant, column.get(&pitch)?)))
     }
 
-    /*
     pub(crate) fn iter(&self) -> impl Iterator<Item = (Instant, Pitch, &T)> {
-        self.inner.iter().flat_map(|(instant, pitches)| {
+        self.columns.iter().flat_map(|(instant, pitches)| {
             pitches
                 .as_index_map()
                 .iter()
                 .map(move |(pitch, item)| (instant, *pitch, item))
         })
     }
-    */
 }
 
 impl<T> Default for PitchSpaced<T> {

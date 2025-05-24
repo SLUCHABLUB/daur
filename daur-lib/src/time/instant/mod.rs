@@ -2,10 +2,11 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::metre;
+use crate::audio::{SampleInstant, SampleRate};
 use crate::project::Settings;
-use crate::time::Duration;
-use std::ops::{Add, AddAssign, Sub};
+use crate::time::{Duration, NonZeroDuration};
+use crate::{Ratio, metre};
+use std::ops::{Add, AddAssign, Mul, Sub};
 
 /// An instant in real time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -72,5 +73,17 @@ impl Sub for Instant {
 
     fn sub(self, rhs: Self) -> Duration {
         self.since_start - rhs.since_start
+    }
+}
+
+impl Mul<SampleRate> for Instant {
+    type Output = SampleInstant;
+
+    fn mul(self, rhs: SampleRate) -> SampleInstant {
+        let seconds = self.since_start / NonZeroDuration::SECOND;
+
+        SampleInstant {
+            index: (seconds * Ratio::integer(u64::from(rhs.samples_per_second.get()))).to_usize(),
+        }
     }
 }

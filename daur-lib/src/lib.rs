@@ -13,6 +13,7 @@ pub mod view;
 mod app;
 mod extension;
 mod id;
+mod node;
 mod piano_roll;
 mod ratio;
 mod string;
