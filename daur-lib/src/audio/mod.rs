@@ -161,19 +161,14 @@ impl Audio {
     pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: usize) {
         let other = other.resample(self.sample_rate);
 
-        if self.samples.len() < offset {
-            self.samples.resize(offset, sample::Pair::ZERO);
-        }
+        let sample_count = max(
+            self.samples.len(),
+            other.samples.len().saturating_add(offset),
+        );
+        self.samples.resize(sample_count, sample::Pair::ZERO);
 
         for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset), &other.samples) {
             *lhs += *rhs;
-        }
-
-        // The tail of the audio being added.
-        let tail_start = self.samples.len().saturating_sub(offset);
-
-        if let Some(tail) = other.samples.get(tail_start..) {
-            self.samples.extend_from_slice(tail);
         }
     }
 }
@@ -228,13 +223,6 @@ impl Add<&Audio> for Audio {
 
 impl AddAssign<&Audio> for Audio {
     fn add_assign(&mut self, rhs: &Audio) {
-        let rhs = rhs.resample(self.sample_rate);
-
-        let sample_count = max(self.samples.len(), rhs.samples.len());
-        self.samples.resize(sample_count, sample::Pair::ZERO);
-
-        for (lhs, rhs) in zip(&mut self.samples, &rhs.samples) {
-            *lhs += *rhs;
-        }
+        self.add_assign_at(rhs, 0);
     }
 }
