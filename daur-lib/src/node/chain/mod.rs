@@ -1,6 +1,6 @@
 mod instance;
 
-use crate::audio::SampleRate;
+use crate::audio::sample;
 pub(crate) use instance::Instance;
 
 #[cfg_attr(doc, doc(hidden))]
@@ -11,7 +11,7 @@ pub(crate) struct Chain {
 
 impl Chain {
     #[expect(clippy::unused_self, reason = "todo")]
-    pub fn instantiate(&self, sample_rate: SampleRate) -> Instance {
+    pub fn instantiate(&self, sample_rate: sample::Rate) -> Instance {
         Instance::new(sample_rate)
     }
 }

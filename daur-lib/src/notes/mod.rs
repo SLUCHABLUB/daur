@@ -19,7 +19,7 @@ pub use sign::Sign;
 
 pub(crate) use event::Event;
 
-use crate::audio::SampleRate;
+use crate::audio::sample;
 use crate::metre::{Instant, NonZeroDuration, PitchSpaced};
 use crate::notes::sign::{FLAT, SHARP};
 use crate::project::Settings;
@@ -87,7 +87,7 @@ impl Notes {
         &self,
         clip_start: Instant,
         settings: &Settings,
-        sample_rate: SampleRate,
+        sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let mut events = Vec::new();
 

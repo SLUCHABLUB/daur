@@ -1,4 +1,4 @@
-use crate::audio::{Player, SampleRate};
+use crate::audio::{Player, sample};
 use crate::extension::OptionExt as _;
 use crate::time::Instant;
 use anyhow::Result;
@@ -64,7 +64,7 @@ impl Config {
         Some(&self.device_config.as_ref()?.stream_cache.as_ref()?.player)
     }
 
-    pub(crate) fn sample_rate(&mut self) -> Result<SampleRate> {
+    pub(crate) fn sample_rate(&mut self) -> Result<sample::Rate> {
         Ok(self
             .initialise_device_config()?
             .device

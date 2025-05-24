@@ -1,4 +1,4 @@
-use crate::audio::SampleRate;
+use crate::audio::sample;
 use anyhow::Result;
 use clack_host::events::spaces::CoreEventSpace;
 use clack_host::prelude::{InputAudioBuffers, InputEvents, OutputAudioBuffers, ProcessStatus};
@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 use std::iter::zip;
 
 pub(crate) struct Instance {
-    sample_rate: SampleRate,
+    sample_rate: sample::Rate,
     sample: usize,
 
     // TODO: remove this abomination
@@ -17,7 +17,7 @@ pub(crate) struct Instance {
 }
 
 impl Instance {
-    pub(super) fn new(sample_rate: SampleRate) -> Self {
+    pub(super) fn new(sample_rate: sample::Rate) -> Self {
         Instance {
             sample_rate,
             sample: 0,

@@ -2,7 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::audio::{SampleInstant, SampleRate};
+use crate::audio::sample;
 use crate::project::Settings;
 use crate::time::{Duration, NonZeroDuration};
 use crate::{Ratio, metre};
@@ -76,13 +76,13 @@ impl Sub for Instant {
     }
 }
 
-impl Mul<SampleRate> for Instant {
-    type Output = SampleInstant;
+impl Mul<sample::Rate> for Instant {
+    type Output = sample::Instant;
 
-    fn mul(self, rhs: SampleRate) -> SampleInstant {
+    fn mul(self, rhs: sample::Rate) -> sample::Instant {
         let seconds = self.since_start / NonZeroDuration::SECOND;
 
-        SampleInstant {
+        sample::Instant {
             index: (seconds * Ratio::integer(u64::from(rhs.samples_per_second.get()))).to_usize(),
         }
     }

@@ -1,4 +1,4 @@
-use crate::audio::{Pair, Player, Sample, SampleInstant, SampleRate};
+use crate::audio::{Player, Sample, sample};
 use crate::node::Chain;
 use crate::notes::Event;
 use crate::project::Settings;
@@ -72,7 +72,7 @@ impl Renderer {
         &mut self,
         project: &Project,
         settings: &Settings,
-        sample_rate: SampleRate,
+        sample_rate: sample::Rate,
     ) {
         let progress = Arc::new(Progress {
             should_stop: Cell::new(false),
@@ -157,7 +157,7 @@ fn rendering_job(
             }]);
 
             // TODO: break this into {usize * duration} + duration
-            let next_batch_start = SampleInstant {
+            let next_batch_start = sample::Instant {
                 index: batch_index
                     .saturating_mul(batch_size)
                     .saturating_add(audio_batch.len()),
@@ -174,7 +174,7 @@ fn rendering_job(
             let _result = instance.process(&audio_input, &mut audio_output, &events);
 
             for (left, right) in zip(&output_buffers[0], &output_buffers[1]) {
-                output_audio.samples.push(Pair {
+                output_audio.samples.push(sample::Pair {
                     left: Sample::from_f32(*left),
                     right: Sample::from_f32(*right),
                 });
@@ -197,7 +197,7 @@ fn rendering_job(
 
 fn master(
     tracks: Vec<Audio>,
-    sample_rate: SampleRate,
+    sample_rate: sample::Rate,
     progress: &Progress,
     should_play: &Cell<Option<ShouldPlay>>,
 ) {
@@ -217,8 +217,8 @@ fn master(
 }
 
 // TODO: move (maybe to an extension trait)
-fn start_of(event: &UnknownEvent) -> SampleInstant {
-    SampleInstant {
+fn start_of(event: &UnknownEvent) -> sample::Instant {
+    sample::Instant {
         index: event.header().time().saturating_cast(),
     }
 }

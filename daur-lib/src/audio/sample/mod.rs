@@ -1,3 +1,13 @@
+//! Items pertaining to [`Sample`].
+
+mod instant;
+mod pair;
+mod rate;
+
+pub use instant::Instant;
+pub use pair::Pair;
+pub use rate::{Rate, ZeroRateError};
+
 use std::fmt::{self, Debug, Formatter};
 use std::ops::{Add, AddAssign, Div};
 
@@ -7,6 +17,7 @@ const I32_ABS_MAX: f64 = i32::MAX as f64 + 1.0;
 /// A 64-bit float sample
 #[derive(Copy, Clone, PartialEq, Default)]
 #[repr(transparent)]
+#[cfg_attr(doc, doc(hidden))]
 pub struct Sample {
     // INVARIANT: this is on the interval [-1, 1].
     inner: f64,

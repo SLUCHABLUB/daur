@@ -12,7 +12,7 @@ pub use clip::Clip;
 pub(crate) use overview::overview;
 pub(crate) use settings::settings;
 
-use crate::audio::{NonEmpty, Pair, SampleRate};
+use crate::audio::{NonEmpty, sample};
 use crate::metre::{Duration, Instant, NonZeroDuration};
 use crate::notes::Event;
 use crate::{Audio, Id, NonZeroRatio, Selection, project};
@@ -107,7 +107,11 @@ impl Track {
         clip.period(*start, settings).get().end().since_start
     }
 
-    pub(crate) fn audio_sum(&self, settings: &project::Settings, sample_rate: SampleRate) -> Audio {
+    pub(crate) fn audio_sum(
+        &self,
+        settings: &project::Settings,
+        sample_rate: sample::Rate,
+    ) -> Audio {
         let mut audio = Audio::empty(sample_rate);
 
         for (start, clip_id) in &self.clip_ids {
@@ -129,7 +133,7 @@ impl Track {
         let minimum_end = minimum_end * sample_rate;
 
         if audio.samples.len() < minimum_end.index {
-            audio.samples.resize(minimum_end.index, Pair::ZERO);
+            audio.samples.resize(minimum_end.index, sample::Pair::ZERO);
         }
 
         audio
@@ -138,7 +142,7 @@ impl Track {
     pub(crate) fn events(
         &self,
         settings: &project::Settings,
-        sample_rate: SampleRate,
+        sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let mut events = SortedVec::new();
 

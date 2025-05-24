@@ -9,7 +9,7 @@ use thiserror::Error;
 macro_rules! sample_rate {
     ($f:literal Hz) => {
         const {
-            $crate::audio::SampleRate {
+            $crate::audio::sample::Rate {
                 samples_per_second: ::core::num::NonZeroU32::new($f)
                     .expect("sample rates cannot be zero"),
             }
@@ -19,12 +19,12 @@ macro_rules! sample_rate {
 
 /// A sample rate.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
-pub struct SampleRate {
+pub struct Rate {
     /// The number of samples that fit in one second.
     pub samples_per_second: NonZeroU32,
 }
 
-impl SampleRate {
+impl Rate {
     /// The duration of one sample.
     #[must_use]
     pub fn sample_duration(self) -> NonZeroDuration {
@@ -39,15 +39,13 @@ impl SampleRate {
 /// An error raised when a sample rate of zero is attempted to be constructed.
 #[derive(Copy, Clone, Debug, Error)]
 #[error("sample rates cannot be zero")]
-pub struct ZeroSampleRateError;
+pub struct ZeroRateError;
 
-impl TryFrom<cpal::SampleRate> for SampleRate {
-    type Error = ZeroSampleRateError;
+impl TryFrom<cpal::SampleRate> for Rate {
+    type Error = ZeroRateError;
 
-    fn try_from(
-        cpal::SampleRate(sample_rate): cpal::SampleRate,
-    ) -> Result<SampleRate, ZeroSampleRateError> {
-        let samples_per_second = NonZeroU32::new(sample_rate).ok_or(ZeroSampleRateError)?;
-        Ok(SampleRate { samples_per_second })
+    fn try_from(cpal::SampleRate(sample_rate): cpal::SampleRate) -> Result<Rate, ZeroRateError> {
+        let samples_per_second = NonZeroU32::new(sample_rate).ok_or(ZeroRateError)?;
+        Ok(Rate { samples_per_second })
     }
 }

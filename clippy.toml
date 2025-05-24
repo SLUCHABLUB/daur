@@ -2,7 +2,7 @@ avoid-breaking-exported-api = false
 arithmetic-side-effects-allowed = [
     # daur internal type names
     "audio::Audio",
-    "audio::pair::Pair",
+    "audio::sample::pair::Pair",
     "audio::sample::Sample",
     "metre::duration::Duration",
     "metre::duration::non_zero::NonZeroDuration",

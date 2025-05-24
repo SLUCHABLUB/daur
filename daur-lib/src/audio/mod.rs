@@ -1,19 +1,15 @@
 //! Type pertaining to [`Audio`].
 
+pub mod sample;
+
 mod config;
 mod non_empty;
-mod pair;
 mod player;
-mod sample;
-mod sample_instant;
-mod sample_rate;
 mod source;
 
 pub use non_empty::NonEmpty;
-pub use pair::Pair;
+#[doc(inline)]
 pub use sample::Sample;
-pub use sample_instant::SampleInstant;
-pub use sample_rate::{SampleRate, ZeroSampleRateError};
 
 pub(crate) use config::Config;
 pub(crate) use player::Player;
@@ -59,15 +55,15 @@ use std::ops::{Add, AddAssign};
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Audio {
     /// The sample rate of the audio.
-    pub sample_rate: SampleRate,
+    pub sample_rate: sample::Rate,
     /// The left and right channels, in that order.
-    pub samples: Vec<Pair>,
+    pub samples: Vec<sample::Pair>,
 }
 
 impl Audio {
     /// Constructs an empty audio with the given sample rate.
     #[must_use]
-    pub const fn empty(sample_rate: SampleRate) -> Audio {
+    pub const fn empty(sample_rate: sample::Rate) -> Audio {
         Audio {
             sample_rate,
             samples: Vec::new(),
@@ -82,7 +78,7 @@ impl Audio {
 
     /// Resamples the audio to the given sample rate.
     #[must_use]
-    pub fn resample(&self, sample_rate: SampleRate) -> Cow<Audio> {
+    pub fn resample(&self, sample_rate: sample::Rate) -> Cow<Audio> {
         if self.sample_rate == sample_rate {
             return Cow::Borrowed(self);
         }
@@ -98,7 +94,7 @@ impl Audio {
         }
     }
 
-    fn try_resample(&self, sample_rate: SampleRate) -> Result<Audio> {
+    fn try_resample(&self, sample_rate: sample::Rate) -> Result<Audio> {
         const ALL_CHANNELS_ENABLED: Option<&[bool]> = None;
         const CHANNEL_COUNT: usize = 2;
         // we want exact resampling
@@ -140,7 +136,7 @@ impl Audio {
 
         let samples = zip(left, right)
             .map_into::<[_; 2]>()
-            .map(Pair::from)
+            .map(sample::Pair::from)
             .collect();
 
         Ok(Audio {
@@ -166,7 +162,7 @@ impl Audio {
         let other = other.resample(self.sample_rate);
 
         if self.samples.len() < offset {
-            self.samples.resize(offset, Pair::ZERO);
+            self.samples.resize(offset, sample::Pair::ZERO);
         }
 
         for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset), &other.samples) {
@@ -199,12 +195,12 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
         };
 
         let samples = match spec.channels {
-            1 => samples.into_iter().map(Pair::from).collect(),
+            1 => samples.into_iter().map(sample::Pair::from).collect(),
             2 => samples
                 .into_iter()
                 .tuples::<(_, _)>()
                 .map_into::<[_; 2]>()
-                .map(Pair::from)
+                .map(sample::Pair::from)
                 .collect(),
             _ => return Err(hound::Error::Unsupported),
         };
@@ -212,7 +208,7 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
         let samples_per_second = NonZeroU32::new(spec.sample_rate).ok_or(
             hound::Error::FormatError("encountered a sample rate of zero"),
         )?;
-        let sample_rate = SampleRate { samples_per_second };
+        let sample_rate = sample::Rate { samples_per_second };
 
         Ok(Audio {
             sample_rate,
@@ -235,7 +231,7 @@ impl AddAssign<&Audio> for Audio {
         let rhs = rhs.resample(self.sample_rate);
 
         let sample_count = max(self.samples.len(), rhs.samples.len());
-        self.samples.resize(sample_count, Pair::ZERO);
+        self.samples.resize(sample_count, sample::Pair::ZERO);
 
         for (lhs, rhs) in zip(&mut self.samples, &rhs.samples) {
             *lhs += *rhs;

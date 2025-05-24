@@ -9,7 +9,7 @@ pub use content::Content;
 
 pub(crate) use overview::overview;
 
-use crate::audio::{NonEmpty, SampleRate};
+use crate::audio::{NonEmpty, sample};
 use crate::metre::{Instant, NonZeroDuration, NonZeroPeriod};
 use crate::notes::Event;
 use crate::ui::Colour;
@@ -86,7 +86,7 @@ impl Clip {
         &self,
         clip_start: Instant,
         settings: &project::Settings,
-        sample_rate: SampleRate,
+        sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let Some(notes) = self.content.as_notes() else {
             return SortedVec::new();
