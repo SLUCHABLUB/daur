@@ -10,8 +10,7 @@ use sorted_vec::SortedVec;
 use std::cmp::min;
 use std::collections::HashMap;
 
-/// A sequence of musical events.
-/// Basically Midi.
+/// A sequence of musical notes.
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct Group {
     // INVARIANT: all notes are within `full_duration`
