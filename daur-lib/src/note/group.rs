@@ -23,7 +23,7 @@ pub struct Group {
 }
 
 impl Group {
-    /// Constructs an empty clip.
+    /// Constructs an empty note group.
     #[must_use]
     pub fn empty(duration: NonZeroDuration) -> Group {
         Group {
@@ -32,19 +32,19 @@ impl Group {
         }
     }
 
-    /// Returns the duration of the clip.
+    /// Returns the duration of the note group.
     #[must_use]
     pub fn duration(&self) -> NonZeroDuration {
         self.full_duration
     }
 
-    /// Tries inserting a note into the clip.
+    /// Tries inserting a note into the group.
     /// Does nothing if there is already a note at that position.
-    /// Truncates the note if it goes outside the clip or intersects another note.
+    /// Truncates the note if it goes outside the group or intersects another note.
     pub(crate) fn try_insert(&mut self, position: relative::Instant, pitch: Pitch, mut note: Note) {
         let max_duration = self.full_duration.get() - position.since_start;
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
-            // The note was outside the clip.
+            // The note was outside the group.
             return;
         };
         note.duration = min(note.duration, max_duration);
@@ -71,7 +71,7 @@ impl Group {
 
     pub(crate) fn to_events(
         &self,
-        clip_start: Instant,
+        start: Instant,
         settings: &Settings,
         sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
@@ -79,7 +79,7 @@ impl Group {
 
         #[expect(clippy::iter_over_hash_type, reason = "we sort the events")]
         for ((note_start, pitch), note) in &self.notes {
-            let note_start = clip_start + *note_start;
+            let note_start = start + *note_start;
 
             let start = note_start.to_real_time(settings) * sample_rate;
             let end = (note_start + note.duration.get()).to_real_time(settings) * sample_rate;
