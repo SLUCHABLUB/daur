@@ -4,7 +4,7 @@ use crate::metre::{Instant, NonZeroDuration};
 use crate::note::{Group, Interval, Key, Note, Pitch};
 use crate::project::track;
 use crate::project::track::{Clip, clip};
-use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset};
+use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Size};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
 use crate::{Action, HoldableObject, Project, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
@@ -271,11 +271,7 @@ impl PianoRoll {
 
                     let width = end - start;
 
-                    View::x_stack([
-                        View::Empty.quotated(start),
-                        Self::note(clip_colour).quotated(width),
-                        View::Empty.fill_remaining(),
-                    ])
+                    Self::note(clip_colour).quotated(width).x_positioned(start)
                 }),
             )
             .collect(),
@@ -422,17 +418,19 @@ impl PianoRoll {
             let (start, end) = (min(start, end), max(start, end));
             let width = end - start;
 
-            // TODO: an "absolute" view
-            View::x_stack([
-                View::Empty.quotated(start),
-                View::y_stack([
-                    View::Empty.quotated(y_offset),
-                    Self::note(clip_colour).quotated(self.key_width.get()),
-                    View::Empty.fill_remaining(),
-                ])
-                .quotated(width),
-                View::Empty.fill_remaining(),
-            ])
+            let size = Size {
+                width,
+                height: self.key_width.get(),
+            };
+
+            let position = Point {
+                x: start,
+                y: y_offset,
+            };
+
+            Self::note(clip_colour)
+                .quotated_2d(size)
+                .positioned(position)
         })
     }
 }

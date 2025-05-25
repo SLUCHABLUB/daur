@@ -53,6 +53,13 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
 
             size
         }
+        View::Positioned { position, view } => {
+            let size = view.view.minimum_size::<Ui>();
+            Size {
+                width: position.x + size.width,
+                height: position.y + size.height,
+            }
+        }
         View::Rule { .. } => Size {
             width: Length::ZERO,
             height: Ui::RULER_HEIGHT.get(),

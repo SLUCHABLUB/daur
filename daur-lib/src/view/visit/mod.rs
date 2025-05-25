@@ -11,7 +11,7 @@ pub use grabber::Grabber;
 pub use scroller::Scroller;
 
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Length, Rectangle, Vector};
+use crate::ui::{Colour, Length, Rectangle, Size, Vector};
 use crate::view::context::Menu;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
 use crate::{Action, Ratio, UserInterface, View};
@@ -101,7 +101,7 @@ macro_rules! compound {
 
 impl View {
     /// Accepts a view visitor.
-    #[expect(clippy::too_many_lines, reason = "`View` is a large")]
+    #[expect(clippy::too_many_lines, reason = "`View` is a large enum")]
     #[remain::check]
     pub fn accept<Ui: UserInterface, V: Visitor + ?Sized>(
         &self,
@@ -158,6 +158,21 @@ impl View {
                 visitor.visit_object_acceptor(render_area.area, drop),
                 view.accept::<Ui, V>(visitor, render_area),
             ),
+            View::Positioned { position, view } => {
+                let position = *position + render_area.area.position.position();
+                let max_size = Size {
+                    width: render_area.area.size.width - position.x,
+                    height: render_area.area.size.height - position.y,
+                };
+                let size = view.calculate_size::<Ui>(max_size);
+
+                let area = Rectangle { position, size };
+
+                if let Some(inner_area) = Rectangle::intersection(render_area.area, area) {
+                    view.view
+                        .accept::<Ui, V>(visitor, render_area.with_area(inner_area));
+                }
+            }
             View::Reactive(closure) => closure(render_area).accept::<Ui, V>(visitor, render_area),
             View::Rule { index, cells } => visitor.visit_rule(render_area.area, *index, *cells),
             View::Scrollable { action, view } => compound!(

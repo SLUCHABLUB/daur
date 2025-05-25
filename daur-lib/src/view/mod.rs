@@ -26,7 +26,7 @@ pub use button::OnClick;
 pub use canvas::Context;
 pub use cursor_window::CursorWindow;
 pub use file_selector::file_selector;
-pub use quotum::{Quotated, Quotum};
+pub use quotum::{Quotated, Quotated2D, Quotum, Quotum2D};
 pub use render_area::RenderArea;
 pub use ruler::ruler;
 pub use text::ToText;
@@ -35,7 +35,7 @@ pub(crate) use feed::feed;
 
 use crate::Action;
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Rectangle, Vector};
+use crate::ui::{Colour, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;
@@ -117,6 +117,14 @@ pub enum View {
         /// The view.
         view: Box<View>,
     },
+    /// An offset view.
+    Positioned {
+        // TODO: use a `relative::Point`
+        /// The position of the view, relative to its parent.
+        position: Point,
+        /// The view.
+        view: Box<Quotated2D>,
+    },
     /// A reactive view. It needs information about the user interface to be rendered/processed.
     Reactive(#[debug(skip)] Box<Reactive>),
     /// A rule of a ruler.
@@ -160,6 +168,7 @@ pub enum View {
         /// The view.
         view: Box<View>,
     },
+    // TODO: remove
     /// A window which takes up part of the screen.
     Window {
         /// The area of the window.

@@ -1,5 +1,5 @@
-use crate::ui::Length;
-use crate::view::{Axis, Quotum};
+use crate::ui::{Length, Point};
+use crate::view::{Axis, Quotum, Quotum2D};
 use crate::{UserInterface, View};
 
 /// A [view](View) with a [quotum](Quotum).
@@ -22,6 +22,20 @@ impl Quotated {
             Quotum::Exact(length) => Some(length),
             Quotum::Minimum => Some(self.view.minimum_size::<Ui>().parallel_to(axis)),
         }
+    }
+
+    /// Positions the view along the x-axis. See [`View::Positioned`].
+    pub fn x_positioned(self, position: Length) -> View {
+        let quotum = self.quotum;
+        self.view
+            .with_2d_quotum(Quotum2D {
+                x: quotum,
+                y: Quotum::Remaining,
+            })
+            .positioned(Point {
+                x: position,
+                y: Length::ZERO,
+            })
     }
 }
 

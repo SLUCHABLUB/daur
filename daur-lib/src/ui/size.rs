@@ -1,5 +1,5 @@
 use crate::ui::{Length, Point, Vector};
-use crate::view::Axis;
+use crate::view::{Axis, Quotum2D};
 
 /// The size of something on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
@@ -60,5 +60,14 @@ impl Size {
             y: self.height,
         }
         .position()
+    }
+
+    /// Converts the size to a [quotum](Quotum2D).
+    #[must_use]
+    pub const fn quotum(self) -> Quotum2D {
+        Quotum2D {
+            x: self.width.quotum(),
+            y: self.height.quotum(),
+        }
     }
 }

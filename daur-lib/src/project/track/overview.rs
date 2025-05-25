@@ -51,11 +51,7 @@ pub(crate) fn overview(
                     start_crop,
                 );
 
-                View::x_stack([
-                    View::Empty.quotated(clip_offset),
-                    overview.quotated(clip_width),
-                    View::Empty.fill_remaining(),
-                ])
+                overview.quotated(clip_width).x_positioned(clip_offset)
             })
             .collect(),
     );
