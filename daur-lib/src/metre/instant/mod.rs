@@ -11,7 +11,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 /// An instant in musical time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Instant {
-    /// The duration since the starting point
+    /// The duration since the starting point.
     pub since_start: Duration,
 }
 

@@ -4,6 +4,8 @@
 //! The duration of a beat depends on the time signature.
 //! In common time it is a quarter note whilst in cut time it is a half note.
 
+pub mod relative;
+
 mod bar;
 mod changing;
 mod duration;

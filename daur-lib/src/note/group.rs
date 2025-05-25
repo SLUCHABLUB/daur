@@ -1,5 +1,5 @@
 use crate::audio::sample;
-use crate::metre::{Instant, NonZeroDuration};
+use crate::metre::{Instant, NonZeroDuration, relative};
 use crate::note::{Event, Note, Pitch};
 use crate::project::Settings;
 use crate::view::Context;
@@ -16,9 +16,9 @@ use std::collections::HashMap;
 pub struct Group {
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
-    /// The notes in the group, the instants are relative to the clip
+    /// The notes in the group.
     // TODO: make this a `Dimap` when ids get added to `Note`
-    notes: HashMap<(Instant, Pitch), Note>,
+    notes: HashMap<(relative::Instant, Pitch), Note>,
     full_duration: NonZeroDuration,
 }
 
@@ -41,7 +41,7 @@ impl Group {
     /// Tries inserting a note into the clip.
     /// Does nothing if there is already a note at that position.
     /// Truncates the note if it goes outside the clip or intersects another note.
-    pub(crate) fn try_insert(&mut self, position: Instant, pitch: Pitch, mut note: Note) {
+    pub(crate) fn try_insert(&mut self, position: relative::Instant, pitch: Pitch, mut note: Note) {
         let max_duration = self.full_duration.get() - position.since_start;
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
             // The note was outside the clip.
@@ -53,7 +53,10 @@ impl Group {
         self.notes.entry((position, pitch)).or_insert(note);
     }
 
-    pub(crate) fn with_pitch(&self, pitch: Pitch) -> impl Iterator<Item = (Instant, Note)> {
+    pub(crate) fn with_pitch(
+        &self,
+        pitch: Pitch,
+    ) -> impl Iterator<Item = (relative::Instant, Note)> {
         self.notes
             .iter()
             .filter_map(move |((instant, note_pitch), note)| {
@@ -75,11 +78,11 @@ impl Group {
         let mut events = Vec::new();
 
         #[expect(clippy::iter_over_hash_type, reason = "we sort the events")]
-        for ((instant, pitch), note) in &self.notes {
-            let instant = clip_start + instant.since_start;
+        for ((note_start, pitch), note) in &self.notes {
+            let note_start = clip_start + *note_start;
 
-            let start = instant.to_real_time(settings) * sample_rate;
-            let end = (instant + note.duration.get()).to_real_time(settings) * sample_rate;
+            let start = note_start.to_real_time(settings) * sample_rate;
+            let end = (note_start + note.duration.get()).to_real_time(settings) * sample_rate;
 
             let Some(key) = pitch.midi_number() else {
                 continue;
