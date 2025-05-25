@@ -2,7 +2,7 @@ use crate::metre::Instant;
 use crate::note::Key;
 use crate::popup::Popup;
 use crate::sync::{ArcCell, Cell};
-use crate::ui::Rectangle;
+use crate::ui::{Point, Rectangle};
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Action, Id, Ratio, UserInterface, View, project};
 use anyhow::Error;
@@ -119,7 +119,7 @@ impl Specification {
 
                 let confirm = View::standard_button(
                     CONFIRM,
-                    OnClick::new(move |_, _, actions| {
+                    OnClick::new(move |_, actions| {
                         let path = path.get();
                         let action = action(&path);
                         actions.push(action);
@@ -189,9 +189,12 @@ impl Specification {
         let view = Arc::new(self.view(id));
 
         let size = view.minimum_size::<Ui>();
-        let centre = (ui.size().diagonal() * Ratio::HALF).point();
-        let offset = -(size.diagonal() * Ratio::HALF);
-        let position = centre + offset;
+
+        let position = Point {
+            x: (ui.size().width - size.width) * Ratio::HALF,
+            y: (ui.size().height - size.height) * Ratio::HALF,
+        };
+
         let area = Rectangle { position, size };
 
         Popup::new(view, area)

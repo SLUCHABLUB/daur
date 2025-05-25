@@ -4,7 +4,7 @@ use crate::metre::{Instant, NonZeroDuration};
 use crate::note::{Group, Interval, Key, Note, Pitch};
 use crate::project::track;
 use crate::project::track::{Clip, clip};
-use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Size};
+use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Size, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
 use crate::{Action, HoldableObject, Project, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
@@ -381,12 +381,9 @@ impl PianoRoll {
         title_height: Length,
     ) -> impl Fn(RenderArea) -> Option<HoldableObject> + Send + Sync + 'static {
         move |render_area| {
-            let relative_mouse_position =
-                render_area.mouse_position - render_area.area.position.position();
+            let y = render_area.relative_mouse_position()?.y;
 
-            (relative_mouse_position.y < title_height).then_some(HoldableObject::PianoRollHandle {
-                y: relative_mouse_position.y,
-            })
+            (y < title_height).then_some(HoldableObject::PianoRollHandle { y })
         }
     }
 
@@ -423,7 +420,7 @@ impl PianoRoll {
                 height: self.key_width.get(),
             };
 
-            let position = Point {
+            let position = relative::Point {
                 x: start,
                 y: y_offset,
             };

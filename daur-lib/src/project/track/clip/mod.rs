@@ -113,14 +113,15 @@ impl Clip {
                     note.duration = duration;
                 }
 
-                let relative_position = relative::Instant {
+                // TODO: `relative_to` method
+                let position = relative::Instant {
                     since_start: note_position - clip_position,
                 };
 
                 self.content
                     .as_notes_mut()
                     .ok_or(NoNotesSelected)?
-                    .try_insert(relative_position, pitch, note);
+                    .try_insert(position, pitch, note);
 
                 Ok(())
             }

@@ -1,4 +1,4 @@
-use crate::ui::{Length, Offset, Vector};
+use crate::ui::{Length, Vector, relative};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// A point on the screen
@@ -17,12 +17,11 @@ impl Point {
         y: Length::ZERO,
     };
 
-    /// Returns the [position](wikipedia.org/wiki/Position_(geometry)) of the point.
     #[must_use]
-    pub const fn position(self) -> Vector {
-        Vector {
-            x: Offset::positive(self.x),
-            y: Offset::positive(self.y),
+    pub(crate) fn relative_to(self, other: Point) -> relative::Point {
+        relative::Point {
+            x: self.x - other.x,
+            y: self.y - other.y,
         }
     }
 }
@@ -60,13 +59,5 @@ impl SubAssign<Vector> for Point {
     fn sub_assign(&mut self, rhs: Vector) {
         self.x -= rhs.x;
         self.y -= rhs.y;
-    }
-}
-
-impl Sub for Point {
-    type Output = Vector;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        self.position() - rhs.position()
     }
 }

@@ -1,4 +1,4 @@
-use crate::ui::{Length, Point};
+use crate::ui::{Length, relative};
 use crate::view::{Axis, Quotum, Quotum2D};
 use crate::{UserInterface, View};
 
@@ -32,7 +32,7 @@ impl Quotated {
                 x: quotum,
                 y: Quotum::Remaining,
             })
-            .positioned(Point {
+            .positioned(relative::Point {
                 x: position,
                 y: Length::ZERO,
             })

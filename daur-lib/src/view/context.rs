@@ -90,11 +90,11 @@ pub struct MenuInstance {
 }
 
 impl MenuInstance {
-    /// Converts the context menu into a [window view](View::Window).
+    /// Converts the context menu into a [view](View).
     pub fn into_view(self) -> View {
-        View::Window {
-            area: self.area,
-            view: self.view,
-        }
+        // We call `.relative_to(Point::ZERO)` since the context menu is positioned absolutely.
+        View::Shared(self.view)
+            .quotated_2d(self.area.size)
+            .positioned(self.area.position.relative_to(Point::ZERO))
     }
 }

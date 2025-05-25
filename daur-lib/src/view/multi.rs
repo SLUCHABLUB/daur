@@ -24,7 +24,7 @@ where
                 let is_set = cell.get().is_set(*variant);
 
                 let cell = Arc::clone(&cell);
-                let on_click = OnClick::new(move |_, _, _| {
+                let on_click = OnClick::new(move |_, _| {
                     let mut bag = cell.get();
 
                     if bag.is_set(*variant) {

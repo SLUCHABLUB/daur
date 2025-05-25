@@ -2,7 +2,7 @@ use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
-use crate::view::{Alignment, DropAction, OnClick, Painter};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
 use crate::{Action, Actions};
 use std::num::NonZeroU64;
 
@@ -52,8 +52,13 @@ impl Visitor for Clicker<'_> {
 
     fn visit_clickable(&mut self, area: Rectangle, on_click: &OnClick) {
         if !self.right_click && self.should_click(area) {
-            let position = self.position - area.position.position();
-            on_click.run(area.size, position, self.actions);
+            on_click.run(
+                RenderArea {
+                    area,
+                    mouse_position: self.position,
+                },
+                self.actions,
+            );
         }
     }
 

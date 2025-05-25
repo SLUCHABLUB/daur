@@ -49,7 +49,7 @@ fn view_entry(entry: DirEntry, selected_file: Arc<ArcCell<Path>>) -> Quotated {
         .to_string_lossy()
         .to_arc_str()
         .aligned_to(Alignment::Left)
-        .on_click(OnClick::new(move |_, _, _| {
+        .on_click(OnClick::new(move |_, _| {
             selected_file.set(Arc::from(entry.path()));
         }))
         .quotated_minimally()

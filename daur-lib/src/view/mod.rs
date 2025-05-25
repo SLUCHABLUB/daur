@@ -35,7 +35,7 @@ pub(crate) use feed::feed;
 
 use crate::Action;
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Point, Rectangle, Vector};
+use crate::ui::{Colour, Vector, relative};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;
@@ -119,9 +119,8 @@ pub enum View {
     },
     /// An offset view.
     Positioned {
-        // TODO: use a `relative::Point`
         /// The position of the view, relative to its parent.
-        position: Point,
+        position: relative::Point,
         /// The view.
         view: Box<Quotated2D>,
     },
@@ -141,6 +140,8 @@ pub enum View {
         /// The view.
         view: Box<View>,
     },
+    /// A reference counted view.
+    Shared(Arc<View>),
     /// A solid colour.
     Solid(Colour),
     /// A stack of views.
@@ -167,13 +168,5 @@ pub enum View {
         croppable: bool,
         /// The view.
         view: Box<View>,
-    },
-    // TODO: remove
-    /// A window which takes up part of the screen.
-    Window {
-        /// The area of the window.
-        area: Rectangle,
-        /// The view of the window.
-        view: Arc<View>,
     },
 }

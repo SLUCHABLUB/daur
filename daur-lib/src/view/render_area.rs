@@ -1,4 +1,4 @@
-use crate::ui::{Point, Rectangle};
+use crate::ui::{Point, Rectangle, relative};
 
 /// Information about the user interface that a reactive view may use.
 #[derive(Copy, Clone, Debug)]
@@ -17,12 +17,11 @@ impl RenderArea {
         self.area.contains(self.mouse_position)
     }
 
-    // TODO: return a `relative::Point`
     /// Returns the position of the mouse cursor relative to the area.
     #[must_use]
-    pub fn relative_mouse_position(self) -> Option<Point> {
+    pub fn relative_mouse_position(self) -> Option<relative::Point> {
         self.is_hovered()
-            .then_some(self.mouse_position - self.area.position.position())
+            .then_some(self.mouse_position.relative_to(self.area.position))
     }
 
     /// Returns a moved copy of the rendering area.

@@ -33,7 +33,7 @@ pub fn selector_with_formatter<
                 let is_set = cell.get() == *variant;
 
                 let cell = Arc::clone(&cell);
-                let on_click = OnClick::new(move |_, _, _| {
+                let on_click = OnClick::new(move |_, _| {
                     cell.set(*variant);
                 });
 

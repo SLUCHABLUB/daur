@@ -7,7 +7,7 @@ pub(crate) use manager::Manager;
 pub use specification::Specification;
 
 use crate::View;
-use crate::ui::Rectangle;
+use crate::ui::{Point, Rectangle};
 use getset::{CloneGetters, CopyGetters};
 use std::sync::Arc;
 
@@ -28,9 +28,9 @@ impl Popup {
 
     /// Converts the popup into a [window view](View::Window).
     pub(crate) fn view(&self) -> View {
-        View::Window {
-            area: self.area,
-            view: Arc::clone(&self.view),
-        }
+        // We call `.relative_to(Point::ZERO)` since popups are positioned absolutely.
+        View::Shared(Arc::clone(&self.view))
+            .quotated_2d(self.area.size)
+            .positioned(self.area.position.relative_to(Point::ZERO))
     }
 }

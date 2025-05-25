@@ -64,6 +64,7 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             width: Length::ZERO,
             height: Ui::RULER_HEIGHT.get(),
         },
+        View::Shared(view) => view.minimum_size::<Ui>(),
         View::Stack { axis, elements } => {
             let mut parallel = Length::ZERO;
             let mut orthogonal = Length::ZERO;
@@ -111,6 +112,5 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
 
             size
         }
-        View::Window { view, .. } => view.minimum_size::<Ui>(),
     }
 }

@@ -159,7 +159,8 @@ impl View {
                 view.accept::<Ui, V>(visitor, render_area),
             ),
             View::Positioned { position, view } => {
-                let position = *position + render_area.area.position.position();
+                let position = render_area.area.position + *position;
+
                 let max_size = Size {
                     width: render_area.area.size.width - position.x,
                     height: render_area.area.size.height - position.y,
@@ -179,6 +180,7 @@ impl View {
                 visitor.visit_scrollable(render_area.area, *action),
                 view.accept::<Ui, V>(visitor, render_area),
             ),
+            View::Shared(view) => view.accept::<Ui, V>(visitor, render_area),
             View::Solid(colour) => visitor.visit_solid(render_area.area, *colour),
             View::Stack { axis, elements } => {
                 let rectangles = render_area.area.split::<Ui>(*axis, elements);
@@ -220,36 +222,8 @@ impl View {
                     view.accept::<Ui, V>(visitor, titled_area),
                 );
             }
-            View::Window {
-                area: relative,
-                view,
-            } => {
-                if let Some(area) = window_area(render_area.area, *relative) {
-                    compound!(
-                        visitor.visit_window(area),
-                        view.accept::<Ui, V>(visitor, render_area),
-                    );
-                }
-            }
         }
     }
-}
-
-fn window_area(full: Rectangle, relative: Rectangle) -> Option<Rectangle> {
-    let max_position = full.bottom_right() - relative.size.diagonal();
-    let preferred_position = relative.position + full.position.position();
-
-    // Whether the window needs to be moved due to it otherwise not fitting in the area
-    let need_move = preferred_position.x > max_position.x || preferred_position.y > max_position.y;
-
-    let position = if need_move {
-        max_position
-    } else {
-        preferred_position
-    };
-    let size = relative.size;
-
-    full.intersection(Rectangle { position, size })
 }
 
 fn titled_area<Ui: UserInterface>(

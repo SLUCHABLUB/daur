@@ -1,4 +1,4 @@
-use crate::ui::{Point, Size};
+use crate::ui::{Size, relative};
 use crate::view::{Quotum, Quotum2D};
 use crate::{UserInterface, View};
 use std::cell::LazyCell;
@@ -35,7 +35,7 @@ impl Quotated2D {
     }
 
     /// Positions the view on the screen. See [`View::Positioned`].
-    pub fn positioned(self, position: Point) -> View {
+    pub fn positioned(self, position: relative::Point) -> View {
         View::Positioned {
             position,
             view: Box::new(self),

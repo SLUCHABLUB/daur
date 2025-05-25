@@ -1,5 +1,7 @@
 //! Types pertaining to [`UserInterface`].
 
+pub mod relative;
+
 mod colour;
 mod direction;
 mod grid;
