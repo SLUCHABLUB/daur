@@ -1,6 +1,6 @@
 use crate::audio::{Player, Sample, sample};
 use crate::node::Chain;
-use crate::notes::Event;
+use crate::note::Event;
 use crate::project::Settings;
 use crate::sync::Cell;
 use crate::time::Instant;

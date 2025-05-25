@@ -1,5 +1,5 @@
 use crate::metre::Instant;
-use crate::notes::Key;
+use crate::note::Key;
 use crate::popup::Popup;
 use crate::sync::{ArcCell, Cell};
 use crate::ui::Rectangle;

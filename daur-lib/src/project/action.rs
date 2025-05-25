@@ -1,5 +1,5 @@
 use crate::metre::Instant;
-use crate::notes::Key;
+use crate::note::Key;
 use crate::project::track;
 
 /// An action to take on a [project](super::Project).

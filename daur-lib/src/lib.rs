@@ -2,7 +2,7 @@
 
 pub mod audio;
 pub mod metre;
-pub mod notes;
+pub mod note;
 pub mod popup;
 pub mod project;
 pub mod sync;
@@ -27,7 +27,7 @@ pub use string::ToArcStr;
 #[doc(inline)]
 pub use audio::Audio;
 #[doc(inline)]
-pub use notes::Notes;
+pub use note::Note;
 #[doc(inline)]
 pub use popup::Popup;
 #[doc(inline)]

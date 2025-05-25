@@ -11,9 +11,9 @@ pub(crate) use overview::overview;
 
 use crate::audio::{NonEmpty, sample};
 use crate::metre::{Instant, NonZeroDuration, NonZeroPeriod};
-use crate::notes::Event;
+use crate::note::Event;
 use crate::ui::Colour;
-use crate::{Id, Notes, project};
+use crate::{Id, note, project};
 use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
@@ -72,7 +72,7 @@ impl Clip {
             id: Id::generate(),
             name: DEFAULT_NOTES_NAME,
             colour: DEFAULT_NOTES_COLOUR,
-            content: Content::Notes(Notes::empty(duration)),
+            content: Content::Notes(note::Group::empty(duration)),
         }
     }
 

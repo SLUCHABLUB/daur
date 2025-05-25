@@ -8,7 +8,7 @@ arithmetic-side-effects-allowed = [
     "metre::duration::Duration",
     "metre::duration::non_zero::NonZeroDuration",
     "metre::instant::Instant",
-    "notes::pitch::Pitch",
+    "note::pitch::Pitch",
     "ui::direction::Direction",
     "ui::length::Length",
     "ui::offset::Offset",

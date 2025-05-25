@@ -1,9 +1,8 @@
-use crate::audio;
 use crate::metre::{Instant, NonZeroPeriod};
-use crate::notes::Notes;
 use crate::project::Settings;
 use crate::ui::{Grid, Length};
 use crate::view::Context;
+use crate::{audio, note};
 
 /// The content of a [clip](super::Clip).
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -11,7 +10,7 @@ pub enum Content {
     /// An audio clip.
     Audio(audio::NonEmpty),
     /// A notes clip.
-    Notes(Notes),
+    Notes(note::Group),
     // TODO:
     //  - linked audio file
     //  - linked clip
@@ -40,9 +39,9 @@ impl Content {
         }
     }
 
-    /// Tries to resolve the content to a notes-clip.
+    /// Tries to resolve the content to a note group.
     #[must_use]
-    pub fn as_notes(&self) -> Option<&Notes> {
+    pub fn as_notes(&self) -> Option<&note::Group> {
         match self {
             Content::Audio(_) => None,
             Content::Notes(notes) => Some(notes),
@@ -51,7 +50,7 @@ impl Content {
 
     /// Tries to resolve the content to a notes-clip.
     #[must_use]
-    pub fn as_notes_mut(&mut self) -> Option<&mut Notes> {
+    pub fn as_notes_mut(&mut self) -> Option<&mut note::Group> {
         match self {
             Content::Audio(_) => None,
             Content::Notes(notes) => Some(notes),

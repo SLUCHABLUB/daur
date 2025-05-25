@@ -1,7 +1,7 @@
 use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::notes::{Interval, Key, Note, Notes, Pitch};
+use crate::note::{Group, Interval, Key, Note, Pitch};
 use crate::project::track::{Clip, clip};
 use crate::project::{Settings, track};
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
@@ -130,7 +130,7 @@ impl PianoRoll {
     fn workspace<Ui: UserInterface>(
         self,
         clip_start: Instant,
-        notes: &Notes,
+        notes: &Group,
         clip_colour: Colour,
         project: &Settings,
         grid: Grid,
@@ -181,7 +181,7 @@ impl PianoRoll {
     fn roll(
         self,
         clip_start: Instant,
-        notes: &Notes,
+        notes: &Group,
         clip_colour: Colour,
         keys: Keys,
         project: &Settings,
@@ -228,7 +228,7 @@ impl PianoRoll {
     fn row(
         self,
         clip_start: Instant,
-        notes: &Notes,
+        notes: &Group,
         clip_colour: Colour,
         pitch: Pitch,
         project: Settings,

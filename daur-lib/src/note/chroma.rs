@@ -1,4 +1,4 @@
-use crate::notes::{FLAT, SHARP, Sign};
+use crate::note::{FLAT, SHARP, Sign};
 use arcstr::{ArcStr, literal};
 use const_str::concat;
 use strum::VariantArray;

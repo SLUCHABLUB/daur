@@ -1,27 +1,6 @@
-//! Types relating to [`Notes`].
-
-mod chroma;
-mod event;
-mod interval;
-mod key;
-mod key_interval;
-mod note;
-mod pitch;
-mod sign;
-
-pub use chroma::Chroma;
-pub use interval::Interval;
-pub use key::Key;
-pub use key_interval::KeyInterval;
-pub use note::Note;
-pub use pitch::Pitch;
-pub use sign::Sign;
-
-pub(crate) use event::Event;
-
 use crate::audio::sample;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::notes::sign::{FLAT, SHARP};
+use crate::note::{Event, Note, Pitch};
 use crate::project::Settings;
 use crate::view::Context;
 use clack_host::events::event_types::{NoteOffEvent, NoteOnEvent};
@@ -34,20 +13,20 @@ use std::collections::HashMap;
 /// A sequence of musical events.
 /// Basically Midi.
 #[derive(Clone, Eq, PartialEq, Debug)]
-pub struct Notes {
+pub struct Group {
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
-    /// The notes in this clip, the instants are relative to the clip
+    /// The notes in the group, the instants are relative to the clip
     // TODO: make this a `Dimap` when ids get added to `Note`
     notes: HashMap<(Instant, Pitch), Note>,
     full_duration: NonZeroDuration,
 }
 
-impl Notes {
+impl Group {
     /// Constructs an empty clip.
     #[must_use]
-    pub fn empty(duration: NonZeroDuration) -> Notes {
-        Notes {
+    pub fn empty(duration: NonZeroDuration) -> Group {
+        Group {
             notes: HashMap::new(),
             full_duration: duration,
         }

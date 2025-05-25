@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::notes::Key;
+use crate::note::Key;
 use crate::popup::Specification;
 use crate::view::{Axis, OnClick, View};
 use crate::{Project, ToArcStr as _, UserInterface};

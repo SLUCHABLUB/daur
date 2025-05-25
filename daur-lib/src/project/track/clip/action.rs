@@ -1,5 +1,5 @@
 use crate::metre::Instant;
-use crate::notes::{Note, Pitch};
+use crate::note::{Note, Pitch};
 
 /// An action to take on a [clip](super::Clip).
 #[derive(Copy, Clone, Debug)]

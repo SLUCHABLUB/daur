@@ -1,4 +1,4 @@
-use crate::notes::{Chroma, KeyInterval, Sign};
+use crate::note::{Chroma, KeyInterval, Sign};
 use bitbag::BitBag;
 use std::fmt;
 use std::fmt::{Display, Formatter};

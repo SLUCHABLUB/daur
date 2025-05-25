@@ -15,7 +15,7 @@ pub(crate) use settings::settings;
 use crate::audio::sample::Pair;
 use crate::audio::{NonEmpty, sample};
 use crate::metre::{Duration, Instant, NonZeroDuration};
-use crate::notes::Event;
+use crate::note::Event;
 use crate::{Audio, Id, NonZeroRatio, Selection, project};
 use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};

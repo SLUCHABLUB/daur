@@ -1,4 +1,4 @@
-use crate::notes::{Chroma, Interval, Sign};
+use crate::note::{Chroma, Interval, Sign};
 use num::Integer as _;
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
