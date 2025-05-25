@@ -78,7 +78,7 @@ pub(crate) fn bar<Ui: UserInterface>(
     // TODO: add functionality
     let nodes_button = View::standard_button(NODES, OnClick::default());
 
-    // TODO: show current settings?
+    // TODO: show the settings at the cursor?
     let project_settings =
         View::balanced_stack(Axis::X, [key_button, time_signature_button, tempo_button])
             .quotated_minimally();
