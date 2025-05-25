@@ -38,6 +38,7 @@ pub struct Notes {
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
     /// The notes in this clip, the instants are relative to the clip
+    // TODO: make this a `Dimap` when ids get added to `Note`
     notes: HashMap<(Instant, Pitch), Note>,
     full_duration: NonZeroDuration,
 }
