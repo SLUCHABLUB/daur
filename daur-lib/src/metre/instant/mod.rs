@@ -2,7 +2,7 @@ mod non_zero;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::metre::Duration;
+use crate::metre::{Duration, relative};
 use crate::ui::{Grid, Length};
 use crate::{project, time};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
@@ -19,6 +19,12 @@ impl Instant {
     pub const START: Instant = Instant {
         since_start: Duration::ZERO,
     };
+
+    pub(crate) fn relative_to(self, other: Instant) -> relative::Instant {
+        relative::Instant {
+            since_start: self - other,
+        }
+    }
 
     pub(crate) fn to_x_offset(self, project_settings: &project::Settings, grid: Grid) -> Length {
         let mut remaining = self.since_start;

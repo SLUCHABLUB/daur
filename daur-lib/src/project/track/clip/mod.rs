@@ -10,7 +10,7 @@ pub use content::Content;
 pub(crate) use overview::overview;
 
 use crate::audio::{FixedLength, sample};
-use crate::metre::{Instant, NonZeroDuration, relative};
+use crate::metre::{Instant, NonZeroDuration};
 use crate::note::Event;
 use crate::ui::Colour;
 use crate::{Id, note, project};
@@ -113,10 +113,7 @@ impl Clip {
                     note.duration = duration;
                 }
 
-                // TODO: `relative_to` method
-                let position = relative::Instant {
-                    since_start: note_position - clip_position,
-                };
+                let position = note_position.relative_to(clip_position);
 
                 self.content
                     .as_notes_mut()
