@@ -13,7 +13,7 @@ pub(crate) use overview::overview;
 pub(crate) use settings::settings;
 
 use crate::audio::sample::Pair;
-use crate::audio::{NonEmpty, sample};
+use crate::audio::{FixedLength, sample};
 use crate::metre::{Duration, Instant, NonZeroDuration};
 use crate::note::Event;
 use crate::{Audio, Id, NonZeroRatio, Selection, project};
@@ -96,7 +96,7 @@ impl Track {
         Some((*start, clip))
     }
 
-    fn minimum_duration(&self, project_settings: &project::Settings) -> Duration {
+    fn minimum_duration(&self) -> Duration {
         let Some((start, clip_id)) = self.clip_ids.last_key_value() else {
             return Duration::ZERO;
         };
@@ -105,10 +105,7 @@ impl Track {
             return Duration::ZERO;
         };
 
-        clip.period(*start, project_settings)
-            .get()
-            .end()
-            .since_start
+        (*start + clip.duration().get()).since_start
     }
 
     pub(crate) fn audio_sum(
@@ -117,7 +114,7 @@ impl Track {
         sample_rate: sample::Rate,
     ) -> Audio {
         let minimum_end = Instant {
-            since_start: self.minimum_duration(project_settings),
+            since_start: self.minimum_duration(),
         };
         let minimum_end = minimum_end.to_real_time(project_settings);
         let minimum_end = minimum_end.since_start * sample_rate;
@@ -136,7 +133,7 @@ impl Track {
             if let Some(clip) = clip.content().as_audio() {
                 let clip_start = start.to_real_time(project_settings) * sample_rate;
 
-                audio.add_assign_at(clip.as_audio(), clip_start.since_start);
+                audio.add_assign_at(&clip.audio, clip_start.since_start);
             }
         }
 
@@ -181,6 +178,7 @@ impl Track {
         action: Action,
         cursor: Instant,
         selection: &mut Selection,
+        project_settings: &project::Settings,
     ) -> Result<()> {
         #[sorted]
         match action {
@@ -215,7 +213,8 @@ impl Track {
                     }
                 };
 
-                let audio = NonEmpty::from_audio(audio).ok_or(EmptyAudioFile)?;
+                let audio = FixedLength::from_audio(audio, cursor, project_settings)
+                    .ok_or(EmptyAudioFile)?;
 
                 let name = file
                     .file_stem()

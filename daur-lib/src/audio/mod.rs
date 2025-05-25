@@ -3,11 +3,11 @@
 pub mod sample;
 
 mod config;
-mod non_empty;
+mod fixed_length;
 mod player;
 mod source;
 
-pub use non_empty::NonEmpty;
+pub use fixed_length::FixedLength;
 #[doc(inline)]
 pub use sample::Sample;
 
@@ -15,8 +15,7 @@ pub(crate) use config::Config;
 pub(crate) use player::Player;
 pub(crate) use source::Source;
 
-use crate::metre::Instant;
-use crate::{Ratio, metre, project, time};
+use crate::{Ratio, time};
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
@@ -149,22 +148,6 @@ impl Audio {
             sample_rate,
             samples,
         })
-    }
-
-    /// Returns the period of the audio.
-    #[must_use]
-    pub(crate) fn period(
-        &self,
-        start: Instant,
-        project_settings: &project::Settings,
-    ) -> metre::Period {
-        let start = start.to_real_time(project_settings);
-
-        time::Period {
-            start,
-            duration: self.real_duration(),
-        }
-        .to_metre(project_settings)
     }
 
     pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: sample::Duration) {

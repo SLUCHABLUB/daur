@@ -9,8 +9,8 @@ pub use content::Content;
 
 pub(crate) use overview::overview;
 
-use crate::audio::{NonEmpty, sample};
-use crate::metre::{Instant, NonZeroDuration, NonZeroPeriod, relative};
+use crate::audio::{FixedLength, sample};
+use crate::metre::{Instant, NonZeroDuration, relative};
 use crate::note::Event;
 use crate::ui::Colour;
 use crate::{Id, note, project};
@@ -57,7 +57,7 @@ pub struct Clip {
 
 impl Clip {
     #[must_use]
-    pub(crate) fn from_audio(name: ArcStr, audio: NonEmpty) -> Clip {
+    pub(crate) fn from_audio(name: ArcStr, audio: FixedLength) -> Clip {
         Clip {
             id: Id::generate(),
             name,
@@ -76,10 +76,8 @@ impl Clip {
         }
     }
 
-    /// Calculates the [period](NonZeroPeriod) of the clip.
-    #[must_use]
-    pub fn period(&self, start: Instant, project_settings: &project::Settings) -> NonZeroPeriod {
-        self.content.period(start, project_settings)
+    pub(crate) fn duration(&self) -> NonZeroDuration {
+        self.content.duration()
     }
 
     pub(crate) fn events(

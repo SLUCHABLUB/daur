@@ -89,7 +89,7 @@ impl Project {
                 .tracks
                 .get_mut(&selection.track())
                 .ok_or(NoTrackSelected)?
-                .take_action(action, cursor, selection),
+                .take_action(action, cursor, selection, &self.settings),
         }
     }
 }

@@ -18,7 +18,8 @@ pub struct Group {
     /// The notes in the group.
     // TODO: make this a `Dimap` when ids get added to `Note`
     notes: HashMap<(relative::Instant, Pitch), Note>,
-    full_duration: NonZeroDuration,
+    /// The duration of the whole note group.
+    duration: NonZeroDuration,
 }
 
 impl Group {
@@ -27,21 +28,21 @@ impl Group {
     pub fn empty(duration: NonZeroDuration) -> Group {
         Group {
             notes: HashMap::new(),
-            full_duration: duration,
+            duration,
         }
     }
 
     /// Returns the duration of the note group.
     #[must_use]
     pub fn duration(&self) -> NonZeroDuration {
-        self.full_duration
+        self.duration
     }
 
     /// Tries inserting a note into the group.
     /// Does nothing if there is already a note at that position.
     /// Truncates the note if it goes outside the group or intersects another note.
     pub(crate) fn try_insert(&mut self, position: relative::Instant, pitch: Pitch, mut note: Note) {
-        let max_duration = self.full_duration.get() - position.since_start;
+        let max_duration = self.duration.get() - position.since_start;
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
             // The note was outside the group.
             return;

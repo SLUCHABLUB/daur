@@ -1,4 +1,4 @@
-use crate::metre::{Instant, NonZeroPeriod};
+use crate::metre::NonZeroDuration;
 use crate::ui::{Grid, Length};
 use crate::view::Context;
 use crate::{audio, note, project};
@@ -7,7 +7,7 @@ use crate::{audio, note, project};
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub enum Content {
     /// An audio clip.
-    Audio(audio::NonEmpty),
+    Audio(audio::FixedLength),
     /// A notes clip.
     Notes(note::Group),
     // TODO:
@@ -17,21 +17,16 @@ pub enum Content {
 }
 
 impl Content {
-    /// Calculates the period of the content.
-    #[must_use]
-    pub fn period(&self, start: Instant, project_settings: &project::Settings) -> NonZeroPeriod {
+    pub(crate) fn duration(&self) -> NonZeroDuration {
         match self {
-            Content::Audio(audio) => audio.period(start, project_settings),
-            Content::Notes(notes) => NonZeroPeriod {
-                start,
-                duration: notes.duration(),
-            },
+            Content::Audio(audio) => audio.duration,
+            Content::Notes(notes) => notes.duration(),
         }
     }
 
     /// Tries to resolve the content to a notes-clip.
     #[must_use]
-    pub fn as_audio(&self) -> Option<&audio::NonEmpty> {
+    pub fn as_audio(&self) -> Option<&audio::FixedLength> {
         match self {
             Content::Audio(audio) => Some(audio),
             Content::Notes(_) => None,

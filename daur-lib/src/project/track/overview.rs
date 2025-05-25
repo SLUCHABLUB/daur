@@ -34,7 +34,7 @@ pub(crate) fn overview(
 
                 let clip_offset = absolute_clip_offset - negative_overview_offset;
 
-                let clip_end = clip.period(clip_start, &project_settings).get().end();
+                let clip_end = clip_start + clip.duration().get();
                 let clip_end_offset =
                     clip_end.to_x_offset(&project_settings, grid) - negative_overview_offset;
 
