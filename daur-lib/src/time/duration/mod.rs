@@ -111,7 +111,6 @@ impl Div<NonZeroDuration> for Duration {
     }
 }
 
-// TODO: remove (keep for instant)
 impl Mul<sample::Rate> for Duration {
     type Output = sample::Duration;
 
