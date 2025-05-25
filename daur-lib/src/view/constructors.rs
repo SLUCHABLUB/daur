@@ -1,6 +1,6 @@
 use crate::View;
-use crate::ui::{Colour, Size};
-use crate::view::{Axis, Context, Quotated};
+use crate::ui::Colour;
+use crate::view::{Axis, Context, Quotated, RenderArea};
 
 impl View {
     /// Constructs a new [canvas](View::Canvas).
@@ -14,11 +14,6 @@ impl View {
         }
     }
 
-    /// Constructs a new view from a [generator](View::Generator).
-    pub fn generator<F: Fn() -> View + Send + Sync + 'static>(generator: F) -> Self {
-        View::Generator(Box::new(generator))
-    }
-
     /// Constructs a new [hoverable](View::Hoverable) view.
     pub fn hoverable(default: View, hovered: View) -> Self {
         View::Hoverable {
@@ -27,9 +22,12 @@ impl View {
         }
     }
 
-    /// Constructs a new [size-informed](View::SizeInformed) view.
-    pub fn size_informed<F: Fn(Size) -> View + Send + Sync + 'static>(generator: F) -> Self {
-        View::SizeInformed(Box::new(generator))
+    /// Constructs a new [reactive view](View::Reactive).
+    pub fn reactive<Closure>(closure: Closure) -> Self
+    where
+        Closure: Fn(RenderArea) -> View + Send + Sync + 'static,
+    {
+        View::Reactive(Box::new(closure))
     }
 
     /// Constructs a new horizontal [stack](View::Stack).

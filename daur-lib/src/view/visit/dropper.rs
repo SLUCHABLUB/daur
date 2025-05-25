@@ -1,7 +1,7 @@
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
-use crate::view::{Alignment, DropAction, OnClick, Painter};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
 use crate::{Action, Actions, HoldableObject};
 use std::num::NonZeroU64;
 
@@ -16,6 +16,8 @@ pub struct Dropper<'actions> {
 impl<'actions> Dropper<'actions> {
     /// Constructs a new dropper.
     pub fn new(object: HoldableObject, position: Point, actions: &'actions mut Actions) -> Self {
+        actions.push(Action::LetGo);
+
         Dropper {
             actions,
             object,
@@ -39,7 +41,13 @@ impl Visitor for Dropper<'_> {
 
     fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction) {
         if area.contains(self.position) {
-            if let Some(action) = action(self.object, area, self.position) {
+            if let Some(action) = action(
+                self.object,
+                RenderArea {
+                    area,
+                    mouse_position: self.position,
+                },
+            ) {
                 self.actions.push(action);
             }
         }

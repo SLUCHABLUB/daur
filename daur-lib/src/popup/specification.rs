@@ -131,7 +131,7 @@ impl Specification {
                 let buttons = View::minimal_stack(Axis::X, vec![cancel, confirm]);
 
                 View::y_stack([
-                    file_selector(&selected_file).fill_remaining(),
+                    file_selector(selected_file).fill_remaining(),
                     buttons.quotated_minimally(),
                 ])
             }

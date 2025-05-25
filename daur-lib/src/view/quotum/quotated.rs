@@ -36,6 +36,7 @@ impl View {
         self.with_quotum(Quotum::Remaining)
     }
 
+    // TODO: take an `Into<Length>` to accept non-zero lengths
     /// Makes the view take up the specified [amount of space](Length).
     pub const fn quotated(self, size: Length) -> Quotated {
         self.with_quotum(size.quotum())

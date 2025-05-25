@@ -1,7 +1,6 @@
 use crate::sync::ArcCell;
 use crate::view::{Alignment, OnClick, Quotated, ToText as _};
 use crate::{ToArcStr as _, View};
-use closure::closure;
 use std::fs::DirEntry;
 use std::path::Path;
 use std::sync::Arc;
@@ -14,12 +13,8 @@ use std::sync::Arc;
 //  - keyboard navigation
 //  - mkdir
 /// Constructs a new file selector.
-pub fn file_selector(selected_file: &Arc<ArcCell<Path>>) -> View {
-    View::Generator(Box::new(generator(selected_file)))
-}
-
-fn generator(selected_file: &Arc<ArcCell<Path>>) -> impl Fn() -> View + Send + Sync + 'static {
-    closure!([clone selected_file] move || {
+pub fn file_selector(selected_file: Arc<ArcCell<Path>>) -> View {
+    View::reactive(move |_| {
         list(&selected_file)
             .bordered()
             .titled_non_cropping(selected_file.get().display().to_arc_str())

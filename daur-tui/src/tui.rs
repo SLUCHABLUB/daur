@@ -60,6 +60,10 @@ impl UserInterface for Tui {
         self.area.size
     }
 
+    fn mouse_position(&self) -> Point {
+        self.mouse_position
+    }
+
     fn string_width(string: &str) -> Length {
         let graphemes = string
             .lines()

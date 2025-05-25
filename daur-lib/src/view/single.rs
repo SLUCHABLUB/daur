@@ -29,7 +29,7 @@ pub fn selector_with_formatter<
     View::balanced_stack(
         axis,
         T::VARIANTS.iter().map(|variant| {
-            View::generator(closure!([clone cell, clone formatter] move || {
+            View::reactive(closure!([clone cell, clone formatter] move |_| {
                 let is_set = cell.get() == *variant;
 
                 let cell = Arc::clone(&cell);

@@ -1,4 +1,5 @@
-use crate::ui::{Point, Rectangle, Vector};
+use crate::ui::Vector;
+use crate::view::RenderArea;
 use crate::view::context::Menu;
 use crate::{Action, HoldableObject, View};
 use arcstr::ArcStr;
@@ -21,7 +22,7 @@ impl View {
     }
 
     /// Adds a grabbable object to the view.
-    pub fn grabbable<F: Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static>(
+    pub fn grabbable<F: Fn(RenderArea) -> Option<HoldableObject> + Send + Sync + 'static>(
         self,
         generator: F,
     ) -> Self {
@@ -33,7 +34,7 @@ impl View {
 
     /// Adds a function that accepts droppable objects to the view.
     pub fn object_accepting<
-        F: Fn(HoldableObject, Rectangle, Point) -> Option<Action> + Send + Sync + 'static,
+        F: Fn(HoldableObject, RenderArea) -> Option<Action> + Send + Sync + 'static,
     >(
         self,
         dropper: F,

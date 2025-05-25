@@ -13,7 +13,9 @@ impl View {
 
 /// See [`View::minimum_size`].
 /// Used to minimise indentation.
+#[remain::check]
 fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
+    #[sorted]
     match view {
         View::Bordered { view, .. } => {
             let mut size = view.minimum_size::<Ui>();
@@ -24,14 +26,13 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         View::Canvas { .. }
         | View::CursorWindow { .. }
         | View::Empty
-        | View::SizeInformed(_)
+        | View::Reactive(_)
         | View::Solid(_) => Size::ZERO,
         View::Clickable { view, .. }
         | View::Contextual { view, .. }
         | View::Grabbable { view, .. }
         | View::Scrollable { view, .. }
         | View::ObjectAcceptor { view, .. } => view.minimum_size::<Ui>(),
-        View::Generator(generator) => generator().minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {
             let default = default.minimum_size::<Ui>();
             let hovered = hovered.minimum_size::<Ui>();

@@ -16,6 +16,7 @@ mod feed;
 mod file_selector;
 mod minimum_size;
 mod quotum;
+mod render_area;
 mod ruler;
 mod text;
 
@@ -26,6 +27,7 @@ pub use canvas::Context;
 pub use cursor_window::CursorWindow;
 pub use file_selector::file_selector;
 pub use quotum::{Quotated, Quotum};
+pub use render_area::RenderArea;
 pub use ruler::ruler;
 pub use text::ToText;
 
@@ -33,7 +35,7 @@ pub(crate) use feed::feed;
 
 use crate::Action;
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Point, Rectangle, Size, Vector};
+use crate::ui::{Colour, Rectangle, Vector};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;
@@ -42,17 +44,18 @@ use std::sync::Arc;
 
 /// A function for painting a canvas.
 pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
-/// A function for generating a view.
-pub type Generator = dyn Fn() -> View + Send + Sync;
 /// A function for getting an action when dropping an object on a view.
-pub type DropAction = dyn Fn(HoldableObject, Rectangle, Point) -> Option<Action> + Send + Sync;
+pub type DropAction = dyn Fn(HoldableObject, RenderArea) -> Option<Action> + Send + Sync;
 /// A function for getting an object when grabbing a view.
-pub type GrabObject = dyn Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync;
+pub type GrabObject = dyn Fn(RenderArea) -> Option<HoldableObject> + Send + Sync;
+/// A function for a reactive view.
+pub type Reactive = dyn Fn(RenderArea) -> View + Send + Sync;
 
 /// A UI element.
 #[cfg_attr(doc, doc(hidden))]
 #[must_use]
 #[derive(Debug, Default)]
+#[remain::sorted]
 pub enum View {
     /// A view with a border.
     Bordered {
@@ -89,8 +92,6 @@ pub enum View {
     /// An empty (transparent) view.
     #[default]
     Empty,
-    /// A function that generates a view.
-    Generator(#[debug(skip)] Box<Generator>),
     /// A view that can be grabbed.
     Grabbable {
         /// The grabbable object.
@@ -116,6 +117,8 @@ pub enum View {
         /// The view.
         view: Box<View>,
     },
+    /// A reactive view. It needs information about the user interface to be rendered/processed.
+    Reactive(#[debug(skip)] Box<Reactive>),
     /// A rule of a ruler.
     Rule {
         /// The display-index of the rule.
@@ -130,8 +133,6 @@ pub enum View {
         /// The view.
         view: Box<View>,
     },
-    /// A view that needs to know its container's size.
-    SizeInformed(#[debug(skip)] Box<dyn Fn(Size) -> View + Send + Sync>),
     /// A solid colour.
     Solid(Colour),
     /// A stack of views.

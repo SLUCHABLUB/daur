@@ -4,7 +4,7 @@ use std::any::type_name;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 
-type OnClickFunction = dyn Fn(Size, Point, &mut Actions) + Send + Sync + 'static;
+type OnClickFunction = dyn Fn(Size, Point, &mut Actions) + Send + Sync;
 
 /// A function to run when a button is (left) clicked.
 #[derive(Default)]

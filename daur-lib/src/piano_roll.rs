@@ -4,16 +4,15 @@ use crate::metre::{Instant, NonZeroDuration};
 use crate::note::{Group, Interval, Key, Note, Pitch};
 use crate::project::track;
 use crate::project::track::{Clip, clip};
-use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
-use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
+use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset};
+use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
 use crate::{Action, HoldableObject, Project, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use itertools::chain;
 use saturating_cast::SaturatingCast as _;
-use std::cmp::Ordering;
+use std::cmp::{Ordering, max, min};
 use std::iter::once;
-use std::mem::swap;
 
 const PIANO_ROLL: ArcStr = literal!("piano roll");
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
@@ -63,6 +62,7 @@ impl PianoRoll {
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
+        held_object: Option<HoldableObject>,
     ) -> Quotated {
         if !self.is_open {
             return Quotated::EMPTY;
@@ -75,7 +75,7 @@ impl PianoRoll {
 
         let title = clip.map_or(PIANO_ROLL, Clip::name);
 
-        let view = self.content::<Ui>(clip, clip_start, project, grid, player, cursor);
+        let view = self.content::<Ui>(clip, clip_start, project, grid, player, cursor, held_object);
 
         let title_height = Ui::title_height(&title, &view);
 
@@ -85,6 +85,7 @@ impl PianoRoll {
             .quotated(self.content_height + title_height)
     }
 
+    #[expect(clippy::too_many_arguments, reason = "the method is private")]
     fn content<Ui: UserInterface>(
         self,
         clip: Option<&Clip>,
@@ -93,6 +94,7 @@ impl PianoRoll {
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
+        held_object: Option<HoldableObject>,
     ) -> View {
         let Some(clip) = clip else {
             return NO_CLIP_SELECTED.centred();
@@ -113,6 +115,7 @@ impl PianoRoll {
             grid,
             player,
             cursor,
+            held_object,
         );
 
         let ruler = View::x_stack([
@@ -136,6 +139,7 @@ impl PianoRoll {
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
+        held_object: Option<HoldableObject>,
     ) -> View {
         let keys = self.keys::<Ui>();
 
@@ -148,10 +152,11 @@ impl PianoRoll {
             grid,
             self.negative_x_offset,
         );
+        let held_object = self.held_object(held_object, clip_colour, project_settings, grid);
 
         View::x_stack([
             piano.quotated(self.piano_depth.get()),
-            View::Layers(vec![roll, cursor_window]).fill_remaining(),
+            View::Layers(vec![roll, cursor_window, held_object]).fill_remaining(),
         ])
     }
 
@@ -268,7 +273,7 @@ impl PianoRoll {
 
                     View::x_stack([
                         View::Empty.quotated(start),
-                        View::Solid(clip_colour).quotated(width),
+                        Self::note(clip_colour).quotated(width),
                         View::Empty.fill_remaining(),
                     ])
                 }),
@@ -276,10 +281,11 @@ impl PianoRoll {
             .collect(),
         );
 
+        // TODO: check `edit_mode`
         // TODO: selecting notes
-        let grabber = closure!([clone project_settings] move |area: Rectangle, position: Point| {
+        let grabber = closure!([clone project_settings] move |render_area: RenderArea| {
             let start = Instant::quantised_from_x_offset(
-                position.x - area.position.x + self.negative_x_offset,
+                render_area.relative_mouse_position()?.x + self.negative_x_offset,
                 &project_settings,
                 grid,
             );
@@ -287,19 +293,17 @@ impl PianoRoll {
             Some(HoldableObject::NoteCreation { start })
         });
 
-        let dropper = move |object, area: Rectangle, position: Point| {
-            let HoldableObject::NoteCreation { mut start } = object else {
+        let dropper = move |object, render_area: RenderArea| {
+            let HoldableObject::NoteCreation { start } = object else {
                 return None;
             };
-            let mut end = Instant::quantised_from_x_offset(
-                position.x - area.position.x + self.negative_x_offset,
+            let end = Instant::quantised_from_x_offset(
+                render_area.relative_mouse_position()?.x + self.negative_x_offset,
                 &project_settings,
                 grid,
             );
 
-            if end < start {
-                swap(&mut start, &mut end);
-            }
+            let (start, end) = (min(start, end), max(start, end));
 
             let duration = NonZeroDuration::from_duration(end - start)?;
 
@@ -313,6 +317,10 @@ impl PianoRoll {
         };
 
         view.grabbable(grabber).object_accepting(dropper)
+    }
+
+    fn note(colour: Colour) -> View {
+        View::Solid(colour)
     }
 
     // TODO: use `Button` for:
@@ -375,13 +383,56 @@ impl PianoRoll {
 
     fn handle_grabber(
         title_height: Length,
-    ) -> impl Fn(Rectangle, Point) -> Option<HoldableObject> + Send + Sync + 'static {
-        move |area, position| {
-            let relative_position = position - area.position.position();
+    ) -> impl Fn(RenderArea) -> Option<HoldableObject> + Send + Sync + 'static {
+        move |render_area| {
+            let relative_mouse_position =
+                render_area.mouse_position - render_area.area.position.position();
 
-            (relative_position.y < title_height).then_some(HoldableObject::PianoRollHandle {
-                y: relative_position.y,
+            (relative_mouse_position.y < title_height).then_some(HoldableObject::PianoRollHandle {
+                y: relative_mouse_position.y,
             })
         }
+    }
+
+    fn held_object(
+        self,
+        held_object: Option<HoldableObject>,
+        clip_colour: Colour,
+        project_settings: &project::Settings,
+        grid: Grid,
+    ) -> View {
+        let Some(held_object) = held_object else {
+            return View::Empty;
+        };
+
+        let start = match held_object {
+            HoldableObject::NoteCreation { start } => start,
+            HoldableObject::PianoRollHandle { .. } => return View::Empty,
+        };
+
+        let start = start.to_x_offset(project_settings, grid) - self.negative_x_offset;
+
+        View::reactive(move |ui_info| {
+            let start = start;
+            // TODO: quantise
+            let end = ui_info.mouse_position.x - ui_info.area.position.x;
+
+            let y_offset = ui_info.mouse_position.y - ui_info.area.position.y;
+
+            let (start, end) = (min(start, end), max(start, end));
+            let width = end - start;
+
+            // TODO: an "absolute" view
+            View::x_stack([
+                View::Empty.quotated(start),
+                View::y_stack([
+                    View::Empty.quotated(y_offset),
+                    Self::note(clip_colour).quotated(self.key_width.get()),
+                    View::Empty.fill_remaining(),
+                ])
+                .quotated(width),
+                View::Empty.fill_remaining(),
+            ])
+        })
     }
 }

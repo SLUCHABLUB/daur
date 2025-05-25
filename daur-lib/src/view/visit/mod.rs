@@ -11,9 +11,9 @@ pub use grabber::Grabber;
 pub use scroller::Scroller;
 
 use crate::app::HoldableObject;
-use crate::ui::{Colour, Length, Point, Rectangle, Vector};
+use crate::ui::{Colour, Length, Rectangle, Vector};
 use crate::view::context::Menu;
-use crate::view::{Alignment, DropAction, OnClick, Painter};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
 use crate::{Action, Ratio, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
@@ -102,53 +102,51 @@ macro_rules! compound {
 impl View {
     /// Accepts a view visitor.
     #[expect(clippy::too_many_lines, reason = "`View` is a large")]
+    #[remain::check]
     pub fn accept<Ui: UserInterface, V: Visitor + ?Sized>(
         &self,
         visitor: &mut V,
-        area: Rectangle,
-        mouse_position: Point,
+        render_area: RenderArea,
     ) {
+        #[sorted]
         match self {
             View::Bordered { thick, view } => compound!(
-                visitor.visit_border(area, *thick),
-                view.accept::<Ui, V>(visitor, inner_area::<Ui>(area), mouse_position),
+                visitor.visit_border(render_area.area, *thick),
+                view.accept::<Ui, V>(visitor, inner_area::<Ui>(render_area)),
             ),
             View::Canvas {
                 background,
                 painter,
-            } => visitor.visit_canvas(area, *background, painter),
+            } => visitor.visit_canvas(render_area.area, *background, painter),
             View::Clickable { on_click, view } => compound!(
-                visitor.visit_clickable(area, on_click),
-                view.accept::<Ui, V>(visitor, area, mouse_position),
+                visitor.visit_clickable(render_area.area, on_click),
+                view.accept::<Ui, V>(visitor, render_area),
             ),
             View::Contextual { menu, view } => compound!(
-                visitor.visit_contextual(area, menu),
-                view.accept::<Ui, V>(visitor, area, mouse_position),
+                visitor.visit_contextual(render_area.area, menu),
+                view.accept::<Ui, V>(visitor, render_area),
             ),
             View::CursorWindow(window) => {
                 if let Some(offset) = window.offset() {
-                    visitor.visit_cursor_window(area, offset);
+                    visitor.visit_cursor_window(render_area.area, offset);
                 }
             }
             View::Empty => (),
-            View::Generator(generator) => {
-                generator().accept::<Ui, V>(visitor, area, mouse_position);
-            }
             View::Grabbable { object, view } => compound!(
-                if let Some(object) = object(area, mouse_position) {
-                    visitor.visit_grabbable(area, object);
+                if let Some(object) = object(render_area) {
+                    visitor.visit_grabbable(render_area.area, object);
                 },
-                view.accept::<Ui, V>(visitor, area, mouse_position),
+                view.accept::<Ui, V>(visitor, render_area),
             ),
             View::Hoverable { default, hovered } => {
-                if area.contains(mouse_position) {
-                    hovered.accept::<Ui, V>(visitor, area, mouse_position);
+                if render_area.is_hovered() {
+                    hovered.accept::<Ui, V>(visitor, render_area);
                 } else {
-                    default.accept::<Ui, V>(visitor, area, mouse_position);
+                    default.accept::<Ui, V>(visitor, render_area);
                 }
             }
             View::Layers(layers) => {
-                let visit = |layer: &View| layer.accept::<Ui, V>(visitor, area, mouse_position);
+                let visit = |layer: &View| layer.accept::<Ui, V>(visitor, render_area);
 
                 if V::reverse_order() {
                     layers.iter().rev().for_each(visit);
@@ -157,62 +155,64 @@ impl View {
                 }
             }
             View::ObjectAcceptor { drop, view } => compound!(
-                visitor.visit_object_acceptor(area, drop),
-                view.accept::<Ui, V>(visitor, area, mouse_position),
+                visitor.visit_object_acceptor(render_area.area, drop),
+                view.accept::<Ui, V>(visitor, render_area),
             ),
-            View::Rule { index, cells } => visitor.visit_rule(area, *index, *cells),
+            View::Reactive(closure) => closure(render_area).accept::<Ui, V>(visitor, render_area),
+            View::Rule { index, cells } => visitor.visit_rule(render_area.area, *index, *cells),
             View::Scrollable { action, view } => compound!(
-                visitor.visit_scrollable(area, *action),
-                view.accept::<Ui, V>(visitor, area, mouse_position),
+                visitor.visit_scrollable(render_area.area, *action),
+                view.accept::<Ui, V>(visitor, render_area),
             ),
-            View::SizeInformed(generator) => {
-                generator(area.size).accept::<Ui, V>(visitor, area, mouse_position);
-            }
-            View::Solid(colour) => visitor.visit_solid(area, *colour),
+            View::Solid(colour) => visitor.visit_solid(render_area.area, *colour),
             View::Stack { axis, elements } => {
-                let rectangles = area.split::<Ui>(*axis, elements);
+                let rectangles = render_area.area.split::<Ui>(*axis, elements);
 
                 for (area, quoted) in zip(rectangles, elements) {
-                    quoted.view.accept::<Ui, V>(visitor, area, mouse_position);
+                    quoted
+                        .view
+                        .accept::<Ui, V>(visitor, render_area.with_area(area));
                 }
             }
-            View::Text { string, alignment } => visitor.visit_text(area, string, *alignment),
+            View::Text { string, alignment } => {
+                visitor.visit_text(render_area.area, string, *alignment);
+            }
             View::Titled {
                 title,
                 highlighted,
                 view,
                 ..
             } => {
-                let titled_area = titled_area::<Ui>(area, title, view);
+                let titled_area = titled_area::<Ui>(render_area, title, view);
 
                 if let View::Bordered { thick, view } = &**view {
                     let inner_area = inner_area::<Ui>(titled_area);
                     compound!(
                         visitor.visit_titled_bordered(
-                            area,
-                            titled_area,
+                            render_area.area,
+                            titled_area.area,
                             title,
                             *highlighted,
                             *thick
                         ),
-                        view.accept::<Ui, V>(visitor, inner_area, mouse_position),
+                        view.accept::<Ui, V>(visitor, inner_area),
                     );
                     return;
                 }
 
                 compound!(
-                    visitor.visit_titled(area, title, *highlighted),
-                    view.accept::<Ui, V>(visitor, titled_area, mouse_position),
+                    visitor.visit_titled(render_area.area, title, *highlighted),
+                    view.accept::<Ui, V>(visitor, titled_area),
                 );
             }
             View::Window {
                 area: relative,
                 view,
             } => {
-                if let Some(area) = window_area(area, *relative) {
+                if let Some(area) = window_area(render_area.area, *relative) {
                     compound!(
                         visitor.visit_window(area),
-                        view.accept::<Ui, V>(visitor, area, mouse_position),
+                        view.accept::<Ui, V>(visitor, render_area),
                     );
                 }
             }
@@ -237,17 +237,21 @@ fn window_area(full: Rectangle, relative: Rectangle) -> Option<Rectangle> {
     full.intersection(Rectangle { position, size })
 }
 
-fn titled_area<Ui: UserInterface>(mut area: Rectangle, title: &str, view: &View) -> Rectangle {
+fn titled_area<Ui: UserInterface>(
+    mut render_area: RenderArea,
+    title: &str,
+    view: &View,
+) -> RenderArea {
     let title_height = Ui::title_height(title, view);
-    area.position.y += title_height;
-    area.size.height -= title_height;
-    area
+    render_area.area.position.y += title_height;
+    render_area.area.size.height -= title_height;
+    render_area
 }
 
-fn inner_area<Ui: UserInterface>(mut area: Rectangle) -> Rectangle {
-    area.position.x += Ui::BORDER_THICKNESS;
-    area.position.y += Ui::BORDER_THICKNESS;
-    area.size.width -= Ui::BORDER_THICKNESS * Ratio::integer(2);
-    area.size.height -= Ui::BORDER_THICKNESS * Ratio::integer(2);
-    area
+fn inner_area<Ui: UserInterface>(mut render_area: RenderArea) -> RenderArea {
+    render_area.area.position.x += Ui::BORDER_THICKNESS;
+    render_area.area.position.y += Ui::BORDER_THICKNESS;
+    render_area.area.size.width -= Ui::BORDER_THICKNESS * Ratio::integer(2);
+    render_area.area.size.height -= Ui::BORDER_THICKNESS * Ratio::integer(2);
+    render_area
 }

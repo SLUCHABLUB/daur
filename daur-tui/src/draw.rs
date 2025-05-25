@@ -5,7 +5,7 @@ use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
 use daur::view::{Alignment, DropAction, OnClick, Painter};
-use daur::{Action, App, HoldableObject};
+use daur::{Action, App, HoldableObject, UserInterface as _};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};
@@ -30,7 +30,7 @@ pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::
             let ui = app.ui();
 
             app.view()
-                .accept::<Tui, _>(&mut Renderer { buffer }, area, ui.mouse_position);
+                .accept::<Tui, _>(&mut Renderer { buffer }, ui.render_area());
         })
         .map(|_| ())
 }

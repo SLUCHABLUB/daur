@@ -3,7 +3,7 @@ use crate::tui::Tui;
 use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
 use daur::ui::{Direction, Length, Point, Rectangle};
 use daur::view::visit::{Clicker, Dropper, Grabber, Scroller};
-use daur::{Action, Actions, App, View};
+use daur::{Action, Actions, App, UserInterface as _, View};
 use ratatui::layout::{Position, Size};
 
 pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
@@ -69,7 +69,7 @@ fn handle_mouse_event(
 
             let mut grabber = Grabber::new(ui.mouse_position, actions);
 
-            view.accept::<Tui, _>(&mut grabber, ui.area, ui.mouse_position);
+            view.accept::<Tui, _>(&mut grabber, ui.render_area());
         }
         MouseEventKind::Up(button) => {
             // click
@@ -80,14 +80,14 @@ fn handle_mouse_event(
                 MouseButton::Middle => return,
             };
 
-            view.accept::<Tui, _>(&mut clicker, ui.area, ui.mouse_position);
+            view.accept::<Tui, _>(&mut clicker, ui.render_area());
 
             // let go
 
             if let Some(object) = app.held_object() {
                 let mut dropper = Dropper::new(object, ui.mouse_position, actions);
 
-                view.accept::<Tui, _>(&mut dropper, ui.area, ui.mouse_position);
+                view.accept::<Tui, _>(&mut dropper, ui.render_area());
             }
         }
         MouseEventKind::Moved => (),
@@ -112,5 +112,5 @@ fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Actions) {
 
     let mut scroller = Scroller::new(ui.mouse_position, offset, actions);
 
-    view.accept::<Tui, _>(&mut scroller, ui.area, ui.mouse_position);
+    view.accept::<Tui, _>(&mut scroller, ui.render_area());
 }

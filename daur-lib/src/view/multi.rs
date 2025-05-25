@@ -20,7 +20,7 @@ where
             let name = variant.to_arc_str();
 
             let cell = Arc::clone(cell);
-            View::generator(move || {
+            View::reactive(move |_| {
                 let is_set = cell.get().is_set(*variant);
 
                 let cell = Arc::clone(&cell);

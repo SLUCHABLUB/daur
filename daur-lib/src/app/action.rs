@@ -24,6 +24,8 @@ pub enum Action {
     Exit,
     /// Exits _edit mode_.
     ExitEditMode,
+    /// Removes the held object.
+    LetGo,
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
     /// Moves the held object.
@@ -117,6 +119,7 @@ impl<Ui: UserInterface> App<Ui> {
             Action::EnterEditMode => self.edit_mode = true,
             Action::Exit => self.ui.exit(),
             Action::ExitEditMode => self.edit_mode = false,
+            Action::LetGo => self.held_object = None,
             Action::MoveCursor(instant) => {
                 self.cursor = instant;
 

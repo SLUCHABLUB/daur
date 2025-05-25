@@ -12,10 +12,10 @@ pub(crate) fn feed<Ui: UserInterface, Generator>(
 where
     Generator: Fn(isize) -> Quotated + Send + Sync + 'static,
 {
-    View::size_informed(move |size| {
+    View::reactive(move |render_area| {
         let mut offset = offset;
 
-        let full_size = size.parallel_to(direction.axis());
+        let full_size = render_area.area.size.parallel_to(direction.axis());
 
         let first;
 

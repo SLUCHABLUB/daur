@@ -21,6 +21,7 @@ pub use size::Size;
 pub use vector::Vector;
 
 use crate::View;
+use crate::view::RenderArea;
 use std::path::Path;
 
 /// A user interface for the DAW.
@@ -55,7 +56,13 @@ pub trait UserInterface {
     fn exit(&mut self);
 
     /// Returns the current screen size.
+    #[must_use]
     fn size(&self) -> Size;
+
+    // TODO: make this optional?
+    /// Returns the position of the mouse.
+    #[must_use]
+    fn mouse_position(&self) -> Point;
 
     /// Returns the width of the string
     #[must_use]
@@ -76,4 +83,16 @@ pub trait UserInterface {
     /// Returns the default size for a file selector.
     #[must_use]
     fn file_selector_size(path: &Path) -> Size;
+
+    /// Returns the [rendering area](RenderArea) of the user interface.
+    #[must_use]
+    fn render_area(&self) -> RenderArea {
+        RenderArea {
+            area: Rectangle {
+                position: Point::ZERO,
+                size: self.size(),
+            },
+            mouse_position: self.mouse_position(),
+        }
+    }
 }

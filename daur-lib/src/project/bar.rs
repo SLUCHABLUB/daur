@@ -57,7 +57,7 @@ pub(crate) fn bar<Ui: UserInterface>(
 
     let to_start_button =
         View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));
-    let playback_button = View::generator(move || {
+    let playback_button = View::reactive(move |_| {
         let is_playing = player.as_ref().is_some_and(Player::is_playing);
 
         if is_playing {
