@@ -110,8 +110,8 @@ impl Notes {
             };
 
             // TODO: take the velocity from the note
-            let on = NoteOnEvent::new(start.index.saturating_cast(), tuple, 0.5);
-            let off = NoteOffEvent::new(end.index.saturating_cast(), tuple, 0.5);
+            let on = NoteOnEvent::new(start.since_start.samples.saturating_cast(), tuple, 0.5);
+            let off = NoteOffEvent::new(end.since_start.samples.saturating_cast(), tuple, 0.5);
 
             events.push(Event::NoteOn(on));
             events.push(Event::NoteOff(off));

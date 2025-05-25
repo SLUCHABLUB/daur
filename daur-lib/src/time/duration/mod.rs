@@ -1,6 +1,7 @@
 mod non_zero;
 
 use crate::Ratio;
+use crate::audio::sample;
 pub use non_zero::NonZeroDuration;
 use std::num::NonZeroU128;
 use std::ops::{Add, AddAssign, Div, Mul, Sub, SubAssign};
@@ -107,5 +108,17 @@ impl Div<NonZeroDuration> for Duration {
             u128::from(self.nanoseconds),
             NonZeroU128::from(rhs.nanoseconds),
         )
+    }
+}
+
+impl Mul<sample::Rate> for Duration {
+    type Output = sample::Duration;
+
+    fn mul(self, rhs: sample::Rate) -> Self::Output {
+        let seconds = self / NonZeroDuration::SECOND;
+
+        sample::Duration {
+            samples: (seconds * Ratio::integer(u64::from(rhs.samples_per_second.get()))).to_usize(),
+        }
     }
 }

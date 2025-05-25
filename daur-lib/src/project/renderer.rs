@@ -121,6 +121,9 @@ fn rendering_job(
 
         // TODO: un-hardcode
         let batch_size = sample_rate.samples_per_second.get().saturating_cast();
+        let batch_duration = sample::Duration {
+            samples: batch_size,
+        };
 
         let mut instance = chain.instantiate(sample_rate);
 
@@ -156,11 +159,12 @@ fn rendering_job(
                 ),
             }]);
 
-            // TODO: break this into {usize * duration} + duration
+            let this_batch_duration = sample::Duration {
+                samples: audio_batch.len(),
+            };
+
             let next_batch_start = sample::Instant {
-                index: batch_index
-                    .saturating_mul(batch_size)
-                    .saturating_add(audio_batch.len()),
+                since_start: batch_duration * batch_index + this_batch_duration,
             };
 
             let events: Vec<_> = events
@@ -219,6 +223,8 @@ fn master(
 // TODO: move (maybe to an extension trait)
 fn start_of(event: &UnknownEvent) -> sample::Instant {
     sample::Instant {
-        index: event.header().time().saturating_cast(),
+        since_start: sample::Duration {
+            samples: event.header().time().saturating_cast(),
+        },
     }
 }

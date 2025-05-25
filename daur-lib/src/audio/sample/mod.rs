@@ -1,9 +1,11 @@
 //! Items pertaining to [`Sample`].
 
+mod duration;
 mod instant;
 mod pair;
 mod rate;
 
+pub use duration::Duration;
 pub use instant::Instant;
 pub use pair::Pair;
 pub use rate::{Rate, ZeroRateError};

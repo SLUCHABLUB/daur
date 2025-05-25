@@ -12,6 +12,7 @@ pub use clip::Clip;
 pub(crate) use overview::overview;
 pub(crate) use settings::settings;
 
+use crate::audio::sample::Pair;
 use crate::audio::{NonEmpty, sample};
 use crate::metre::{Duration, Instant, NonZeroDuration};
 use crate::notes::Event;
@@ -112,7 +113,17 @@ impl Track {
         settings: &project::Settings,
         sample_rate: sample::Rate,
     ) -> Audio {
-        let mut audio = Audio::empty(sample_rate);
+        let minimum_end = Instant {
+            since_start: self.minimum_duration(settings),
+        };
+        let minimum_end = minimum_end.to_real_time(settings);
+        let minimum_end = minimum_end.since_start * sample_rate;
+        let minimum_sample_count = minimum_end.samples;
+
+        let mut audio = Audio {
+            sample_rate,
+            samples: vec![Pair::ZERO; minimum_sample_count],
+        };
 
         for (start, clip_id) in &self.clip_ids {
             let Some(clip) = self.clips.get(clip_id) else {
@@ -122,18 +133,8 @@ impl Track {
             if let Some(clip) = clip.content().as_audio() {
                 let clip_start = start.to_real_time(settings) * sample_rate;
 
-                audio.add_assign_at(clip.as_audio(), clip_start.index);
+                audio.add_assign_at(clip.as_audio(), clip_start.since_start);
             }
-        }
-
-        let minimum_end = Instant {
-            since_start: self.minimum_duration(settings),
-        };
-        let minimum_end = minimum_end.to_real_time(settings);
-        let minimum_end = minimum_end * sample_rate;
-
-        if audio.samples.len() < minimum_end.index {
-            audio.samples.resize(minimum_end.index, sample::Pair::ZERO);
         }
 
         audio

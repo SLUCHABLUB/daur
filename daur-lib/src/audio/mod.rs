@@ -158,16 +158,16 @@ impl Audio {
     }
 
     // TODO: use sample time
-    pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: usize) {
+    pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: sample::Duration) {
         let other = other.resample(self.sample_rate);
 
         let sample_count = max(
             self.samples.len(),
-            other.samples.len().saturating_add(offset),
+            other.samples.len().saturating_add(offset.samples),
         );
         self.samples.resize(sample_count, sample::Pair::ZERO);
 
-        for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset), &other.samples) {
+        for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset.samples), &other.samples) {
             *lhs += *rhs;
         }
     }
@@ -223,6 +223,6 @@ impl Add<&Audio> for Audio {
 
 impl AddAssign<&Audio> for Audio {
     fn add_assign(&mut self, rhs: &Audio) {
-        self.add_assign_at(rhs, 0);
+        self.add_assign_at(rhs, sample::Duration::ZERO);
     }
 }
