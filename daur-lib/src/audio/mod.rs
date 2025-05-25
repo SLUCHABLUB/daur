@@ -17,8 +17,7 @@ pub(crate) use source::Source;
 
 use crate::metre::Instant;
 use crate::project::Settings;
-use crate::time::{Duration, Period};
-use crate::{Ratio, metre};
+use crate::{Ratio, metre, time};
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
@@ -70,9 +69,17 @@ impl Audio {
         }
     }
 
-    /// Returns the duration of the audio.
+    /// Returns the sample-time duration of the audio.
     #[must_use]
-    pub fn duration(&self) -> Duration {
+    pub fn duration(&self) -> sample::Duration {
+        sample::Duration {
+            samples: self.samples.len(),
+        }
+    }
+
+    /// Returns the real-time duration of the audio.
+    #[must_use]
+    pub fn real_duration(&self) -> time::Duration {
         self.sample_rate.sample_duration().get() * Ratio::from_usize(self.samples.len())
     }
 
@@ -150,14 +157,13 @@ impl Audio {
     pub(crate) fn period(&self, start: Instant, settings: &Settings) -> metre::Period {
         let start = start.to_real_time(settings);
 
-        Period {
+        time::Period {
             start,
-            duration: self.duration(),
+            duration: self.real_duration(),
         }
         .to_metre(settings)
     }
 
-    // TODO: use sample time
     pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: sample::Duration) {
         let other = other.resample(self.sample_rate);
 

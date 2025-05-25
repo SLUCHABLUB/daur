@@ -1,3 +1,4 @@
+use crate::audio::sample;
 use crate::{Audio, time};
 use rodio::source::SeekError;
 use std::time::Duration;
@@ -8,8 +9,7 @@ use std::time::Duration;
 pub struct Source {
     audio: Audio,
     right: bool,
-    /// The current sample that the iterator is on, from the beginning
-    sample_index: usize,
+    offset: sample::Duration,
 }
 
 impl Source {
@@ -17,7 +17,7 @@ impl Source {
         Source {
             audio,
             right: false,
-            sample_index: 0,
+            offset: sample::Duration::ZERO,
         }
     }
 }
@@ -26,11 +26,11 @@ impl Iterator for Source {
     type Item = f32;
 
     fn next(&mut self) -> Option<f32> {
-        let pair = self.audio.samples.get(self.sample_index)?;
+        let pair = self.audio.samples.get(self.offset.samples)?;
         let sample = if self.right { pair.right } else { pair.left };
 
         if self.right {
-            self.sample_index = self.sample_index.saturating_add(1);
+            self.offset += sample::Duration::SAMPLE;
         }
         self.right = !self.right;
 
@@ -40,7 +40,8 @@ impl Iterator for Source {
 
 impl rodio::Source for Source {
     fn current_frame_len(&self) -> Option<usize> {
-        Some(self.audio.samples.len().saturating_sub(self.sample_index))
+        let remaining = self.audio.duration() - self.offset;
+        Some(remaining.samples)
     }
 
     fn channels(&self) -> u16 {
@@ -52,13 +53,12 @@ impl rodio::Source for Source {
     }
 
     fn total_duration(&self) -> Option<Duration> {
-        Some(Duration::from(self.audio.duration()))
+        Some(Duration::from(self.audio.real_duration()))
     }
 
     fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
-        let sample_delta =
-            (time::Duration::from(pos) / self.audio.sample_rate.sample_duration()).to_usize();
-        self.sample_index = self.sample_index.saturating_add(sample_delta);
+        let duration = time::Duration::from(pos) * self.audio.sample_rate;
+        self.offset += duration;
 
         Ok(())
     }
