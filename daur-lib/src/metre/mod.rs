@@ -9,8 +9,6 @@ mod changing;
 mod duration;
 mod instant;
 mod period;
-mod pitch_spaced;
-mod spaced;
 mod time_signature;
 
 pub use bar::Bar;
@@ -18,6 +16,4 @@ pub use changing::Changing;
 pub use duration::{Duration, NonZeroDuration};
 pub use instant::{Instant, NonZeroInstant};
 pub use period::{NonZeroPeriod, Period};
-pub use pitch_spaced::PitchSpaced;
-pub use spaced::Spaced;
 pub use time_signature::TimeSignature;

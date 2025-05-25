@@ -20,7 +20,7 @@ pub use sign::Sign;
 pub(crate) use event::Event;
 
 use crate::audio::sample;
-use crate::metre::{Instant, NonZeroDuration, PitchSpaced};
+use crate::metre::{Instant, NonZeroDuration};
 use crate::notes::sign::{FLAT, SHARP};
 use crate::project::Settings;
 use crate::view::Context;
@@ -29,6 +29,7 @@ use clack_host::events::{Match, Pckn};
 use saturating_cast::SaturatingCast as _;
 use sorted_vec::SortedVec;
 use std::cmp::min;
+use std::collections::HashMap;
 
 /// A sequence of musical events.
 /// Basically Midi.
@@ -37,16 +38,16 @@ pub struct Notes {
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
     /// The notes in this clip, the instants are relative to the clip
-    notes: PitchSpaced<Note>,
+    notes: HashMap<(Instant, Pitch), Note>,
     full_duration: NonZeroDuration,
 }
 
 impl Notes {
     /// Constructs an empty clip.
     #[must_use]
-    pub const fn empty(duration: NonZeroDuration) -> Notes {
+    pub fn empty(duration: NonZeroDuration) -> Notes {
         Notes {
-            notes: PitchSpaced::new(),
+            notes: HashMap::new(),
             full_duration: duration,
         }
     }
@@ -69,13 +70,15 @@ impl Notes {
         note.duration = min(note.duration, max_duration);
         // TODO: truncate notes on intersection
 
-        let _note = self.notes.try_insert(position, pitch, note);
+        self.notes.entry((position, pitch)).or_insert(note);
     }
 
     pub(crate) fn with_pitch(&self, pitch: Pitch) -> impl Iterator<Item = (Instant, Note)> {
         self.notes
-            .with_pitch(pitch)
-            .map(|(instant, note)| (instant, *note))
+            .iter()
+            .filter_map(move |((instant, note_pitch), note)| {
+                (pitch == *note_pitch).then_some((*instant, *note))
+            })
     }
 
     pub(crate) fn draw_overview(&self, _context: &mut dyn Context) {
@@ -91,7 +94,8 @@ impl Notes {
     ) -> SortedVec<Event> {
         let mut events = Vec::new();
 
-        for (instant, pitch, note) in self.notes.iter() {
+        #[expect(clippy::iter_over_hash_type, reason = "we sort the events")]
+        for ((instant, pitch), note) in &self.notes {
             let instant = clip_start + instant.since_start;
 
             let start = instant.to_real_time(settings) * sample_rate;
