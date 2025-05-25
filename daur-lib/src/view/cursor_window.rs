@@ -53,7 +53,11 @@ impl CursorWindow {
         };
 
         let on_click = OnClick::new(move |render_area, actions| {
-            let ui_offset = render_area.mouse_position.x + window_offset;
+            let Some(mouse_position) = render_area.relative_mouse_position() else {
+                return;
+            };
+
+            let ui_offset = mouse_position.x + window_offset;
             let instant = Instant::quantised_from_x_offset(ui_offset, &settings, grid);
 
             actions.push(Action::MoveCursor(instant));
