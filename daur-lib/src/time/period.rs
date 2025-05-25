@@ -1,6 +1,5 @@
-use crate::metre;
-use crate::project::Settings;
 use crate::time::{Duration, Instant};
+use crate::{metre, project};
 
 /// A period of real time.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -20,9 +19,9 @@ impl Period {
 
     /// Converts the period to musical time.
     #[must_use]
-    pub fn to_metre(self, settings: &Settings) -> metre::Period {
-        let start = self.start.to_metre(settings);
-        let end = self.end().to_metre(settings);
+    pub fn to_metre(self, project_settings: &project::Settings) -> metre::Period {
+        let start = self.start.to_metre(project_settings);
+        let end = self.end().to_metre(project_settings);
 
         metre::Period {
             start,

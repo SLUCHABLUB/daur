@@ -1,8 +1,7 @@
-use crate::Audio;
 use crate::metre::{Instant, NonZeroPeriod};
-use crate::project::Settings;
 use crate::ui::{Grid, Length};
 use crate::view::Context;
+use crate::{Audio, project};
 
 /// Some audio of positive length.
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -36,20 +35,26 @@ impl NonEmpty {
 
     /// Returns the period of the audio.
     #[must_use]
-    pub(crate) fn period(&self, start: Instant, settings: &Settings) -> NonZeroPeriod {
+    pub(crate) fn period(
+        &self,
+        start: Instant,
+        project_settings: &project::Settings,
+    ) -> NonZeroPeriod {
         // TODO: do this more cleanly
-        NonZeroPeriod::from_period(self.inner.period(start, settings)).unwrap_or_else(|| {
-            // This should be unreachable
-            let duration = settings.time_signature.get(start).beat_duration();
-            NonZeroPeriod { start, duration }
-        })
+        NonZeroPeriod::from_period(self.inner.period(start, project_settings)).unwrap_or_else(
+            || {
+                // This should be unreachable
+                let duration = project_settings.time_signature.get(start).beat_duration();
+                NonZeroPeriod { start, duration }
+            },
+        )
     }
 
     /// Draws an overview of the audio.
     pub(crate) fn draw_overview(
         &self,
         _context: &mut dyn Context,
-        _settings: &Settings,
+        _project_settings: &project::Settings,
         _grid: Grid,
         _crop_start: Length,
     ) {

@@ -1,8 +1,8 @@
+use crate::project::Track;
 use crate::project::track::Clip;
-use crate::project::{Settings, Track};
 use crate::ui::{Grid, Length};
 use crate::view::{OnClick, View};
-use crate::{Action, Id};
+use crate::{Action, Id, project};
 use closure::closure;
 
 /// Returns a view of a clip's overview.
@@ -10,14 +10,14 @@ pub(crate) fn overview(
     clip: &Clip,
     track: Id<Track>,
     selected: bool,
-    settings: &Settings,
+    project_settings: &project::Settings,
     grid: Grid,
     crop_start: Length,
 ) -> View {
     View::canvas(
         clip.colour,
-        closure!([clone clip.content, clone settings] move |context| {
-            content.paint_overview(context, &settings, grid, crop_start);
+        closure!([clone clip.content, clone project_settings] move |context| {
+            content.paint_overview(context, &project_settings, grid, crop_start);
         }),
     )
     .titled(clip.name())

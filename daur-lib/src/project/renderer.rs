@@ -1,10 +1,9 @@
 use crate::audio::{Player, Sample, sample};
 use crate::node::Chain;
 use crate::note::Event;
-use crate::project::Settings;
 use crate::sync::Cell;
 use crate::time::Instant;
-use crate::{Audio, Project};
+use crate::{Audio, Project, project};
 use clack_host::events::UnknownEvent;
 use clack_host::prelude::{
     AudioPortBuffer, AudioPortBufferType, AudioPorts, InputChannel, InputEvents,
@@ -71,7 +70,7 @@ impl Renderer {
     pub(crate) fn restart(
         &mut self,
         project: &Project,
-        settings: &Settings,
+        project_settings: &project::Settings,
         sample_rate: sample::Rate,
     ) {
         let progress = Arc::new(Progress {
@@ -83,8 +82,8 @@ impl Renderer {
         let zero_tracks = project.tracks.is_empty();
 
         for track in project.tracks.values() {
-            let audio = track.audio_sum(settings, sample_rate);
-            let events = track.events(settings, sample_rate);
+            let audio = track.audio_sum(project_settings, sample_rate);
+            let events = track.events(project_settings, sample_rate);
             // TODO: take from the track
             let chain = Chain::default();
 

@@ -96,7 +96,7 @@ impl Track {
         Some((*start, clip))
     }
 
-    fn minimum_duration(&self, settings: &project::Settings) -> Duration {
+    fn minimum_duration(&self, project_settings: &project::Settings) -> Duration {
         let Some((start, clip_id)) = self.clip_ids.last_key_value() else {
             return Duration::ZERO;
         };
@@ -105,18 +105,21 @@ impl Track {
             return Duration::ZERO;
         };
 
-        clip.period(*start, settings).get().end().since_start
+        clip.period(*start, project_settings)
+            .get()
+            .end()
+            .since_start
     }
 
     pub(crate) fn audio_sum(
         &self,
-        settings: &project::Settings,
+        project_settings: &project::Settings,
         sample_rate: sample::Rate,
     ) -> Audio {
         let minimum_end = Instant {
-            since_start: self.minimum_duration(settings),
+            since_start: self.minimum_duration(project_settings),
         };
-        let minimum_end = minimum_end.to_real_time(settings);
+        let minimum_end = minimum_end.to_real_time(project_settings);
         let minimum_end = minimum_end.since_start * sample_rate;
         let minimum_sample_count = minimum_end.samples;
 
@@ -131,7 +134,7 @@ impl Track {
             };
 
             if let Some(clip) = clip.content().as_audio() {
-                let clip_start = start.to_real_time(settings) * sample_rate;
+                let clip_start = start.to_real_time(project_settings) * sample_rate;
 
                 audio.add_assign_at(clip.as_audio(), clip_start.since_start);
             }
@@ -142,7 +145,7 @@ impl Track {
 
     pub(crate) fn events(
         &self,
-        settings: &project::Settings,
+        project_settings: &project::Settings,
         sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let mut events = SortedVec::new();
@@ -152,7 +155,7 @@ impl Track {
                 continue;
             };
 
-            events.extend(clip.events(*start, settings, sample_rate));
+            events.extend(clip.events(*start, project_settings, sample_rate));
         }
 
         events

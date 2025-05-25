@@ -1,8 +1,9 @@
 use crate::app::{Action, Selection};
 use crate::audio::Player;
 use crate::metre::Instant;
+use crate::project;
+use crate::project::Track;
 use crate::project::track::clip;
-use crate::project::{Settings, Track};
 use crate::ui::{Grid, Length};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, View};
@@ -11,7 +12,7 @@ use crate::view::{CursorWindow, OnClick, View};
 pub(crate) fn overview(
     track: &Track,
     selection: Selection,
-    project: Settings,
+    project_settings: project::Settings,
     grid: Grid,
     negative_overview_offset: Length,
     cursor: Instant,
@@ -27,21 +28,28 @@ pub(crate) fn overview(
                     .get(&clip.id())
                     .copied()
                     .unwrap_or_default();
-                let absolute_clip_offset = clip_start.to_x_offset(&project, grid);
+                let absolute_clip_offset = clip_start.to_x_offset(&project_settings, grid);
 
                 let start_crop = negative_overview_offset - absolute_clip_offset;
 
                 let clip_offset = absolute_clip_offset - negative_overview_offset;
 
-                let clip_end = clip.period(clip_start, &project).get().end();
+                let clip_end = clip.period(clip_start, &project_settings).get().end();
                 let clip_end_offset =
-                    clip_end.to_x_offset(&project, grid) - negative_overview_offset;
+                    clip_end.to_x_offset(&project_settings, grid) - negative_overview_offset;
 
                 let selected = selection.clip() == clip.id();
 
                 let clip_width = clip_end_offset - clip_offset;
 
-                let overview = clip::overview(clip, track.id, selected, &project, grid, start_crop);
+                let overview = clip::overview(
+                    clip,
+                    track.id,
+                    selected,
+                    &project_settings,
+                    grid,
+                    start_crop,
+                );
 
                 View::x_stack([
                     View::Empty.quotated(clip_offset),
@@ -54,7 +62,13 @@ pub(crate) fn overview(
 
     View::Layers(vec![
         clips,
-        CursorWindow::view(player, cursor, project, grid, negative_overview_offset),
+        CursorWindow::view(
+            player,
+            cursor,
+            project_settings,
+            grid,
+            negative_overview_offset,
+        ),
     ])
     .on_click(OnClick::from(Action::SelectTrack(track.id)))
     .contextual(Menu::track_overview())

@@ -16,8 +16,7 @@ pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::metre::Instant;
-use crate::project::Settings;
-use crate::{Ratio, metre, time};
+use crate::{Ratio, metre, project, time};
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
@@ -154,14 +153,18 @@ impl Audio {
 
     /// Returns the period of the audio.
     #[must_use]
-    pub(crate) fn period(&self, start: Instant, settings: &Settings) -> metre::Period {
-        let start = start.to_real_time(settings);
+    pub(crate) fn period(
+        &self,
+        start: Instant,
+        project_settings: &project::Settings,
+    ) -> metre::Period {
+        let start = start.to_real_time(project_settings);
 
         time::Period {
             start,
             duration: self.real_duration(),
         }
-        .to_metre(settings)
+        .to_metre(project_settings)
     }
 
     pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: sample::Duration) {

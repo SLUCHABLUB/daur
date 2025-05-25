@@ -3,9 +3,8 @@ mod non_zero;
 pub use non_zero::NonZeroInstant;
 
 use crate::audio::sample;
-use crate::metre;
-use crate::project::Settings;
 use crate::time::Duration;
+use crate::{metre, project};
 use std::ops::{Add, AddAssign, Mul, Sub};
 
 /// An instant in real time.
@@ -21,15 +20,15 @@ impl Instant {
         since_start: Duration::ZERO,
     };
 
-    pub(crate) fn to_metre(self, settings: &Settings) -> metre::Instant {
+    pub(crate) fn to_metre(self, project_settings: &project::Settings) -> metre::Instant {
         let mut remaining = self.since_start;
         let mut instant = metre::Instant::START;
 
         let mut change = metre::Instant::START;
-        let mut tempo = settings.tempo.start;
-        let mut time_signature = settings.time_signature.start;
+        let mut tempo = project_settings.tempo.start;
+        let mut time_signature = project_settings.time_signature.start;
 
-        for (next_change, next_tempo, next_time_signature) in settings.time_changes() {
+        for (next_change, next_tempo, next_time_signature) in project_settings.time_changes() {
             let duration = next_change.get() - change;
             let real_duration =
                 tempo.beat_duration().get() * (duration / time_signature.beat_duration());

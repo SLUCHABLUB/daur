@@ -1,5 +1,5 @@
 use crate::metre::{Duration, Instant, Period, TimeSignature};
-use crate::project::Settings;
+use crate::project;
 use crate::ui::{Grid, Length};
 
 /// A bar
@@ -27,11 +27,11 @@ impl Bar {
         }
     }
 
-    pub(crate) fn next(self, settings: &Settings) -> Bar {
+    pub(crate) fn next(self, project_settings: &project::Settings) -> Bar {
         let start = self.period().end();
         Bar {
             start,
-            time_signature: settings.time_signature.get(start),
+            time_signature: project_settings.time_signature.get(start),
         }
     }
 

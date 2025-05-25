@@ -1,9 +1,8 @@
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::project::Settings;
 use crate::ui::{Grid, Length};
 use crate::view::OnClick;
-use crate::{Action, View};
+use crate::{Action, View, project};
 use derive_more::Debug;
 
 //       |---o---|
@@ -30,7 +29,7 @@ pub struct CursorWindow {
 
     window_offset: Length,
 
-    project: Settings,
+    project_settings: project::Settings,
     grid: Grid,
 }
 
@@ -39,17 +38,17 @@ impl CursorWindow {
     pub(crate) fn view(
         player: Option<Player>,
         cursor: Instant,
-        project: Settings,
+        project_settings: project::Settings,
         grid: Grid,
         window_offset: Length,
     ) -> View {
-        let settings = project.clone();
+        let settings = project_settings.clone();
 
         let window = CursorWindow {
             player,
             cursor,
             window_offset,
-            project,
+            project_settings,
             grid,
         };
 
@@ -64,7 +63,12 @@ impl CursorWindow {
     }
 
     fn player_position(&self) -> Option<Instant> {
-        Some(self.player.as_ref()?.position()?.to_metre(&self.project))
+        Some(
+            self.player
+                .as_ref()?
+                .position()?
+                .to_metre(&self.project_settings),
+        )
     }
 
     /// The cursor's offset from the left of the window.
@@ -73,7 +77,7 @@ impl CursorWindow {
     pub fn offset(&self) -> Option<Length> {
         let position = self.player_position().unwrap_or(self.cursor);
 
-        let offset = position.to_x_offset(&self.project, self.grid);
+        let offset = position.to_x_offset(&self.project_settings, self.grid);
 
         (self.window_offset <= offset).then_some(offset - self.window_offset)
     }

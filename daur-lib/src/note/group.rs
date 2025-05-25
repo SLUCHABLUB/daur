@@ -1,7 +1,7 @@
 use crate::audio::sample;
 use crate::metre::{Instant, NonZeroDuration, relative};
 use crate::note::{Event, Note, Pitch};
-use crate::project::Settings;
+use crate::project;
 use crate::view::Context;
 use clack_host::events::event_types::{NoteOffEvent, NoteOnEvent};
 use clack_host::events::{Match, Pckn};
@@ -71,7 +71,7 @@ impl Group {
     pub(crate) fn to_events(
         &self,
         start: Instant,
-        settings: &Settings,
+        project_settings: &project::Settings,
         sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let mut events = Vec::new();
@@ -80,8 +80,9 @@ impl Group {
         for ((note_start, pitch), note) in &self.notes {
             let note_start = start + *note_start;
 
-            let start = note_start.to_real_time(settings) * sample_rate;
-            let end = (note_start + note.duration.get()).to_real_time(settings) * sample_rate;
+            let start = note_start.to_real_time(project_settings) * sample_rate;
+            let end =
+                (note_start + note.duration.get()).to_real_time(project_settings) * sample_rate;
 
             let Some(key) = pitch.midi_number() else {
                 continue;

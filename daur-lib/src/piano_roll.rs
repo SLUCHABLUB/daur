@@ -2,8 +2,8 @@ use crate::app::Selection;
 use crate::audio::Player;
 use crate::metre::{Instant, NonZeroDuration};
 use crate::note::{Group, Interval, Key, Note, Pitch};
+use crate::project::track;
 use crate::project::track::{Clip, clip};
-use crate::project::{Settings, track};
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Point, Rectangle};
 use crate::view::{Alignment, CursorWindow, Quotated, ToText as _, ruler};
 use crate::{Action, HoldableObject, Project, UserInterface, View, project};
@@ -132,19 +132,19 @@ impl PianoRoll {
         clip_start: Instant,
         notes: &Group,
         clip_colour: Colour,
-        project: &Settings,
+        project_settings: &project::Settings,
         grid: Grid,
         player: Option<Player>,
         cursor: Instant,
     ) -> View {
         let keys = self.keys::<Ui>();
 
-        let piano = self.piano(keys, project, grid);
-        let roll = self.roll(clip_start, notes, clip_colour, keys, project, grid);
+        let piano = self.piano(keys, project_settings, grid);
+        let roll = self.roll(clip_start, notes, clip_colour, keys, project_settings, grid);
         let cursor_window = CursorWindow::view(
             player,
             cursor,
-            project.clone(),
+            project_settings.clone(),
             grid,
             self.negative_x_offset,
         );
@@ -155,9 +155,9 @@ impl PianoRoll {
         ])
     }
 
-    fn piano(self, keys: Keys, project: &Settings, grid: Grid) -> View {
-        let roll_start = Instant::from_x_offset(self.negative_x_offset, project, grid);
-        let key = project.key.get(roll_start);
+    fn piano(self, keys: Keys, project_settings: &project::Settings, grid: Grid) -> View {
+        let roll_start = Instant::from_x_offset(self.negative_x_offset, project_settings, grid);
+        let key = project_settings.key.get(roll_start);
 
         let highest_key = self.piano_key(keys.highest_key_pitch, key).fill_remaining();
         let lowest_key = self
@@ -184,7 +184,7 @@ impl PianoRoll {
         notes: &Group,
         clip_colour: Colour,
         keys: Keys,
-        project: &Settings,
+        project_settings: &project::Settings,
         grid: Grid,
     ) -> View {
         let highest_row = self
@@ -193,7 +193,7 @@ impl PianoRoll {
                 notes,
                 clip_colour,
                 keys.highest_key_pitch,
-                project.clone(),
+                project_settings.clone(),
                 grid,
             )
             .fill_remaining();
@@ -203,7 +203,7 @@ impl PianoRoll {
                 notes,
                 clip_colour,
                 keys.lowest_key_pitch,
-                project.clone(),
+                project_settings.clone(),
                 grid,
             )
             .quotated(keys.lowest_key_width);
@@ -214,7 +214,14 @@ impl PianoRoll {
             let interval = Interval::from_semitones(semitones.saturating_cast());
             let pitch = keys.lowest_key_pitch + interval;
             let row = self
-                .row(clip_start, notes, clip_colour, pitch, project.clone(), grid)
+                .row(
+                    clip_start,
+                    notes,
+                    clip_colour,
+                    pitch,
+                    project_settings.clone(),
+                    grid,
+                )
                 .quotated(self.key_width.get());
             rows.push(row);
         }
@@ -231,7 +238,7 @@ impl PianoRoll {
         notes: &Group,
         clip_colour: Colour,
         pitch: Pitch,
-        project: Settings,
+        project_settings: project::Settings,
         grid: Grid,
     ) -> View {
         // TODO:
@@ -250,10 +257,11 @@ impl PianoRoll {
             chain(
                 once(background),
                 notes.with_pitch(pitch).map(|(note_start, note)| {
-                    let start = (clip_start + note_start.since_start).to_x_offset(&project, grid)
+                    let start = (clip_start + note_start.since_start)
+                        .to_x_offset(&project_settings, grid)
                         - self.negative_x_offset;
                     let end = (clip_start + note_start.since_start + note.duration.get())
-                        .to_x_offset(&project, grid)
+                        .to_x_offset(&project_settings, grid)
                         - self.negative_x_offset;
 
                     let width = end - start;
@@ -269,10 +277,10 @@ impl PianoRoll {
         );
 
         // TODO: selecting notes
-        let grabber = closure!([clone project] move |area: Rectangle, position: Point| {
+        let grabber = closure!([clone project_settings] move |area: Rectangle, position: Point| {
             let start = Instant::quantised_from_x_offset(
                 position.x - area.position.x + self.negative_x_offset,
-                &project,
+                &project_settings,
                 grid,
             );
 
@@ -285,7 +293,7 @@ impl PianoRoll {
             };
             let mut end = Instant::quantised_from_x_offset(
                 position.x - area.position.x + self.negative_x_offset,
-                &project,
+                &project_settings,
                 grid,
             );
 

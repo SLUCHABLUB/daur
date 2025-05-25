@@ -3,9 +3,8 @@ mod non_zero;
 pub use non_zero::NonZeroInstant;
 
 use crate::metre::Duration;
-use crate::project::Settings;
-use crate::time;
 use crate::ui::{Grid, Length};
+use crate::{project, time};
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 /// An instant in musical time.
@@ -21,11 +20,11 @@ impl Instant {
         since_start: Duration::ZERO,
     };
 
-    pub(crate) fn to_x_offset(self, settings: &Settings, grid: Grid) -> Length {
+    pub(crate) fn to_x_offset(self, project_settings: &project::Settings, grid: Grid) -> Length {
         let mut remaining = self.since_start;
         let mut offset = Length::ZERO;
 
-        let mut bar = settings.time_signature.first_bar();
+        let mut bar = project_settings.time_signature.first_bar();
 
         loop {
             if remaining < bar.duration() {
@@ -38,7 +37,7 @@ impl Instant {
             remaining -= bar.duration();
             offset += bar.width(grid);
 
-            bar = bar.next(settings);
+            bar = bar.next(project_settings);
         }
 
         offset
@@ -46,10 +45,14 @@ impl Instant {
 
     /// Constructs a new instant from an x offset from the left of the overview.
     #[must_use]
-    pub fn from_x_offset(mut offset: Length, settings: &Settings, grid: Grid) -> Instant {
+    pub fn from_x_offset(
+        mut offset: Length,
+        project_settings: &project::Settings,
+        grid: Grid,
+    ) -> Instant {
         let mut instant = Instant::START;
 
-        let mut bar = settings.time_signature.first_bar();
+        let mut bar = project_settings.time_signature.first_bar();
 
         loop {
             let bar_width = bar.width(grid);
@@ -64,7 +67,7 @@ impl Instant {
             offset -= bar_width;
             instant += bar.duration();
 
-            bar = bar.next(settings);
+            bar = bar.next(project_settings);
         }
 
         instant
@@ -73,10 +76,14 @@ impl Instant {
     // TODO: round middle down
     /// Like [`Instant::from_x_offset`] but the instant is quantised to the [grid](Grid).
     #[must_use]
-    pub fn quantised_from_x_offset(mut offset: Length, settings: &Settings, grid: Grid) -> Instant {
+    pub fn quantised_from_x_offset(
+        mut offset: Length,
+        project_settings: &project::Settings,
+        grid: Grid,
+    ) -> Instant {
         let mut instant = Instant::START;
 
-        let mut bar = settings.time_signature.first_bar();
+        let mut bar = project_settings.time_signature.first_bar();
 
         loop {
             let bar_width = bar.width(grid);
@@ -91,7 +98,7 @@ impl Instant {
             offset -= bar_width;
             instant += bar.duration();
 
-            bar = bar.next(settings);
+            bar = bar.next(project_settings);
         }
 
         instant
@@ -99,14 +106,14 @@ impl Instant {
 
     /// Converts the instant to real time.
     #[must_use]
-    pub fn to_real_time(self, settings: &Settings) -> time::Instant {
+    pub fn to_real_time(self, project_settings: &project::Settings) -> time::Instant {
         let mut instant = time::Instant::START;
 
         let mut change = Instant::START;
-        let mut tempo = settings.tempo.start;
-        let mut time_signature = settings.time_signature.start;
+        let mut tempo = project_settings.tempo.start;
+        let mut time_signature = project_settings.time_signature.start;
 
-        for (next_change, next_tempo, next_time_signature) in settings.time_changes() {
+        for (next_change, next_tempo, next_time_signature) in project_settings.time_changes() {
             if self < next_change.get() {
                 break;
             }

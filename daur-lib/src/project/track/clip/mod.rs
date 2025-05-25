@@ -78,21 +78,21 @@ impl Clip {
 
     /// Calculates the [period](NonZeroPeriod) of the clip.
     #[must_use]
-    pub fn period(&self, start: Instant, settings: &project::Settings) -> NonZeroPeriod {
-        self.content.period(start, settings)
+    pub fn period(&self, start: Instant, project_settings: &project::Settings) -> NonZeroPeriod {
+        self.content.period(start, project_settings)
     }
 
     pub(crate) fn events(
         &self,
         clip_start: Instant,
-        settings: &project::Settings,
+        project_settings: &project::Settings,
         sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let Some(notes) = self.content.as_notes() else {
             return SortedVec::new();
         };
 
-        notes.to_events(clip_start, settings, sample_rate)
+        notes.to_events(clip_start, project_settings, sample_rate)
     }
 
     #[remain::check]
