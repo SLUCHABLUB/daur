@@ -4,9 +4,8 @@ use crate::metre::Instant;
 use crate::project::track::{overview, settings};
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Track};
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::view::{Axis, OnClick, ToText as _, View, ruler};
+use crate::view::{Axis, OnClick, View, ruler};
 use crate::{Action, Project, UserInterface};
-use arcstr::literal;
 
 pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
@@ -54,14 +53,11 @@ pub(crate) fn workspace<Ui: UserInterface>(
         player.cloned(),
     ));
 
-    // TODO: put something here?
-    let empty_space = literal!(":)").centred();
-
     let ruler = ruler::<Ui>(negative_overview_offset, project.settings.clone(), grid);
-    let ruler_row = View::x_stack([
-        empty_space.quotated(track_settings_width.get()),
-        ruler.scrollable(Action::MoveOverview).fill_remaining(),
-    ]);
+    let ruler_row = ruler
+        .scrollable(Action::MoveOverview)
+        .fill_remaining()
+        .x_positioned(track_settings_width.get());
 
     let settings_column = View::balanced_stack(Axis::Y, track_settings);
     let overview_column = View::balanced_stack(Axis::Y, track_overviews);
