@@ -159,13 +159,13 @@ impl View {
                 view.accept::<Ui, V>(visitor, render_area),
             ),
             View::Positioned { position, view } => {
-                let position = render_area.area.position + *position;
-
                 let max_size = Size {
                     width: render_area.area.size.width - position.x,
                     height: render_area.area.size.height - position.y,
                 };
                 let size = view.calculate_size::<Ui>(max_size);
+
+                let position = render_area.area.position + *position;
 
                 let area = Rectangle { position, size };
 

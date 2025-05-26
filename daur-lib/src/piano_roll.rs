@@ -54,7 +54,9 @@ struct Keys {
 }
 
 impl PianoRoll {
+    // TODO: merge some settings into "temporary settings"
     /// Returns the view for the piano roll.
+    #[expect(clippy::too_many_arguments, reason = "see TODO")]
     pub(crate) fn view<Ui: UserInterface>(
         self,
         selection: Selection,
@@ -63,6 +65,7 @@ impl PianoRoll {
         player: Option<Player>,
         cursor: Instant,
         held_object: Option<HoldableObject>,
+        edit_mode: bool,
     ) -> Quotated {
         if !self.is_open {
             return Quotated::EMPTY;
@@ -75,7 +78,16 @@ impl PianoRoll {
 
         let title = clip.map_or(PIANO_ROLL, Clip::name);
 
-        let view = self.content::<Ui>(clip, clip_start, project, grid, player, cursor, held_object);
+        let view = self.content::<Ui>(
+            clip,
+            clip_start,
+            project,
+            grid,
+            player,
+            cursor,
+            held_object,
+            edit_mode,
+        );
 
         let title_height = Ui::title_height(&title, &view);
 
@@ -95,6 +107,7 @@ impl PianoRoll {
         player: Option<Player>,
         cursor: Instant,
         held_object: Option<HoldableObject>,
+        edit_mode: bool,
     ) -> View {
         let Some(clip) = clip else {
             return NO_CLIP_SELECTED.centred();
@@ -116,6 +129,7 @@ impl PianoRoll {
             player,
             cursor,
             held_object,
+            edit_mode,
         );
 
         let ruler = View::x_stack([
@@ -140,11 +154,20 @@ impl PianoRoll {
         player: Option<Player>,
         cursor: Instant,
         held_object: Option<HoldableObject>,
+        edit_mode: bool,
     ) -> View {
         let keys = self.keys::<Ui>();
 
         let piano = self.piano(keys, project_settings, grid);
-        let roll = self.roll(clip_start, notes, clip_colour, keys, project_settings, grid);
+        let roll = self.roll(
+            clip_start,
+            notes,
+            clip_colour,
+            keys,
+            project_settings,
+            grid,
+            edit_mode,
+        );
         let cursor_window = CursorWindow::view(
             player,
             cursor,
@@ -183,6 +206,7 @@ impl PianoRoll {
         View::y_stack(piano)
     }
 
+    #[expect(clippy::too_many_arguments, reason = "the method is private")]
     fn roll(
         self,
         clip_start: Instant,
@@ -191,6 +215,7 @@ impl PianoRoll {
         keys: Keys,
         project_settings: &project::Settings,
         grid: Grid,
+        edit_mode: bool,
     ) -> View {
         let highest_row = self
             .row(
@@ -200,6 +225,7 @@ impl PianoRoll {
                 keys.highest_key_pitch,
                 project_settings.clone(),
                 grid,
+                edit_mode,
             )
             .fill_remaining();
         let lowest_row = self
@@ -210,6 +236,7 @@ impl PianoRoll {
                 keys.lowest_key_pitch,
                 project_settings.clone(),
                 grid,
+                edit_mode,
             )
             .quotated(keys.lowest_key_width);
 
@@ -226,6 +253,7 @@ impl PianoRoll {
                     pitch,
                     project_settings.clone(),
                     grid,
+                    edit_mode,
                 )
                 .quotated(self.key_width.get());
             rows.push(row);
@@ -237,6 +265,7 @@ impl PianoRoll {
     }
 
     /// Return the view for a (non-piano) row of the piano roll.
+    #[expect(clippy::too_many_arguments, reason = "the method is private")]
     fn row(
         self,
         clip_start: Instant,
@@ -245,6 +274,7 @@ impl PianoRoll {
         pitch: Pitch,
         project_settings: project::Settings,
         grid: Grid,
+        edit_mode: bool,
     ) -> View {
         // TODO:
         //  - colour for out-of-bounds
@@ -277,8 +307,6 @@ impl PianoRoll {
             .collect(),
         );
 
-        // TODO: check `edit_mode`
-        // TODO: selecting notes
         let grabber = closure!([clone project_settings] move |render_area: RenderArea| {
             let start = Instant::quantised_from_x_offset(
                 render_area.relative_mouse_position()?.x + self.negative_x_offset,
@@ -286,7 +314,13 @@ impl PianoRoll {
                 grid,
             );
 
-            Some(HoldableObject::NoteCreation { start })
+            #[expect(clippy::if_then_some_else_none, reason = "see TODO")]
+            if edit_mode {
+                Some(HoldableObject::NoteCreation { start })
+            } else {
+                // TODO: start selection
+                None
+            }
         });
 
         let dropper = move |object, render_area: RenderArea| {

@@ -27,6 +27,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
             app.audio_config.try_player().cloned(),
             app.cursor,
             app.held_object,
+            app.edit_mode,
         ),
     ]);
 
