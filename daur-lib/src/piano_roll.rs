@@ -132,10 +132,9 @@ impl PianoRoll {
             edit_mode,
         );
 
-        let ruler = View::x_stack([
-            View::Empty.quotated(self.piano_depth.get()),
-            ruler::<Ui>(self.negative_x_offset, project.settings().clone(), grid).fill_remaining(),
-        ]);
+        let ruler = ruler::<Ui>(self.negative_x_offset, project.settings().clone(), grid)
+            .fill_remaining()
+            .x_positioned(self.piano_depth.get());
 
         View::y_stack([
             ruler.quotated(Ui::RULER_HEIGHT.get()),
