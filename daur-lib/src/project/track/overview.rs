@@ -58,13 +58,14 @@ pub(crate) fn overview(
 
     View::Layers(vec![
         clips,
-        CursorWindow::view(
-            player,
-            cursor,
-            project_settings,
-            grid,
-            negative_overview_offset,
-        ),
+        CursorWindow::builder()
+            .cursor(cursor)
+            .grid(grid)
+            .player(player)
+            .project_settings(project_settings)
+            .window_offset(negative_overview_offset)
+            .build()
+            .view(),
     ])
     .on_click(OnClick::from(Action::SelectTrack(track.id)))
     .contextual(Menu::track_overview())

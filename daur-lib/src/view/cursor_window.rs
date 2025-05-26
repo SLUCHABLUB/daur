@@ -4,6 +4,7 @@ use crate::ui::{Grid, Length};
 use crate::view::OnClick;
 use crate::{Action, View, project};
 use derive_more::Debug;
+use typed_builder::TypedBuilder;
 
 //       |---o---|
 //
@@ -21,7 +22,8 @@ use derive_more::Debug;
 // w: CursorWindow::window_offset
 
 /// A window with a musical cursor.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, TypedBuilder)]
+#[builder(builder_type(vis = "pub(crate)"))]
 pub struct CursorWindow {
     #[debug(skip)]
     player: Option<Player>,
@@ -34,36 +36,21 @@ pub struct CursorWindow {
 }
 
 impl CursorWindow {
-    // TODO: make this a method
-    pub(crate) fn view(
-        player: Option<Player>,
-        cursor: Instant,
-        project_settings: project::Settings,
-        grid: Grid,
-        window_offset: Length,
-    ) -> View {
-        let settings = project_settings.clone();
-
-        let window = CursorWindow {
-            player,
-            cursor,
-            window_offset,
-            project_settings,
-            grid,
-        };
+    pub(crate) fn view(self) -> View {
+        let project_settings = self.project_settings.clone();
 
         let on_click = OnClick::new(move |render_area, actions| {
             let Some(mouse_position) = render_area.relative_mouse_position() else {
                 return;
             };
 
-            let ui_offset = mouse_position.x + window_offset;
-            let instant = Instant::quantised_from_x_offset(ui_offset, &settings, grid);
+            let ui_offset = mouse_position.x + self.window_offset;
+            let instant = Instant::quantised_from_x_offset(ui_offset, &project_settings, self.grid);
 
             actions.push(Action::MoveCursor(instant));
         });
 
-        View::CursorWindow(window).on_click(on_click)
+        View::CursorWindow(self).on_click(on_click)
     }
 
     fn player_position(&self) -> Option<Instant> {

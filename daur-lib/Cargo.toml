@@ -10,6 +10,7 @@ license.workspace = true
 [lints]
 workspace = true
 
+# TODO: sort
 [dependencies]
 arcstr = "1.2.0"
 bitbag = "0.3.0"
@@ -39,3 +40,4 @@ clack-host = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0",
 clack-plugin = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0" }
 sorted-vec = "0.8.6"
 ux = "0.1.6"
+typed-builder = "0.21.0"

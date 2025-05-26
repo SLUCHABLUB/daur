@@ -167,13 +167,14 @@ impl PianoRoll {
             grid,
             edit_mode,
         );
-        let cursor_window = CursorWindow::view(
-            player,
-            cursor,
-            project_settings.clone(),
-            grid,
-            self.negative_x_offset,
-        );
+        let cursor_window = CursorWindow::builder()
+            .cursor(cursor)
+            .grid(grid)
+            .player(player)
+            .project_settings(project_settings.clone())
+            .window_offset(self.negative_x_offset)
+            .build()
+            .view();
         let held_object = self.held_object(held_object, clip_colour, project_settings, grid);
 
         View::x_stack([
