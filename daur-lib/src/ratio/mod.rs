@@ -123,6 +123,27 @@ impl Ratio {
         Ratio::integer(self.round())
     }
 
+    /// Like [`Ratio::round`] but rounds 1/2 towards zero.
+    #[must_use]
+    pub fn round_half_down(self) -> u64 {
+        let quotient = self.numerator / self.denominator;
+        let remainder = self.numerator % self.denominator;
+
+        let fractional_part = Ratio::new(remainder, self.denominator);
+
+        if fractional_part <= Ratio::HALF {
+            quotient
+        } else {
+            quotient.saturating_add(1)
+        }
+    }
+
+    /// Like [`Ratio::rounded`] but rounds 1/2 towards zero.
+    #[must_use]
+    pub fn rounded_half_down(self) -> Ratio {
+        Ratio::integer(self.round_half_down())
+    }
+
     /// Approximates a float as a ratio.
     #[must_use]
     pub fn approximate(float: f64) -> Ratio {

@@ -96,7 +96,7 @@ impl Instant {
 
             if offset < bar_width {
                 let cell_count = offset / grid.cell_width;
-                instant += grid.cell_duration.get() * cell_count.rounded();
+                instant += grid.cell_duration.get() * cell_count.rounded_half_down();
 
                 break;
             }
