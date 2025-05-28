@@ -50,19 +50,29 @@ impl Group {
         let next_position = self
             .with_pitch(pitch)
             .map(|(note_position, _)| note_position)
-            .filter(|note_position| position <= *note_position)
+            .filter(|note_position| position < *note_position)
             .min()
             .unwrap_or(end_of_group);
 
         let max_duration = next_position - position;
 
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
-            // The note was outside the group.
+            // The note was outside the group or intersected another note.
             return;
         };
 
         note.duration = min(note.duration, max_duration);
-        // TODO: are we inside another note?
+
+        if let Some(last_note_end) = self
+            .with_pitch(pitch)
+            .map(|(note_position, _)| note_position)
+            .filter(|note_position| *note_position < position)
+            .max()
+        {
+            if position < last_note_end {
+                return;
+            }
+        }
 
         self.notes.entry((position, pitch)).or_insert(note);
     }
