@@ -4,7 +4,7 @@ use crate::metre::{Instant, NonZeroDuration};
 use crate::note::{Group, Interval, Key, Note, Pitch};
 use crate::project::track;
 use crate::project::track::{Clip, clip};
-use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Size, relative};
+use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Size, ThemeColour, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
 use crate::{HoldableObject, Project, Selection, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
@@ -280,10 +280,11 @@ impl PianoRoll {
         //  - colour for out-of-bounds
         //  - draw grid
         //  - highlight key based on settings
+        // TODO: use a theme colour
         let background_colour = if (pitch - Pitch::A_440).semitones() % 2 == 0 {
-            Colour::gray_scale(0xAA)
+            ThemeColour::Custom(Colour::gray_scale(0xAA))
         } else {
-            Colour::gray_scale(0x55)
+            ThemeColour::Custom(Colour::gray_scale(0x55))
         };
 
         let background = View::Solid(background_colour);
@@ -352,7 +353,7 @@ impl PianoRoll {
     }
 
     fn note(colour: Colour) -> View {
-        View::Solid(colour)
+        View::Solid(ThemeColour::Custom(colour))
     }
 
     // TODO: use `Button` for:
@@ -361,9 +362,9 @@ impl PianoRoll {
     /// Return the view for a key on the piano-roll piano.
     fn piano_key(self, pitch: Pitch, key: Key) -> View {
         let top = View::Solid(if pitch.chroma().is_black_key() {
-            Colour::BLACK_KEY
+            ThemeColour::BlackKey
         } else {
-            Colour::WHITE_KEY
+            ThemeColour::WhiteKey
         });
 
         let text = if pitch.chroma() == key.tonic {
@@ -373,7 +374,7 @@ impl PianoRoll {
         }
         .aligned_to(Alignment::BottomRight);
 
-        let bottom = View::Layers(vec![View::Solid(Colour::WHITE_KEY), text]);
+        let bottom = View::Layers(vec![View::Solid(ThemeColour::WhiteKey), text]);
 
         View::x_stack([
             top.quotated(self.black_key_depth.get()),

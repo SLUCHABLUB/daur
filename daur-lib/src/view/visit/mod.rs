@@ -11,7 +11,7 @@ pub use grabber::Grabber;
 pub use scroller::Scroller;
 
 use crate::app::Action;
-use crate::ui::{Colour, Length, Rectangle, Size, Vector};
+use crate::ui::{Colour, Length, Rectangle, Size, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
 use crate::{HoldableObject, Ratio, UserInterface, View};
@@ -61,7 +61,7 @@ pub trait Visitor {
     fn visit_scrollable(&mut self, area: Rectangle, action: fn(Vector) -> Action);
 
     /// Visits a solid colour.
-    fn visit_solid(&mut self, area: Rectangle, colour: Colour);
+    fn visit_solid(&mut self, area: Rectangle, colour: ThemeColour);
 
     /// Visits a text view.
     fn visit_text(&mut self, area: Rectangle, string: &str, alignment: Alignment);

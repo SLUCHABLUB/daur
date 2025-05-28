@@ -10,6 +10,7 @@ mod offset;
 mod point;
 mod rectangle;
 mod size;
+mod theme;
 mod vector;
 
 pub use colour::Colour;
@@ -20,6 +21,7 @@ pub use offset::Offset;
 pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
+pub use theme::{Theme, ThemeColour};
 pub use vector::Vector;
 
 use crate::View;

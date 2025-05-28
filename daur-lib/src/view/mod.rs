@@ -37,7 +37,7 @@ pub(crate) use feed::feed;
 
 use crate::HoldableObject;
 use crate::app::Action;
-use crate::ui::{Colour, Vector, relative};
+use crate::ui::{Colour, ThemeColour, Vector, relative};
 use crate::view::context::Menu;
 use arcstr::ArcStr;
 use derive_more::Debug;
@@ -154,7 +154,7 @@ pub enum View {
     /// A reference counted view.
     Shared(Arc<View>),
     /// A solid colour.
-    Solid(Colour),
+    Solid(ThemeColour),
     /// A stack of views.
     Stack {
         /// The axis along which the elements are laid out.

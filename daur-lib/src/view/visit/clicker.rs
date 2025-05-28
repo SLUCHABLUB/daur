@@ -1,6 +1,6 @@
 use crate::HoldableObject;
 use crate::app::{Action, Actions};
-use crate::ui::{Colour, Length, Point, Rectangle, Vector};
+use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
@@ -95,7 +95,7 @@ impl Visitor for Clicker<'_> {
 
     fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
 
-    fn visit_solid(&mut self, area: Rectangle, _: Colour) {
+    fn visit_solid(&mut self, area: Rectangle, _: ThemeColour) {
         if area.contains(self.position) {
             self.captured = true;
         }

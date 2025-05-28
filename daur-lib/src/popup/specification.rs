@@ -3,7 +3,7 @@ use crate::metre::Instant;
 use crate::note::Key;
 use crate::popup::Popup;
 use crate::sync::{ArcCell, Cell};
-use crate::ui::{Colour, Point, Rectangle};
+use crate::ui::{Point, Rectangle, ThemeColour};
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Id, Ratio, UserInterface, View, project};
 use anyhow::Error;
@@ -91,7 +91,7 @@ impl Specification {
             .titled(self.title())
             .on_click(OnClick::from(Action::CloseContextMenu));
 
-        View::Layers(vec![View::Solid(Colour::BACKGROUND), foreground])
+        View::Layers(vec![View::Solid(ThemeColour::Background), foreground])
     }
 
     /// Returns the popups inner [view](View), with no border and title.

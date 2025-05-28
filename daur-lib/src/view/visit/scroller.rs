@@ -1,6 +1,6 @@
 use crate::HoldableObject;
 use crate::app::{Action, Actions};
-use crate::ui::{Colour, Length, Point, Rectangle, Vector};
+use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter, SelectableItem};
@@ -54,7 +54,7 @@ impl Visitor for Scroller<'_> {
         }
     }
 
-    fn visit_solid(&mut self, _: Rectangle, _: Colour) {}
+    fn visit_solid(&mut self, _: Rectangle, _: ThemeColour) {}
 
     fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
 

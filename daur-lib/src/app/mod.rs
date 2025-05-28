@@ -10,7 +10,7 @@ pub use actions::Actions;
 use crate::app::view::view;
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::ui::{Grid, Length, NonZeroLength, Offset};
+use crate::ui::{Grid, Length, NonZeroLength, Offset, Theme};
 use crate::view::context::MenuInstance;
 use crate::{HoldableObject, PianoRoll, Ratio, Selection, UserInterface, View, popup, project};
 use derive_more::Debug;
@@ -50,6 +50,10 @@ pub struct App<Ui: UserInterface> {
     /// The height of the project bar.
     project_bar_height: NonZeroLength,
     track_settings_width: NonZeroLength,
+
+    /// The colour theme.
+    #[get_copy = "pub"]
+    theme: Theme,
 
     selection: Selection,
 
@@ -95,6 +99,9 @@ impl<Ui: UserInterface> App<Ui> {
 
             project_bar_height: Ui::PROJECT_BAR_HEIGHT,
             track_settings_width: Ui::TRACK_SETTINGS_WITH,
+
+            // TODO: load from file
+            theme: Theme::default(),
 
             selection: Selection::default(),
             cursor: Instant::START,

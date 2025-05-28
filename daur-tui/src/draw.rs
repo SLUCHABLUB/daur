@@ -2,7 +2,7 @@ use crate::canvas::Context;
 use crate::convert::{approximate_colour, from_rectangle, to_rectangle};
 use crate::tui::Tui;
 use daur::app::Action;
-use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
+use daur::ui::{Colour, Length, Offset, Rectangle, Size, Theme, ThemeColour, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
 use daur::view::{Alignment, DropAction, OnClick, Painter, SelectableItem};
@@ -30,8 +30,13 @@ pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::
 
             let ui = app.ui();
 
-            app.view()
-                .accept::<Tui, _>(&mut Renderer { buffer }, ui.render_area());
+            app.view().accept::<Tui, _>(
+                &mut Renderer {
+                    buffer,
+                    theme: app.theme(),
+                },
+                ui.render_area(),
+            );
         })
         .map(|_| ())
 }
@@ -40,6 +45,7 @@ type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
 struct Renderer<'buffer> {
     buffer: &'buffer mut Buffer,
+    theme: Theme,
 }
 
 impl Visitor for Renderer<'_> {
@@ -119,11 +125,11 @@ impl Visitor for Renderer<'_> {
 
     fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
 
-    fn visit_solid(&mut self, area: Rectangle, colour: Colour) {
+    fn visit_solid(&mut self, area: Rectangle, colour: ThemeColour) {
         let area = from_rectangle(area);
 
         EmptyCanvas::default()
-            .background_color(approximate_colour(colour))
+            .background_color(approximate_colour(self.theme.resolve(colour)))
             .render(area, self.buffer);
     }
 

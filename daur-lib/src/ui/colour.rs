@@ -19,15 +19,4 @@ impl Colour {
             blue: lightness,
         }
     }
-
-    // TODO: move to `Theme`
-    pub(crate) const BACKGROUND: Colour = Colour::gray_scale(0);
-
-    // TODO: move to `Theme`
-    /// Black.
-    pub const BLACK_KEY: Colour = Colour::gray_scale(0);
-
-    // TODO: move to `Theme`
-    /// White.
-    pub const WHITE_KEY: Colour = Colour::gray_scale(u8::MAX);
 }
