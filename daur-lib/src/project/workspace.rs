@@ -2,9 +2,9 @@ use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::project::track::{overview, settings};
-use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL, Track};
+use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::ui::{Grid, Length, NonZeroLength};
-use crate::view::{Axis, OnClick, View, ruler};
+use crate::view::{Axis, CursorWindow, OnClick, View, ruler};
 use crate::{Project, Selection, UserInterface};
 
 pub(crate) fn workspace<Ui: UserInterface>(
@@ -41,11 +41,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
         OnClick::from(project::Action::AddTrack),
     ));
 
-    // TODO: don't use a dummy here, make a dedicated function
-    // A "dummy-track" for the row with the add-track button
-    track_overviews.push(overview(
-        &Track::new(),
-        selection,
+    // An empty row (the row with the add-track button)
+    track_overviews.push(empty_track_overview(
         project.settings.clone(),
         grid,
         negative_overview_offset,
@@ -71,4 +68,22 @@ pub(crate) fn workspace<Ui: UserInterface>(
         ruler_row.quotated(Ui::RULER_HEIGHT.get()),
         track_area.fill_remaining(),
     ])
+}
+
+fn empty_track_overview(
+    project_settings: project::Settings,
+    grid: Grid,
+    negative_overview_offset: Length,
+    cursor: Instant,
+    player: Option<Player>,
+) -> View {
+    CursorWindow::builder()
+        .cursor(cursor)
+        .grid(grid)
+        .player(player)
+        .project_settings(project_settings)
+        .window_offset(negative_overview_offset)
+        .build()
+        .view()
+        .scrollable(Action::MoveOverview)
 }
