@@ -1,10 +1,11 @@
+use crate::app::Action;
 use crate::metre::Instant;
 use crate::note::Key;
 use crate::popup::Popup;
 use crate::sync::{ArcCell, Cell};
 use crate::ui::{Point, Rectangle};
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
-use crate::{Action, Id, Ratio, UserInterface, View, project};
+use crate::{Id, Ratio, UserInterface, View, project};
 use anyhow::Error;
 use arcstr::{ArcStr, literal};
 use closure::closure;

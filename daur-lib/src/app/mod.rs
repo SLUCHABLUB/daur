@@ -1,24 +1,23 @@
+//! Types pertaining to [`App`].
+
 mod action;
 mod actions;
-mod holdable_object;
-mod selection;
 mod view;
 
 pub use action::Action;
 pub use actions::Actions;
-pub use holdable_object::HoldableObject;
-pub use selection::Selection;
 
 use crate::app::view::view;
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
 use crate::ui::{Grid, Length, NonZeroLength, Offset};
 use crate::view::context::MenuInstance;
-use crate::{PianoRoll, Ratio, UserInterface, View, popup, project};
+use crate::{HoldableObject, PianoRoll, Ratio, Selection, UserInterface, View, popup, project};
 use derive_more::Debug;
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
 /// A running instance of the DAW.
+#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.
@@ -71,6 +70,7 @@ pub struct App<Ui: UserInterface> {
     negative_overview_offset: Length,
     // TODO: move to temporary settings
     /// The settings regarding the piano roll.
+    #[get_mut = "pub(crate)"]
     piano_roll: PianoRoll,
 }
 

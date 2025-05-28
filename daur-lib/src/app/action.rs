@@ -1,11 +1,11 @@
-use crate::app::HoldableObject;
+use crate::app::Actions;
 use crate::metre::Instant;
 use crate::popup::Specification;
 use crate::project::track::Clip;
 use crate::project::{Track, track};
-use crate::ui::{Point, Vector};
+use crate::ui::{Length, Point, Vector};
 use crate::view::context::Menu;
-use crate::{Actions, App, Id, Note, Popup, UserInterface, project};
+use crate::{App, HoldableObject, Id, Note, Popup, UserInterface, project};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -139,9 +139,18 @@ impl<Ui: UserInterface> App<Ui> {
                     self.audio_config.pause_player();
                 }
             }
-            Action::MoveHeldObject(point) => {
-                if let Some(object) = self.held_object {
-                    object.update(self, point);
+            Action::MoveHeldObject(to) => {
+                let Some(object) = self.held_object else {
+                    return Ok(());
+                };
+
+                match object {
+                    HoldableObject::PianoRollHandle { y } => {
+                        self.piano_roll.content_height =
+                            self.ui.size().height - to.y + y - Length::PIXEL;
+                    }
+                    // These are processed when they are dropped.
+                    HoldableObject::NoteCreation { .. } | HoldableObject::SelectionBox { .. } => (),
                 }
             }
             Action::MoveOverview(by) => {

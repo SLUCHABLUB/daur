@@ -1,12 +1,12 @@
-use crate::app::{Action, Selection};
+use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::project;
 use crate::project::Track;
 use crate::project::track::clip;
 use crate::ui::{Grid, Length};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, View};
+use crate::{Selection, project};
 
 // TODO: add a selection box
 /// Returns the track overview.

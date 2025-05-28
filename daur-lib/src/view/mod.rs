@@ -35,8 +35,8 @@ pub use text::ToText;
 
 pub(crate) use feed::feed;
 
-use crate::Action;
-use crate::app::HoldableObject;
+use crate::HoldableObject;
+use crate::app::Action;
 use crate::ui::{Colour, Vector, relative};
 use crate::view::context::Menu;
 use arcstr::ArcStr;

@@ -1,4 +1,4 @@
-use crate::Action;
+use crate::app::Action;
 
 /// A queue of actions to be taken.
 #[must_use = "actions must be processed"]

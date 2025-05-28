@@ -1,5 +1,6 @@
+use crate::app::{Action, Actions};
+use crate::project;
 use crate::view::RenderArea;
-use crate::{Action, Actions, project};
 use std::any::type_name;
 use std::fmt;
 use std::fmt::{Debug, Formatter};

@@ -1,8 +1,9 @@
 use crate::controls::controls;
 use crate::convert::to_length;
 use crossterm::event::{KeyCode, KeyModifiers};
+use daur::app::Action;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use daur::{Action, Ratio, UserInterface, View};
+use daur::{Ratio, UserInterface, View};
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use std::collections::HashMap;

@@ -1,5 +1,6 @@
 //! The inner workings of the DAW.
 
+pub mod app;
 pub mod audio;
 pub mod metre;
 pub mod note;
@@ -10,21 +11,24 @@ pub mod time;
 pub mod ui;
 pub mod view;
 
-mod app;
 mod extension;
+mod holdable_object;
 mod id;
 mod node;
 mod piano_roll;
 mod ratio;
+mod selection;
 mod string;
 
-// TODO: move `Action` to `mod App`
-pub use app::{Action, Actions, App, HoldableObject, Selection};
+pub use holdable_object::HoldableObject;
 pub use id::Id;
 pub use piano_roll::PianoRoll;
 pub use ratio::{NonZeroRatio, Ratio};
+pub use selection::Selection;
 pub use string::ToArcStr;
 
+#[doc(inline)]
+pub use app::App;
 #[doc(inline)]
 pub use audio::Audio;
 #[doc(inline)]

@@ -1,9 +1,10 @@
 use crate::convert::{to_point, to_size};
 use crate::tui::Tui;
 use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
+use daur::app::{Action, Actions};
 use daur::ui::{Direction, Length, Point, Rectangle};
 use daur::view::visit::{Clicker, Dropper, Grabber, Scroller};
-use daur::{Action, Actions, App, UserInterface as _, View};
+use daur::{App, UserInterface as _, View};
 use ratatui::layout::{Position, Size};
 
 pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {

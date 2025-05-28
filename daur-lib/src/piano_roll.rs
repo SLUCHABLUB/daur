@@ -1,4 +1,4 @@
-use crate::app::Selection;
+use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Instant, NonZeroDuration};
 use crate::note::{Group, Interval, Key, Note, Pitch};
@@ -6,7 +6,7 @@ use crate::project::track;
 use crate::project::track::{Clip, clip};
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Offset, Size, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
-use crate::{Action, HoldableObject, Project, UserInterface, View, project};
+use crate::{HoldableObject, Project, Selection, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use itertools::chain;

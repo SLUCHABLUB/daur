@@ -1,6 +1,7 @@
+use crate::app::Action;
 use crate::project::Track;
 use crate::project::track::Clip;
-use crate::{Action, Id, Note};
+use crate::{Id, Note};
 
 /// An item that can be selected.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

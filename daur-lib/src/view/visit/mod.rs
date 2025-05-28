@@ -10,11 +10,11 @@ pub use dropper::Dropper;
 pub use grabber::Grabber;
 pub use scroller::Scroller;
 
-use crate::app::HoldableObject;
+use crate::app::Action;
 use crate::ui::{Colour, Length, Rectangle, Size, Vector};
 use crate::view::context::Menu;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
-use crate::{Action, Ratio, UserInterface, View};
+use crate::{HoldableObject, Ratio, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
 

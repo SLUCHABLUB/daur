@@ -1,7 +1,8 @@
+use crate::app::Action;
 use crate::ui::{Vector, relative};
 use crate::view::RenderArea;
 use crate::view::context::Menu;
-use crate::{Action, HoldableObject, View};
+use crate::{HoldableObject, View};
 use arcstr::ArcStr;
 
 impl View {

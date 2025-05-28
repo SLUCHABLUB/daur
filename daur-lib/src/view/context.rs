@@ -1,10 +1,11 @@
 //! Types pertaining to context menus.
 
+use crate::app::Action;
 use crate::popup::Specification;
 use crate::project::track;
 use crate::ui::{Point, Rectangle};
 use crate::view::{Axis, OnClick, View};
-use crate::{Action, UserInterface, project};
+use crate::{UserInterface, project};
 use arcstr::{ArcStr, literal};
 use std::fmt;
 use std::fmt::{Debug, Formatter};

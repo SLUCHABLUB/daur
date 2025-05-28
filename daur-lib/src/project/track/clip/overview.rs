@@ -1,8 +1,9 @@
+use crate::app::Action;
 use crate::project::Track;
 use crate::project::track::Clip;
 use crate::ui::{Grid, Length};
 use crate::view::{OnClick, View};
-use crate::{Action, Id, project};
+use crate::{Id, project};
 use closure::closure;
 
 /// Returns a view of a clip's overview.

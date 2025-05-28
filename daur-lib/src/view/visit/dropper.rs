@@ -1,8 +1,9 @@
+use crate::HoldableObject;
+use crate::app::{Action, Actions};
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
-use crate::{Action, Actions, HoldableObject};
 use std::num::NonZeroU64;
 
 /// A [visitor](Visitor) for dropping an [object](HoldableObject).

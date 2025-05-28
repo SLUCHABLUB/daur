@@ -1,11 +1,11 @@
+use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::ui::{Grid, Length};
 use crate::view::OnClick;
-use crate::{Action, View, project};
+use crate::{View, project};
 use derive_more::Debug;
 use typed_builder::TypedBuilder;
-
 //       |---o---|
 //
 // 0             | <- cursor
