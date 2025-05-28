@@ -79,7 +79,6 @@ impl Instant {
         instant
     }
 
-    // TODO: round middle down
     /// Like [`Instant::from_x_offset`] but the instant is quantised to the [grid](Grid).
     #[must_use]
     pub fn quantised_from_x_offset(
