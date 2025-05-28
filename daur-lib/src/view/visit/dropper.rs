@@ -1,7 +1,7 @@
 use crate::ui::{Colour, Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
-use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
 use crate::{Action, Actions, HoldableObject};
 use std::num::NonZeroU64;
 
@@ -54,6 +54,21 @@ impl Visitor for Dropper<'_> {
     }
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
+
+    fn visit_selectable(&mut self, area: Rectangle, item: SelectableItem) {
+        let HoldableObject::SelectionBox { start } = self.object else {
+            return;
+        };
+        let end = self.position;
+
+        let selection_box = Rectangle::containing_both(start, end);
+
+        if selection_box.intersects(area) {
+            self.actions.push(item.select());
+        }
+    }
+
+    fn visit_selection_box(&mut self, _: Rectangle) {}
 
     fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
 

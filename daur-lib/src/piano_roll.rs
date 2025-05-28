@@ -29,18 +29,18 @@ const BOTTOM: Pitch = Pitch::a_440_plus(-1);
 pub struct PianoRoll {
     /// How far to the left the piano roll is moved.
     pub negative_x_offset: Length,
-    /// How far from A4 the piano roll is scrolled.
+    /// How far down the piano roll is moved.
     pub y_offset: Offset,
     /// The height of the piano roll content (excluding the title).
     pub content_height: Length,
     /// Whether the piano roll is open.
     pub is_open: bool,
 
-    /// The width of the keys
+    /// The width of piano key.
     pub key_width: NonZeroLength,
-    /// The full depth of the white keys
+    /// The full depth of a white keys.
     pub piano_depth: NonZeroLength,
-    /// The depth of the black keys
+    /// The depth of a black keys.
     pub black_key_depth: NonZeroLength,
 }
 
@@ -308,19 +308,21 @@ impl PianoRoll {
         );
 
         let grabber = closure!([clone project_settings] move |render_area: RenderArea| {
-            let start = Instant::quantised_from_x_offset(
-                render_area.relative_mouse_position()?.x + self.negative_x_offset,
-                &project_settings,
-                grid,
-            );
+            let mouse_position = render_area.relative_mouse_position()?;
 
-            #[expect(clippy::if_then_some_else_none, reason = "see TODO")]
-            if edit_mode {
-                Some(HoldableObject::NoteCreation { start })
+            Some(if edit_mode {
+                let start = Instant::quantised_from_x_offset(
+                    mouse_position.x + self.negative_x_offset,
+                    &project_settings,
+                    grid,
+                );
+
+               HoldableObject::NoteCreation { start }
             } else {
-                // TODO: start selection
-                None
-            }
+                HoldableObject::SelectionBox {
+                    start: render_area.mouse_position,
+                }
+            })
         });
 
         let dropper = move |object, render_area: RenderArea| {
@@ -434,13 +436,15 @@ impl PianoRoll {
 
         let start = match held_object {
             HoldableObject::NoteCreation { start } => start,
-            HoldableObject::PianoRollHandle { .. } => return View::Empty,
+            // selection boxes are drawn on the app level
+            HoldableObject::PianoRollHandle { .. } | HoldableObject::SelectionBox { .. } => {
+                return View::Empty;
+            }
         };
 
         let start = start.to_x_offset(project_settings, grid) - self.negative_x_offset;
 
         View::reactive(move |ui_info| {
-            let start = start;
             // TODO: quantise
             let end = ui_info.mouse_position.x - ui_info.area.position.x;
 

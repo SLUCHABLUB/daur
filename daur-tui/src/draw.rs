@@ -4,7 +4,7 @@ use crate::tui::Tui;
 use daur::ui::{Colour, Length, Offset, Rectangle, Size, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
-use daur::view::{Alignment, DropAction, OnClick, Painter};
+use daur::view::{Alignment, DropAction, OnClick, Painter, SelectableItem};
 use daur::{Action, App, HoldableObject, UserInterface as _};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
@@ -108,6 +108,12 @@ impl Visitor for Renderer<'_> {
             Text::raw(first_row + &*first_cell + &*standard_cell.repeat(standard_cells))
         }
         .render(area, self.buffer);
+    }
+
+    fn visit_selectable(&mut self, _: Rectangle, _: SelectableItem) {}
+
+    fn visit_selection_box(&mut self, area: Rectangle) {
+        self.visit_border(area, false);
     }
 
     fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}

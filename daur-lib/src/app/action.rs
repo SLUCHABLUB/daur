@@ -5,13 +5,14 @@ use crate::project::track::Clip;
 use crate::project::{Track, track};
 use crate::ui::{Point, Vector};
 use crate::view::context::Menu;
-use crate::{Actions, App, Id, Popup, UserInterface, project};
+use crate::{Actions, App, Id, Note, Popup, UserInterface, project};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
 
 /// An action to take on the app
 #[derive(Clone, Debug)]
+#[must_use = "actions are lazy and must be \"taken\""]
 #[remain::sorted]
 pub enum Action {
     /// Opens the context menu.
@@ -54,10 +55,19 @@ pub enum Action {
     Project(project::Action),
     /// Selects a clip in a track.
     SelectClip {
-        /// The index of the track in which the clip resides
+        /// The id of the track in which the clip resides.
         track: Id<Track>,
-        /// The index of the clip to select
+        /// The id of the clip to select.
         clip: Id<Clip>,
+    },
+    /// Selects a note.
+    SelectNote {
+        /// The id of the track in which the clip resides.
+        track: Id<Track>,
+        /// The id of the clip in which the note resides.
+        clip: Id<Clip>,
+        /// The id of the clip to select.
+        note: Id<Note>,
     },
     /// Selects a track.
     SelectTrack(Id<Track>),
@@ -177,6 +187,9 @@ impl<Ui: UserInterface> App<Ui> {
             Action::SelectClip { track, clip, .. } => {
                 self.selection.set_track(track);
                 self.selection.set_clip(clip);
+            }
+            Action::SelectNote { .. } => {
+                // TODO: select the note
             }
             Action::SelectTrack(track) => {
                 self.selection.set_track(track);

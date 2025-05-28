@@ -17,6 +17,11 @@ pub enum HoldableObject {
         /// How far down, on the handle, it was grabbed.
         y: Length,
     },
+    /// A rectangular selection box in the piano roll.
+    SelectionBox {
+        /// The point where the selection started.
+        start: Point,
+    },
 }
 
 impl HoldableObject {
@@ -27,7 +32,8 @@ impl HoldableObject {
                 app.piano_roll.content_height =
                     app.ui.size().height - position.y + y - Length::PIXEL;
             }
-            HoldableObject::NoteCreation { .. } => (),
+            // These are processed when they are dropped.
+            HoldableObject::NoteCreation { .. } | HoldableObject::SelectionBox { .. } => (),
         }
     }
 }

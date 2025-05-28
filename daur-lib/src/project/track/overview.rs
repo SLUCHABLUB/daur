@@ -8,6 +8,7 @@ use crate::ui::{Grid, Length};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, OnClick, View};
 
+// TODO: add a selection box
 /// Returns the track overview.
 pub(crate) fn overview(
     track: &Track,

@@ -18,6 +18,7 @@ mod piano_roll;
 mod ratio;
 mod string;
 
+// TODO: move `Action` to `mod App`
 pub use app::{Action, Actions, App, HoldableObject, Selection};
 pub use id::Id;
 pub use piano_roll::PianoRoll;

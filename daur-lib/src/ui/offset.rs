@@ -2,7 +2,7 @@ use crate::Ratio;
 use crate::ui::{Length, NonZeroLength};
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroI32;
-use std::ops::{Add, AddAssign, Mul, Neg, Rem, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Neg, Rem, Sub, SubAssign};
 
 // TODO: document the not-fully-saturating semantics on overflow.
 /// A signed [length](Length).
@@ -106,6 +106,21 @@ impl Mul<Ratio> for Offset {
         } else {
             Offset::positive(length)
         }
+    }
+}
+
+impl Mul<i32> for Offset {
+    type Output = Offset;
+
+    fn mul(mut self, rhs: i32) -> Self::Output {
+        self *= rhs;
+        self
+    }
+}
+
+impl MulAssign<i32> for Offset {
+    fn mul_assign(&mut self, rhs: i32) {
+        self.pixels = self.pixels.saturating_mul(rhs);
     }
 }
 

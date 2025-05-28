@@ -7,12 +7,12 @@ use std::cmp::{max, min};
 use std::num::NonZeroU64;
 use std::ops::{Add, AddAssign};
 
-/// A rectangle on the screen
+/// A rectangle on the screen.
 #[derive(Copy, Clone, Default, Debug)]
 pub struct Rectangle {
-    /// The top left point of the rectangle
+    /// The top left point of the rectangle.
     pub position: Point,
-    /// The size of the rectangle
+    /// The size of the rectangle.
     pub size: Size,
 }
 
@@ -36,6 +36,27 @@ impl Rectangle {
         Point {
             x: self.position.x + self.size.width,
             y: self.position.y + self.size.height,
+        }
+    }
+
+    #[must_use]
+    pub(crate) fn containing_both(first: Point, second: Point) -> Rectangle {
+        let position = Point {
+            x: min(first.x, second.x),
+            y: min(first.y, second.y),
+        };
+
+        let bottom_right = Point {
+            x: max(first.x, second.x) + Length::PIXEL,
+            y: max(first.y, second.y) + Length::PIXEL,
+        };
+
+        let width = bottom_right.x - position.x;
+        let height = bottom_right.y - position.y;
+
+        Rectangle {
+            position,
+            size: Size { width, height },
         }
     }
 
@@ -68,6 +89,12 @@ impl Rectangle {
         };
 
         Rectangle::from_points(position, bottom_right)
+    }
+
+    /// Returns whether tow rectangles intersect.
+    #[must_use]
+    pub fn intersects(self, other: Rectangle) -> bool {
+        self.intersection(other).is_some()
     }
 
     /// Splits the rectangle.

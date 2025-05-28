@@ -9,6 +9,7 @@ use ux::u7;
 #[derive(Copy, Clone, Debug)]
 /// A pitch / frequency.
 pub struct Pitch {
+    // TODO: use midi number
     from_a_440: Interval,
 }
 

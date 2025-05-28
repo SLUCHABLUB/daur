@@ -74,6 +74,7 @@ fn handle_mouse_event(
         MouseEventKind::Up(button) => {
             // click
 
+            // TODO: don't click if the mouse has moved
             let mut clicker = match button {
                 MouseButton::Left => Clicker::left_click(ui.mouse_position, actions),
                 MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),

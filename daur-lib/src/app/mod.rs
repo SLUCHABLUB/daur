@@ -1,12 +1,12 @@
 mod action;
 mod actions;
-mod holdable;
+mod holdable_object;
 mod selection;
 mod view;
 
 pub use action::Action;
 pub use actions::Actions;
-pub use holdable::HoldableObject;
+pub use holdable_object::HoldableObject;
 pub use selection::Selection;
 
 use crate::app::view::view;

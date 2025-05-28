@@ -3,6 +3,7 @@ use crate::project::Track;
 use crate::project::track::Clip;
 use getset::{CopyGetters, Setters};
 
+// TODO: selecting multiple tracks and clips
 /// The selection state of the app.
 #[derive(Copy, Clone, Debug, Setters, CopyGetters)]
 pub struct Selection {

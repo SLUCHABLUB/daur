@@ -18,6 +18,7 @@ mod minimum_size;
 mod quotum;
 mod render_area;
 mod ruler;
+mod selectable_item;
 mod text;
 
 pub use alignment::Alignment;
@@ -29,6 +30,7 @@ pub use file_selector::file_selector;
 pub use quotum::{Quotated, Quotated2D, Quotum, Quotum2D};
 pub use render_area::RenderArea;
 pub use ruler::ruler;
+pub use selectable_item::SelectableItem;
 pub use text::ToText;
 
 pub(crate) use feed::feed;
@@ -140,6 +142,15 @@ pub enum View {
         /// The view.
         view: Box<View>,
     },
+    /// A view that can be selected.
+    Selectable {
+        /// The item to be selected.
+        item: SelectableItem,
+        /// The view.
+        view: Box<Self>,
+    },
+    /// A transparent/translucent selection box.
+    SelectionBox,
     /// A reference counted view.
     Shared(Arc<View>),
     /// A solid colour.

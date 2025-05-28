@@ -16,7 +16,6 @@ const ADD_NOTES: ArcStr = literal!("add notes");
 const TOGGLE_PIANO_ROLL: ArcStr = literal!("toggle piano roll");
 
 /// Opens a popup for importing audio.
-#[must_use]
 pub fn open_import_audio_popup() -> Action {
     let action = move |file: &Path| Action::import_audio(file);
 

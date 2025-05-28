@@ -1,5 +1,6 @@
 use crate::project::{bar, workspace};
-use crate::{App, UserInterface, View};
+use crate::ui::relative;
+use crate::{App, HoldableObject, UserInterface, View};
 
 pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
     let background = View::y_stack([
@@ -39,6 +40,19 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
 
     if let Some(instance) = app.context_menu() {
         layers.push(instance.into_view());
+    }
+
+    if let Some(HoldableObject::SelectionBox { start }) = app.held_object {
+        layers.push(View::reactive(move |render_area| {
+            let start = start.relative_to(render_area.area.position);
+            let Some(end) = render_area.relative_mouse_position() else {
+                return View::Empty;
+            };
+
+            let area = relative::Rectangle::containing_both(start, end);
+
+            View::SelectionBox.positioned(area)
+        }));
     }
 
     View::Layers(layers)

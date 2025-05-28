@@ -1,4 +1,4 @@
-use crate::ui::Vector;
+use crate::ui::{Vector, relative};
 use crate::view::RenderArea;
 use crate::view::context::Menu;
 use crate::{Action, HoldableObject, View};
@@ -43,6 +43,11 @@ impl View {
             drop: Box::new(dropper),
             view: Box::new(self),
         }
+    }
+
+    /// Positions the view in a rectangle.
+    pub fn positioned(self, at: relative::Rectangle) -> Self {
+        self.quotated_2d(at.size).positioned(at.position)
     }
 
     /// Makes the view scrollable.

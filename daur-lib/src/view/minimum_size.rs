@@ -27,10 +27,12 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         | View::CursorWindow { .. }
         | View::Empty
         | View::Reactive(_)
+        | View::SelectionBox
         | View::Solid(_) => Size::ZERO,
         View::Clickable { view, .. }
         | View::Contextual { view, .. }
         | View::Grabbable { view, .. }
+        | View::Selectable { view, .. }
         | View::Scrollable { view, .. }
         | View::ObjectAcceptor { view, .. } => view.minimum_size::<Ui>(),
         View::Hoverable { default, hovered } => {

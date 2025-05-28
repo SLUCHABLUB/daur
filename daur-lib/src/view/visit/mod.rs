@@ -13,7 +13,7 @@ pub use scroller::Scroller;
 use crate::app::HoldableObject;
 use crate::ui::{Colour, Length, Rectangle, Size, Vector};
 use crate::view::context::Menu;
-use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
 use crate::{Action, Ratio, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
@@ -50,6 +50,12 @@ pub trait Visitor {
 
     /// Visits a rule.
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64);
+
+    /// Visits a selectable view.
+    fn visit_selectable(&mut self, area: Rectangle, item: SelectableItem);
+
+    /// Visits a selection box.
+    fn visit_selection_box(&mut self, area: Rectangle);
 
     /// Visits a scrollable view.
     fn visit_scrollable(&mut self, area: Rectangle, action: fn(Vector) -> Action);
@@ -180,6 +186,11 @@ impl View {
                 visitor.visit_scrollable(render_area.area, *action),
                 view.accept::<Ui, V>(visitor, render_area),
             ),
+            View::Selectable { item, view } => compound!(
+                visitor.visit_selectable(render_area.area, *item),
+                view.accept::<Ui, V>(visitor, render_area),
+            ),
+            View::SelectionBox => visitor.visit_selection_box(render_area.area),
             View::Shared(view) => view.accept::<Ui, V>(visitor, render_area),
             View::Solid(colour) => visitor.visit_solid(render_area.area, *colour),
             View::Stack { axis, elements } => {
