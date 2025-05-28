@@ -42,13 +42,27 @@ impl Group {
     /// Does nothing if there is already a note at that position.
     /// Truncates the note if it goes outside the group or intersects another note.
     pub(crate) fn try_insert(&mut self, position: relative::Instant, pitch: Pitch, mut note: Note) {
-        let max_duration = self.duration.get() - position.since_start;
+        let end_of_group = relative::Instant {
+            since_start: self.duration.get(),
+        };
+
+        // The start of the next note, or the end of the group.
+        let next_position = self
+            .with_pitch(pitch)
+            .map(|(note_position, _)| note_position)
+            .filter(|note_position| position <= *note_position)
+            .min()
+            .unwrap_or(end_of_group);
+
+        let max_duration = next_position - position;
+
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
             // The note was outside the group.
             return;
         };
+
         note.duration = min(note.duration, max_duration);
-        // TODO: truncate notes on intersection
+        // TODO: are we inside another note?
 
         self.notes.entry((position, pitch)).or_insert(note);
     }
