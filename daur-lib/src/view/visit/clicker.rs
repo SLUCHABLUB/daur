@@ -81,8 +81,11 @@ impl Visitor for Clicker<'_> {
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 
-    // TODO: select
-    fn visit_selectable(&mut self, _: Rectangle, _: SelectableItem) {}
+    fn visit_selectable(&mut self, area: Rectangle, item: SelectableItem) {
+        if area.contains(self.position) {
+            self.actions.push(item.select());
+        }
+    }
 
     fn visit_selection_box(&mut self, _: Rectangle) {}
 

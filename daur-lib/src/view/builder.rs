@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::ui::{Vector, relative};
-use crate::view::RenderArea;
 use crate::view::context::Menu;
+use crate::view::{RenderArea, SelectableItem};
 use crate::{HoldableObject, View};
 use arcstr::ArcStr;
 
@@ -55,6 +55,14 @@ impl View {
     pub fn scrollable(self, action: fn(Vector) -> Action) -> Self {
         View::Scrollable {
             action,
+            view: Box::new(self),
+        }
+    }
+
+    /// Makes the view selectable.
+    pub fn selectable(self, item: SelectableItem) -> Self {
+        View::Selectable {
+            item,
             view: Box::new(self),
         }
     }

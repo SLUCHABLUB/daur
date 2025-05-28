@@ -5,7 +5,7 @@ use crate::project::Track;
 use crate::project::track::clip;
 use crate::ui::{Grid, Length};
 use crate::view::context::Menu;
-use crate::view::{CursorWindow, OnClick, View};
+use crate::view::{CursorWindow, SelectableItem, View};
 use crate::{Selection, project};
 
 // TODO: add a selection box
@@ -68,7 +68,7 @@ pub(crate) fn overview(
             .build()
             .view(),
     ])
-    .on_click(OnClick::from(Action::SelectTrack(track.id)))
     .contextual(Menu::track_overview())
     .scrollable(Action::MoveOverview)
+    .selectable(SelectableItem::Track(track.id))
 }

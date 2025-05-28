@@ -1,8 +1,7 @@
-use crate::app::Action;
 use crate::project::Track;
 use crate::project::track::Clip;
 use crate::ui::{Grid, Length};
-use crate::view::{OnClick, View};
+use crate::view::{SelectableItem, View};
 use crate::{Id, project};
 use closure::closure;
 
@@ -23,8 +22,8 @@ pub(crate) fn overview(
     )
     .titled(clip.name())
     .with_thickness(selected)
-    .on_click(OnClick::from(Action::SelectClip {
+    .selectable(SelectableItem::Clip {
         track,
         clip: clip.id,
-    }))
+    })
 }
