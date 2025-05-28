@@ -1,5 +1,5 @@
 use crate::ui::{Size, relative};
-use crate::view::{Quotum, Quotum2D};
+use crate::view::{Quotum, Quotum2D, RenderArea};
 use crate::{UserInterface, View};
 use std::cell::LazyCell;
 
@@ -17,8 +17,12 @@ impl Quotated2D {
     /// An [empty view](View::Empty) with a zero quotum.
     pub const EMPTY: Quotated2D = View::Empty.quotated_2d(Size::ZERO);
 
-    pub(crate) fn calculate_size<Ui: UserInterface>(&self, maximum: Size) -> Size {
-        let minimum = LazyCell::new(|| self.view.minimum_size::<Ui>());
+    pub(crate) fn calculate_size<Ui: UserInterface>(
+        &self,
+        maximum: Size,
+        render_area: RenderArea,
+    ) -> Size {
+        let minimum = LazyCell::new(|| self.view.minimum_size::<Ui>(render_area));
 
         Size {
             width: match self.quotum.x {

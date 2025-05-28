@@ -1,24 +1,24 @@
 use crate::ui::{Length, Size};
-use crate::view::Quotum;
+use crate::view::{Quotum, RenderArea};
 use crate::{Ratio, UserInterface, View};
 use std::cmp::max;
 
 impl View {
     /// Returns the minimum size required to fit the entire view.
     #[must_use]
-    pub fn minimum_size<Ui: UserInterface>(&self) -> Size {
-        minimum_size::<Ui>(self)
+    pub fn minimum_size<Ui: UserInterface>(&self, render_area: RenderArea) -> Size {
+        minimum_size::<Ui>(self, render_area)
     }
 }
 
 /// See [`View::minimum_size`].
 /// Used to minimise indentation.
 #[remain::check]
-fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
+fn minimum_size<Ui: UserInterface>(view: &View, render_area: RenderArea) -> Size {
     #[sorted]
     match view {
         View::Bordered { view, .. } => {
-            let mut size = view.minimum_size::<Ui>();
+            let mut size = view.minimum_size::<Ui>(render_area);
             size.height += Ui::BORDER_THICKNESS * Ratio::integer(2);
             size.width += Ui::BORDER_THICKNESS * Ratio::integer(2);
             size
@@ -26,7 +26,6 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         View::Canvas { .. }
         | View::CursorWindow { .. }
         | View::Empty
-        | View::Reactive(_)
         | View::SelectionBox
         | View::Solid(_) => Size::ZERO,
         View::Clickable { view, .. }
@@ -34,10 +33,10 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
         | View::Grabbable { view, .. }
         | View::Selectable { view, .. }
         | View::Scrollable { view, .. }
-        | View::ObjectAcceptor { view, .. } => view.minimum_size::<Ui>(),
+        | View::ObjectAcceptor { view, .. } => view.minimum_size::<Ui>(render_area),
         View::Hoverable { default, hovered } => {
-            let default = default.minimum_size::<Ui>();
-            let hovered = hovered.minimum_size::<Ui>();
+            let default = default.minimum_size::<Ui>(render_area);
+            let hovered = hovered.minimum_size::<Ui>(render_area);
 
             Size {
                 width: max(default.width, hovered.width),
@@ -48,7 +47,7 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             let mut size = Size::ZERO;
 
             for layer in layers {
-                let layer_size = layer.minimum_size::<Ui>();
+                let layer_size = layer.minimum_size::<Ui>(render_area);
                 size.width = max(size.width, layer_size.width);
                 size.height = max(size.height, layer_size.height);
             }
@@ -56,17 +55,18 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             size
         }
         View::Positioned { position, view } => {
-            let size = view.view.minimum_size::<Ui>();
+            let size = view.view.minimum_size::<Ui>(render_area);
             Size {
                 width: position.x + size.width,
                 height: position.y + size.height,
             }
         }
+        View::Reactive(reactive) => reactive(render_area).minimum_size::<Ui>(render_area),
         View::Rule { .. } => Size {
             width: Length::ZERO,
             height: Ui::RULER_HEIGHT.get(),
         },
-        View::Shared(view) => view.minimum_size::<Ui>(),
+        View::Shared(view) => view.minimum_size::<Ui>(render_area),
         View::Stack { axis, elements } => {
             let mut parallel = Length::ZERO;
             let mut orthogonal = Length::ZERO;
@@ -75,7 +75,7 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             let mut fill_count: u64 = 0;
 
             for quoted in elements {
-                let minimum = quoted.view.minimum_size::<Ui>();
+                let minimum = quoted.view.minimum_size::<Ui>(render_area);
 
                 match quoted.quotum {
                     Quotum::Remaining => {
@@ -103,7 +103,7 @@ fn minimum_size<Ui: UserInterface>(view: &View) -> Size {
             view,
             ..
         } => {
-            let mut size = view.minimum_size::<Ui>();
+            let mut size = view.minimum_size::<Ui>(render_area);
 
             if !croppable {
                 size.width = max(size.width, Ui::title_width(title, view));

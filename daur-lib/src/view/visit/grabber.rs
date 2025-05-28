@@ -56,6 +56,4 @@ impl Visitor for Grabber<'_> {
     fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
 
     fn visit_titled(&mut self, _: Rectangle, _: &str, _: bool) {}
-
-    fn visit_window(&mut self, _: Rectangle) {}
 }

@@ -361,9 +361,9 @@ impl PianoRoll {
     /// Return the view for a key on the piano-roll piano.
     fn piano_key(self, pitch: Pitch, key: Key) -> View {
         let top = View::Solid(if pitch.chroma().is_black_key() {
-            Colour::BLACK
+            Colour::BLACK_KEY
         } else {
-            Colour::WHITE
+            Colour::WHITE_KEY
         });
 
         let text = if pitch.chroma() == key.tonic {
@@ -373,7 +373,7 @@ impl PianoRoll {
         }
         .aligned_to(Alignment::BottomRight);
 
-        let bottom = View::Layers(vec![View::Solid(Colour::WHITE), text]);
+        let bottom = View::Layers(vec![View::Solid(Colour::WHITE_KEY), text]);
 
         View::x_stack([
             top.quotated(self.black_key_depth.get()),

@@ -3,7 +3,7 @@ use crate::metre::Instant;
 use crate::note::Key;
 use crate::popup::Popup;
 use crate::sync::{ArcCell, Cell};
-use crate::ui::{Point, Rectangle};
+use crate::ui::{Colour, Point, Rectangle};
 use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
 use crate::{Id, Ratio, UserInterface, View, project};
 use anyhow::Error;
@@ -85,10 +85,13 @@ impl Specification {
 
     /// Returns the popups [view](View) with a border and title.
     fn view(&self, id: Id<Popup>) -> View {
-        self.inner_view(id)
+        let foreground = self
+            .inner_view(id)
             .bordered()
             .titled(self.title())
-            .on_click(OnClick::from(Action::CloseContextMenu))
+            .on_click(OnClick::from(Action::CloseContextMenu));
+
+        View::Layers(vec![View::Solid(Colour::BACKGROUND), foreground])
     }
 
     /// Returns the popups inner [view](View), with no border and title.
@@ -189,7 +192,7 @@ impl Specification {
     pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Popup>, ui: &Ui) -> Popup {
         let view = Arc::new(self.view(id));
 
-        let size = view.minimum_size::<Ui>();
+        let size = view.minimum_size::<Ui>(ui.render_area());
 
         let position = Point {
             x: (ui.size().width - size.width) * Ratio::HALF,

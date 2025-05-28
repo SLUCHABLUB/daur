@@ -13,7 +13,7 @@ use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
 use ratatui::widgets::canvas::Canvas;
-use ratatui::widgets::{Block, Borders, Clear, Paragraph, Widget as _};
+use ratatui::widgets::{Block, Borders, Paragraph, Widget as _};
 use ratatui::{DefaultTerminal, layout};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
@@ -176,10 +176,6 @@ impl Visitor for Renderer<'_> {
             .border_set(set)
             .title(title)
             .render(area, self.buffer);
-    }
-
-    fn visit_window(&mut self, area: Rectangle) {
-        Clear.render(from_rectangle(area), self.buffer);
     }
 
     fn visit_titled_bordered(

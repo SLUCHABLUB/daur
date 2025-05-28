@@ -60,9 +60,9 @@ impl Menu {
 
     /// Constructs a new [`MenuInstance`].
     #[must_use]
-    pub fn instantiate<Ui: UserInterface>(self, position: Point) -> MenuInstance {
+    pub fn instantiate<Ui: UserInterface>(self, position: Point, ui: &Ui) -> MenuInstance {
         let view = Arc::new(self.into_view());
-        let size = view.minimum_size::<Ui>();
+        let size = view.minimum_size::<Ui>(ui.render_area());
         let area = Rectangle { position, size };
         MenuInstance { area, view }
     }

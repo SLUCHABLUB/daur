@@ -48,7 +48,11 @@ impl Visitor for Clicker<'_> {
 
     fn visit_border(&mut self, _: Rectangle, _: bool) {}
 
-    fn visit_canvas(&mut self, _: Rectangle, _: Colour, _: &Painter) {}
+    fn visit_canvas(&mut self, area: Rectangle, _: Colour, _: &Painter) {
+        if area.contains(self.position) {
+            self.captured = true;
+        }
+    }
 
     fn visit_clickable(&mut self, area: Rectangle, on_click: &OnClick) {
         if !self.right_click && self.should_click(area) {
@@ -91,15 +95,13 @@ impl Visitor for Clicker<'_> {
 
     fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
 
-    fn visit_solid(&mut self, _: Rectangle, _: Colour) {}
-
-    fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
-
-    fn visit_titled(&mut self, _: Rectangle, _: &str, _: bool) {}
-
-    fn visit_window(&mut self, area: Rectangle) {
+    fn visit_solid(&mut self, area: Rectangle, _: Colour) {
         if area.contains(self.position) {
             self.captured = true;
         }
     }
+
+    fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
+
+    fn visit_titled(&mut self, _: Rectangle, _: &str, _: bool) {}
 }

@@ -25,7 +25,7 @@ where
             Ordering::Less => loop {
                 let quotated = generator(index);
                 offset += quotated
-                    .size_parallel_to::<Ui>(direction.axis())
+                    .size_parallel_to::<Ui>(direction.axis(), render_area)
                     .unwrap_or(full_size);
                 index = index.saturating_add(1);
 
@@ -42,7 +42,7 @@ where
                 let new = index.saturating_sub(1);
 
                 let quotated = generator(new);
-                let quotum_size = quotated.size_parallel_to::<Ui>(direction.axis());
+                let quotum_size = quotated.size_parallel_to::<Ui>(direction.axis(), render_area);
                 offset -= quotum_size.unwrap_or(full_size);
 
                 if offset < Offset::ZERO {
@@ -59,7 +59,7 @@ where
         }
 
         let used_size = first
-            .size_parallel_to::<Ui>(direction.axis())
+            .size_parallel_to::<Ui>(direction.axis(), render_area)
             .unwrap_or(full_size);
 
         let mut remaining = full_size - used_size;
@@ -71,7 +71,7 @@ where
 
             let new_remaining = remaining
                 - quotated
-                    .size_parallel_to::<Ui>(direction.axis())
+                    .size_parallel_to::<Ui>(direction.axis(), render_area)
                     .unwrap_or(full_size);
 
             index = index.saturating_add(1);

@@ -162,7 +162,7 @@ impl<Ui: UserInterface> App<Ui> {
                 self.piano_roll.y_offset += by.y;
             }
             Action::OpenContextMenu { menu, position } => {
-                self.context_menu = Some(menu.instantiate::<Ui>(position));
+                self.context_menu = Some(menu.instantiate::<Ui>(position, self.ui()));
             }
             Action::OpenPopup(popup) => {
                 self.popup_manager.open(&popup, &self.ui);

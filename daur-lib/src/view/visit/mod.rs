@@ -69,9 +69,6 @@ pub trait Visitor {
     /// Visits a titled view.
     fn visit_titled(&mut self, area: Rectangle, title: &str, highlighted: bool);
 
-    /// Visits a window.
-    fn visit_window(&mut self, area: Rectangle);
-
     // --- compound methods ---
 
     /// Visits a titled bordered view.
@@ -169,7 +166,7 @@ impl View {
                     width: render_area.area.size.width - position.x,
                     height: render_area.area.size.height - position.y,
                 };
-                let size = view.calculate_size::<Ui>(max_size);
+                let size = view.calculate_size::<Ui>(max_size, render_area);
 
                 let position = render_area.area.position + *position;
 
@@ -194,7 +191,7 @@ impl View {
             View::Shared(view) => view.accept::<Ui, V>(visitor, render_area),
             View::Solid(colour) => visitor.visit_solid(render_area.area, *colour),
             View::Stack { axis, elements } => {
-                let rectangles = render_area.area.split::<Ui>(*axis, elements);
+                let rectangles = render_area.split::<Ui>(*axis, elements);
 
                 for (area, quoted) in zip(rectangles, elements) {
                     quoted

@@ -1,4 +1,9 @@
-use crate::ui::{Point, Rectangle, relative};
+use crate::ui::{Length, Offset, Point, Rectangle, Size, relative};
+use crate::view::{Axis, Quotated};
+use crate::{Ratio, UserInterface};
+use non_zero::non_zero;
+use saturating_cast::SaturatingCast as _;
+use std::num::NonZeroU64;
 
 /// Information about the user interface that a reactive view may use.
 #[derive(Copy, Clone, Debug)]
@@ -29,5 +34,62 @@ impl RenderArea {
     pub fn with_area(mut self, area: Rectangle) -> RenderArea {
         self.area = area;
         self
+    }
+
+    /// Splits the area.
+    #[must_use]
+    pub(crate) fn split<Ui: UserInterface>(
+        self,
+        axis: Axis,
+        views: &[Quotated],
+    ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_, Ui> {
+        // cache the sizes or None if Quotum::Remaining is used
+        let sizes: Vec<Option<Length>> = views
+            .iter()
+            .map(|quotated| quotated.size_parallel_to::<Ui>(axis, self))
+            .collect();
+
+        let orthogonal = self.area.size.orthogonal_to(axis);
+
+        // the size that will be allocated to the `Quotum::Remaining` quota
+        let mut fill_size = self.area.size.parallel_to(axis);
+
+        let mut fill_count: u64 = 0;
+
+        for size in &sizes {
+            if let Some(size) = *size {
+                fill_size -= size;
+            } else {
+                fill_count = fill_count.saturating_add(1);
+            }
+        }
+
+        // the space between elements
+        let spacing;
+
+        if let Some(fill_count) = NonZeroU64::new(fill_count) {
+            fill_size *= Ratio::reciprocal_of(fill_count);
+            spacing = Length::ZERO;
+        } else {
+            let space_count = NonZeroU64::new(views.len().saturating_sub(1).saturating_cast())
+                .unwrap_or(non_zero!(1));
+            spacing = fill_size * Ratio::reciprocal_of(space_count);
+        }
+
+        let mut offset = Offset::ZERO;
+
+        sizes.into_iter().filter_map(move |size| {
+            let parallel = size.unwrap_or(fill_size);
+
+            let position = self.area.position + axis * offset;
+
+            offset += parallel;
+            offset += spacing;
+
+            self.area.intersection(Rectangle {
+                position,
+                size: Size::from_parallel_orthogonal(parallel, orthogonal, axis),
+            })
+        })
     }
 }

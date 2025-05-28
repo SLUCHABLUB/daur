@@ -1,5 +1,5 @@
 use crate::ui::{Length, relative};
-use crate::view::{Axis, Quotum, Quotum2D};
+use crate::view::{Axis, Quotum, Quotum2D, RenderArea};
 use crate::{UserInterface, View};
 
 /// A [view](View) with a [quotum](Quotum).
@@ -16,11 +16,15 @@ impl Quotated {
     /// An [empty view](View::Empty) with a zero quotum.
     pub const EMPTY: Quotated = View::Empty.quotated(Length::ZERO);
 
-    pub(crate) fn size_parallel_to<Ui: UserInterface>(&self, axis: Axis) -> Option<Length> {
+    pub(crate) fn size_parallel_to<Ui: UserInterface>(
+        &self,
+        axis: Axis,
+        render_area: RenderArea,
+    ) -> Option<Length> {
         match self.quotum {
             Quotum::Remaining => None,
             Quotum::Exact(length) => Some(length),
-            Quotum::Minimum => Some(self.view.minimum_size::<Ui>().parallel_to(axis)),
+            Quotum::Minimum => Some(self.view.minimum_size::<Ui>(render_area).parallel_to(axis)),
         }
     }
 
