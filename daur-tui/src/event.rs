@@ -71,18 +71,21 @@ fn handle_mouse_event(
             let mut grabber = Grabber::new(ui.mouse_position, actions);
 
             view.accept::<Tui, _>(&mut grabber, ui.render_area());
+
+            app.ui_mut().mouse_movement_since_mouse_down = false;
         }
         MouseEventKind::Up(button) => {
             // click
 
-            // TODO: don't click if the mouse has moved
-            let mut clicker = match button {
-                MouseButton::Left => Clicker::left_click(ui.mouse_position, actions),
-                MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),
-                MouseButton::Middle => return,
-            };
+            if !ui.mouse_movement_since_mouse_down {
+                let mut clicker = match button {
+                    MouseButton::Left => Clicker::left_click(ui.mouse_position, actions),
+                    MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),
+                    MouseButton::Middle => return,
+                };
 
-            view.accept::<Tui, _>(&mut clicker, ui.render_area());
+                view.accept::<Tui, _>(&mut clicker, ui.render_area());
+            }
 
             // let go
 
@@ -92,8 +95,14 @@ fn handle_mouse_event(
                 view.accept::<Tui, _>(&mut dropper, ui.render_area());
             }
         }
-        MouseEventKind::Moved => (),
-        MouseEventKind::Drag(_) => actions.push(Action::MoveHeldObject(ui.mouse_position)),
+        MouseEventKind::Moved => {
+            app.ui_mut().mouse_movement_since_mouse_down = true;
+        }
+        MouseEventKind::Drag(_) => {
+            actions.push(Action::MoveHeldObject(ui.mouse_position));
+
+            app.ui_mut().mouse_movement_since_mouse_down = true;
+        }
         MouseEventKind::ScrollDown => {
             scroll(Direction::Down, ui, view, actions);
         }

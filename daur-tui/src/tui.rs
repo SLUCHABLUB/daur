@@ -14,6 +14,7 @@ pub(crate) struct Tui {
     pub should_exit: bool,
     // TODO: move to app
     pub key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
+    pub mouse_movement_since_mouse_down: bool,
     // TODO: update
     pub should_redraw: bool,
     pub mouse_position: Point,
@@ -124,6 +125,7 @@ impl Default for Tui {
         Tui {
             should_exit: false,
             key_actions: controls(),
+            mouse_movement_since_mouse_down: false,
             should_redraw: true,
             mouse_position: Point::ZERO,
             area: Rectangle {
