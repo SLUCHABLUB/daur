@@ -154,7 +154,7 @@ impl<Ui: UserInterface> App<Ui> {
                 }
             }
             Action::MoveOverview(by) => {
-                self.negative_overview_offset -= by.x;
+                self.ui_settings.negative_overview_offset -= by.x;
                 // TODO: scroll tracks vertically
             }
             Action::MovePianoRoll(by) => {

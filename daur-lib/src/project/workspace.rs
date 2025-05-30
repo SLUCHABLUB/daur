@@ -3,15 +3,14 @@ use crate::audio::Player;
 use crate::metre::Instant;
 use crate::project::track::{overview, settings};
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
-use crate::ui::{Grid, Length, NonZeroLength};
+use crate::ui::{Grid, Length};
 use crate::view::{Axis, CursorWindow, OnClick, View, ruler};
-use crate::{Project, Selection, UserInterface};
+use crate::{Project, Selection, UserInterface, ui};
 
 pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
     selection: Selection,
-    track_settings_width: NonZeroLength,
-    negative_overview_offset: Length,
+    ui_settings: ui::Settings,
     grid: Grid,
     cursor: Instant,
     player: Option<&Player>,
@@ -28,7 +27,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
             selection,
             project.settings.clone(),
             grid,
-            negative_overview_offset,
+            ui_settings.negative_overview_offset,
             cursor,
             player.cloned(),
         ));
@@ -45,22 +44,26 @@ pub(crate) fn workspace<Ui: UserInterface>(
     track_overviews.push(empty_track_overview(
         project.settings.clone(),
         grid,
-        negative_overview_offset,
+        ui_settings.negative_overview_offset,
         cursor,
         player.cloned(),
     ));
 
-    let ruler = ruler::<Ui>(negative_overview_offset, project.settings.clone(), grid);
+    let ruler = ruler::<Ui>(
+        ui_settings.negative_overview_offset,
+        project.settings.clone(),
+        grid,
+    );
     let ruler_row = ruler
         .scrollable(Action::MoveOverview)
         .fill_remaining()
-        .x_positioned(track_settings_width.get());
+        .x_positioned(ui_settings.track_settings_width.get());
 
     let settings_column = View::balanced_stack(Axis::Y, track_settings);
     let overview_column = View::balanced_stack(Axis::Y, track_overviews);
 
     let track_area = View::x_stack([
-        settings_column.quotated(track_settings_width.get()),
+        settings_column.quotated(ui_settings.track_settings_width.get()),
         overview_column.fill_remaining(),
     ]);
 

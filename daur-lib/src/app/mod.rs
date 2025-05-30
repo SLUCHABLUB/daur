@@ -10,9 +10,9 @@ pub use actions::Actions;
 use crate::app::view::view;
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::ui::{Grid, Length, NonZeroLength, Theme};
+use crate::ui::{Grid, Theme};
 use crate::view::context::MenuInstance;
-use crate::{HoldableObject, PianoRoll, Selection, UserInterface, View, popup, project};
+use crate::{HoldableObject, PianoRoll, Selection, UserInterface, View, popup, project, ui};
 use derive_more::Debug;
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
@@ -24,6 +24,7 @@ pub struct App<Ui: UserInterface> {
     #[get = "pub"]
     #[get_mut = "pub"]
     ui: Ui,
+    ui_settings: ui::Settings,
 
     /// The view of the app.
     ///
@@ -38,41 +39,28 @@ pub struct App<Ui: UserInterface> {
 
     #[debug(skip)]
     audio_config: Config,
+    /// The colour theme.
+    #[get_copy = "pub"]
+    theme: Theme,
 
-    popup_manager: popup::Manager,
     #[get_clone = "pub(crate)"]
     context_menu: Option<MenuInstance>,
     /// The currently held object.
     #[get_copy = "pub"]
     held_object: Option<HoldableObject>,
-
-    // TODO: move to temporary settings
-    /// The height of the project bar.
-    project_bar_height: NonZeroLength,
-    track_settings_width: NonZeroLength,
-
-    /// The colour theme.
-    #[get_copy = "pub"]
-    theme: Theme,
-
-    selection: Selection,
+    popup_manager: popup::Manager,
 
     /// The position of the musical cursor.
     ///
     /// If audio is playing, this may not reflect the actual position,
     /// but the position of the cursor at the time when audio playback started.
     cursor: Instant,
+    selection: Selection,
+    /// The settings for the overview grid.
+    grid: Grid,
 
-    // TODO: move to temporary settings
     /// Whether _edit mode_ is enabled.
     edit_mode: bool,
-    /// The settings for the overview grid.
-    // TODO: move to temporary settings
-    grid: Grid,
-    // TODO: move to temporary settings
-    /// How far to the left the overview has been moved.
-    negative_overview_offset: Length,
-    // TODO: move to temporary settings
     /// The settings regarding the piano roll.
     #[get_mut = "pub(crate)"]
     piano_roll: PianoRoll,
@@ -84,6 +72,8 @@ impl<Ui: UserInterface> App<Ui> {
     pub fn new(ui: Ui) -> App<Ui> {
         let mut app = App {
             ui,
+            ui_settings: ui::Settings::default_in::<Ui>(),
+
             view: View::Empty,
 
             project_manager: project::Manager::default(),
@@ -94,9 +84,6 @@ impl<Ui: UserInterface> App<Ui> {
             popup_manager: popup::Manager::new(),
             context_menu: None,
             held_object: None,
-
-            project_bar_height: Ui::PROJECT_BAR_HEIGHT,
-            track_settings_width: Ui::TRACK_SETTINGS_WITH,
 
             // TODO: load from file
             theme: Theme::default(),
@@ -109,7 +96,6 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_duration: NonZeroDuration::QUARTER,
                 cell_width: Ui::CELL_WIDTH,
             },
-            negative_overview_offset: Length::ZERO,
             piano_roll: PianoRoll::new_in::<Ui>(),
         };
 

@@ -9,6 +9,7 @@ mod length;
 mod offset;
 mod point;
 mod rectangle;
+mod settings;
 mod size;
 mod theme;
 mod vector;
@@ -23,6 +24,8 @@ pub use rectangle::Rectangle;
 pub use size::Size;
 pub use theme::{Theme, ThemeColour};
 pub use vector::Vector;
+
+pub(crate) use settings::Settings;
 
 use crate::View;
 use crate::view::RenderArea;
