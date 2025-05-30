@@ -146,8 +146,8 @@ impl<Ui: UserInterface> App<Ui> {
 
                 match object {
                     HoldableObject::PianoRollHandle { y } => {
-                        self.piano_roll.content_height =
-                            self.ui.size().height - to.y + y - Length::PIXEL;
+                        self.piano_roll
+                            .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
                     }
                     // These are processed when they are dropped.
                     HoldableObject::NoteCreation { .. } | HoldableObject::SelectionBox { .. } => (),
@@ -158,8 +158,7 @@ impl<Ui: UserInterface> App<Ui> {
                 // TODO: scroll tracks vertically
             }
             Action::MovePianoRoll(by) => {
-                self.piano_roll.negative_x_offset -= by.x;
-                self.piano_roll.y_offset += by.y;
+                self.piano_roll.move_by::<Ui>(by);
             }
             Action::OpenContextMenu { menu, position } => {
                 self.context_menu = Some(menu.instantiate::<Ui>(position, self.ui()));
@@ -205,7 +204,7 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
             Action::TogglePianoRoll => {
-                self.piano_roll.is_open = !self.piano_roll.is_open;
+                self.piano_roll.set_is_open(!self.piano_roll.is_open());
             }
             Action::TogglePlayback => {
                 if self.audio_config.is_player_playing() {

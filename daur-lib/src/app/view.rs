@@ -8,7 +8,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
             app.project_manager.project(),
             app.audio_config.try_player().cloned(),
             app.edit_mode,
-            app.piano_roll.is_open,
+            app.piano_roll.is_open(),
         )
         .quotated(app.project_bar_height.get()),
         workspace::<Ui>(

@@ -1,5 +1,5 @@
 use crate::app::Action;
-use crate::ui::{Vector, relative};
+use crate::ui::{Length, Vector, relative};
 use crate::view::context::Menu;
 use crate::view::{RenderArea, SelectableItem};
 use crate::{HoldableObject, View};
@@ -49,6 +49,11 @@ impl View {
     /// Positions the view in a rectangle.
     pub fn positioned(self, at: relative::Rectangle) -> Self {
         self.quotated_2d(at.size).positioned(at.position)
+    }
+
+    /// Offsets the view along the x-axis.
+    pub fn x_positioned(self, offset: Length) -> Self {
+        self.fill_remaining().x_positioned(offset)
     }
 
     /// Makes the view scrollable.

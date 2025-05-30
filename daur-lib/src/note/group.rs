@@ -109,15 +109,11 @@ impl Group {
             let end =
                 (note_start + note.duration.get()).to_real_time(project_settings) * sample_rate;
 
-            let Some(key) = pitch.midi_number() else {
-                continue;
-            };
-
             // TODO: add an id to `Note`
             let tuple = Pckn {
                 port_index: Match::Specific(0),
                 channel: Match::All,
-                key: Match::Specific(key.into()),
+                key: Match::from(pitch.midi_number()),
                 note_id: Match::All,
             };
 

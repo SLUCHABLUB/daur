@@ -10,9 +10,9 @@ pub use actions::Actions;
 use crate::app::view::view;
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::ui::{Grid, Length, NonZeroLength, Offset, Theme};
+use crate::ui::{Grid, Length, NonZeroLength, Theme};
 use crate::view::context::MenuInstance;
-use crate::{HoldableObject, PianoRoll, Ratio, Selection, UserInterface, View, popup, project};
+use crate::{HoldableObject, PianoRoll, Selection, UserInterface, View, popup, project};
 use derive_more::Debug;
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
@@ -82,8 +82,6 @@ impl<Ui: UserInterface> App<Ui> {
     /// Creates a new instance
     #[must_use]
     pub fn new(ui: Ui) -> App<Ui> {
-        let height = ui.size().height;
-
         let mut app = App {
             ui,
             view: View::Empty,
@@ -112,15 +110,7 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_width: Ui::CELL_WIDTH,
             },
             negative_overview_offset: Length::ZERO,
-            piano_roll: PianoRoll {
-                negative_x_offset: Length::ZERO,
-                y_offset: Offset::ZERO,
-                content_height: height * Ratio::HALF,
-                is_open: false,
-                key_width: Ui::KEY_WIDTH,
-                piano_depth: Ui::PIANO_DEPTH,
-                black_key_depth: Ui::BLACK_KEY_DEPTH,
-            },
+            piano_roll: PianoRoll::new_in::<Ui>(),
         };
 
         app.rerender();

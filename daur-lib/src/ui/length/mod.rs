@@ -7,7 +7,7 @@ use crate::ui::Offset;
 use crate::view::Quotum;
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU64;
-use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
+use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Rem, Sub, SubAssign};
 
 /// An orthogonal distance between two points
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -85,6 +85,16 @@ impl Div<NonZeroLength> for Length {
 
     fn div(self, rhs: NonZeroLength) -> Ratio {
         Ratio::new(u64::from(self.pixels), NonZeroU64::from(rhs.pixels))
+    }
+}
+
+impl Rem<NonZeroLength> for Length {
+    type Output = Length;
+
+    fn rem(self, rhs: NonZeroLength) -> Length {
+        Length {
+            pixels: self.pixels % rhs.pixels,
+        }
     }
 }
 
