@@ -1,10 +1,10 @@
 use crate::metre::NonZeroDuration;
 use crate::ui::{Grid, Length};
-use crate::view::Context;
+use crate::view::Painter;
 use crate::{audio, note, project};
 
 /// The content of a [clip](super::Clip).
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub enum Content {
     /// An audio clip.
     Audio(audio::FixedLength),
@@ -51,18 +51,15 @@ impl Content {
         }
     }
 
-    pub(super) fn paint_overview(
+    pub(super) fn overview_painter(
         &self,
-        context: &mut dyn Context,
         project_settings: &project::Settings,
         grid: Grid,
         crop_start: Length,
-    ) {
+    ) -> Box<Painter> {
         match self {
-            Content::Audio(audio) => {
-                audio.draw_overview(context, project_settings, grid, crop_start);
-            }
-            Content::Notes(notes) => notes.draw_overview(context),
+            Content::Audio(audio) => audio.overview_painter(project_settings, grid, crop_start),
+            Content::Notes(notes) => notes.overview_painter(),
         }
     }
 }

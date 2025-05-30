@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Instant, NonZeroDuration};
-use crate::note::{Group, Interval, Key, Note, Pitch};
+use crate::note::{Group, Interval, Key, Pitch};
 use crate::project::track;
 use crate::project::track::{Clip, clip};
 use crate::ui::{Colour, Grid, Length, NonZeroLength, Size, ThemeColour, Vector, relative};
@@ -315,7 +315,7 @@ impl PianoRoll {
                     let start = (clip_start + note_start.since_start)
                         .to_x_offset(&project_settings, grid)
                         - self.negative_x_offset;
-                    let end = (clip_start + note_start.since_start + note.duration.get())
+                    let end = (clip_start + note_start.since_start + note.duration().get())
                         .to_x_offset(&project_settings, grid)
                         - self.negative_x_offset;
 
@@ -363,7 +363,7 @@ impl PianoRoll {
                 track::Action::Clip(clip::Action::AddNote {
                     position: start,
                     pitch,
-                    note: Note { duration },
+                    duration,
                 }),
             )))
         };

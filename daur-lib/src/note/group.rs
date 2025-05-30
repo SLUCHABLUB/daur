@@ -2,7 +2,7 @@ use crate::audio::sample;
 use crate::metre::{Instant, NonZeroDuration, relative};
 use crate::note::{Event, Note, Pitch};
 use crate::project;
-use crate::view::Context;
+use crate::view::Painter;
 use clack_host::events::event_types::{NoteOffEvent, NoteOnEvent};
 use clack_host::events::{Match, Pckn};
 use saturating_cast::SaturatingCast as _;
@@ -11,12 +11,11 @@ use std::cmp::min;
 use std::collections::HashMap;
 
 /// A sequence of musical notes.
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug)]
 pub struct Group {
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
     /// The notes in the group.
-    // TODO: make this a `Dimap` when ids get added to `Note`
     notes: HashMap<(relative::Instant, Pitch), Note>,
     /// The duration of the whole note group.
     duration: NonZeroDuration,
@@ -80,17 +79,18 @@ impl Group {
     pub(crate) fn with_pitch(
         &self,
         pitch: Pitch,
-    ) -> impl Iterator<Item = (relative::Instant, Note)> {
+    ) -> impl Iterator<Item = (relative::Instant, &Note)> {
         self.notes
             .iter()
             .filter_map(move |((instant, note_pitch), note)| {
-                (pitch == *note_pitch).then_some((*instant, *note))
+                (pitch == *note_pitch).then_some((*instant, note))
             })
     }
 
-    pub(crate) fn draw_overview(&self, _context: &mut dyn Context) {
+    pub(crate) fn overview_painter(&self) -> Box<Painter> {
         // TODO: draw the notes
         let _: &Self = self;
+        Box::new(|_| ())
     }
 
     pub(crate) fn to_events(
@@ -109,12 +109,11 @@ impl Group {
             let end =
                 (note_start + note.duration.get()).to_real_time(project_settings) * sample_rate;
 
-            // TODO: add an id to `Note`
             let tuple = Pckn {
                 port_index: Match::Specific(0),
                 channel: Match::All,
-                key: Match::from(pitch.midi_number()),
-                note_id: Match::All,
+                key: Match::Specific(u16::from(pitch.midi_number())),
+                note_id: Match::Specific(note.id.to_u32()),
             };
 
             // TODO: take the velocity from the note

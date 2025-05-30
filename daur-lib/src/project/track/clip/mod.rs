@@ -13,7 +13,7 @@ use crate::audio::{FixedLength, sample};
 use crate::metre::{Instant, NonZeroDuration};
 use crate::note::Event;
 use crate::ui::Colour;
-use crate::{Id, note, project};
+use crate::{Id, Note, note, project};
 use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
@@ -100,17 +100,17 @@ impl Clip {
             Action::AddNote {
                 position: note_position,
                 pitch,
-                mut note,
+                mut duration,
             } => {
                 if note_position < clip_position {
                     let difference = clip_position - note_position;
-                    let Some(duration) =
-                        NonZeroDuration::from_duration(note.duration.get() - difference)
+                    let Some(max_duration) =
+                        NonZeroDuration::from_duration(duration.get() - difference)
                     else {
                         return Ok(());
                     };
 
-                    note.duration = duration;
+                    duration = max_duration;
                 }
 
                 let position = note_position.relative_to(clip_position);
@@ -118,7 +118,7 @@ impl Clip {
                 self.content
                     .as_notes_mut()
                     .ok_or(NoNotesSelected)?
-                    .try_insert(position, pitch, note);
+                    .try_insert(position, pitch, Note::new(duration));
 
                 Ok(())
             }

@@ -1,6 +1,6 @@
 use crate::metre::{Instant, NonZeroDuration};
 use crate::ui::{Grid, Length};
-use crate::view::Context;
+use crate::view::Painter;
 use crate::{Audio, project, time};
 
 // TODO: add a "reset size" context-menu item for recalculating the duration
@@ -34,14 +34,14 @@ impl FixedLength {
     }
 
     /// Draws an overview of the audio.
-    pub(crate) fn draw_overview(
+    pub(crate) fn overview_painter(
         &self,
-        _context: &mut dyn Context,
         _project_settings: &project::Settings,
         _grid: Grid,
         _crop_start: Length,
-    ) {
+    ) -> Box<Painter> {
         // TODO: draw loudness graph
         let _: &Self = self;
+        Box::new(|_| ())
     }
 }

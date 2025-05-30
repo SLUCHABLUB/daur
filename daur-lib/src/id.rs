@@ -3,20 +3,20 @@ use std::fmt::{Debug, Formatter};
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
 use std::sync::Weak;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicU32, Ordering};
 
 // TODO: Test that this is not `Serialize` and `Deserialize`.
 /// An identifier.
 pub struct Id<Item> {
     /// The numeric id.
-    inner: usize,
+    inner: u32,
     phantom: PhantomData<Weak<Item>>,
 }
 
 impl<Item> Id<Item> {
     /// Generates a new identifier.
     pub(crate) fn generate() -> Self {
-        static COUNTER: AtomicUsize = AtomicUsize::new(0);
+        static COUNTER: AtomicU32 = AtomicU32::new(0);
 
         Id {
             inner: COUNTER.fetch_add(1, Ordering::Relaxed),
@@ -24,9 +24,13 @@ impl<Item> Id<Item> {
         }
     }
 
-    /// The maximum id. Will in practice never identify anything.
+    pub(crate) fn to_u32(self) -> u32 {
+        self.inner
+    }
+
+    /// An id that in practice will never identify anything.
     pub(crate) const NONE: Self = Id {
-        inner: usize::MAX,
+        inner: u32::MAX,
         phantom: PhantomData,
     };
 }

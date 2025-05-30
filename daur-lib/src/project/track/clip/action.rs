@@ -1,5 +1,5 @@
-use crate::metre::Instant;
-use crate::note::{Note, Pitch};
+use crate::metre::{Instant, NonZeroDuration};
+use crate::note::Pitch;
 
 /// An action to take on a [clip](super::Clip).
 #[derive(Copy, Clone, Debug)]
@@ -12,6 +12,6 @@ pub enum Action {
         /// The pitch of the note.
         pitch: Pitch,
         /// The note.
-        note: Note,
+        duration: NonZeroDuration,
     },
 }

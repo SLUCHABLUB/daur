@@ -10,6 +10,7 @@ mod pitch;
 mod sign;
 
 pub use chroma::Chroma;
+use getset::CopyGetters;
 pub use group::Group;
 pub use interval::Interval;
 pub use key::Key;
@@ -19,15 +20,29 @@ pub use sign::Sign;
 
 pub(crate) use event::Event;
 
+use crate::Id;
 use crate::metre::NonZeroDuration;
 use sign::{FLAT, SHARP};
 
+// TODO: Test that this isn't `Clone` (bc. id).
 // TODO: pitch-bends?
 /// A [note](https://en.wikipedia.org/wiki/Musical_note).
-#[derive(Copy, Clone, Eq, PartialEq, Debug)]
 #[cfg_attr(doc, doc(hidden))]
+#[derive(Eq, PartialEq, Debug, CopyGetters)]
+#[expect(missing_copy_implementations, reason = "`Id`s should be unique")]
 pub struct Note {
+    id: Id<Note>,
     /// The duration of the note.
-    pub duration: NonZeroDuration,
+    #[get_copy = "pub(crate)"]
+    duration: NonZeroDuration,
     // TODO: articulation
+}
+
+impl Note {
+    pub(crate) fn new(duration: NonZeroDuration) -> Note {
+        Note {
+            id: Id::generate(),
+            duration,
+        }
+    }
 }

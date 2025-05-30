@@ -3,7 +3,6 @@ use crate::project::track::Clip;
 use crate::ui::{Grid, Length};
 use crate::view::{SelectableItem, View};
 use crate::{Id, project};
-use closure::closure;
 
 /// Returns a view of a clip's overview.
 pub(crate) fn overview(
@@ -16,9 +15,8 @@ pub(crate) fn overview(
 ) -> View {
     View::canvas(
         clip.colour,
-        closure!([clone clip.content, clone project_settings] move |context| {
-            content.paint_overview(context, &project_settings, grid, crop_start);
-        }),
+        clip.content
+            .overview_painter(project_settings, grid, crop_start),
     )
     .titled(clip.name())
     .with_thickness(selected)
