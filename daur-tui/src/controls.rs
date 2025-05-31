@@ -7,10 +7,14 @@ use std::collections::HashMap;
 
 pub(crate) fn controls() -> HashMap<(KeyModifiers, KeyCode), Action> {
     HashMap::from([
-        ((KeyModifiers::CONTROL, KeyCode::Char('c')), Action::Exit),
         (
             (KeyModifiers::NONE, KeyCode::Char(' ')),
             Action::TogglePlayback,
+        ),
+        ((KeyModifiers::CONTROL, KeyCode::Char('c')), Action::Exit),
+        (
+            (KeyModifiers::NONE, KeyCode::Char('e')),
+            Action::ToggleEditMode,
         ),
         (
             (KeyModifiers::NONE, KeyCode::Char('i')),
