@@ -24,5 +24,9 @@ pub(crate) fn controls() -> HashMap<(KeyModifiers, KeyCode), Action> {
             (KeyModifiers::NONE, KeyCode::Char('p')),
             Action::TogglePianoRoll,
         ),
+        (
+            (KeyModifiers::NONE, KeyCode::Backspace),
+            Action::Project(project::Action::Delete),
+        ),
     ])
 }

@@ -8,6 +8,8 @@ use crate::project::track;
 pub enum Action {
     /// Adds an empty track.
     AddTrack,
+    /// Deletes the selected item.
+    Delete,
     /// Sets the key at an instant in the project.
     SetKey {
         /// The instant of the key change.

@@ -25,6 +25,8 @@ use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
+use indexmap::map::Entry as IndexEntry;
+use std::collections::hash_map::Entry as StdEntry;
 use thiserror::Error;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
@@ -82,6 +84,22 @@ impl Project {
                 let track = Track::new();
                 selection.set_track(track.id());
                 self.tracks.insert(track.id(), track);
+                Ok(())
+            }
+            Action::Delete => {
+                let IndexEntry::Occupied(mut track) = self.tracks.entry(selection.track()) else {
+                    return Ok(());
+                };
+
+                let StdEntry::Occupied(clip) = track.get_mut().clips_mut().entry(selection.clip())
+                else {
+                    track.shift_remove();
+                    return Ok(());
+                };
+
+                // TODO: check if a note is selected
+                clip.remove();
+
                 Ok(())
             }
             Action::SetKey { instant, key } => {

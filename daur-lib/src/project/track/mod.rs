@@ -21,7 +21,6 @@ use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
 use hound::WavReader;
-use indexmap::IndexMap;
 use non_zero::non_zero;
 use sorted_vec::SortedVec;
 use std::collections::{BTreeMap, HashMap};
@@ -68,11 +67,13 @@ pub struct Track {
     id: Id<Track>,
     /// The name of the track.
     name: ArcStr,
-    // TODO: use `Dimap<Instant, Id<Clip>, Clip, Bi<Btree, StdHash>, Index>`
+    // TODO: use `Dimap<Instant, Id<Clip>, Clip, Bi<Btree, StdHash>, StdHash>`
     /// The clips in the track.
     clip_ids: BTreeMap<Instant, Id<Clip>>,
     clip_starts: HashMap<Id<Clip>, Instant>,
-    clips: IndexMap<Id<Clip>, Clip>,
+    // TODO: remove getter
+    #[get_mut = "pub(super)"]
+    clips: HashMap<Id<Clip>, Clip>,
 }
 
 impl Track {
@@ -84,7 +85,7 @@ impl Track {
             name: DEFAULT_TITLE,
             clip_ids: BTreeMap::new(),
             clip_starts: HashMap::new(),
-            clips: IndexMap::new(),
+            clips: HashMap::new(),
         }
     }
 
