@@ -1,5 +1,7 @@
+use crate::metre;
+use crate::metre::{Changing, TimeContext};
 use crate::time::{Duration, Instant};
-use crate::{metre, project};
+use std::ops::Div;
 
 /// A period of real time.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -16,12 +18,14 @@ impl Period {
     pub fn end(&self) -> Instant {
         self.start + self.duration
     }
+}
 
-    /// Converts the period to musical time.
-    #[must_use]
-    pub fn to_metre(self, project_settings: &project::Settings) -> metre::Period {
-        let start = self.start.to_metre(project_settings);
-        let end = self.end().to_metre(project_settings);
+impl Div<&Changing<TimeContext>> for Period {
+    type Output = metre::Period;
+
+    fn div(self, rhs: &Changing<TimeContext>) -> Self::Output {
+        let start = self.start / rhs;
+        let end = self.end() / rhs;
 
         metre::Period {
             start,

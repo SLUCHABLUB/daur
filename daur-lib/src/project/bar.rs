@@ -41,19 +41,16 @@ pub(crate) fn bar<Ui: UserInterface>(
     piano_roll_open: bool,
 ) -> View {
     let key_button = View::standard_button(
-        project.settings.key.start.to_arc_str(),
-        open_key_selector(Instant::START, project.settings.key.start),
+        project.key.start.to_arc_str(),
+        open_key_selector(Instant::START, project.key.start),
     );
     // TODO: add functionality
     let time_signature_button = View::standard_button(
-        project.settings.time_signature.start.to_arc_str(),
+        project.time_signature.start.to_arc_str(),
         OnClick::default(),
     );
     // TODO: add functionality
-    let tempo_button = View::standard_button(
-        project.settings.tempo.start.to_arc_str(),
-        OnClick::default(),
-    );
+    let tempo_button = View::standard_button(project.tempo.start.to_arc_str(), OnClick::default());
 
     let to_start_button =
         View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));

@@ -1,20 +1,20 @@
+use crate::Selection;
 use crate::app::Action;
 use crate::audio::Player;
-use crate::metre::Instant;
+use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
 use crate::project::Track;
 use crate::project::track::clip;
-use crate::ui::{Grid, Length};
+use crate::ui::Length;
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, SelectableItem, View};
-use crate::{Selection, project};
 
 // TODO: add a selection box
 /// Returns the track overview.
 pub(crate) fn overview(
     track: &Track,
     selection: Selection,
-    project_settings: project::Settings,
-    grid: Grid,
+    offset_mapping: OffsetMapping,
+    time_context: Changing<TimeContext>,
     negative_overview_offset: Length,
     cursor: Instant,
     player: Option<Player>,
@@ -29,28 +29,21 @@ pub(crate) fn overview(
                     .get(&clip.id())
                     .copied()
                     .unwrap_or_default();
-                let absolute_clip_offset = clip_start.to_x_offset(&project_settings, grid);
+                let absolute_clip_offset = offset_mapping.offset(clip_start);
 
                 let start_crop = negative_overview_offset - absolute_clip_offset;
 
                 let clip_offset = absolute_clip_offset - negative_overview_offset;
 
                 let clip_end = clip_start + clip.duration().get();
-                let clip_end_offset =
-                    clip_end.to_x_offset(&project_settings, grid) - negative_overview_offset;
+                let clip_end_offset = offset_mapping.offset(clip_end) - negative_overview_offset;
 
                 let selected = selection.clip() == clip.id();
 
                 let clip_width = clip_end_offset - clip_offset;
 
-                let overview = clip::overview(
-                    clip,
-                    track.id,
-                    selected,
-                    &project_settings,
-                    grid,
-                    start_crop,
-                );
+                let overview =
+                    clip::overview(clip, track.id, selected, offset_mapping.clone(), start_crop);
 
                 overview.quotated(clip_width).x_positioned(clip_offset)
             })
@@ -61,9 +54,9 @@ pub(crate) fn overview(
         clips,
         CursorWindow::builder()
             .cursor(cursor)
-            .grid(grid)
+            .offset_mapping(offset_mapping)
             .player(player)
-            .project_settings(project_settings)
+            .time_context(time_context)
             .window_offset(negative_overview_offset)
             .build()
             .view(),

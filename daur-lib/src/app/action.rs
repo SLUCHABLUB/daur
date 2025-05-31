@@ -168,15 +168,13 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
-                    self.cursor = position.to_metre(self.project_manager.project().settings());
+                    self.cursor = position / &self.project_manager.project().time_context();
                 }
             }
             // the currently held object should already have been let go.
             Action::PickUp(object) => self.held_object = Some(object),
             Action::Play => {
-                let from = self
-                    .cursor()
-                    .to_real_time(self.project_manager.project().settings());
+                let from = self.cursor() * &self.project_manager.project().time_context();
 
                 let player = self.audio_config.player()?;
 
@@ -188,7 +186,6 @@ impl<Ui: UserInterface> App<Ui> {
 
                 self.renderer.restart(
                     self.project_manager.project(),
-                    self.project_manager.project().settings(),
                     self.audio_config.sample_rate()?,
                 );
             }

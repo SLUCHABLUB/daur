@@ -1,9 +1,9 @@
 use crate::app::Action;
 use crate::audio::Player;
-use crate::metre::Instant;
+use crate::metre::{Changing, Instant, OffsetMapping, Quantisation, TimeContext};
 use crate::project::track::{overview, settings};
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
-use crate::ui::{Grid, Length};
+use crate::ui::Length;
 use crate::view::{Axis, CursorWindow, OnClick, View, ruler};
 use crate::{Project, Selection, UserInterface, ui};
 
@@ -11,12 +11,15 @@ pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
     selection: Selection,
     ui_settings: ui::Settings,
-    grid: Grid,
+    quantisation: Quantisation,
     cursor: Instant,
     player: Option<&Player>,
 ) -> View {
     let mut track_settings = Vec::new();
     let mut track_overviews = Vec::new();
+
+    let offset_mapping = OffsetMapping::new(project.time_signature.clone(), quantisation);
+    let time_context = project.time_context();
 
     for track in project.tracks.values() {
         let selected = selection.track() == track.id();
@@ -25,8 +28,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
         track_overviews.push(overview(
             track,
             selection,
-            project.settings.clone(),
-            grid,
+            offset_mapping.clone(),
+            time_context.clone(),
             ui_settings.negative_overview_offset,
             cursor,
             player.cloned(),
@@ -42,18 +45,14 @@ pub(crate) fn workspace<Ui: UserInterface>(
 
     // An empty row (the row with the add-track button)
     track_overviews.push(empty_track_overview(
-        project.settings.clone(),
-        grid,
+        offset_mapping.clone(),
+        time_context,
         ui_settings.negative_overview_offset,
         cursor,
         player.cloned(),
     ));
 
-    let ruler = ruler::<Ui>(
-        ui_settings.negative_overview_offset,
-        project.settings.clone(),
-        grid,
-    );
+    let ruler = ruler::<Ui>(ui_settings.negative_overview_offset, offset_mapping);
     let ruler_row = ruler
         .scrollable(Action::MoveOverview)
         .fill_remaining()
@@ -74,17 +73,17 @@ pub(crate) fn workspace<Ui: UserInterface>(
 }
 
 fn empty_track_overview(
-    project_settings: project::Settings,
-    grid: Grid,
+    offset_mapping: OffsetMapping,
+    time_context: Changing<TimeContext>,
     negative_overview_offset: Length,
     cursor: Instant,
     player: Option<Player>,
 ) -> View {
     CursorWindow::builder()
         .cursor(cursor)
-        .grid(grid)
+        .offset_mapping(offset_mapping)
         .player(player)
-        .project_settings(project_settings)
+        .time_context(time_context)
         .window_offset(negative_overview_offset)
         .build()
         .view()

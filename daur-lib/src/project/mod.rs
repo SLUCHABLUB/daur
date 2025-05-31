@@ -6,13 +6,10 @@ mod action;
 mod bar;
 mod manager;
 mod renderer;
-mod settings;
 mod workspace;
 
 pub use action::Action;
 pub use manager::Manager;
-pub use settings::Settings;
-use std::sync::Arc;
 #[doc(inline)]
 pub use track::Track;
 
@@ -20,7 +17,9 @@ pub(crate) use bar::bar;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
-use crate::metre::{Instant, NonZeroInstant};
+use crate::metre::{Changing, Instant, NonZeroInstant, TimeContext, TimeSignature};
+use crate::note::Key;
+use crate::time::Tempo;
 use crate::{Id, Selection};
 use anyhow::Result;
 use arcstr::{ArcStr, literal};
@@ -44,9 +43,15 @@ pub struct Project {
     #[get_clone = "pub"]
     title: ArcStr,
 
-    /// The project settings.
+    // TODO: continuous change
+    /// The tempo of the project
+    tempo: Changing<Tempo>,
+    /// The time signature of the project.
     #[get = "pub(crate)"]
-    settings: Settings,
+    time_signature: Changing<TimeSignature>,
+    /// The key of the project.
+    #[get = "pub(crate)"]
+    key: Changing<Key>,
 
     /// The tracks in the project.
     tracks: IndexMap<Id<Track>, Track>,
@@ -57,6 +62,10 @@ impl Project {
     #[must_use]
     pub(super) fn track(&self, id: Id<Track>) -> Option<&Track> {
         self.tracks.get(&id)
+    }
+
+    pub(crate) fn time_context(&self) -> Changing<TimeContext> {
+        &self.time_signature / &self.tempo
     }
 
     // TODO: return a history entry
@@ -77,19 +86,20 @@ impl Project {
             }
             Action::SetKey { instant, key } => {
                 if let Some(position) = NonZeroInstant::from_instant(instant) {
-                    Arc::make_mut(&mut self.settings.key)
-                        .changes
-                        .insert(position, key);
+                    self.key.changes.insert(position, key);
                 } else {
-                    Arc::make_mut(&mut self.settings.key).start = key;
+                    self.key.start = key;
                 }
                 Ok(())
             }
-            Action::Track(action) => self
-                .tracks
-                .get_mut(&selection.track())
-                .ok_or(NoTrackSelected)?
-                .take_action(action, cursor, selection, &self.settings),
+            Action::Track(action) => {
+                let time_context = self.time_context();
+
+                self.tracks
+                    .get_mut(&selection.track())
+                    .ok_or(NoTrackSelected)?
+                    .take_action(action, cursor, selection, &time_context)
+            }
         }
     }
 }

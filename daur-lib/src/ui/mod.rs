@@ -4,7 +4,6 @@ pub mod relative;
 
 mod colour;
 mod direction;
-mod grid;
 mod length;
 mod offset;
 mod point;
@@ -16,7 +15,6 @@ mod vector;
 
 pub use colour::Colour;
 pub use direction::Direction;
-pub use grid::Grid;
 pub use length::{Length, NonZeroLength};
 pub use offset::Offset;
 pub use point::Point;
@@ -41,7 +39,7 @@ pub trait UserInterface {
     /// This should be the same for thick and non-thick borders.
     /// Padding may be added to non-thick borders.
     const BORDER_THICKNESS: Length;
-    /// The default width of a [grid](Grid) cell.
+    /// The default width of a [quantisation](crate::metre::Quantisation) cell.
     const CELL_WIDTH: NonZeroLength;
     /// The default width of the piano-roll keys.
     const KEY_WIDTH: NonZeroLength;

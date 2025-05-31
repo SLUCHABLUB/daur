@@ -15,7 +15,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
             app.project_manager.project(),
             app.selection,
             app.ui_settings,
-            app.grid,
+            app.quantisation,
             app.cursor(),
             app.audio_config.try_player(),
         )
@@ -23,7 +23,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
         app.piano_roll.view::<Ui>(
             app.selection,
             app.project_manager.project(),
-            app.grid,
+            app.quantisation,
             app.audio_config.try_player().cloned(),
             app.cursor,
             app.held_object,

@@ -1,7 +1,7 @@
-use crate::metre::NonZeroDuration;
-use crate::ui::{Grid, Length};
+use crate::metre::{NonZeroDuration, OffsetMapping};
+use crate::ui::Length;
 use crate::view::Painter;
-use crate::{audio, note, project};
+use crate::{audio, note};
 
 /// The content of a [clip](super::Clip).
 #[derive(Eq, PartialEq, Debug)]
@@ -53,12 +53,11 @@ impl Content {
 
     pub(super) fn overview_painter(
         &self,
-        project_settings: &project::Settings,
-        grid: Grid,
+        offset_mapping: OffsetMapping,
         crop_start: Length,
     ) -> Box<Painter> {
         match self {
-            Content::Audio(audio) => audio.overview_painter(project_settings, grid, crop_start),
+            Content::Audio(audio) => audio.overview_painter(offset_mapping, crop_start),
             Content::Notes(notes) => notes.overview_painter(),
         }
     }

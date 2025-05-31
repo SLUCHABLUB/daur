@@ -1,10 +1,10 @@
 use crate::app::Action;
 use crate::audio::Player;
-use crate::metre::{Instant, NonZeroDuration};
+use crate::metre::{Changing, Instant, NonZeroDuration, OffsetMapping, Quantisation, TimeContext};
 use crate::note::{Group, Interval, Key, Pitch};
 use crate::project::track;
 use crate::project::track::{Clip, clip};
-use crate::ui::{Colour, Grid, Length, NonZeroLength, Size, ThemeColour, Vector, relative};
+use crate::ui::{Colour, Length, NonZeroLength, Size, ThemeColour, Vector, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
 use crate::{HoldableObject, Project, Ratio, Selection, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
@@ -80,7 +80,7 @@ impl PianoRoll {
         self,
         selection: Selection,
         project: &Project,
-        grid: Grid,
+        quantisation: Quantisation,
         player: Option<Player>,
         cursor: Instant,
         held_object: Option<HoldableObject>,
@@ -101,7 +101,7 @@ impl PianoRoll {
             clip,
             clip_start,
             project,
-            grid,
+            quantisation,
             player,
             cursor,
             held_object,
@@ -122,7 +122,7 @@ impl PianoRoll {
         clip: Option<&Clip>,
         clip_start: Instant,
         project: &Project,
-        grid: Grid,
+        quantisation: Quantisation,
         player: Option<Player>,
         cursor: Instant,
         held_object: Option<HoldableObject>,
@@ -136,6 +136,8 @@ impl PianoRoll {
             return AUDIO_CLIP_SELECTED.centred();
         };
 
+        let offset_mapping = OffsetMapping::new(project.time_signature().clone(), quantisation);
+
         // The piano roll has a fixed lower pitch.
         // Resizing it will thus cause the bottom to be fixed.
         // Since the top is the thing being moved, this seems intuitive.
@@ -143,15 +145,16 @@ impl PianoRoll {
             clip_start,
             notes,
             clip.colour(),
-            project.settings(),
-            grid,
+            offset_mapping.clone(),
+            project.time_context(),
             player,
             cursor,
             held_object,
             edit_mode,
+            project.key(),
         );
 
-        let ruler = ruler::<Ui>(self.negative_x_offset, project.settings().clone(), grid)
+        let ruler = ruler::<Ui>(self.negative_x_offset, offset_mapping)
             .fill_remaining()
             .x_positioned(self.piano_depth.get());
 
@@ -167,31 +170,32 @@ impl PianoRoll {
         clip_start: Instant,
         notes: &Group,
         clip_colour: Colour,
-        project_settings: &project::Settings,
-        grid: Grid,
+        offset_mapping: OffsetMapping,
+        time_context: Changing<TimeContext>,
         player: Option<Player>,
         cursor: Instant,
         held_object: Option<HoldableObject>,
         edit_mode: bool,
+        key: &Changing<Key>,
     ) -> View {
         let roll = self.roll::<Ui>(
             clip_start,
             notes,
             clip_colour,
-            project_settings,
-            grid,
+            &offset_mapping,
             edit_mode,
+            key,
         );
 
+        let held_object = self.held_object(held_object, clip_colour, &offset_mapping);
         let cursor_window = CursorWindow::builder()
             .cursor(cursor)
-            .grid(grid)
+            .offset_mapping(offset_mapping)
             .player(player)
-            .project_settings(project_settings.clone())
+            .time_context(time_context)
             .window_offset(self.negative_x_offset)
             .build()
             .view();
-        let held_object = self.held_object(held_object, clip_colour, project_settings, grid);
 
         let overlay =
             View::Layers(vec![cursor_window, held_object]).x_positioned(self.piano_depth.get());
@@ -204,9 +208,9 @@ impl PianoRoll {
         clip_start: Instant,
         notes: &Group,
         clip_colour: Colour,
-        project_settings: &project::Settings,
-        grid: Grid,
+        offset_mapping: &OffsetMapping,
         edit_mode: bool,
+        key: &Changing<Key>,
     ) -> View {
         let y_offset = self.y_offset::<Ui>();
 
@@ -234,9 +238,9 @@ impl PianoRoll {
                 notes,
                 clip_colour,
                 lowest_visible_pitch,
-                project_settings.clone(),
-                grid,
+                offset_mapping.clone(),
                 edit_mode,
+                key,
             )
             .quotated(lowest_row_height);
 
@@ -246,9 +250,9 @@ impl PianoRoll {
                 notes,
                 clip_colour,
                 highest_visible_pitch,
-                project_settings.clone(),
-                grid,
+                offset_mapping.clone(),
                 edit_mode,
+                key,
             )
             .fill_remaining();
 
@@ -264,9 +268,9 @@ impl PianoRoll {
                     notes,
                     clip_colour,
                     pitch,
-                    project_settings.clone(),
-                    grid,
+                    offset_mapping.clone(),
                     edit_mode,
+                    key,
                 )
                 .quotated(self.key_width.get()),
             );
@@ -285,15 +289,11 @@ impl PianoRoll {
         notes: &Group,
         clip_colour: Colour,
         pitch: Pitch,
-        project_settings: project::Settings,
-        grid: Grid,
+        offset_mapping: OffsetMapping,
         edit_mode: bool,
+        key: &Changing<Key>,
     ) -> View {
-        let key = project_settings.key.get(Instant::from_x_offset(
-            self.negative_x_offset,
-            &project_settings,
-            grid,
-        ));
+        let key = key.get(offset_mapping.instant(self.negative_x_offset));
 
         // TODO:
         //  - colour for out-of-bounds
@@ -312,11 +312,10 @@ impl PianoRoll {
             chain(
                 once(background),
                 notes.with_pitch(pitch).map(|(note_start, note)| {
-                    let start = (clip_start + note_start.since_start)
-                        .to_x_offset(&project_settings, grid)
+                    let start = offset_mapping.offset(clip_start + note_start.since_start)
                         - self.negative_x_offset;
-                    let end = (clip_start + note_start.since_start + note.duration().get())
-                        .to_x_offset(&project_settings, grid)
+                    let end = offset_mapping
+                        .offset(clip_start + note_start.since_start + note.duration().get())
                         - self.negative_x_offset;
 
                     let width = end - start;
@@ -327,15 +326,11 @@ impl PianoRoll {
             .collect(),
         );
 
-        let grabber = closure!([clone project_settings] move |render_area: RenderArea| {
+        let grabber = closure!([clone offset_mapping] move |render_area: RenderArea| {
             let mouse_position = render_area.relative_mouse_position()?;
 
             Some(if edit_mode {
-                let start = Instant::quantised_from_x_offset(
-                    mouse_position.x + self.negative_x_offset,
-                    &project_settings,
-                    grid,
-                );
+                let start = offset_mapping.quantised_instant(mouse_position.x + self.negative_x_offset);
 
                HoldableObject::NoteCreation { start }
             } else {
@@ -349,10 +344,8 @@ impl PianoRoll {
             let HoldableObject::NoteCreation { start } = object else {
                 return None;
             };
-            let end = Instant::quantised_from_x_offset(
+            let end = offset_mapping.quantised_instant(
                 render_area.relative_mouse_position()?.x + self.negative_x_offset,
-                &project_settings,
-                grid,
             );
 
             let (start, end) = (min(start, end), max(start, end));
@@ -420,8 +413,7 @@ impl PianoRoll {
         self,
         held_object: Option<HoldableObject>,
         clip_colour: Colour,
-        project_settings: &project::Settings,
-        grid: Grid,
+        offset_mapping: &OffsetMapping,
     ) -> View {
         let Some(held_object) = held_object else {
             return View::Empty;
@@ -435,7 +427,7 @@ impl PianoRoll {
             }
         };
 
-        let start = start.to_x_offset(project_settings, grid) - self.negative_x_offset;
+        let start = offset_mapping.offset(start) - self.negative_x_offset;
 
         View::reactive(move |ui_info| {
             // TODO: quantise

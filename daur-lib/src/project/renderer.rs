@@ -3,7 +3,7 @@ use crate::node::Chain;
 use crate::note::Event;
 use crate::sync::Cell;
 use crate::time::Instant;
-use crate::{Audio, Project, project};
+use crate::{Audio, Project};
 use clack_host::events::UnknownEvent;
 use clack_host::prelude::{
     AudioPortBuffer, AudioPortBufferType, AudioPorts, InputChannel, InputEvents,
@@ -67,12 +67,7 @@ impl Renderer {
     }
 
     // TODO: the audio up to the point of the change may be reused
-    pub(crate) fn restart(
-        &mut self,
-        project: &Project,
-        project_settings: &project::Settings,
-        sample_rate: sample::Rate,
-    ) {
+    pub(crate) fn restart(&mut self, project: &Project, sample_rate: sample::Rate) {
         let progress = Arc::new(Progress {
             should_stop: Cell::new(false),
             unmastered_tracks: Mutex::new(Vec::with_capacity(project.tracks.len())),
@@ -81,9 +76,12 @@ impl Renderer {
 
         let zero_tracks = project.tracks.is_empty();
 
+        let time_context = project.time_context();
+
         for track in project.tracks.values() {
-            let audio = track.audio_sum(project_settings, sample_rate);
-            let events = track.events(project_settings, sample_rate);
+            let audio = track.audio_sum(&time_context, sample_rate);
+            let events = track.events(&time_context, sample_rate);
+
             // TODO: take from the track
             let chain = Chain::default();
 

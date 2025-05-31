@@ -1,7 +1,6 @@
 use crate::audio::sample;
-use crate::metre::{Instant, NonZeroDuration, relative};
+use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, relative};
 use crate::note::{Event, Note, Pitch};
-use crate::project;
 use crate::view::Painter;
 use clack_host::events::event_types::{NoteOffEvent, NoteOnEvent};
 use clack_host::events::{Match, Pckn};
@@ -96,7 +95,7 @@ impl Group {
     pub(crate) fn to_events(
         &self,
         start: Instant,
-        project_settings: &project::Settings,
+        time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let mut events = Vec::new();
@@ -105,9 +104,8 @@ impl Group {
         for ((note_start, pitch), note) in &self.notes {
             let note_start = start + *note_start;
 
-            let start = note_start.to_real_time(project_settings) * sample_rate;
-            let end =
-                (note_start + note.duration.get()).to_real_time(project_settings) * sample_rate;
+            let start = note_start * time_context * sample_rate;
+            let end = (note_start + note.duration.get()) * time_context * sample_rate;
 
             let tuple = Pckn {
                 port_index: Match::Specific(0),

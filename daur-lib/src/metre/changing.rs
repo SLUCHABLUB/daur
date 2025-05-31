@@ -2,7 +2,7 @@ use crate::metre::{Instant, NonZeroInstant};
 use std::collections::BTreeMap;
 
 /// A setting that changes over time.
-#[derive(Clone, Eq, PartialEq, Debug, Default)]
+#[derive(Clone, Eq, PartialEq, Hash, Debug, Default)]
 pub struct Changing<T> {
     /// The starting value.
     pub start: T,
@@ -24,7 +24,7 @@ impl<T: Copy> Changing<T> {
     }
 }
 
-impl<T: Copy> From<T> for Changing<T> {
+impl<T> From<T> for Changing<T> {
     fn from(start: T) -> Self {
         Changing {
             start,

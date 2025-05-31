@@ -14,9 +14,9 @@ pub(crate) use settings::settings;
 
 use crate::audio::sample::Pair;
 use crate::audio::{FixedLength, sample};
-use crate::metre::{Duration, Instant, NonZeroDuration};
+use crate::metre::{Changing, Duration, Instant, NonZeroDuration, TimeContext};
 use crate::note::Event;
-use crate::{Audio, Id, NonZeroRatio, Selection, project};
+use crate::{Audio, Id, NonZeroRatio, Selection};
 use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
@@ -110,13 +110,13 @@ impl Track {
 
     pub(crate) fn audio_sum(
         &self,
-        project_settings: &project::Settings,
+        time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
     ) -> Audio {
         let minimum_end = Instant {
             since_start: self.minimum_duration(),
         };
-        let minimum_end = minimum_end.to_real_time(project_settings);
+        let minimum_end = minimum_end * time_context;
         let minimum_end = minimum_end.since_start * sample_rate;
         let minimum_sample_count = minimum_end.samples;
 
@@ -131,7 +131,7 @@ impl Track {
             };
 
             if let Some(clip) = clip.content().as_audio() {
-                let clip_start = start.to_real_time(project_settings) * sample_rate;
+                let clip_start = *start * time_context * sample_rate;
 
                 audio.add_assign_at(&clip.audio, clip_start.since_start);
             }
@@ -142,7 +142,7 @@ impl Track {
 
     pub(crate) fn events(
         &self,
-        project_settings: &project::Settings,
+        time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
     ) -> SortedVec<Event> {
         let mut events = SortedVec::new();
@@ -152,7 +152,7 @@ impl Track {
                 continue;
             };
 
-            events.extend(clip.events(*start, project_settings, sample_rate));
+            events.extend(clip.events(*start, time_context, sample_rate));
         }
 
         events
@@ -178,7 +178,7 @@ impl Track {
         action: Action,
         cursor: Instant,
         selection: &mut Selection,
-        project_settings: &project::Settings,
+        time_context: &Changing<TimeContext>,
     ) -> Result<()> {
         #[sorted]
         match action {
@@ -213,8 +213,8 @@ impl Track {
                     }
                 };
 
-                let audio = FixedLength::from_audio(audio, cursor, project_settings)
-                    .ok_or(EmptyAudioFile)?;
+                let audio =
+                    FixedLength::from_audio(audio, cursor, time_context).ok_or(EmptyAudioFile)?;
 
                 let name = file
                     .file_stem()

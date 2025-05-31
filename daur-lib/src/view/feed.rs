@@ -3,6 +3,7 @@ use crate::ui::{Direction, Length, Offset};
 use crate::view::{Quotated, View};
 use std::cmp::Ordering;
 
+// TODO: remove
 /// A window into an infinite and scrollable stack
 pub(crate) fn feed<Ui: UserInterface, Generator>(
     direction: Direction,

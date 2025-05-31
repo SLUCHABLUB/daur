@@ -1,9 +1,9 @@
+use crate::View;
 use crate::app::Action;
 use crate::audio::Player;
-use crate::metre::Instant;
-use crate::ui::{Grid, Length};
+use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
+use crate::ui::Length;
 use crate::view::OnClick;
-use crate::{View, project};
 use derive_more::Debug;
 use typed_builder::TypedBuilder;
 //       |---o---|
@@ -31,13 +31,13 @@ pub struct CursorWindow {
 
     window_offset: Length,
 
-    project_settings: project::Settings,
-    grid: Grid,
+    offset_mapping: OffsetMapping,
+    time_context: Changing<TimeContext>,
 }
 
 impl CursorWindow {
     pub(crate) fn view(self) -> View {
-        let project_settings = self.project_settings.clone();
+        let offset_mapping = self.offset_mapping.clone();
 
         let on_click = OnClick::new(move |render_area, actions| {
             let Some(mouse_position) = render_area.relative_mouse_position() else {
@@ -45,7 +45,7 @@ impl CursorWindow {
             };
 
             let ui_offset = mouse_position.x + self.window_offset;
-            let instant = Instant::quantised_from_x_offset(ui_offset, &project_settings, self.grid);
+            let instant = offset_mapping.quantised_instant(ui_offset);
 
             actions.push(Action::MoveCursor(instant));
         });
@@ -54,12 +54,7 @@ impl CursorWindow {
     }
 
     fn player_position(&self) -> Option<Instant> {
-        Some(
-            self.player
-                .as_ref()?
-                .position()?
-                .to_metre(&self.project_settings),
-        )
+        Some(self.player.as_ref()?.position()? / &self.time_context)
     }
 
     /// The cursor's offset from the left of the window.
@@ -68,7 +63,7 @@ impl CursorWindow {
     pub fn offset(&self) -> Option<Length> {
         let position = self.player_position().unwrap_or(self.cursor);
 
-        let offset = position.to_x_offset(&self.project_settings, self.grid);
+        let offset = self.offset_mapping.offset(position);
 
         (self.window_offset <= offset).then_some(offset - self.window_offset)
     }
