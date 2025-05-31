@@ -118,7 +118,7 @@ impl Mul<sample::Rate> for Duration {
         let seconds = self / NonZeroDuration::SECOND;
 
         sample::Duration {
-            samples: (seconds * Ratio::integer(u64::from(rhs.samples_per_second.get()))).to_usize(),
+            samples: (seconds * Ratio::from(rhs.samples_per_second.get())).to_usize(),
         }
     }
 }

@@ -86,7 +86,7 @@ impl Rectangle {
         Rectangle::from_points(position, bottom_right)
     }
 
-    /// Returns whether tow rectangles intersect.
+    /// Returns whether two rectangles intersect.
     #[must_use]
     pub fn intersects(self, other: Rectangle) -> bool {
         self.intersection(other).is_some()

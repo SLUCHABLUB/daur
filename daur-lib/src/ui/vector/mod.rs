@@ -1,10 +1,9 @@
-use crate::Ratio;
+mod ops;
+
 use crate::ui::{Offset, Point};
-use derive_more::{Add, AddAssign, Neg, Sub, SubAssign};
-use std::ops::Mul;
 
 /// A vector
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Default, Add, Sub, Neg, AddAssign, SubAssign)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct Vector {
     /// The x coordinate of the vector
     pub x: Offset,
@@ -37,18 +36,6 @@ impl Vector {
         Point {
             x: self.x.rectify(),
             y: self.y.rectify(),
-        }
-    }
-}
-
-// TODO: derive
-impl Mul<Ratio> for Vector {
-    type Output = Vector;
-
-    fn mul(self, rhs: Ratio) -> Self::Output {
-        Vector {
-            x: self.x * rhs,
-            y: self.y * rhs,
         }
     }
 }

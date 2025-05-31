@@ -89,7 +89,7 @@ fn minimum_size<Ui: UserInterface>(view: &View, render_area: RenderArea) -> Size
                 orthogonal = max(orthogonal, minimum.orthogonal_to(*axis));
             }
 
-            parallel += fill_size * Ratio::from(fill_count);
+            parallel += fill_size * Ratio::integer(fill_count);
 
             Size::from_parallel_orthogonal(parallel, orthogonal, *axis)
         }

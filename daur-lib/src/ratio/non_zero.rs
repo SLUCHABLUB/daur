@@ -4,7 +4,6 @@ use getset::CopyGetters;
 use non_zero::non_zero;
 use std::cmp::Ordering;
 use std::num::{NonZeroU64, NonZeroU128};
-use std::ops::{Div, DivAssign};
 
 /// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
@@ -132,23 +131,5 @@ impl Ord for NonZeroRatio {
 impl<T: Into<NonZeroU64>> From<T> for NonZeroRatio {
     fn from(value: T) -> Self {
         NonZeroRatio::integer(value.into())
-    }
-}
-
-impl Div for NonZeroRatio {
-    type Output = NonZeroRatio;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        #[expect(
-            clippy::unwrap_used,
-            reason = "the numerator is non-zero; therefore, the result will be too"
-        )]
-        NonZeroRatio::from_ratio(self.get() / rhs).unwrap()
-    }
-}
-
-impl DivAssign for NonZeroRatio {
-    fn div_assign(&mut self, rhs: Self) {
-        *self = *self / rhs;
     }
 }

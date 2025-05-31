@@ -1,9 +1,9 @@
 mod non_zero;
+mod ops;
 mod util;
 
 pub use non_zero::NonZeroRatio;
 
-use crate::ratio::util::lcm;
 use ::non_zero::non_zero;
 use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
@@ -11,7 +11,6 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::num::{FpCategory, NonZeroU64, NonZeroU128};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.
@@ -179,10 +178,6 @@ impl Ratio {
         loop {
             let mean_guess = (low_guess + high_guess) * Ratio::HALF;
 
-            if mean_guess == low_guess || mean_guess == high_guess {
-                return mean_guess;
-            }
-
             match float.total_cmp(&mean_guess.to_float()) {
                 Ordering::Less => high_guess = mean_guess,
                 Ordering::Equal => return mean_guess,
@@ -259,85 +254,5 @@ impl Default for Ratio {
 impl<T: Into<u64>> From<T> for Ratio {
     fn from(value: T) -> Self {
         Ratio::integer(value.into())
-    }
-}
-
-impl Add for Ratio {
-    type Output = Ratio;
-
-    fn add(self, rhs: Ratio) -> Ratio {
-        let (lhs_numerator, lhs_denominator) = self.big_raw();
-        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
-
-        let lcm = lcm(lhs_denominator, rhs_denominator);
-
-        let lhs = lhs_numerator.saturating_mul(lcm.get() / lhs_denominator);
-        let rhs = rhs_numerator.saturating_mul(lcm.get() / rhs_denominator);
-
-        #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
-        Ratio::approximate_big(lhs + rhs, lcm)
-    }
-}
-
-impl AddAssign for Ratio {
-    fn add_assign(&mut self, rhs: Ratio) {
-        *self = *self + rhs;
-    }
-}
-
-impl Sub for Ratio {
-    type Output = Ratio;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        let (lhs_numerator, lhs_denominator) = self.big_raw();
-        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
-
-        let lcm = lcm(lhs_denominator, rhs_denominator);
-
-        let lhs = lhs_numerator.saturating_mul(lcm.get() / lhs_denominator);
-        let rhs = rhs_numerator.saturating_mul(lcm.get() / rhs_denominator);
-
-        Ratio::approximate_big(lhs.saturating_sub(rhs), lcm)
-    }
-}
-
-impl SubAssign for Ratio {
-    fn sub_assign(&mut self, rhs: Self) {
-        *self = *self - rhs;
-    }
-}
-
-impl Mul for Ratio {
-    type Output = Ratio;
-
-    fn mul(self, rhs: Ratio) -> Ratio {
-        let (lhs_numerator, lhs_denominator) = self.big_raw();
-        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
-
-        Ratio::approximate_big(
-            lhs_numerator.saturating_mul(rhs_numerator),
-            lhs_denominator.saturating_mul(rhs_denominator),
-        )
-    }
-}
-
-impl MulAssign for Ratio {
-    fn mul_assign(&mut self, rhs: Self) {
-        *self = *self * rhs;
-    }
-}
-
-impl Div<NonZeroRatio> for Ratio {
-    type Output = Ratio;
-
-    fn div(self, rhs: NonZeroRatio) -> Ratio {
-        #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
-        self * rhs.reciprocal().get()
-    }
-}
-
-impl DivAssign<NonZeroRatio> for Ratio {
-    fn div_assign(&mut self, rhs: NonZeroRatio) {
-        *self = *self / rhs;
     }
 }
