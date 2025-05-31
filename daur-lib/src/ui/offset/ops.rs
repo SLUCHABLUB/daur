@@ -1,31 +1,31 @@
-use crate::ui::{Length, Offset};
+use crate::ui::Offset;
 use crate::{NonZeroRatio, Ratio};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-impl Add for Offset {
+impl<O: Into<Offset>> Add<O> for Offset {
     type Output = Offset;
 
-    fn add(self, rhs: Self) -> Self::Output {
+    fn add(self, rhs: O) -> Self::Output {
         Offset {
-            pixels: self.pixels.saturating_add(rhs.pixels),
+            pixels: self.pixels.saturating_add(rhs.into().pixels),
         }
     }
 }
 
-impl Sub for Offset {
+impl<O: Into<Offset>> Sub<O> for Offset {
     type Output = Offset;
 
-    fn sub(self, rhs: Self) -> Self::Output {
+    fn sub(self, rhs: O) -> Self::Output {
         Offset {
-            pixels: self.pixels.saturating_sub(rhs.pixels),
+            pixels: self.pixels.saturating_sub(rhs.into().pixels),
         }
     }
 }
 
-impl Mul<Ratio> for Offset {
+impl<R: Into<Ratio>> Mul<R> for Offset {
     type Output = Offset;
 
-    fn mul(self, rhs: Ratio) -> Self::Output {
+    fn mul(self, rhs: R) -> Self::Output {
         let length = self.abs() * rhs;
 
         if self.pixels.is_negative() {
@@ -36,37 +36,37 @@ impl Mul<Ratio> for Offset {
     }
 }
 
-impl Div<NonZeroRatio> for Offset {
+impl<N: Into<NonZeroRatio>> Div<N> for Offset {
     type Output = Offset;
 
-    fn div(self, rhs: NonZeroRatio) -> Offset {
+    fn div(self, rhs: N) -> Offset {
         #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
-        self * rhs.reciprocal().get()
+        self * rhs.into().reciprocal().get()
     }
 }
 
 // --- ASSIGNMENT OPERATIONS ---
 
-impl AddAssign for Offset {
-    fn add_assign(&mut self, rhs: Self) {
+impl<O: Into<Offset>> AddAssign<O> for Offset {
+    fn add_assign(&mut self, rhs: O) {
         *self = *self + rhs;
     }
 }
 
-impl SubAssign for Offset {
-    fn sub_assign(&mut self, rhs: Self) {
+impl<O: Into<Offset>> SubAssign<O> for Offset {
+    fn sub_assign(&mut self, rhs: O) {
         *self = *self - rhs;
     }
 }
 
-impl MulAssign<Ratio> for Offset {
-    fn mul_assign(&mut self, rhs: Ratio) {
+impl<R: Into<Ratio>> MulAssign<R> for Offset {
+    fn mul_assign(&mut self, rhs: R) {
         *self = *self * rhs;
     }
 }
 
-impl DivAssign<NonZeroRatio> for Offset {
-    fn div_assign(&mut self, rhs: NonZeroRatio) {
+impl<N: Into<NonZeroRatio>> DivAssign<N> for Offset {
+    fn div_assign(&mut self, rhs: N) {
         *self = *self / rhs;
     }
 }
@@ -80,35 +80,5 @@ impl Neg for Offset {
         Offset {
             pixels: self.pixels.saturating_neg(),
         }
-    }
-}
-
-// TODO: remove
-
-impl Add<Length> for Offset {
-    type Output = Offset;
-
-    fn add(self, rhs: Length) -> Self::Output {
-        self + Offset::from(rhs)
-    }
-}
-
-impl Sub<Length> for Offset {
-    type Output = Offset;
-
-    fn sub(self, rhs: Length) -> Self::Output {
-        self - Offset::from(rhs)
-    }
-}
-
-impl AddAssign<Length> for Offset {
-    fn add_assign(&mut self, rhs: Length) {
-        *self = *self + rhs;
-    }
-}
-
-impl SubAssign<Length> for Offset {
-    fn sub_assign(&mut self, rhs: Length) {
-        *self = *self - rhs;
     }
 }

@@ -2,37 +2,37 @@ use crate::metre::{Duration, NonZeroDuration};
 use crate::{NonZeroRatio, Ratio};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-impl Add for Duration {
+impl<D: Into<Duration>> Add<D> for Duration {
     type Output = Duration;
 
-    fn add(mut self, rhs: Duration) -> Duration {
+    fn add(mut self, rhs: D) -> Duration {
         self += rhs;
         self
     }
 }
 
-impl Sub for Duration {
+impl<D: Into<Duration>> Sub<D> for Duration {
     type Output = Duration;
 
-    fn sub(mut self, rhs: Self) -> Self::Output {
+    fn sub(mut self, rhs: D) -> Self::Output {
         self -= rhs;
         self
     }
 }
 
-impl Mul<Ratio> for Duration {
+impl<R: Into<Ratio>> Mul<R> for Duration {
     type Output = Duration;
 
-    fn mul(mut self, rhs: Ratio) -> Duration {
+    fn mul(mut self, rhs: R) -> Duration {
         self *= rhs;
         self
     }
 }
 
-impl Div<NonZeroRatio> for Duration {
+impl<N: Into<NonZeroRatio>> Div<N> for Duration {
     type Output = Duration;
 
-    fn div(mut self, rhs: NonZeroRatio) -> Duration {
+    fn div(mut self, rhs: N) -> Duration {
         self /= rhs;
         self
     }
@@ -40,26 +40,26 @@ impl Div<NonZeroRatio> for Duration {
 
 // -- ASSIGNMENT OPERATIONS ---
 
-impl AddAssign for Duration {
-    fn add_assign(&mut self, rhs: Duration) {
-        self.whole_notes += rhs.whole_notes;
+impl<D: Into<Duration>> AddAssign<D> for Duration {
+    fn add_assign(&mut self, rhs: D) {
+        self.whole_notes += rhs.into().whole_notes;
     }
 }
 
-impl SubAssign for Duration {
-    fn sub_assign(&mut self, rhs: Duration) {
-        self.whole_notes -= rhs.whole_notes;
+impl<D: Into<Duration>> SubAssign<D> for Duration {
+    fn sub_assign(&mut self, rhs: D) {
+        self.whole_notes -= rhs.into().whole_notes;
     }
 }
 
-impl MulAssign<Ratio> for Duration {
-    fn mul_assign(&mut self, rhs: Ratio) {
+impl<R: Into<Ratio>> MulAssign<R> for Duration {
+    fn mul_assign(&mut self, rhs: R) {
         self.whole_notes *= rhs;
     }
 }
 
-impl DivAssign<NonZeroRatio> for Duration {
-    fn div_assign(&mut self, rhs: NonZeroRatio) {
+impl<N: Into<NonZeroRatio>> DivAssign<N> for Duration {
+    fn div_assign(&mut self, rhs: N) {
         self.whole_notes /= rhs;
     }
 }

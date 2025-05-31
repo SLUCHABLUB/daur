@@ -17,7 +17,6 @@ impl Add<Instant> for metre::Instant {
     }
 }
 
-// TODO: derive
 impl Sub for Instant {
     type Output = Duration;
 

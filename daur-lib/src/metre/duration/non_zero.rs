@@ -1,6 +1,5 @@
 use crate::NonZeroRatio;
 use crate::metre::Duration;
-use std::ops::{Div, DivAssign};
 
 /// A non-zero duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
@@ -29,31 +28,5 @@ impl NonZeroDuration {
         Some(NonZeroDuration {
             whole_notes: NonZeroRatio::from_ratio(duration.whole_notes)?,
         })
-    }
-}
-
-// TODO: derive
-impl Div for NonZeroDuration {
-    type Output = NonZeroRatio;
-
-    fn div(self, rhs: Self) -> Self::Output {
-        self.whole_notes / rhs.whole_notes
-    }
-}
-
-// TODO: derive
-impl Div<NonZeroRatio> for NonZeroDuration {
-    type Output = NonZeroDuration;
-
-    fn div(mut self, rhs: NonZeroRatio) -> Self::Output {
-        self /= rhs;
-        self
-    }
-}
-
-// TODO: derive
-impl DivAssign<NonZeroRatio> for NonZeroDuration {
-    fn div_assign(&mut self, rhs: NonZeroRatio) {
-        self.whole_notes /= rhs;
     }
 }

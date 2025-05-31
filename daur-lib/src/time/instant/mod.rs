@@ -1,10 +1,11 @@
 mod non_zero;
+mod ops;
 
 pub use non_zero::NonZeroInstant;
 
 use crate::audio::sample;
 use crate::time::Duration;
-use std::ops::{Add, AddAssign, Mul, Sub};
+use std::ops::Mul;
 
 /// An instant in real time.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
@@ -18,30 +19,6 @@ impl Instant {
     pub const START: Instant = Instant {
         since_start: Duration::ZERO,
     };
-}
-
-// TODO: derive
-impl Add<Duration> for Instant {
-    type Output = Instant;
-
-    fn add(mut self, rhs: Duration) -> Instant {
-        self += rhs;
-        self
-    }
-}
-
-impl AddAssign<Duration> for Instant {
-    fn add_assign(&mut self, rhs: Duration) {
-        self.since_start += rhs;
-    }
-}
-
-impl Sub for Instant {
-    type Output = Duration;
-
-    fn sub(self, rhs: Self) -> Duration {
-        self.since_start - rhs.since_start
-    }
 }
 
 impl Mul<sample::Rate> for Instant {

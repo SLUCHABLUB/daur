@@ -6,60 +6,60 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, Sub, SubAssi
 
 // --- INFIX OPERATIONS ---
 
-impl Add for Length {
+impl<L: Into<Length>> Add<L> for Length {
     type Output = Length;
 
-    fn add(self, rhs: Length) -> Self::Output {
+    fn add(self, rhs: L) -> Self::Output {
         Length {
-            pixels: self.pixels.saturating_add(rhs.pixels),
+            pixels: self.pixels.saturating_add(rhs.into().pixels),
         }
     }
 }
 
-impl Sub for Length {
+impl<L: Into<Length>> Sub<L> for Length {
     type Output = Length;
 
-    fn sub(self, rhs: Length) -> Self::Output {
+    fn sub(self, rhs: L) -> Self::Output {
         Length {
-            pixels: self.pixels.saturating_sub(rhs.pixels),
+            pixels: self.pixels.saturating_sub(rhs.into().pixels),
         }
     }
 }
 
-impl Mul<Ratio> for Length {
+impl<R: Into<Ratio>> Mul<R> for Length {
     type Output = Length;
 
-    fn mul(self, rhs: Ratio) -> Self::Output {
+    fn mul(self, rhs: R) -> Self::Output {
         let pixels = (Ratio::from(self.pixels) * rhs).round().saturating_cast();
         Length { pixels }
     }
 }
 
-impl Div<NonZeroRatio> for Length {
+impl<N: Into<NonZeroRatio>> Div<N> for Length {
     type Output = Length;
 
-    fn div(self, rhs: NonZeroRatio) -> Self::Output {
+    fn div(self, rhs: N) -> Self::Output {
         #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
-        self * rhs.reciprocal().get()
+        self * rhs.into().reciprocal().get()
     }
 }
 
 // --- ASSIGNMENT OPERATIONS ---
 
-impl AddAssign for Length {
-    fn add_assign(&mut self, rhs: Self) {
+impl<L: Into<Length>> AddAssign<L> for Length {
+    fn add_assign(&mut self, rhs: L) {
         *self = *self + rhs;
     }
 }
 
-impl SubAssign for Length {
-    fn sub_assign(&mut self, rhs: Self) {
+impl<L: Into<Length>> SubAssign<L> for Length {
+    fn sub_assign(&mut self, rhs: L) {
         *self = *self - rhs;
     }
 }
 
-impl MulAssign<Ratio> for Length {
-    fn mul_assign(&mut self, rhs: Ratio) {
+impl<R: Into<Ratio>> MulAssign<R> for Length {
+    fn mul_assign(&mut self, rhs: R) {
         *self = *self * rhs;
     }
 }

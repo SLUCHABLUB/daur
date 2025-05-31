@@ -22,19 +22,19 @@ impl Sub<Vector> for Vector {
     }
 }
 
-impl Mul<Ratio> for Vector {
+impl<R: Into<Ratio>> Mul<R> for Vector {
     type Output = Vector;
 
-    fn mul(mut self, rhs: Ratio) -> Vector {
+    fn mul(mut self, rhs: R) -> Vector {
         self *= rhs;
         self
     }
 }
 
-impl Div<NonZeroRatio> for Vector {
+impl<N: Into<NonZeroRatio>> Div<N> for Vector {
     type Output = Vector;
 
-    fn div(mut self, rhs: NonZeroRatio) -> Vector {
+    fn div(mut self, rhs: N) -> Vector {
         self /= rhs;
         self
     }
@@ -56,15 +56,18 @@ impl SubAssign for Vector {
     }
 }
 
-impl MulAssign<Ratio> for Vector {
-    fn mul_assign(&mut self, rhs: Ratio) {
+impl<R: Into<Ratio>> MulAssign<R> for Vector {
+    fn mul_assign(&mut self, rhs: R) {
+        let rhs = rhs.into();
         self.x *= rhs;
         self.y *= rhs;
     }
 }
 
-impl DivAssign<NonZeroRatio> for Vector {
-    fn div_assign(&mut self, rhs: NonZeroRatio) {
+impl<N: Into<NonZeroRatio>> DivAssign<N> for Vector {
+    fn div_assign(&mut self, rhs: N) {
+        let rhs = rhs.into();
+
         self.x /= rhs;
         self.y /= rhs;
     }

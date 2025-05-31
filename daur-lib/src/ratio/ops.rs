@@ -4,12 +4,12 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 // --- INFIX OPERATIONS ---
 
-impl Add for Ratio {
+impl<R: Into<Ratio>> Add<R> for Ratio {
     type Output = Ratio;
 
-    fn add(self, rhs: Ratio) -> Ratio {
+    fn add(self, rhs: R) -> Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
-        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
+        let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
         let lcm = lcm(lhs_denominator, rhs_denominator);
 
@@ -21,12 +21,12 @@ impl Add for Ratio {
     }
 }
 
-impl Sub for Ratio {
+impl<R: Into<Ratio>> Sub<R> for Ratio {
     type Output = Ratio;
 
-    fn sub(self, rhs: Self) -> Self::Output {
+    fn sub(self, rhs: R) -> Self::Output {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
-        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
+        let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
         let lcm = lcm(lhs_denominator, rhs_denominator);
 
@@ -37,12 +37,12 @@ impl Sub for Ratio {
     }
 }
 
-impl Mul for Ratio {
+impl<R: Into<Ratio>> Mul<R> for Ratio {
     type Output = Ratio;
 
-    fn mul(self, rhs: Ratio) -> Ratio {
+    fn mul(self, rhs: R) -> Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
-        let (rhs_numerator, rhs_denominator) = rhs.big_raw();
+        let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
         Ratio::approximate_big(
             lhs_numerator.saturating_mul(rhs_numerator),
@@ -51,47 +51,47 @@ impl Mul for Ratio {
     }
 }
 
-impl Div<NonZeroRatio> for Ratio {
+impl<N: Into<NonZeroRatio>> Div<N> for Ratio {
     type Output = Ratio;
 
-    fn div(self, rhs: NonZeroRatio) -> Ratio {
+    fn div(self, rhs: N) -> Ratio {
         #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
-        self * rhs.reciprocal().get()
+        self * rhs.into().reciprocal().get()
     }
 }
 
 // --- ASSIGNMENT OPERATIONS ---
 
-impl AddAssign for Ratio {
-    fn add_assign(&mut self, rhs: Ratio) {
+impl<R: Into<Ratio>> AddAssign<R> for Ratio {
+    fn add_assign(&mut self, rhs: R) {
         *self = *self + rhs;
     }
 }
 
-impl SubAssign for Ratio {
-    fn sub_assign(&mut self, rhs: Self) {
+impl<R: Into<Ratio>> SubAssign<R> for Ratio {
+    fn sub_assign(&mut self, rhs: R) {
         *self = *self - rhs;
     }
 }
 
-impl MulAssign for Ratio {
-    fn mul_assign(&mut self, rhs: Self) {
+impl<R: Into<Ratio>> MulAssign<R> for Ratio {
+    fn mul_assign(&mut self, rhs: R) {
         *self = *self * rhs;
     }
 }
 
-impl DivAssign<NonZeroRatio> for Ratio {
-    fn div_assign(&mut self, rhs: NonZeroRatio) {
+impl<N: Into<NonZeroRatio>> DivAssign<N> for Ratio {
+    fn div_assign(&mut self, rhs: N) {
         *self = *self / rhs;
     }
 }
 
 // --- NON-ZERO OPERATIONS ---
 
-impl Div for NonZeroRatio {
+impl<N: Into<NonZeroRatio>> Div<N> for NonZeroRatio {
     type Output = NonZeroRatio;
 
-    fn div(self, rhs: Self) -> Self::Output {
+    fn div(self, rhs: N) -> Self::Output {
         #[expect(
             clippy::unwrap_used,
             reason = "the numerator is non-zero; therefore, the result will be too"
@@ -100,8 +100,8 @@ impl Div for NonZeroRatio {
     }
 }
 
-impl DivAssign for NonZeroRatio {
-    fn div_assign(&mut self, rhs: Self) {
+impl<N: Into<NonZeroRatio>> DivAssign<N> for NonZeroRatio {
+    fn div_assign(&mut self, rhs: N) {
         *self = *self / rhs;
     }
 }
