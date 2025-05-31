@@ -40,3 +40,4 @@ clack-host = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0",
 clack-plugin = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0" }
 sorted-vec = "0.8.6"
 typed-builder = "0.21.0"
+log = "0.4.27"

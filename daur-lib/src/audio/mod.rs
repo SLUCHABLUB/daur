@@ -19,6 +19,7 @@ use crate::{Ratio, time};
 use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
+use log::error;
 use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
 use std::borrow::Cow;
 use std::cmp::max;
@@ -92,8 +93,7 @@ impl Audio {
             Ok(audio) => Cow::Owned(audio),
             // this should be unreachable
             Err(error) => {
-                // TODO: log the error
-                drop(error);
+                error!("Error when trying to resample audio: {error} ({error:?})");
                 Cow::Borrowed(self)
             }
         }

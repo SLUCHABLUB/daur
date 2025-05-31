@@ -4,6 +4,7 @@ pub use on_click::OnClick;
 
 use crate::view::{Alignment, ToText as _, View};
 use arcstr::ArcStr;
+use log::warn;
 
 impl View {
     /// Turns the view into a button.
@@ -41,7 +42,7 @@ impl View {
                 view: Box::new(view.with_thickness(status)),
             }
         } else {
-            // TODO: log that nothing happened
+            warn!("`with_selection_status` was called on a non-clickable view");
             self
         }
     }

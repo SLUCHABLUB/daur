@@ -4,6 +4,7 @@ use crate::view::context::Menu;
 use crate::view::{RenderArea, SelectableItem};
 use crate::{HoldableObject, View};
 use arcstr::ArcStr;
+use log::warn;
 
 impl View {
     /// Puts a border around the view.
@@ -115,7 +116,7 @@ impl View {
                 croppable,
             }
         } else {
-            // TODO: log that nothing happened
+            warn!("`with_thickness` was called on a non-bordered view.");
             self
         }
     }
