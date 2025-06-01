@@ -104,6 +104,7 @@ impl Project {
                 } else if let Some(clips) = selection.take_clips() {
                     Action::Track(track::Action::DeleteClips(clips))
                 } else if let Some(tracks) = selection.take_tracks() {
+                    // TODO: delete all selected clips (even those not in the top track)
                     Action::DeleteTracks(tracks)
                 } else {
                     // Nothing is selected.
@@ -118,11 +119,10 @@ impl Project {
                     let index = self.tracks.get_index_of(&track)?;
                     let track = self.tracks.shift_remove(&track)?;
 
-                    Some((index, track))
+                    Some(HistoryEntry::DeleteTrack { index, track })
                 })
                 .try_collect1()
-                .ok()
-                .map(HistoryEntry::DeleteTracks)),
+                .ok()),
             Action::SetKey { instant, key } => {
                 let old = if let Some(position) = NonZeroInstant::from_instant(instant) {
                     self.key.changes.insert(position, key)

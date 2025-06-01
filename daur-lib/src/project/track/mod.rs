@@ -207,23 +207,17 @@ impl Track {
 
                 clip.take_action(clip_start, action)
             }
-            Action::DeleteClips(clips) => {
-                let Ok(clips) = clips
-                    .into_iter()
-                    .filter_map(|id| {
-                        let start = self.clip_starts.remove(&id)?;
-                        self.clip_ids.remove(&start);
-                        let clip = self.clips.remove(&id)?;
+            Action::DeleteClips(clips) => Ok(clips
+                .into_iter()
+                .filter_map(|id| {
+                    let start = self.clip_starts.remove(&id)?;
+                    self.clip_ids.remove(&start);
+                    let clip = self.clips.remove(&id)?;
 
-                        Some((start, clip))
-                    })
-                    .try_collect1()
-                else {
-                    return Ok(None);
-                };
-
-                Ok(Some(HistoryEntry::DeleteClips(clips)))
-            }
+                    Some(HistoryEntry::DeleteClip { start, clip })
+                })
+                .try_collect1()
+                .ok()),
             Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {
                     bail!(NoExtensionError { file });
