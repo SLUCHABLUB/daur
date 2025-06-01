@@ -1,8 +1,8 @@
 use crate::app::Action;
 use crate::ui::{Length, Vector, relative};
+use crate::view::RenderArea;
 use crate::view::context::Menu;
-use crate::view::{RenderArea, SelectableItem};
-use crate::{HoldableObject, View};
+use crate::{HoldableObject, Selectable, View};
 use arcstr::ArcStr;
 use log::warn;
 
@@ -66,7 +66,7 @@ impl View {
     }
 
     /// Makes the view selectable.
-    pub fn selectable(self, item: SelectableItem) -> Self {
+    pub fn selectable(self, item: Selectable) -> Self {
         View::Selectable {
             item,
             view: Box::new(self),

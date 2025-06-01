@@ -3,9 +3,10 @@ use crate::audio::Player;
 use crate::metre::{Changing, Instant, OffsetMapping, Quantisation, TimeContext};
 use crate::project::track::{overview, settings};
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
+use crate::select::Selection;
 use crate::ui::Length;
 use crate::view::{Axis, CursorWindow, OnClick, View, ruler};
-use crate::{Project, Selection, UserInterface, ui};
+use crate::{Project, UserInterface, ui};
 
 pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
@@ -22,7 +23,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let time_context = project.time_context();
 
     for track in project.tracks.values() {
-        let selected = selection.track == track.id();
+        let selected = selection.contains_track(track.id());
 
         track_settings.push(settings(track, selected));
         track_overviews.push(overview(

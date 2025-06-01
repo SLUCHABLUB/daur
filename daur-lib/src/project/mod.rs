@@ -21,13 +21,15 @@ pub(crate) use workspace::workspace;
 
 use crate::metre::{Changing, Instant, NonZeroInstant, TimeContext, TimeSignature};
 use crate::note::Key;
+use crate::project::track::{Clip, clip};
+use crate::select::Selection;
 use crate::time::Tempo;
-use crate::{Id, Selection};
 use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
-use std::mem::{replace, take};
+use mitsein::iter1::IteratorExt as _;
+use std::mem::replace;
 use thiserror::Error;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
@@ -57,14 +59,20 @@ pub struct Project {
     key: Changing<Key>,
 
     /// The tracks in the project.
-    tracks: IndexMap<Id<Track>, Track>,
+    tracks: IndexMap<track::Id, Track>,
 }
 
 impl Project {
     /// Returns a reference to a track.
     #[must_use]
-    pub(super) fn track(&self, id: Id<Track>) -> Option<&Track> {
+    pub(super) fn track(&self, id: track::Id) -> Option<&Track> {
         self.tracks.get(&id)
+    }
+
+    /// Returns a reference to a clip.
+    #[must_use]
+    pub(super) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
+        self.track(id.track())?.clip(id)
     }
 
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {
@@ -84,37 +92,37 @@ impl Project {
                 let track = Track::new();
                 let id = track.id();
 
-                selection.track = id;
+                selection.push_track(id);
                 self.tracks.insert(id, track);
 
                 Ok(Some(HistoryEntry::AddTrack(id)))
             }
             Action::Delete => {
-                let action = if selection.clips.is_empty() {
-                    Action::DeleteTrack(selection.track)
+                let action = if let Some(_notes) = selection.take_notes() {
+                    // TODO: delete notes
+                    return Ok(None);
+                } else if let Some(clips) = selection.take_clips() {
+                    Action::Track(track::Action::DeleteClips(clips))
+                } else if let Some(tracks) = selection.take_tracks() {
+                    Action::DeleteTracks(tracks)
                 } else {
-                    let action = if selection.notes.is_empty() {
-                        track::Action::DeleteClips(take(&mut selection.clips))
-                    } else {
-                        // TODO: delete notes
-                        return Ok(None);
-                    };
-
-                    Action::Track(action)
+                    // Nothing is selected.
+                    return Ok(None);
                 };
 
                 self.take_action(action, cursor, selection)
             }
-            Action::DeleteTrack(track) => {
-                let Some(index) = self.tracks.get_index_of(&track) else {
-                    return Ok(None);
-                };
-                let Some(track) = self.tracks.shift_remove(&track) else {
-                    return Ok(None);
-                };
+            Action::DeleteTracks(tracks) => Ok(tracks
+                .into_iter()
+                .filter_map(|track| {
+                    let index = self.tracks.get_index_of(&track)?;
+                    let track = self.tracks.shift_remove(&track)?;
 
-                Ok(Some(HistoryEntry::DeleteTrack { index, track }))
-            }
+                    Some((index, track))
+                })
+                .try_collect1()
+                .ok()
+                .map(HistoryEntry::DeleteTracks)),
             Action::SetKey { instant, key } => {
                 let old = if let Some(position) = NonZeroInstant::from_instant(instant) {
                     self.key.changes.insert(position, key)
@@ -131,8 +139,12 @@ impl Project {
             Action::Track(action) => {
                 let time_context = self.time_context();
 
+                let Some(track) = selection.top_track() else {
+                    return Ok(None);
+                };
+
                 self.tracks
-                    .get_mut(&selection.track)
+                    .get_mut(&track)
                     .ok_or(NoTrackSelected)?
                     .take_action(action, cursor, selection, &time_context)
             }

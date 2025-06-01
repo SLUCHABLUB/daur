@@ -18,7 +18,6 @@ mod minimum_size;
 mod quotum;
 mod render_area;
 mod ruler;
-mod selectable_item;
 mod text;
 
 pub use alignment::Alignment;
@@ -30,15 +29,14 @@ pub use file_selector::file_selector;
 pub use quotum::{Quotated, Quotated2D, Quotum, Quotum2D};
 pub use render_area::RenderArea;
 pub use ruler::ruler;
-pub use selectable_item::SelectableItem;
 pub use text::ToText;
 
 pub(crate) use feed::feed;
 
-use crate::HoldableObject;
 use crate::app::Action;
 use crate::ui::{Colour, ThemeColour, Vector, relative};
 use crate::view::context::Menu;
+use crate::{HoldableObject, Selectable};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use std::num::NonZeroU64;
@@ -145,7 +143,7 @@ pub enum View {
     /// A view that can be selected.
     Selectable {
         /// The item to be selected.
-        item: SelectableItem,
+        item: Selectable,
         /// The view.
         view: Box<Self>,
     },

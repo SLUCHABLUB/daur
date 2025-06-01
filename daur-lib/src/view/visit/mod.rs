@@ -13,8 +13,8 @@ pub use scroller::Scroller;
 use crate::app::Action;
 use crate::ui::{Colour, Length, Rectangle, Size, ThemeColour, Vector};
 use crate::view::context::Menu;
-use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
-use crate::{HoldableObject, Ratio, UserInterface, View};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
+use crate::{HoldableObject, Ratio, Selectable, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
 
@@ -52,7 +52,7 @@ pub trait Visitor {
     fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64);
 
     /// Visits a selectable view.
-    fn visit_selectable(&mut self, area: Rectangle, item: SelectableItem);
+    fn visit_selectable(&mut self, area: Rectangle, item: Selectable);
 
     /// Visits a selection box.
     fn visit_selection_box(&mut self, area: Rectangle);

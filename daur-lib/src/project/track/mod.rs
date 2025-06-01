@@ -2,12 +2,14 @@
 
 mod action;
 pub mod clip;
+mod id;
 mod overview;
 mod settings;
 
 pub use action::Action;
 #[doc(inline)]
 pub use clip::Clip;
+pub use id::Id;
 
 pub(crate) use overview::overview;
 pub(crate) use settings::settings;
@@ -17,7 +19,8 @@ use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Duration, Instant, NonZeroDuration, TimeContext};
 use crate::note::Event;
 use crate::project::HistoryEntry;
-use crate::{Audio, Id, NonZeroRatio, Selection};
+use crate::select::Selection;
+use crate::{Audio, NonZeroRatio};
 use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
@@ -66,16 +69,16 @@ struct EmptyAudioFile;
 #[derive(Debug, Getters, MutGetters, CopyGetters)]
 pub struct Track {
     #[get_copy = "pub(super)"]
-    id: Id<Track>,
+    id: Id,
     /// The name of the track.
     name: ArcStr,
     // TODO: use `Dimap<Instant, Id<Clip>, Clip, Bi<Btree, StdHash>, StdHash>`
     /// The clips in the track.
-    clip_ids: BTreeMap<Instant, Id<Clip>>,
-    clip_starts: HashMap<Id<Clip>, Instant>,
+    clip_ids: BTreeMap<Instant, clip::Id>,
+    clip_starts: HashMap<clip::Id, Instant>,
     // TODO: remove getter
     #[get_mut = "pub(super)"]
-    clips: HashMap<Id<Clip>, Clip>,
+    clips: HashMap<clip::Id, Clip>,
 }
 
 impl Track {
@@ -93,7 +96,7 @@ impl Track {
 
     /// Returns a reference to a clip.
     #[must_use]
-    pub(crate) fn clip(&self, id: Id<Clip>) -> Option<(Instant, &Clip)> {
+    pub(crate) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
         let clip = self.clips.get(&id)?;
         let start = self.clip_starts.get(&id)?;
         Some((*start, clip))
@@ -186,18 +189,15 @@ impl Track {
         #[sorted]
         match action {
             Action::AddNotes => {
-                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION);
+                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION, self.id);
                 let id = clip.id();
 
                 self.try_insert_clip(cursor, clip)?;
 
-                Ok(Some(HistoryEntry::InsertClip {
-                    track: self.id,
-                    clip: id,
-                }))
+                Ok(Some(HistoryEntry::InsertClip(id)))
             }
             Action::Clip(action) => {
-                let Some(clip_id) = &selection.clips.last() else {
+                let Some(clip_id) = &selection.top_clip() else {
                     return Ok(None);
                 };
 
@@ -205,7 +205,7 @@ impl Track {
 
                 let clip_start = *self.clip_starts.get(&clip.id()).ok_or(NoClipSelected)?;
 
-                clip.take_action(self.id, clip_start, action)
+                clip.take_action(clip_start, action)
             }
             Action::DeleteClips(clips) => {
                 let Ok(clips) = clips
@@ -215,7 +215,7 @@ impl Track {
                         self.clip_ids.remove(&start);
                         let clip = self.clips.remove(&id)?;
 
-                        Some((self.id, start, clip))
+                        Some((start, clip))
                     })
                     .try_collect1()
                 else {
@@ -251,12 +251,9 @@ impl Track {
                     .map(ArcStr::from)
                     .unwrap_or_default();
 
-                let clip = Clip::from_audio(name, audio);
+                let clip = Clip::from_audio(name, audio, self.id);
 
-                let entry = HistoryEntry::InsertClip {
-                    track: self.id,
-                    clip: clip.id(),
-                };
+                let entry = HistoryEntry::InsertClip(clip.id());
 
                 self.try_insert_clip(cursor, clip).map(|()| Some(entry))
             }

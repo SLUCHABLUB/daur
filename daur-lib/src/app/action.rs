@@ -1,11 +1,10 @@
 use crate::app::Actions;
 use crate::metre::Instant;
 use crate::popup::Specification;
-use crate::project::track::Clip;
-use crate::project::{Track, track};
+use crate::project::track;
 use crate::ui::{Length, Point, Vector};
 use crate::view::context::Menu;
-use crate::{App, HoldableObject, Id, Note, Popup, Selection, UserInterface, project};
+use crate::{App, HoldableObject, Selectable, UserInterface, popup, project};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -20,7 +19,7 @@ pub enum Action {
     /// Opens the context menu.
     CloseContextMenu,
     /// Closes a popup.
-    ClosePopup(Id<Popup>),
+    ClosePopup(popup::Id),
     /// Enters _edit mode_.
     EnterEditMode,
     /// Saves and exits the program
@@ -55,24 +54,8 @@ pub enum Action {
     Play,
     /// A project action.
     Project(project::Action),
-    /// Selects a clip in a track.
-    SelectClip {
-        /// The id of the track in which the clip resides.
-        track: Id<Track>,
-        /// The id of the clip to select.
-        clip: Id<Clip>,
-    },
-    /// Selects a note.
-    SelectNote {
-        /// The id of the track in which the clip resides.
-        track: Id<Track>,
-        /// The id of the clip in which the note resides.
-        clip: Id<Clip>,
-        /// The id of the clip to select.
-        note: Id<Note>,
-    },
-    /// Selects a track.
-    SelectTrack(Id<Track>),
+    /// Selects an item.
+    Select(Selectable),
     /// Toggles _edit mode_.
     ToggleEditMode,
     /// Sets the piano roll's height to half of the screen height.
@@ -123,7 +106,7 @@ impl<Ui: UserInterface> App<Ui> {
         #[sorted]
         match action {
             Action::ClearSelection => {
-                self.selection = Selection::default();
+                self.selection.clear();
             }
             Action::CloseContextMenu => {
                 self.context_menu = None;
@@ -194,20 +177,8 @@ impl<Ui: UserInterface> App<Ui> {
                     self.audio_config.sample_rate()?,
                 );
             }
-            Action::SelectClip { track, clip, .. } => {
-                self.selection.track = track;
-                self.selection.clips.push(clip);
-            }
-            Action::SelectNote { .. } => {
-                // TODO: select the note
-            }
-            Action::SelectTrack(track) => {
-                if self.selection.track != track {
-                    self.selection.clips.clear();
-                    self.selection.notes.clear();
-                }
-
-                self.selection.track = track;
+            Action::Select(item) => {
+                self.selection.push(item);
             }
             Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
             Action::TogglePianoRoll => {

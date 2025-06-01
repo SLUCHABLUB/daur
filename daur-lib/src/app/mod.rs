@@ -10,9 +10,10 @@ pub use actions::Actions;
 use crate::app::view::view;
 use crate::audio::Config;
 use crate::metre::{Instant, NonZeroDuration, Quantisation};
+use crate::select::Selection;
 use crate::ui::Theme;
 use crate::view::context::MenuInstance;
-use crate::{HoldableObject, PianoRoll, Selection, UserInterface, View, popup, project, ui};
+use crate::{HoldableObject, PianoRoll, UserInterface, View, popup, project, ui};
 use derive_more::Debug;
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 

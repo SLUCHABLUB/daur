@@ -1,6 +1,6 @@
-use crate::Selection;
 use crate::metre::Instant;
 use crate::project::{Action, HistoryEntry, Project};
+use crate::select::Selection;
 use anyhow::Result;
 use getset::Getters;
 

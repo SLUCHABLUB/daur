@@ -1,12 +1,13 @@
-use crate::Selection;
+use crate::Selectable;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
 use crate::project::Track;
 use crate::project::track::clip;
+use crate::select::Selection;
 use crate::ui::Length;
 use crate::view::context::Menu;
-use crate::view::{CursorWindow, SelectableItem, View};
+use crate::view::{CursorWindow, View};
 
 // TODO: add a selection box
 /// Returns the track overview.
@@ -38,12 +39,11 @@ pub(crate) fn overview(
                 let clip_end = clip_start + clip.duration().get();
                 let clip_end_offset = offset_mapping.offset(clip_end) - negative_overview_offset;
 
-                let selected = selection.clips.contains(&clip.id());
+                let selected = selection.contains_clip(clip.id());
 
                 let clip_width = clip_end_offset - clip_offset;
 
-                let overview =
-                    clip::overview(clip, track.id, selected, offset_mapping.clone(), start_crop);
+                let overview = clip::overview(clip, selected, offset_mapping.clone(), start_crop);
 
                 overview.quotated(clip_width).x_positioned(clip_offset)
             })
@@ -63,5 +63,5 @@ pub(crate) fn overview(
     ])
     .contextual(Menu::track_overview())
     .scrollable(Action::MoveOverview)
-    .selectable(SelectableItem::Track(track.id))
+    .selectable(Selectable::Track(track.id))
 }

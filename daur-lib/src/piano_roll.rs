@@ -3,10 +3,11 @@ use crate::audio::Player;
 use crate::metre::{Changing, Instant, NonZeroDuration, OffsetMapping, Quantisation, TimeContext};
 use crate::note::{Group, Interval, Key, Pitch};
 use crate::project::track;
-use crate::project::track::{Clip, clip};
+use crate::project::track::clip;
+use crate::select::Selection;
 use crate::ui::{Colour, Length, NonZeroLength, Size, ThemeColour, Vector, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
-use crate::{HoldableObject, Project, Ratio, Selection, UserInterface, View, project};
+use crate::{HoldableObject, Project, Ratio, UserInterface, View, project};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use getset::{CopyGetters, Setters};
@@ -90,16 +91,13 @@ impl PianoRoll {
             return Quotated::EMPTY;
         }
 
-        let (clip_start, clip) = project
-            .track(selection.track)
-            .and_then(|track| track.clip(*selection.clips.last()?))
-            .map_or((Instant::START, None), |(start, clip)| (start, Some(clip)));
-
-        let title = clip.map_or(PIANO_ROLL, Clip::name);
+        let title = selection
+            .top_clip()
+            .and_then(|id| project.clip(id))
+            .map_or(PIANO_ROLL, |(_, clip)| clip.name());
 
         let view = self.content::<Ui>(
-            clip,
-            clip_start,
+            selection,
             project,
             quantisation,
             player,
@@ -119,8 +117,7 @@ impl PianoRoll {
     #[expect(clippy::too_many_arguments, reason = "the method is private")]
     fn content<Ui: UserInterface>(
         self,
-        clip: Option<&Clip>,
-        clip_start: Instant,
+        selection: &Selection,
         project: &Project,
         quantisation: Quantisation,
         player: Option<Player>,
@@ -128,7 +125,8 @@ impl PianoRoll {
         held_object: Option<HoldableObject>,
         edit_mode: bool,
     ) -> View {
-        let Some(clip) = clip else {
+        let Some((clip_start, clip)) = selection.top_clip().and_then(|clip| project.clip(clip))
+        else {
             return NO_CLIP_SELECTED.centred();
         };
 

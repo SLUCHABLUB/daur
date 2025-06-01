@@ -1,9 +1,9 @@
-use crate::HoldableObject;
 use crate::app::{Action, Actions};
 use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
-use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
+use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
+use crate::{HoldableObject, Selectable};
 use std::num::NonZeroU64;
 
 // TODO: make private
@@ -102,9 +102,9 @@ impl Visitor for Clicker<'_> {
 
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 
-    fn visit_selectable(&mut self, area: Rectangle, item: SelectableItem) {
+    fn visit_selectable(&mut self, area: Rectangle, item: Selectable) {
         if area.contains(self.position) {
-            self.actions.push(item.select());
+            self.actions.push(Action::Select(item));
         }
     }
 

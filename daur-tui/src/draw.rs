@@ -5,8 +5,8 @@ use daur::app::Action;
 use daur::ui::{Colour, Length, Offset, Rectangle, Size, Theme, ThemeColour, Vector};
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
-use daur::view::{Alignment, DropAction, OnClick, Painter, SelectableItem};
-use daur::{App, HoldableObject, UserInterface as _};
+use daur::view::{Alignment, DropAction, OnClick, Painter};
+use daur::{App, HoldableObject, Selectable, UserInterface as _};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::symbols::border::{PLAIN, THICK};
@@ -117,7 +117,7 @@ impl Visitor for Renderer<'_> {
         .render(area, self.buffer);
     }
 
-    fn visit_selectable(&mut self, _: Rectangle, _: SelectableItem) {}
+    fn visit_selectable(&mut self, _: Rectangle, _: Selectable) {}
 
     fn visit_selection_box(&mut self, area: Rectangle) {
         self.visit_border(area, false);

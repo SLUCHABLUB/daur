@@ -2,19 +2,21 @@
 
 mod action;
 mod content;
+mod id;
 mod overview;
 
 pub use action::Action;
 pub use content::Content;
+pub use id::Id;
 
 pub(crate) use overview::overview;
 
 use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext};
 use crate::note::{Event, NoteInsertionError};
-use crate::project::{HistoryEntry, Track};
+use crate::project::{HistoryEntry, track};
 use crate::ui::Colour;
-use crate::{Id, Note, note};
+use crate::{Note, note};
 use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
@@ -44,7 +46,7 @@ struct NoNotesSelected;
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct Clip {
     #[get_copy = "pub(super)"]
-    id: Id<Clip>,
+    id: Id,
     /// The name of the clip.
     #[get_clone = "pub"]
     name: ArcStr,
@@ -58,9 +60,9 @@ pub struct Clip {
 
 impl Clip {
     #[must_use]
-    pub(crate) fn from_audio(name: ArcStr, audio: FixedLength) -> Clip {
+    pub(crate) fn from_audio(name: ArcStr, audio: FixedLength, track: track::Id) -> Clip {
         Clip {
-            id: Id::generate(),
+            id: Id::generate(track),
             name,
             colour: DEFAULT_AUDIO_COLOUR,
             content: Content::Audio(audio),
@@ -68,9 +70,9 @@ impl Clip {
     }
 
     #[must_use]
-    pub(crate) fn empty_notes(duration: NonZeroDuration) -> Clip {
+    pub(crate) fn empty_notes(duration: NonZeroDuration, track: track::Id) -> Clip {
         Clip {
-            id: Id::generate(),
+            id: Id::generate(track),
             name: DEFAULT_NOTES_NAME,
             colour: DEFAULT_NOTES_COLOUR,
             content: Content::Notes(note::Group::empty(duration)),
@@ -97,7 +99,6 @@ impl Clip {
     #[remain::check]
     pub(crate) fn take_action(
         &mut self,
-        track: Id<Track>,
         clip_position: Instant,
         action: Action,
     ) -> Result<Option<HistoryEntry>> {
@@ -122,13 +123,9 @@ impl Clip {
 
                 let position = note_position.relative_to(clip_position);
 
-                let note = Note::new(duration);
+                let note = Note::new(duration, self.id);
 
-                let entry = HistoryEntry::InsertNote {
-                    track,
-                    clip: self.id,
-                    note: note.id(),
-                };
+                let entry = HistoryEntry::InsertNote(note.id());
 
                 let entry = self
                     .content
