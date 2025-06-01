@@ -16,11 +16,13 @@ use crate::audio::sample::Pair;
 use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Duration, Instant, NonZeroDuration, TimeContext};
 use crate::note::Event;
+use crate::project::HistoryEntry;
 use crate::{Audio, Id, NonZeroRatio, Selection};
 use anyhow::{Result, bail};
 use arcstr::{ArcStr, literal};
 use getset::{CopyGetters, Getters, MutGetters};
 use hound::WavReader;
+use mitsein::iter1::IteratorExt as _;
 use non_zero::non_zero;
 use sorted_vec::SortedVec;
 use std::collections::{BTreeMap, HashMap};
@@ -180,22 +182,47 @@ impl Track {
         cursor: Instant,
         selection: &mut Selection,
         time_context: &Changing<TimeContext>,
-    ) -> Result<()> {
+    ) -> Result<Option<HistoryEntry>> {
         #[sorted]
         match action {
             Action::AddNotes => {
-                self.try_insert_clip(cursor, Clip::empty_notes(DEFAULT_NOTES_DURATION))
+                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION);
+                let id = clip.id();
+
+                self.try_insert_clip(cursor, clip)?;
+
+                Ok(Some(HistoryEntry::InsertClip {
+                    track: self.id,
+                    clip: id,
+                }))
             }
             Action::Clip(action) => {
                 let Some(clip_id) = &selection.clips.last() else {
-                    return Ok(());
+                    return Ok(None);
                 };
 
                 let clip = self.clips.get_mut(clip_id).ok_or(NoClipSelected)?;
 
                 let clip_start = *self.clip_starts.get(&clip.id()).ok_or(NoClipSelected)?;
 
-                clip.take_action(clip_start, action)
+                clip.take_action(self.id, clip_start, action)
+            }
+            Action::DeleteClips(clips) => {
+                let Ok(clips) = clips
+                    .into_iter()
+                    .filter_map(|id| {
+                        let start = self.clip_starts.remove(&id)?;
+                        self.clip_ids.remove(&start);
+                        let clip = self.clips.remove(&id)?;
+
+                        Some((self.id, start, clip))
+                    })
+                    .try_collect1()
+                else {
+                    return Ok(None);
+                };
+
+                Ok(Some(HistoryEntry::DeleteClips(clips)))
             }
             Action::ImportAudio { file } => {
                 let Some(extension) = file.extension() else {
@@ -224,7 +251,14 @@ impl Track {
                     .map(ArcStr::from)
                     .unwrap_or_default();
 
-                self.try_insert_clip(cursor, Clip::from_audio(name, audio))
+                let clip = Clip::from_audio(name, audio);
+
+                let entry = HistoryEntry::InsertClip {
+                    track: self.id,
+                    clip: clip.id(),
+                };
+
+                self.try_insert_clip(cursor, clip).map(|()| Some(entry))
             }
         }
     }

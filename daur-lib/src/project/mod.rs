@@ -4,6 +4,7 @@ pub mod track;
 
 mod action;
 mod bar;
+mod history;
 mod manager;
 mod renderer;
 mod workspace;
@@ -14,6 +15,7 @@ pub use manager::Manager;
 pub use track::Track;
 
 pub(crate) use bar::bar;
+pub(crate) use history::HistoryEntry;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
@@ -25,8 +27,7 @@ use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
-use indexmap::map::Entry as IndexEntry;
-use std::collections::hash_map::Entry as StdEntry;
+use std::mem::{replace, take};
 use thiserror::Error;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
@@ -70,50 +71,62 @@ impl Project {
         &self.time_signature / &self.tempo
     }
 
-    // TODO: return a history entry
     #[remain::check]
     pub(crate) fn take_action(
         &mut self,
         action: Action,
         cursor: Instant,
         selection: &mut Selection,
-    ) -> Result<()> {
+    ) -> Result<Option<HistoryEntry>> {
         #[sorted]
         match action {
             Action::AddTrack => {
                 let track = Track::new();
-                selection.track = track.id();
-                self.tracks.insert(track.id(), track);
-                Ok(())
+                let id = track.id();
+
+                selection.track = id;
+                self.tracks.insert(id, track);
+
+                Ok(Some(HistoryEntry::AddTrack(id)))
             }
             Action::Delete => {
-                let IndexEntry::Occupied(mut track) = self.tracks.entry(selection.track) else {
-                    return Ok(());
+                let action = if selection.clips.is_empty() {
+                    Action::DeleteTrack(selection.track)
+                } else {
+                    let action = if selection.notes.is_empty() {
+                        track::Action::DeleteClips(take(&mut selection.clips))
+                    } else {
+                        // TODO: delete notes
+                        return Ok(None);
+                    };
+
+                    Action::Track(action)
                 };
 
-                let Some(clip_index) = selection.clips.last() else {
-                    track.shift_remove();
-                    return Ok(());
+                self.take_action(action, cursor, selection)
+            }
+            Action::DeleteTrack(track) => {
+                let Some(index) = self.tracks.get_index_of(&track) else {
+                    return Ok(None);
+                };
+                let Some(track) = self.tracks.shift_remove(&track) else {
+                    return Ok(None);
                 };
 
-                let StdEntry::Occupied(clip) = track.get_mut().clips_mut().entry(*clip_index)
-                else {
-                    track.shift_remove();
-                    return Ok(());
-                };
-
-                // TODO: check if a note is selected, otherwise, remove all selected clips
-                clip.remove();
-
-                Ok(())
+                Ok(Some(HistoryEntry::DeleteTrack { index, track }))
             }
             Action::SetKey { instant, key } => {
-                if let Some(position) = NonZeroInstant::from_instant(instant) {
-                    self.key.changes.insert(position, key);
+                let old = if let Some(position) = NonZeroInstant::from_instant(instant) {
+                    self.key.changes.insert(position, key)
                 } else {
-                    self.key.start = key;
-                }
-                Ok(())
+                    Some(replace(&mut self.key.start, key))
+                };
+
+                Ok(Some(HistoryEntry::SetKey {
+                    at: instant,
+                    to: key,
+                    from: old,
+                }))
             }
             Action::Track(action) => {
                 let time_context = self.time_context();

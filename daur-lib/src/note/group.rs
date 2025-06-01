@@ -9,6 +9,9 @@ use sorted_vec::SortedVec;
 use std::cmp::min;
 use std::collections::HashMap;
 
+/// A note was not inserted.
+pub struct NoteInsertionError;
+
 /// A sequence of musical notes.
 #[derive(Eq, PartialEq, Debug)]
 pub struct Group {
@@ -39,7 +42,12 @@ impl Group {
     /// Tries inserting a note into the group.
     /// Does nothing if there is already a note at that position.
     /// Truncates the note if it goes outside the group or intersects another note.
-    pub(crate) fn try_insert(&mut self, position: relative::Instant, pitch: Pitch, mut note: Note) {
+    pub(crate) fn try_insert(
+        &mut self,
+        position: relative::Instant,
+        pitch: Pitch,
+        mut note: Note,
+    ) -> Result<(), NoteInsertionError> {
         let end_of_group = relative::Instant {
             since_start: self.duration.get(),
         };
@@ -56,7 +64,7 @@ impl Group {
 
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
             // The note was outside the group or intersected another note.
-            return;
+            return Err(NoteInsertionError);
         };
 
         note.duration = min(note.duration, max_duration);
@@ -68,11 +76,17 @@ impl Group {
             .max()
         {
             if position < last_note_end {
-                return;
+                return Err(NoteInsertionError);
             }
         }
 
-        self.notes.entry((position, pitch)).or_insert(note);
+        if self.notes.contains_key(&(position, pitch)) {
+            return Err(NoteInsertionError);
+        }
+
+        self.notes.insert((position, pitch), note);
+
+        Ok(())
     }
 
     pub(crate) fn with_pitch(

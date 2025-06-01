@@ -202,6 +202,11 @@ impl<Ui: UserInterface> App<Ui> {
                 // TODO: select the note
             }
             Action::SelectTrack(track) => {
+                if self.selection.track != track {
+                    self.selection.clips.clear();
+                    self.selection.notes.clear();
+                }
+
                 self.selection.track = track;
             }
             Action::ToggleEditMode => self.edit_mode = !self.edit_mode,

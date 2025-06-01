@@ -1,6 +1,6 @@
 use crate::Selection;
 use crate::metre::Instant;
-use crate::project::{Action, Project};
+use crate::project::{Action, HistoryEntry, Project};
 use anyhow::Result;
 use getset::Getters;
 
@@ -10,7 +10,8 @@ pub struct Manager {
     /// The project.
     #[get = "pub"]
     project: Project,
-    // TODO: history
+    // TODO: undoing
+    history: Vec<HistoryEntry>,
 }
 
 impl Manager {
@@ -20,7 +21,9 @@ impl Manager {
         cursor: Instant,
         selection: &mut Selection,
     ) -> Result<()> {
-        // TODO: add to history
-        self.project.take_action(action, cursor, selection)
+        let entry = self.project.take_action(action, cursor, selection)?;
+        self.history.extend(entry);
+
+        Ok(())
     }
 }

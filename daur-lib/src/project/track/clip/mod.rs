@@ -11,7 +11,8 @@ pub(crate) use overview::overview;
 
 use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext};
-use crate::note::Event;
+use crate::note::{Event, NoteInsertionError};
+use crate::project::{HistoryEntry, Track};
 use crate::ui::Colour;
 use crate::{Id, Note, note};
 use anyhow::Result;
@@ -94,7 +95,12 @@ impl Clip {
     }
 
     #[remain::check]
-    pub(crate) fn take_action(&mut self, clip_position: Instant, action: Action) -> Result<()> {
+    pub(crate) fn take_action(
+        &mut self,
+        track: Id<Track>,
+        clip_position: Instant,
+        action: Action,
+    ) -> Result<Option<HistoryEntry>> {
         #[sorted]
         match action {
             Action::AddNote {
@@ -107,7 +113,8 @@ impl Clip {
                     let Some(max_duration) =
                         NonZeroDuration::from_duration(duration.get() - difference)
                     else {
-                        return Ok(());
+                        // The note was fully outside the clip on the left.
+                        return Ok(None);
                     };
 
                     duration = max_duration;
@@ -115,12 +122,22 @@ impl Clip {
 
                 let position = note_position.relative_to(clip_position);
 
-                self.content
+                let note = Note::new(duration);
+
+                let entry = HistoryEntry::InsertNote {
+                    track,
+                    clip: self.id,
+                    note: note.id(),
+                };
+
+                let entry = self
+                    .content
                     .as_notes_mut()
                     .ok_or(NoNotesSelected)?
-                    .try_insert(position, pitch, Note::new(duration));
+                    .try_insert(position, pitch, note)
+                    .map_or_else(|NoteInsertionError| None, |()| Some(entry));
 
-                Ok(())
+                Ok(entry)
             }
         }
     }

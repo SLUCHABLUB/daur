@@ -19,6 +19,7 @@ pub use pitch::Pitch;
 pub use sign::Sign;
 
 pub(crate) use event::Event;
+pub(crate) use group::NoteInsertionError;
 
 use crate::Id;
 use crate::metre::NonZeroDuration;
@@ -31,6 +32,7 @@ use sign::{FLAT, SHARP};
 #[derive(Eq, PartialEq, Debug, CopyGetters)]
 #[expect(missing_copy_implementations, reason = "`Id`s should be unique")]
 pub struct Note {
+    #[get_copy = "pub(crate)"]
     id: Id<Note>,
     /// The duration of the note.
     #[get_copy = "pub(crate)"]
