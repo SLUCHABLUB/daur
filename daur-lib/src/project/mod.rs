@@ -102,7 +102,7 @@ impl Project {
                     return Ok(());
                 };
 
-                // TODO: check if a note is selected
+                // TODO: check if a note is selected, otherwise, remove all selected clips
                 clip.remove();
 
                 Ok(())
