@@ -187,10 +187,11 @@ impl Track {
                 self.try_insert_clip(cursor, Clip::empty_notes(DEFAULT_NOTES_DURATION))
             }
             Action::Clip(action) => {
-                let clip = self
-                    .clips
-                    .get_mut(&selection.clip())
-                    .ok_or(NoClipSelected)?;
+                let Some(clip_id) = &selection.clips.last() else {
+                    return Ok(());
+                };
+
+                let clip = self.clips.get_mut(clip_id).ok_or(NoClipSelected)?;
 
                 let clip_start = *self.clip_starts.get(&clip.id()).ok_or(NoClipSelected)?;
 

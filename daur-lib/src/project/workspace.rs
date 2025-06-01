@@ -9,7 +9,7 @@ use crate::{Project, Selection, UserInterface, ui};
 
 pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
-    selection: Selection,
+    selection: &Selection,
     ui_settings: ui::Settings,
     quantisation: Quantisation,
     cursor: Instant,
@@ -22,7 +22,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let time_context = project.time_context();
 
     for track in project.tracks.values() {
-        let selected = selection.track() == track.id();
+        let selected = selection.track == track.id();
 
         track_settings.push(settings(track, selected));
         track_overviews.push(overview(

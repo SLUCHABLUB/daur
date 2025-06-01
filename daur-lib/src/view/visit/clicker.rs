@@ -6,6 +6,7 @@ use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea, SelectableItem};
 use std::num::NonZeroU64;
 
+// TODO: make private
 /// A visitor for clicking a view.
 #[derive(Debug)]
 pub struct Clicker<'actions> {
@@ -17,7 +18,15 @@ pub struct Clicker<'actions> {
 
 impl<'actions> Clicker<'actions> {
     /// A clicker using the left mouse button.
-    pub fn left_click(position: Point, actions: &'actions mut Actions) -> Self {
+    pub fn left_click(
+        position: Point,
+        clear_selection: bool,
+        actions: &'actions mut Actions,
+    ) -> Self {
+        if clear_selection {
+            actions.push(Action::ClearSelection);
+        }
+
         Clicker {
             position,
             actions,
@@ -27,7 +36,15 @@ impl<'actions> Clicker<'actions> {
     }
 
     /// A clicker using the right mouse button.
-    pub fn right_click(position: Point, actions: &'actions mut Actions) -> Self {
+    pub fn right_click(
+        position: Point,
+        clear_selection: bool,
+        actions: &'actions mut Actions,
+    ) -> Self {
+        if clear_selection {
+            actions.push(Action::ClearSelection);
+        }
+
         Clicker {
             position,
             actions,

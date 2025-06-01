@@ -12,7 +12,7 @@ use crate::view::{CursorWindow, SelectableItem, View};
 /// Returns the track overview.
 pub(crate) fn overview(
     track: &Track,
-    selection: Selection,
+    selection: &Selection,
     offset_mapping: OffsetMapping,
     time_context: Changing<TimeContext>,
     negative_overview_offset: Length,
@@ -38,7 +38,7 @@ pub(crate) fn overview(
                 let clip_end = clip_start + clip.duration().get();
                 let clip_end_offset = offset_mapping.offset(clip_end) - negative_overview_offset;
 
-                let selected = selection.clip() == clip.id();
+                let selected = selection.clips.contains(&clip.id());
 
                 let clip_width = clip_end_offset - clip_offset;
 

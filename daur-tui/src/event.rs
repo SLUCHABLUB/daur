@@ -1,6 +1,8 @@
 use crate::convert::{to_point, to_size};
 use crate::tui::Tui;
-use crossterm::event::{Event, KeyEvent, KeyEventKind, MouseButton, MouseEvent, MouseEventKind};
+use crossterm::event::{
+    Event, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
+};
 use daur::app::{Action, Actions};
 use daur::ui::{Direction, Length, Point, Rectangle};
 use daur::view::visit::{Clicker, Dropper, Grabber, Scroller};
@@ -52,7 +54,10 @@ fn handle_key_event(
 
 fn handle_mouse_event(
     MouseEvent {
-        kind, column, row, ..
+        kind,
+        column,
+        row,
+        modifiers,
     }: MouseEvent,
     app: &mut App<Tui>,
     actions: &mut Actions,
@@ -78,9 +83,12 @@ fn handle_mouse_event(
             // click
 
             if !ui.mouse_movement_since_mouse_down {
+                // TODO: fix shift
+                let shift = modifiers.contains(KeyModifiers::ALT);
+
                 let mut clicker = match button {
-                    MouseButton::Left => Clicker::left_click(ui.mouse_position, actions),
-                    MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),
+                    MouseButton::Left => Clicker::left_click(ui.mouse_position, !shift, actions),
+                    MouseButton::Right => Clicker::right_click(ui.mouse_position, !shift, actions),
                     MouseButton::Middle => return,
                 };
 

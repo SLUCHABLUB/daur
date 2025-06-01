@@ -78,7 +78,7 @@ impl PianoRoll {
     #[expect(clippy::too_many_arguments, reason = "see TODO")]
     pub(crate) fn view<Ui: UserInterface>(
         self,
-        selection: Selection,
+        selection: &Selection,
         project: &Project,
         quantisation: Quantisation,
         player: Option<Player>,
@@ -91,8 +91,8 @@ impl PianoRoll {
         }
 
         let (clip_start, clip) = project
-            .track(selection.track())
-            .and_then(|track| track.clip(selection.clip()))
+            .track(selection.track)
+            .and_then(|track| track.clip(*selection.clips.last()?))
             .map_or((Instant::START, None), |(start, clip)| (start, Some(clip)));
 
         let title = clip.map_or(PIANO_ROLL, Clip::name);

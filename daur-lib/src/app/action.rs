@@ -5,7 +5,7 @@ use crate::project::track::Clip;
 use crate::project::{Track, track};
 use crate::ui::{Length, Point, Vector};
 use crate::view::context::Menu;
-use crate::{App, HoldableObject, Id, Note, Popup, UserInterface, project};
+use crate::{App, HoldableObject, Id, Note, Popup, Selection, UserInterface, project};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -15,6 +15,8 @@ use std::path::PathBuf;
 #[must_use = "actions are lazy and must be \"taken\""]
 #[remain::sorted]
 pub enum Action {
+    /// Clears the selection.
+    ClearSelection,
     /// Opens the context menu.
     CloseContextMenu,
     /// Closes a popup.
@@ -120,6 +122,9 @@ impl<Ui: UserInterface> App<Ui> {
     fn try_take(&mut self, action: Action) -> Result<()> {
         #[sorted]
         match action {
+            Action::ClearSelection => {
+                self.selection = Selection::default();
+            }
             Action::CloseContextMenu => {
                 self.context_menu = None;
             }
@@ -190,14 +195,14 @@ impl<Ui: UserInterface> App<Ui> {
                 );
             }
             Action::SelectClip { track, clip, .. } => {
-                self.selection.set_track(track);
-                self.selection.set_clip(clip);
+                self.selection.track = track;
+                self.selection.clips.push(clip);
             }
             Action::SelectNote { .. } => {
                 // TODO: select the note
             }
             Action::SelectTrack(track) => {
-                self.selection.set_track(track);
+                self.selection.track = track;
             }
             Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
             Action::TogglePianoRoll => {

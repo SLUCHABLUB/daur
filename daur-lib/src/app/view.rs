@@ -13,7 +13,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
         .quotated(app.ui_settings.project_bar_height.get()),
         workspace::<Ui>(
             app.project_manager.project(),
-            app.selection,
+            &app.selection,
             app.ui_settings,
             app.quantisation,
             app.cursor(),
@@ -21,7 +21,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
         )
         .fill_remaining(),
         app.piano_roll.view::<Ui>(
-            app.selection,
+            &app.selection,
             app.project_manager.project(),
             app.quantisation,
             app.audio_config.try_player().cloned(),

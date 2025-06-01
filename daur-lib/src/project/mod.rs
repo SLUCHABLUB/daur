@@ -82,16 +82,21 @@ impl Project {
         match action {
             Action::AddTrack => {
                 let track = Track::new();
-                selection.set_track(track.id());
+                selection.track = track.id();
                 self.tracks.insert(track.id(), track);
                 Ok(())
             }
             Action::Delete => {
-                let IndexEntry::Occupied(mut track) = self.tracks.entry(selection.track()) else {
+                let IndexEntry::Occupied(mut track) = self.tracks.entry(selection.track) else {
                     return Ok(());
                 };
 
-                let StdEntry::Occupied(clip) = track.get_mut().clips_mut().entry(selection.clip())
+                let Some(clip_index) = selection.clips.last() else {
+                    track.shift_remove();
+                    return Ok(());
+                };
+
+                let StdEntry::Occupied(clip) = track.get_mut().clips_mut().entry(*clip_index)
                 else {
                     track.shift_remove();
                     return Ok(());
@@ -114,7 +119,7 @@ impl Project {
                 let time_context = self.time_context();
 
                 self.tracks
-                    .get_mut(&selection.track())
+                    .get_mut(&selection.track)
                     .ok_or(NoTrackSelected)?
                     .take_action(action, cursor, selection, &time_context)
             }
