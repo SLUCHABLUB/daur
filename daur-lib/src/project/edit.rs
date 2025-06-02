@@ -113,7 +113,7 @@ impl Project {
                 if position < clip_start {
                     let difference = clip_start - position;
                     let max_duration = NonZeroDuration::from_duration(duration.get() - difference)
-                        .ok_or(Error::NoteInsertion(InsertionError))?;
+                        .ok_or(Error::NoteInsertion(InsertionError::OutsideClip))?;
 
                     duration = max_duration;
                 }

@@ -11,11 +11,17 @@ use std::cmp::min;
 use std::collections::HashMap;
 use thiserror::Error;
 
-// TODO: make more informative
 /// A note was not inserted.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
 #[error("failed to insert a note into the note group")]
-pub struct InsertionError;
+pub enum InsertionError {
+    /// The note was inside another note.
+    #[error("cannot insert a note inside another one")]
+    InsideOther,
+    /// The note was outside the clip.
+    #[error("cannot insert a note outside the selected clip")]
+    OutsideClip,
+}
 
 /// A sequence of musical notes.
 #[derive(Eq, PartialEq, Debug)]
@@ -60,6 +66,10 @@ impl Group {
             since_start: self.duration.get(),
         };
 
+        if end_of_group <= position {
+            return Err(InsertionError::OutsideClip);
+        }
+
         // The start of the next note, or the end of the group.
         let next_position = self
             .with_pitch(pitch)
@@ -71,8 +81,7 @@ impl Group {
         let max_duration = next_position - position;
 
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
-            // The note was outside the group or intersected another note.
-            return Err(InsertionError);
+            return Err(InsertionError::InsideOther);
         };
 
         note.duration = min(note.duration, max_duration);
@@ -84,12 +93,12 @@ impl Group {
             .max()
         {
             if position < last_note_end {
-                return Err(InsertionError);
+                return Err(InsertionError::InsideOther);
             }
         }
 
         if self.notes.contains_key(&(position, pitch)) {
-            return Err(InsertionError);
+            return Err(InsertionError::InsideOther);
         }
 
         self.note_positions.insert(note.id, (position, pitch));
