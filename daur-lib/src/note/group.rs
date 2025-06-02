@@ -11,18 +11,6 @@ use std::cmp::min;
 use std::collections::HashMap;
 use thiserror::Error;
 
-/// A note was not inserted.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
-#[error("failed to insert a note into the note group")]
-pub enum InsertionError {
-    /// The note was inside another note.
-    #[error("cannot insert a note inside another one")]
-    InsideOther,
-    /// The note was outside the clip.
-    #[error("cannot insert a note outside the selected clip")]
-    OutsideClip,
-}
-
 /// A sequence of musical notes.
 #[derive(Eq, PartialEq, Debug)]
 pub struct Group {
@@ -34,6 +22,18 @@ pub struct Group {
     note_positions: HashMap<note::Id, (relative::Instant, Pitch)>,
     /// The duration of the whole note group.
     duration: NonZeroDuration,
+}
+
+/// A note was not inserted.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
+#[error("failed to insert a note into the note group")]
+pub enum InsertionError {
+    /// The note was inside another note.
+    #[error("cannot insert a note inside another one")]
+    InsideOther,
+    /// The note was outside the clip.
+    #[error("cannot insert a note outside the selected clip")]
+    OutsideClip,
 }
 
 impl Group {

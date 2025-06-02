@@ -1,6 +1,6 @@
 use crate::audio::{FixedLength, ImportAudioError};
 use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
-use crate::note::{InsertionError, Key, Pitch};
+use crate::note::{Key, Pitch};
 use crate::project::track::{Clip, ClipInsertionError, clip};
 use crate::project::{DEFAULT_NOTES_DURATION, HistoryEntry, Track, track};
 use crate::select::Selection;
@@ -75,7 +75,7 @@ pub enum Error {
     NoTrackSelected,
     /// Tried inserting a note outside the selected clip.
     #[error("{0}")]
-    NoteInsertion(#[from] InsertionError),
+    NoteInsertion(#[from] note::InsertionError),
     /// The action required something to be selected.
     #[error("nothing is selected")]
     NothingSelected,
@@ -113,7 +113,7 @@ impl Project {
                 if position < clip_start {
                     let difference = clip_start - position;
                     let max_duration = NonZeroDuration::from_duration(duration.get() - difference)
-                        .ok_or(Error::NoteInsertion(InsertionError::OutsideClip))?;
+                        .ok_or(Error::NoteInsertion(note::InsertionError::OutsideClip))?;
 
                     duration = max_duration;
                 }
