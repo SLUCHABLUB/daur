@@ -13,7 +13,7 @@ use std::mem::replace;
 use std::path::PathBuf;
 use thiserror::Error;
 
-/// An action to take on a [project](super::Project).
+/// An edit to a [project](super::Project).
 #[derive(Clone, Debug)]
 #[remain::sorted]
 pub enum Edit {
