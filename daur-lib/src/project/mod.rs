@@ -9,8 +9,10 @@ mod manager;
 mod renderer;
 mod workspace;
 
-pub use action::Action;
+pub use action::Edit;
 pub use manager::Manager;
+use std::ffi::OsStr;
+
 #[doc(inline)]
 pub use track::Track;
 
@@ -19,25 +21,30 @@ pub(crate) use history::HistoryEntry;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
-use crate::metre::{Changing, Instant, NonZeroInstant, TimeContext, TimeSignature};
+use crate::audio::FixedLength;
+use crate::metre::{
+    Changing, Instant, NonZeroDuration, NonZeroInstant, TimeContext, TimeSignature,
+};
 use crate::note::Key;
 use crate::project::track::{Clip, clip};
 use crate::select::Selection;
 use crate::time::Tempo;
-use anyhow::Result;
+use crate::{Audio, NonZeroRatio, Note};
+use anyhow::{Result, anyhow, bail};
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
 use mitsein::iter1::IteratorExt as _;
+use non_zero::non_zero;
 use std::mem::replace;
-use thiserror::Error;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
+const DEFAULT_TRACK_TITLE: ArcStr = literal!("a track");
 
-#[derive(Debug, Error)]
-#[error("no track is selected")]
-struct NoTrackSelected;
+const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
+    whole_notes: NonZeroRatio::integer(non_zero!(4)),
+};
 
 // TODO: Test that this isn't `Clone` (bc. id).
 /// A musical piece consisting of multiple [tracks](Track).
@@ -69,51 +76,128 @@ impl Project {
         self.tracks.get(&id)
     }
 
+    /// Returns a mutable reference to a track.
+    #[must_use]
+    fn track_mut(&mut self, id: track::Id) -> Option<&mut Track> {
+        self.tracks.get_mut(&id)
+    }
+
     /// Returns a reference to a clip.
     #[must_use]
     pub(super) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
         self.track(id.track())?.clip(id)
     }
 
+    /// Returns a mutable reference to a clip.
+    #[must_use]
+    fn clip_mut(&mut self, id: clip::Id) -> Option<(Instant, &mut Clip)> {
+        self.track_mut(id.track())?.clip_mut(id)
+    }
+
+    fn resolve_track(&mut self, selection: &Selection) -> Option<&mut Track> {
+        self.track_mut(selection.top_track()?)
+    }
+
+    fn resolve_clip(&mut self, selection: &Selection) -> Option<(Instant, &mut Clip)> {
+        self.clip_mut(selection.top_clip()?)
+    }
+
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {
         &self.time_signature / &self.tempo
     }
 
+    // TODO: `EditError`
+    #[expect(clippy::too_many_lines, reason = "`Edit` is a large enum")]
     #[remain::check]
-    pub(crate) fn take_action(
+    pub(crate) fn edit(
         &mut self,
-        action: Action,
+        action: Edit,
         cursor: Instant,
         selection: &mut Selection,
-    ) -> Result<Option<HistoryEntry>> {
+    ) -> Result<HistoryEntry> {
         #[sorted]
         match action {
-            Action::AddTrack => {
+            Edit::AddNote {
+                position,
+                pitch,
+                mut duration,
+            } => {
+                let (clip_start, clip) = self
+                    .resolve_clip(selection)
+                    .ok_or(anyhow!("no clip selected"))?;
+
+                if position < clip_start {
+                    let difference = clip_start - position;
+                    let max_duration = NonZeroDuration::from_duration(duration.get() - difference)
+                        .ok_or(anyhow!("cannot insert a note outside the clip"))?;
+
+                    duration = max_duration;
+                }
+
+                let position = position.relative_to(clip_start);
+
+                let note = Note::new(duration, clip.id());
+
+                let entry = HistoryEntry::InsertNote(note.id());
+
+                clip.content_mut()
+                    .as_notes_mut()
+                    .ok_or(anyhow!("cannot add notes to a non-notes clip"))?
+                    .try_insert(position, pitch, note)?;
+
+                Ok(entry)
+            }
+            Edit::AddNoteGroup => {
+                let track = self
+                    .resolve_track(selection)
+                    .ok_or(anyhow!("no track selected"))?;
+
+                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION, track.id());
+                let id = clip.id();
+
+                track.try_insert_clip(cursor, clip)?;
+
+                Ok(HistoryEntry::InsertClip(id))
+            }
+            Edit::AddTrack => {
                 let track = Track::new();
                 let id = track.id();
 
                 selection.push_track(id);
                 self.tracks.insert(id, track);
 
-                Ok(Some(HistoryEntry::AddTrack(id)))
+                Ok(HistoryEntry::AddTrack(id))
             }
-            Action::Delete => {
+            Edit::Delete => {
                 let action = if let Some(_notes) = selection.take_notes() {
                     // TODO: delete notes
-                    return Ok(None);
+                    bail!("cannot delete notes yet");
                 } else if let Some(clips) = selection.take_clips() {
-                    Action::Track(track::Action::DeleteClips(clips))
+                    Edit::DeleteClips(clips)
                 } else if let Some(tracks) = selection.take_tracks() {
-                    // TODO: delete all selected clips (even those not in the top track)
-                    Action::DeleteTracks(tracks)
+                    Edit::DeleteTracks(tracks)
                 } else {
-                    // Nothing is selected.
-                    return Ok(None);
+                    bail!("nothing is selected");
                 };
 
-                self.take_action(action, cursor, selection)
+                self.edit(action, cursor, selection)
             }
-            Action::DeleteTracks(tracks) => Ok(tracks
+            Edit::DeleteClips(clips) => {
+                let track = self
+                    .resolve_track(selection)
+                    .ok_or(anyhow!("no track selected"))?;
+
+                clips
+                    .into_iter()
+                    .filter_map(|id| {
+                        let (start, clip) = track.remove_clip(id)?;
+
+                        Some(HistoryEntry::DeleteClip { start, clip })
+                    })
+                    .try_collect1()
+                    .map_err(|_empty| anyhow!("no clips selected"))
+            }
+            Edit::DeleteTracks(tracks) => tracks
                 .into_iter()
                 .filter_map(|track| {
                     let index = self.tracks.get_index_of(&track)?;
@@ -122,31 +206,44 @@ impl Project {
                     Some(HistoryEntry::DeleteTrack { index, track })
                 })
                 .try_collect1()
-                .ok()),
-            Action::SetKey { instant, key } => {
+                .map_err(|_empty| anyhow!("no tracks selected")),
+            Edit::ImportAudio { file } => {
+                let time_context = self.time_context();
+
+                let track = self
+                    .resolve_track(selection)
+                    .ok_or(anyhow!("no track selected"))?;
+
+                let audio = Audio::read_from_file(&file)?;
+
+                let audio = FixedLength::from_audio(audio, cursor, &time_context);
+
+                let name = file
+                    .file_stem()
+                    .map(OsStr::to_string_lossy)
+                    .map(ArcStr::from)
+                    .unwrap_or_default();
+
+                let clip = Clip::from_audio(name, audio, track.id());
+
+                let entry = HistoryEntry::InsertClip(clip.id());
+
+                track.try_insert_clip(cursor, clip)?;
+
+                Ok(entry)
+            }
+            Edit::SetKey { instant, key } => {
                 let old = if let Some(position) = NonZeroInstant::from_instant(instant) {
                     self.key.changes.insert(position, key)
                 } else {
                     Some(replace(&mut self.key.start, key))
                 };
 
-                Ok(Some(HistoryEntry::SetKey {
+                Ok(HistoryEntry::SetKey {
                     at: instant,
                     to: key,
                     from: old,
-                }))
-            }
-            Action::Track(action) => {
-                let time_context = self.time_context();
-
-                let Some(track) = selection.top_track() else {
-                    return Ok(None);
-                };
-
-                self.tracks
-                    .get_mut(&track)
-                    .ok_or(NoTrackSelected)?
-                    .take_action(action, cursor, selection, &time_context)
+                })
             }
         }
     }

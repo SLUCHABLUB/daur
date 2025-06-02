@@ -43,9 +43,9 @@ impl From<Action> for OnClick {
     }
 }
 
-impl From<project::Action> for OnClick {
-    fn from(action: project::Action) -> Self {
-        OnClick::from(Action::Project(action))
+impl From<project::Edit> for OnClick {
+    fn from(action: project::Edit) -> Self {
+        OnClick::from(Action::Edit(action))
     }
 }
 

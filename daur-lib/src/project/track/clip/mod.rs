@@ -1,11 +1,9 @@
 //! Items pertaining to [`Clip`].
 
-mod action;
 mod content;
 mod id;
 mod overview;
 
-pub use action::Action;
 pub use content::Content;
 pub use id::Id;
 
@@ -13,15 +11,13 @@ pub(crate) use overview::overview;
 
 use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext};
-use crate::note::{Event, NoteInsertionError};
-use crate::project::{HistoryEntry, track};
+use crate::note;
+use crate::note::Event;
+use crate::project::track;
 use crate::ui::Colour;
-use crate::{Note, note};
-use anyhow::Result;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 use sorted_vec::SortedVec;
-use thiserror::Error;
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour {
     red: 0,
@@ -36,16 +32,12 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
     blue: 255,
 };
 
-#[derive(Debug, Error)]
-#[error("the selected clip is not a notes-clip")]
-struct NoNotesSelected;
-
 /// A part of a [track](super::Track).
 // TODO: Test that this isn't `Clone` (bc. id).
 #[cfg_attr(doc, doc(hidden))]
-#[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
+#[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters, MutGetters)]
 pub struct Clip {
-    #[get_copy = "pub(super)"]
+    #[get_copy = "pub(crate)"]
     id: Id,
     /// The name of the clip.
     #[get_clone = "pub"]
@@ -59,6 +51,11 @@ pub struct Clip {
 }
 
 impl Clip {
+    // TODO: derive
+    pub(in crate::project) fn content_mut(&mut self) -> &mut Content {
+        &mut self.content
+    }
+
     #[must_use]
     pub(crate) fn from_audio(name: ArcStr, audio: FixedLength, track: track::Id) -> Clip {
         Clip {
@@ -94,48 +91,5 @@ impl Clip {
         };
 
         notes.to_events(clip_start, time_context, sample_rate)
-    }
-
-    #[remain::check]
-    pub(crate) fn take_action(
-        &mut self,
-        clip_position: Instant,
-        action: Action,
-    ) -> Result<Option<HistoryEntry>> {
-        #[sorted]
-        match action {
-            Action::AddNote {
-                position: note_position,
-                pitch,
-                mut duration,
-            } => {
-                if note_position < clip_position {
-                    let difference = clip_position - note_position;
-                    let Some(max_duration) =
-                        NonZeroDuration::from_duration(duration.get() - difference)
-                    else {
-                        // The note was fully outside the clip on the left.
-                        return Ok(None);
-                    };
-
-                    duration = max_duration;
-                }
-
-                let position = note_position.relative_to(clip_position);
-
-                let note = Note::new(duration, self.id);
-
-                let entry = HistoryEntry::InsertNote(note.id());
-
-                let entry = self
-                    .content
-                    .as_notes_mut()
-                    .ok_or(NoNotesSelected)?
-                    .try_insert(position, pitch, note)
-                    .map_or_else(|NoteInsertionError| None, |()| Some(entry));
-
-                Ok(entry)
-            }
-        }
     }
 }

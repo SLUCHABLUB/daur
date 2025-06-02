@@ -154,7 +154,7 @@ impl Specification {
                             CONFIRM,
                             OnClick::action(
                                 closure!([clone tonic, clone sign, clone intervals] move || {
-                                    Action::Project(project::Action::SetKey {
+                                    Action::Edit(project::Edit::SetKey {
                                         instant,
                                         key: Key {
                                             tonic: tonic.get(),

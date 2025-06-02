@@ -19,17 +19,17 @@ impl FixedLength {
         audio: Audio,
         position: Instant,
         time_context: &Changing<TimeContext>,
-    ) -> Option<FixedLength> {
+    ) -> FixedLength {
         let duration = (time::Period {
             start: position * time_context,
             duration: audio.real_duration(),
         } / time_context)
             .duration;
 
-        Some(FixedLength {
+        FixedLength {
             audio,
-            duration: NonZeroDuration::from_duration(duration)?,
-        })
+            duration: NonZeroDuration::from_duration(duration).unwrap_or(NonZeroDuration::QUARTER),
+        }
     }
 
     /// Draws an overview of the audio.

@@ -1,10 +1,10 @@
 use crate::app::Actions;
 use crate::metre::Instant;
 use crate::popup::Specification;
-use crate::project::track;
+use crate::project::Edit;
 use crate::ui::{Length, Point, Vector};
 use crate::view::context::Menu;
-use crate::{App, HoldableObject, Selectable, UserInterface, popup, project};
+use crate::{App, HoldableObject, Selectable, UserInterface, popup};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -20,6 +20,8 @@ pub enum Action {
     CloseContextMenu,
     /// Closes a popup.
     ClosePopup(popup::Id),
+    /// A project edit.
+    Edit(Edit),
     /// Enters _edit mode_.
     EnterEditMode,
     /// Saves and exits the program
@@ -52,8 +54,6 @@ pub enum Action {
     PickUp(HoldableObject),
     /// Start playing.
     Play,
-    /// A project action.
-    Project(project::Action),
     /// Selects an item.
     Select(Selectable),
     /// Toggles _edit mode_.
@@ -68,9 +68,7 @@ pub enum Action {
 impl Action {
     /// Returns an action for importing audio
     pub fn import_audio<P: Into<PathBuf>>(file: P) -> Action {
-        Action::Project(project::Action::Track(track::Action::ImportAudio {
-            file: file.into(),
-        }))
+        Action::Edit(Edit::ImportAudio { file: file.into() })
     }
 }
 
@@ -113,6 +111,15 @@ impl<Ui: UserInterface> App<Ui> {
             }
             Action::ClosePopup(popup) => {
                 self.popup_manager.close(popup);
+            }
+            Action::Edit(edit) => {
+                self.project_manager
+                    .edit(edit, self.cursor(), &mut self.selection)?;
+
+                self.renderer.restart(
+                    self.project_manager.project(),
+                    self.audio_config.sample_rate()?,
+                );
             }
             Action::EnterEditMode => self.edit_mode = true,
             Action::Exit => self.ui.exit(),
@@ -167,15 +174,6 @@ impl<Ui: UserInterface> App<Ui> {
                 let player = self.audio_config.player()?;
 
                 self.renderer.play_when_finished(from, player);
-            }
-            Action::Project(action) => {
-                self.project_manager
-                    .take_action(action, self.cursor(), &mut self.selection)?;
-
-                self.renderer.restart(
-                    self.project_manager.project(),
-                    self.audio_config.sample_rate()?,
-                );
             }
             Action::Select(item) => {
                 self.selection.push(item);

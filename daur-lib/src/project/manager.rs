@@ -1,5 +1,5 @@
 use crate::metre::Instant;
-use crate::project::{Action, HistoryEntry, Project};
+use crate::project::{Edit, HistoryEntry, Project};
 use crate::select::Selection;
 use anyhow::Result;
 use getset::Getters;
@@ -15,14 +15,14 @@ pub struct Manager {
 }
 
 impl Manager {
-    pub(crate) fn take_action(
+    pub(crate) fn edit(
         &mut self,
-        action: Action,
+        action: Edit,
         cursor: Instant,
         selection: &mut Selection,
     ) -> Result<()> {
-        let entry = self.project.take_action(action, cursor, selection)?;
-        self.history.extend(entry);
+        let entry = self.project.edit(action, cursor, selection)?;
+        self.history.push(entry);
 
         Ok(())
     }

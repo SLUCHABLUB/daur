@@ -41,7 +41,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     track_settings.push(View::described_button(
         ADD_TRACK_LABEL,
         ADD_TRACK_DESCRIPTION,
-        OnClick::from(project::Action::AddTrack),
+        OnClick::from(project::Edit::AddTrack),
     ));
 
     // An empty row (the row with the add-track button)

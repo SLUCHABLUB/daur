@@ -1,11 +1,11 @@
 //! Types pertaining to context menus.
 
+use crate::UserInterface;
 use crate::app::Action;
 use crate::popup::Specification;
-use crate::project::track;
+use crate::project::Edit;
 use crate::ui::{Point, Rectangle};
 use crate::view::{Axis, OnClick, View};
-use crate::{UserInterface, project};
 use arcstr::{ArcStr, literal};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -37,10 +37,7 @@ impl Menu {
         Menu {
             buttons: vec![
                 (IMPORT_AUDIO, open_import_audio_popup()),
-                (
-                    ADD_NOTES,
-                    Action::Project(project::Action::Track(track::Action::AddNotes)),
-                ),
+                (ADD_NOTES, Action::Edit(Edit::AddNoteGroup)),
                 (TOGGLE_PIANO_ROLL, Action::TogglePianoRoll),
             ],
         }

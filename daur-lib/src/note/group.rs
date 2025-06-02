@@ -8,8 +8,12 @@ use saturating_cast::SaturatingCast as _;
 use sorted_vec::SortedVec;
 use std::cmp::min;
 use std::collections::HashMap;
+use thiserror::Error;
 
+// TODO: make more informative
 /// A note was not inserted.
+#[derive(Debug, Error)]
+#[error("failed to insert a note into the note group")]
 pub struct NoteInsertionError;
 
 /// A sequence of musical notes.

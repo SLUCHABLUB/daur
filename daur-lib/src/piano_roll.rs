@@ -2,12 +2,11 @@ use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Changing, Instant, NonZeroDuration, OffsetMapping, Quantisation, TimeContext};
 use crate::note::{Group, Interval, Key, Pitch};
-use crate::project::track;
-use crate::project::track::clip;
+use crate::project::Edit;
 use crate::select::Selection;
 use crate::ui::{Colour, Length, NonZeroLength, Size, ThemeColour, Vector, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
-use crate::{HoldableObject, Project, Ratio, UserInterface, View, project};
+use crate::{HoldableObject, Project, Ratio, UserInterface, View};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use getset::{CopyGetters, Setters};
@@ -350,13 +349,11 @@ impl PianoRoll {
 
             let duration = NonZeroDuration::from_duration(end - start)?;
 
-            Some(Action::Project(project::Action::Track(
-                track::Action::Clip(clip::Action::AddNote {
-                    position: start,
-                    pitch,
-                    duration,
-                }),
-            )))
+            Some(Action::Edit(Edit::AddNote {
+                position: start,
+                pitch,
+                duration,
+            }))
         };
 
         let overview = view.grabbable(grabber).object_accepting(dropper);

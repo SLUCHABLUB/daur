@@ -16,7 +16,7 @@ pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::{Ratio, time};
-use anyhow::Result;
+use anyhow::{Result, anyhow, bail};
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
 use log::error;
@@ -27,6 +27,7 @@ use std::io::Read;
 use std::iter::zip;
 use std::num::NonZeroU32;
 use std::ops::{Add, AddAssign};
+use std::path::Path;
 
 /// Some stereo 64-bit floating point audio.
 ///
@@ -161,6 +162,27 @@ impl Audio {
 
         for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset.samples), &other.samples) {
             *lhs += *rhs;
+        }
+    }
+
+    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio> {
+        let extension = file
+            .as_ref()
+            .extension()
+            .ok_or(anyhow!("no file extension"))?;
+
+        // TODO: look at the symphonia crate
+        match extension.to_string_lossy().as_ref() {
+            "wav" | "wave" => {
+                let reader = WavReader::open(file)?;
+                Ok(Audio::try_from(reader)?)
+            }
+            _ => {
+                bail!(
+                    "the `{}` audio format is not (yet) supported",
+                    extension.display()
+                );
+            }
         }
     }
 }

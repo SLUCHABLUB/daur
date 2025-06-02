@@ -21,7 +21,6 @@ pub use pitch::Pitch;
 pub use sign::Sign;
 
 pub(crate) use event::Event;
-pub(crate) use group::NoteInsertionError;
 
 use crate::metre::NonZeroDuration;
 use crate::project::track::clip;

@@ -1,12 +1,10 @@
 //! Items pertaining to [`Track`].
 
-mod action;
 pub mod clip;
 mod id;
 mod overview;
 mod settings;
 
-pub use action::Action;
 #[doc(inline)]
 pub use clip::Clip;
 pub use id::Id;
@@ -14,54 +12,17 @@ pub use id::Id;
 pub(crate) use overview::overview;
 pub(crate) use settings::settings;
 
+use crate::Audio;
+use crate::audio::sample;
 use crate::audio::sample::Pair;
-use crate::audio::{FixedLength, sample};
-use crate::metre::{Changing, Duration, Instant, NonZeroDuration, TimeContext};
+use crate::metre::{Changing, Duration, Instant, TimeContext};
 use crate::note::Event;
-use crate::project::HistoryEntry;
-use crate::select::Selection;
-use crate::{Audio, NonZeroRatio};
+use crate::project::DEFAULT_TRACK_TITLE;
 use anyhow::{Result, bail};
-use arcstr::{ArcStr, literal};
+use arcstr::ArcStr;
 use getset::{CopyGetters, Getters, MutGetters};
-use hound::WavReader;
-use mitsein::iter1::IteratorExt as _;
-use non_zero::non_zero;
 use sorted_vec::SortedVec;
 use std::collections::{BTreeMap, HashMap};
-use std::ffi::{OsStr, OsString};
-use std::path::PathBuf;
-use thiserror::Error;
-
-const DEFAULT_TITLE: ArcStr = literal!("a track");
-
-const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
-    whole_notes: NonZeroRatio::integer(non_zero!(4)),
-};
-
-#[derive(Debug, Error)]
-#[error("no clip is selected")]
-struct NoClipSelected;
-
-#[derive(Debug, Error)]
-#[error("there is already a clip at that position")]
-struct InsertClipError;
-
-#[derive(Debug, Error)]
-#[error("the audio format format `{}` is not (yet) supported", format.to_string_lossy())]
-struct UnsupportedFormatError {
-    format: OsString,
-}
-
-#[derive(Debug, Error)]
-#[error("unable to infer the audio format of the file `{file}`")]
-struct NoExtensionError {
-    file: PathBuf,
-}
-
-#[derive(Debug, Error)]
-#[error("cannot insert an empty audio file")]
-struct EmptyAudioFile;
 
 /// A musical track.
 // TODO: Test that this isn't `Clone` (bc. id).
@@ -87,7 +48,7 @@ impl Track {
     pub(crate) fn new() -> Track {
         Track {
             id: Id::generate(),
-            name: DEFAULT_TITLE,
+            name: DEFAULT_TRACK_TITLE,
             clip_ids: BTreeMap::new(),
             clip_starts: HashMap::new(),
             clips: HashMap::new(),
@@ -96,8 +57,16 @@ impl Track {
 
     /// Returns a reference to a clip.
     #[must_use]
-    pub(crate) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
+    pub(super) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
         let clip = self.clips.get(&id)?;
+        let start = self.clip_starts.get(&id)?;
+        Some((*start, clip))
+    }
+
+    /// Returns a reference to a clip.
+    #[must_use]
+    pub(super) fn clip_mut(&mut self, id: clip::Id) -> Option<(Instant, &mut Clip)> {
+        let clip = self.clips.get_mut(&id)?;
         let start = self.clip_starts.get(&id)?;
         Some((*start, clip))
     }
@@ -164,9 +133,9 @@ impl Track {
         events
     }
 
-    fn try_insert_clip(&mut self, position: Instant, clip: Clip) -> Result<()> {
+    pub(super) fn try_insert_clip(&mut self, position: Instant, clip: Clip) -> Result<()> {
         if self.clip_ids.contains_key(&position) {
-            bail!(InsertClipError);
+            bail!("there is already a clip at that position");
         }
 
         // TODO: check for overlap
@@ -178,80 +147,13 @@ impl Track {
         Ok(())
     }
 
-    #[remain::check]
-    pub(super) fn take_action(
-        &mut self,
-        action: Action,
-        cursor: Instant,
-        selection: &mut Selection,
-        time_context: &Changing<TimeContext>,
-    ) -> Result<Option<HistoryEntry>> {
-        #[sorted]
-        match action {
-            Action::AddNotes => {
-                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION, self.id);
-                let id = clip.id();
+    // TODO: replace with a pub(super) mut-getter for the dimap
+    pub(super) fn remove_clip(&mut self, id: clip::Id) -> Option<(Instant, Clip)> {
+        let start = self.clip_starts.remove(&id)?;
+        self.clip_ids.remove(&start);
+        let clip = self.clips.remove(&id)?;
 
-                self.try_insert_clip(cursor, clip)?;
-
-                Ok(Some(HistoryEntry::InsertClip(id)))
-            }
-            Action::Clip(action) => {
-                let Some(clip_id) = &selection.top_clip() else {
-                    return Ok(None);
-                };
-
-                let clip = self.clips.get_mut(clip_id).ok_or(NoClipSelected)?;
-
-                let clip_start = *self.clip_starts.get(&clip.id()).ok_or(NoClipSelected)?;
-
-                clip.take_action(clip_start, action)
-            }
-            Action::DeleteClips(clips) => Ok(clips
-                .into_iter()
-                .filter_map(|id| {
-                    let start = self.clip_starts.remove(&id)?;
-                    self.clip_ids.remove(&start);
-                    let clip = self.clips.remove(&id)?;
-
-                    Some(HistoryEntry::DeleteClip { start, clip })
-                })
-                .try_collect1()
-                .ok()),
-            Action::ImportAudio { file } => {
-                let Some(extension) = file.extension() else {
-                    bail!(NoExtensionError { file });
-                };
-
-                // TODO: look at the symphonia crate
-                let audio = match extension.to_string_lossy().as_ref() {
-                    "wav" | "wave" => {
-                        let reader = WavReader::open(&file)?;
-                        Audio::try_from(reader)?
-                    }
-                    _ => {
-                        bail!(UnsupportedFormatError {
-                            format: extension.to_owned(),
-                        });
-                    }
-                };
-
-                let audio =
-                    FixedLength::from_audio(audio, cursor, time_context).ok_or(EmptyAudioFile)?;
-
-                let name = file
-                    .file_stem()
-                    .map(OsStr::to_string_lossy)
-                    .map(ArcStr::from)
-                    .unwrap_or_default();
-
-                let clip = Clip::from_audio(name, audio, self.id);
-
-                let entry = HistoryEntry::InsertClip(clip.id());
-
-                self.try_insert_clip(cursor, clip).map(|()| Some(entry))
-            }
-        }
+        Some((start, clip))
     }
 }
 
