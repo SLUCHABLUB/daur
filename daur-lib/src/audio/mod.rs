@@ -16,18 +16,21 @@ pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::{Ratio, time};
-use anyhow::{Result, anyhow, bail};
+use anyhow::Result;
 use hound::{SampleFormat, WavReader};
 use itertools::Itertools as _;
 use log::error;
 use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
 use std::borrow::Cow;
 use std::cmp::max;
+use std::ffi::OsStr;
+use std::io;
 use std::io::Read;
 use std::iter::zip;
 use std::num::NonZeroU32;
 use std::ops::{Add, AddAssign};
 use std::path::Path;
+use thiserror::Error;
 
 /// Some stereo 64-bit floating point audio.
 ///
@@ -57,6 +60,24 @@ pub struct Audio {
     pub sample_rate: sample::Rate,
     /// The left and right channels, in that order.
     pub samples: Vec<sample::Pair>,
+}
+
+/// An error that occurred whilst importing an audio file.
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub enum ImportAudioError {
+    /// The file has no extension. Thus, the format cannot be inferred.
+    #[error("the file has no extension; unable to infer a file type")]
+    NoExtension,
+    /// An io error occurred whilst reading the file.
+    #[error("error when reading file: {0}")]
+    ReadFile(#[from] io::Error),
+    /// A wav processing error.
+    #[error("{0}")]
+    Hound(#[from] hound::Error),
+    /// An unknown audio format was encountered.
+    #[error("the `{}` audio format is not (yet) supported", _0.display())]
+    UnsupportedFormat(Box<OsStr>),
 }
 
 impl Audio {
@@ -165,11 +186,11 @@ impl Audio {
         }
     }
 
-    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio> {
+    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio, ImportAudioError> {
         let extension = file
             .as_ref()
             .extension()
-            .ok_or(anyhow!("no file extension"))?;
+            .ok_or(ImportAudioError::NoExtension)?;
 
         // TODO: look at the symphonia crate
         match extension.to_string_lossy().as_ref() {
@@ -177,12 +198,7 @@ impl Audio {
                 let reader = WavReader::open(file)?;
                 Ok(Audio::try_from(reader)?)
             }
-            _ => {
-                bail!(
-                    "the `{}` audio format is not (yet) supported",
-                    extension.display()
-                );
-            }
+            _ => Err(ImportAudioError::UnsupportedFormat(Box::from(extension))),
         }
     }
 }

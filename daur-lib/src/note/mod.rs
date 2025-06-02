@@ -12,7 +12,7 @@ mod sign;
 
 pub use chroma::Chroma;
 use getset::CopyGetters;
-pub use group::Group;
+pub use group::{Group, InsertionError};
 pub use id::Id;
 pub use interval::Interval;
 pub use key::Key;

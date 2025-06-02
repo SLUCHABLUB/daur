@@ -18,11 +18,19 @@ use crate::audio::sample::Pair;
 use crate::metre::{Changing, Duration, Instant, TimeContext};
 use crate::note::Event;
 use crate::project::DEFAULT_TRACK_TITLE;
-use anyhow::{Result, bail};
 use arcstr::ArcStr;
 use getset::{CopyGetters, Getters, MutGetters};
 use sorted_vec::SortedVec;
 use std::collections::{BTreeMap, HashMap};
+use thiserror::Error;
+
+/// An error occurred when trying to insert a clip.
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
+pub enum ClipInsertionError {
+    /// Tried inserting a clip at a position where there was already a clip.
+    #[error("there is already a clip at that position")]
+    PositionOccupied,
+}
 
 /// A musical track.
 // TODO: Test that this isn't `Clone` (bc. id).
@@ -133,9 +141,13 @@ impl Track {
         events
     }
 
-    pub(super) fn try_insert_clip(&mut self, position: Instant, clip: Clip) -> Result<()> {
+    pub(super) fn try_insert_clip(
+        &mut self,
+        position: Instant,
+        clip: Clip,
+    ) -> Result<(), ClipInsertionError> {
         if self.clip_ids.contains_key(&position) {
-            bail!("there is already a clip at that position");
+            return Err(ClipInsertionError::PositionOccupied);
         }
 
         // TODO: check for overlap

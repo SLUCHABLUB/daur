@@ -1,5 +1,6 @@
 use crate::audio::sample;
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, relative};
+use crate::note;
 use crate::note::{Event, Note, Pitch};
 use crate::view::Painter;
 use clack_host::events::event_types::{NoteOffEvent, NoteOnEvent};
@@ -12,17 +13,19 @@ use thiserror::Error;
 
 // TODO: make more informative
 /// A note was not inserted.
-#[derive(Debug, Error)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
 #[error("failed to insert a note into the note group")]
-pub struct NoteInsertionError;
+pub struct InsertionError;
 
 /// A sequence of musical notes.
 #[derive(Eq, PartialEq, Debug)]
 pub struct Group {
+    // TODO: use a dimap
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
     /// The notes in the group.
     notes: HashMap<(relative::Instant, Pitch), Note>,
+    note_positions: HashMap<note::Id, (relative::Instant, Pitch)>,
     /// The duration of the whole note group.
     duration: NonZeroDuration,
 }
@@ -33,6 +36,7 @@ impl Group {
     pub fn empty(duration: NonZeroDuration) -> Group {
         Group {
             notes: HashMap::new(),
+            note_positions: HashMap::new(),
             duration,
         }
     }
@@ -51,7 +55,7 @@ impl Group {
         position: relative::Instant,
         pitch: Pitch,
         mut note: Note,
-    ) -> Result<(), NoteInsertionError> {
+    ) -> Result<(), InsertionError> {
         let end_of_group = relative::Instant {
             since_start: self.duration.get(),
         };
@@ -68,7 +72,7 @@ impl Group {
 
         let Some(max_duration) = NonZeroDuration::from_duration(max_duration) else {
             // The note was outside the group or intersected another note.
-            return Err(NoteInsertionError);
+            return Err(InsertionError);
         };
 
         note.duration = min(note.duration, max_duration);
@@ -80,17 +84,26 @@ impl Group {
             .max()
         {
             if position < last_note_end {
-                return Err(NoteInsertionError);
+                return Err(InsertionError);
             }
         }
 
         if self.notes.contains_key(&(position, pitch)) {
-            return Err(NoteInsertionError);
+            return Err(InsertionError);
         }
 
+        self.note_positions.insert(note.id, (position, pitch));
         self.notes.insert((position, pitch), note);
 
         Ok(())
+    }
+
+    pub(crate) fn remove(&mut self, note: note::Id) -> Option<(relative::Instant, Pitch, Note)> {
+        let position = self.note_positions.remove(&note)?;
+        let note = self.notes.remove(&position)?;
+
+        let (instant, pitch) = position;
+        Some((instant, pitch, note))
     }
 
     pub(crate) fn with_pitch(

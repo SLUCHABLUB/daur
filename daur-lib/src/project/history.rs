@@ -1,8 +1,8 @@
-use crate::metre::Instant;
-use crate::note;
-use crate::note::Key;
+use crate::metre::{Instant, relative};
+use crate::note::{Key, Pitch};
 use crate::project::track::{Clip, clip};
 use crate::project::{Track, track};
+use crate::{Note, note};
 use mitsein::iter1::{FromIterator1, IntoIterator1};
 use mitsein::vec1::Vec1;
 
@@ -15,10 +15,16 @@ pub enum HistoryEntry {
     AddTrack(track::Id),
     /// A collection of actions that were taken at once.
     Cluster(Vec1<HistoryEntry>),
-    /// The deletion of some clips.
+    /// The deletion of a clip.
     DeleteClip {
         start: Instant,
         clip: Clip,
+    },
+    /// The deletion of a note.
+    DeleteNote {
+        instant: relative::Instant,
+        pitch: Pitch,
+        note: Note,
     },
     /// The deletion of a track.
     DeleteTrack {

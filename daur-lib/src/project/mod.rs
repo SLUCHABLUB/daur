@@ -24,7 +24,6 @@ use crate::NonZeroRatio;
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, TimeSignature};
 use crate::note::Key;
 use crate::project::track::{Clip, clip};
-use crate::select::Selection;
 use crate::time::Tempo;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
@@ -85,14 +84,6 @@ impl Project {
     #[must_use]
     fn clip_mut(&mut self, id: clip::Id) -> Option<(Instant, &mut Clip)> {
         self.track_mut(id.track())?.clip_mut(id)
-    }
-
-    fn resolve_track(&mut self, selection: &Selection) -> Option<&mut Track> {
-        self.track_mut(selection.top_track()?)
-    }
-
-    fn resolve_clip(&mut self, selection: &Selection) -> Option<(Instant, &mut Clip)> {
-        self.clip_mut(selection.top_clip()?)
     }
 
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {
