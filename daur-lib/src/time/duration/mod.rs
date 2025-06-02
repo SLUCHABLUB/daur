@@ -36,7 +36,7 @@ impl Duration {
 }
 
 impl From<time::Duration> for Duration {
-    fn from(duration: time::Duration) -> Self {
+    fn from(duration: time::Duration) -> Duration {
         let nanoseconds = u64::try_from(duration.as_nanos()).unwrap_or(u64::MAX);
 
         Duration { nanoseconds }
@@ -44,7 +44,7 @@ impl From<time::Duration> for Duration {
 }
 
 impl From<Duration> for time::Duration {
-    fn from(duration: Duration) -> Self {
+    fn from(duration: Duration) -> time::Duration {
         time::Duration::from_nanos(duration.nanoseconds)
     }
 }
@@ -52,7 +52,7 @@ impl From<Duration> for time::Duration {
 impl Mul<sample::Rate> for Duration {
     type Output = sample::Duration;
 
-    fn mul(self, rhs: sample::Rate) -> Self::Output {
+    fn mul(self, rhs: sample::Rate) -> sample::Duration {
         let seconds = self / NonZeroDuration::SECOND;
 
         sample::Duration {

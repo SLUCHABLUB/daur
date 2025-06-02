@@ -245,7 +245,7 @@ impl<R: Read> TryFrom<WavReader<R>> for Audio {
 impl Add<&Audio> for Audio {
     type Output = Audio;
 
-    fn add(mut self, rhs: &Audio) -> Self::Output {
+    fn add(mut self, rhs: &Audio) -> Audio {
         self += rhs;
         self
     }

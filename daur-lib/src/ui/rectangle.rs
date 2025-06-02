@@ -96,7 +96,7 @@ impl Rectangle {
 impl Add<Vector> for Rectangle {
     type Output = Rectangle;
 
-    fn add(mut self, rhs: Vector) -> Self::Output {
+    fn add(mut self, rhs: Vector) -> Rectangle {
         self += rhs;
         self
     }

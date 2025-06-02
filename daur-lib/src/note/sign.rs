@@ -28,7 +28,7 @@ impl Display for Sign {
 impl Not for Sign {
     type Output = Sign;
 
-    fn not(self) -> Self::Output {
+    fn not(self) -> Sign {
         match self {
             Sign::Sharp => Sign::Flat,
             Sign::Flat => Sign::Sharp,

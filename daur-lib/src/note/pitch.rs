@@ -54,7 +54,7 @@ impl Pitch {
 impl Add<Interval> for Pitch {
     type Output = Pitch;
 
-    fn add(mut self, rhs: Interval) -> Self::Output {
+    fn add(mut self, rhs: Interval) -> Pitch {
         self += rhs;
         self
     }
@@ -73,7 +73,7 @@ impl AddAssign<Interval> for Pitch {
 impl Sub for Pitch {
     type Output = Interval;
 
-    fn sub(self, rhs: Self) -> Interval {
+    fn sub(self, rhs: Pitch) -> Interval {
         let semitones = self.midi_number.saturating_sub(rhs.midi_number);
         Interval::from_semitones(semitones)
     }

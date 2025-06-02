@@ -16,7 +16,7 @@ pub struct Id {
 
 impl Id {
     /// Generates a new identifier.
-    pub(crate) fn generate(clip: clip::Id) -> Self {
+    pub(crate) fn generate(clip: clip::Id) -> Id {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
 
         Id {

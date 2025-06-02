@@ -38,7 +38,7 @@ impl Direction {
 impl Neg for Direction {
     type Output = Direction;
 
-    fn neg(self) -> Self::Output {
+    fn neg(self) -> Direction {
         match self {
             Direction::Up => Direction::Down,
             Direction::Left => Direction::Right,

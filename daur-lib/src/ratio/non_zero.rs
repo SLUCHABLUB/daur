@@ -116,20 +116,20 @@ impl NonZeroRatio {
     }
 }
 
-impl PartialOrd<Self> for NonZeroRatio {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl PartialOrd for NonZeroRatio {
+    fn partial_cmp(&self, other: &NonZeroRatio) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for NonZeroRatio {
-    fn cmp(&self, other: &Self) -> Ordering {
+    fn cmp(&self, other: &NonZeroRatio) -> Ordering {
         self.get().cmp(&other.get())
     }
 }
 
 impl<T: Into<NonZeroU64>> From<T> for NonZeroRatio {
-    fn from(value: T) -> Self {
+    fn from(value: T) -> NonZeroRatio {
         NonZeroRatio::integer(value.into())
     }
 }

@@ -40,7 +40,7 @@ impl SubAssign<Duration> for Instant {
 impl Sub for Instant {
     type Output = Duration;
 
-    fn sub(self, rhs: Self) -> Duration {
+    fn sub(self, rhs: Instant) -> Duration {
         self.since_start - rhs.since_start
     }
 }

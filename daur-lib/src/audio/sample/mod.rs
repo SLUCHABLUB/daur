@@ -98,13 +98,13 @@ impl Debug for Sample {
 impl Add for Sample {
     type Output = Sample;
 
-    fn add(self, rhs: Self) -> Sample {
+    fn add(self, rhs: Sample) -> Sample {
         Sample::new(self.inner + rhs.inner)
     }
 }
 
 impl AddAssign for Sample {
-    fn add_assign(&mut self, rhs: Self) {
+    fn add_assign(&mut self, rhs: Sample) {
         *self = *self + rhs;
     }
 }

@@ -15,7 +15,7 @@ impl View {
     }
 
     /// Constructs a new [hoverable](View::Hoverable) view.
-    pub fn hoverable(default: View, hovered: View) -> Self {
+    pub fn hoverable(default: View, hovered: View) -> View {
         View::Hoverable {
             default: Box::new(default),
             hovered: Box::new(hovered),
@@ -23,7 +23,7 @@ impl View {
     }
 
     /// Constructs a new [reactive view](View::Reactive).
-    pub fn reactive<Closure>(closure: Closure) -> Self
+    pub fn reactive<Closure>(closure: Closure) -> View
     where
         Closure: Fn(RenderArea) -> View + Send + Sync + 'static,
     {
@@ -31,7 +31,7 @@ impl View {
     }
 
     /// Constructs a new horizontal [stack](View::Stack).
-    pub fn x_stack<E: IntoIterator<Item = Quotated>>(elements: E) -> Self {
+    pub fn x_stack<E: IntoIterator<Item = Quotated>>(elements: E) -> View {
         View::Stack {
             axis: Axis::X,
             elements: elements.into_iter().collect(),
@@ -39,7 +39,7 @@ impl View {
     }
 
     /// Constructs a new vertical [stack](View::Stack).
-    pub fn y_stack<E: IntoIterator<Item = Quotated>>(elements: E) -> Self {
+    pub fn y_stack<E: IntoIterator<Item = Quotated>>(elements: E) -> View {
         View::Stack {
             axis: Axis::Y,
             elements: elements.into_iter().collect(),
@@ -47,7 +47,7 @@ impl View {
     }
 
     /// Constructs a new [stack](View::Stack) where all views are quotated equally.
-    pub fn balanced_stack<E: IntoIterator<Item = Self>>(axis: Axis, elements: E) -> Self {
+    pub fn balanced_stack<E: IntoIterator<Item = View>>(axis: Axis, elements: E) -> View {
         View::Stack {
             axis,
             elements: elements.into_iter().map(View::fill_remaining).collect(),
@@ -55,7 +55,7 @@ impl View {
     }
 
     /// Constructs a new [stack](View::Stack) where elements are quotated with their minimum size.
-    pub fn minimal_stack<E: IntoIterator<Item = Self>>(axis: Axis, elements: E) -> Self {
+    pub fn minimal_stack<E: IntoIterator<Item = View>>(axis: Axis, elements: E) -> View {
         View::Stack {
             axis,
             elements: elements.into_iter().map(View::quotated_minimally).collect(),

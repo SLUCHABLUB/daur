@@ -43,14 +43,14 @@ impl<N: Into<NonZeroRatio>> Div<N> for Vector {
 // --- ASSIGNMENT OPERATIONS ---
 
 impl AddAssign for Vector {
-    fn add_assign(&mut self, rhs: Self) {
+    fn add_assign(&mut self, rhs: Vector) {
         self.x += rhs.x;
         self.y += rhs.y;
     }
 }
 
 impl SubAssign for Vector {
-    fn sub_assign(&mut self, rhs: Self) {
+    fn sub_assign(&mut self, rhs: Vector) {
         self.x -= rhs.x;
         self.y -= rhs.y;
     }

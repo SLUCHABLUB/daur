@@ -5,7 +5,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssi
 impl<O: Into<Offset>> Add<O> for Offset {
     type Output = Offset;
 
-    fn add(self, rhs: O) -> Self::Output {
+    fn add(self, rhs: O) -> Offset {
         Offset {
             pixels: self.pixels.saturating_add(rhs.into().pixels),
         }
@@ -15,7 +15,7 @@ impl<O: Into<Offset>> Add<O> for Offset {
 impl<O: Into<Offset>> Sub<O> for Offset {
     type Output = Offset;
 
-    fn sub(self, rhs: O) -> Self::Output {
+    fn sub(self, rhs: O) -> Offset {
         Offset {
             pixels: self.pixels.saturating_sub(rhs.into().pixels),
         }
@@ -25,7 +25,7 @@ impl<O: Into<Offset>> Sub<O> for Offset {
 impl<R: Into<Ratio>> Mul<R> for Offset {
     type Output = Offset;
 
-    fn mul(self, rhs: R) -> Self::Output {
+    fn mul(self, rhs: R) -> Offset {
         let length = self.abs() * rhs;
 
         if self.pixels.is_negative() {
@@ -76,7 +76,7 @@ impl<N: Into<NonZeroRatio>> DivAssign<N> for Offset {
 impl Neg for Offset {
     type Output = Offset;
 
-    fn neg(self) -> Self::Output {
+    fn neg(self) -> Offset {
         Offset {
             pixels: self.pixels.saturating_neg(),
         }

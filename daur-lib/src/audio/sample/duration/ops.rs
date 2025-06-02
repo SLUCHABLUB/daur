@@ -6,7 +6,7 @@ use std::ops::{Add, AddAssign, Mul, MulAssign, Sub, SubAssign};
 impl<D: Into<Duration>> Add<D> for Duration {
     type Output = Duration;
 
-    fn add(mut self, rhs: D) -> Self::Output {
+    fn add(mut self, rhs: D) -> Duration {
         self += rhs;
         self
     }
@@ -15,7 +15,7 @@ impl<D: Into<Duration>> Add<D> for Duration {
 impl<D: Into<Duration>> Sub<D> for Duration {
     type Output = Duration;
 
-    fn sub(mut self, rhs: D) -> Self::Output {
+    fn sub(mut self, rhs: D) -> Duration {
         self -= rhs;
         self
     }
@@ -24,7 +24,7 @@ impl<D: Into<Duration>> Sub<D> for Duration {
 impl Mul<usize> for Duration {
     type Output = Duration;
 
-    fn mul(mut self, rhs: usize) -> Self::Output {
+    fn mul(mut self, rhs: usize) -> Duration {
         self *= rhs;
         self
     }

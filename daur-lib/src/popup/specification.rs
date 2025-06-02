@@ -206,7 +206,7 @@ impl Specification {
 }
 
 impl<E: Into<Error>> From<E> for Specification {
-    fn from(error: E) -> Self {
+    fn from(error: E) -> Specification {
         Specification::Error(Arc::new(error.into()))
     }
 }

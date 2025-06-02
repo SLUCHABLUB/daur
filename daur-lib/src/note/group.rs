@@ -128,7 +128,7 @@ impl Group {
 
     pub(crate) fn overview_painter(&self) -> Box<Painter> {
         // TODO: draw the notes
-        let _: &Self = self;
+        let _: &Group = self;
         Box::new(|_| ())
     }
 

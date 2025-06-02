@@ -14,7 +14,7 @@ impl<D: Into<Duration>> Add<D> for Duration {
 impl<D: Into<Duration>> Sub<D> for Duration {
     type Output = Duration;
 
-    fn sub(mut self, rhs: D) -> Self::Output {
+    fn sub(mut self, rhs: D) -> Duration {
         self -= rhs;
         self
     }

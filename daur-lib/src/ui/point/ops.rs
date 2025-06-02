@@ -6,7 +6,7 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 impl Add<Vector> for Point {
     type Output = Point;
 
-    fn add(mut self, rhs: Vector) -> Self::Output {
+    fn add(mut self, rhs: Vector) -> Point {
         self += rhs;
         self
     }
@@ -15,7 +15,7 @@ impl Add<Vector> for Point {
 impl Sub<Vector> for Point {
     type Output = Point;
 
-    fn sub(mut self, rhs: Vector) -> Self::Output {
+    fn sub(mut self, rhs: Vector) -> Point {
         self -= rhs;
         self
     }

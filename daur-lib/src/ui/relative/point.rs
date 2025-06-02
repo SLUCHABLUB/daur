@@ -14,7 +14,7 @@ pub struct Point {
 impl Add<Point> for ui::Point {
     type Output = ui::Point;
 
-    fn add(mut self, rhs: Point) -> Self::Output {
+    fn add(mut self, rhs: Point) -> ui::Point {
         self.x += rhs.x;
         self.y += rhs.y;
         self

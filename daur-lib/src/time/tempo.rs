@@ -30,7 +30,7 @@ impl Default for Tempo {
     ///
     /// A quite arbitrary choice.
     // TODO: rationale
-    fn default() -> Self {
+    fn default() -> Tempo {
         Tempo {
             bpm: non_zero!(180),
         }

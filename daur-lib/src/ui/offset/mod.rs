@@ -57,7 +57,7 @@ impl Offset {
 }
 
 impl From<Length> for Offset {
-    fn from(length: Length) -> Self {
+    fn from(length: Length) -> Offset {
         Offset::positive(length)
     }
 }

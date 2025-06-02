@@ -40,7 +40,7 @@ impl TimeSignature {
 
 impl Default for TimeSignature {
     /// Returns _common time_ (4/4).
-    fn default() -> Self {
+    fn default() -> TimeSignature {
         TimeSignature {
             beats_per_measure: non_zero!(4),
             beats_per_whole_note: non_zero!(4),

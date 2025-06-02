@@ -62,7 +62,7 @@ pub enum View {
         /// Whether the border is **thick**.
         thick: bool,
         /// The bordered view.
-        view: Box<Self>,
+        view: Box<View>,
     },
     /// A canvas on which stuff can be drawn.
     /// See [`Context`].
@@ -78,7 +78,7 @@ pub enum View {
         /// The action to take when the button is clicked
         on_click: OnClick,
         /// The default label for the button
-        view: Box<Self>,
+        view: Box<View>,
     },
     /// A view with a custom context-menu.
     Contextual {
@@ -103,12 +103,12 @@ pub enum View {
     /// A view that whose appearance changes when hovered.
     Hoverable {
         /// The view to use when not hovered.
-        default: Box<Self>,
+        default: Box<View>,
         /// The view to use when hovered.
-        hovered: Box<Self>,
+        hovered: Box<View>,
     },
     /// Multiple views layered on each other.
-    Layers(Vec<Self>),
+    Layers(Vec<View>),
     /// A view on which an [object](HoldableObject) may be dropped.
     ObjectAcceptor {
         /// The action to take when an object is dropped on the view.
@@ -145,7 +145,7 @@ pub enum View {
         /// The item to be selected.
         item: Selectable,
         /// The view.
-        view: Box<Self>,
+        view: Box<View>,
     },
     /// A transparent/translucent selection box.
     SelectionBox,

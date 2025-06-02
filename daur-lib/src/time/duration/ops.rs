@@ -47,7 +47,7 @@ impl<R: Into<Ratio>> Mul<R> for Duration {
 impl<N: Into<NonZeroRatio>> Div<N> for Duration {
     type Output = Duration;
 
-    fn div(self, rhs: N) -> Self::Output {
+    fn div(self, rhs: N) -> Duration {
         #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
         self * rhs.into().reciprocal().get()
     }

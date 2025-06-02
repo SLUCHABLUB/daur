@@ -16,7 +16,7 @@ pub struct Id {
 
 impl Id {
     /// Generates a new identifier.
-    pub(crate) fn generate(track: track::Id) -> Self {
+    pub(crate) fn generate(track: track::Id) -> Id {
         static COUNTER: AtomicU32 = AtomicU32::new(0);
 
         Id {

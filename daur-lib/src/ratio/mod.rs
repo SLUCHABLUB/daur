@@ -46,7 +46,7 @@ impl Ratio {
     #[must_use]
     pub fn new(numerator: u64, denominator: NonZeroU64) -> Ratio {
         let Some(numerator) = NonZeroU64::new(numerator) else {
-            return Self::ZERO;
+            return Ratio::ZERO;
         };
 
         NonZeroRatio::new(numerator, denominator).get()
@@ -224,13 +224,13 @@ impl Ratio {
 }
 
 impl PartialOrd for Ratio {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+    fn partial_cmp(&self, other: &Ratio) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for Ratio {
-    fn cmp(&self, other: &Self) -> Ordering {
+    fn cmp(&self, other: &Ratio) -> Ordering {
         #![expect(clippy::arithmetic_side_effects, reason = "we cast to u128 first")]
         Ord::cmp(
             &(u128::from(self.numerator) * u128::from(other.denominator.get())),
@@ -246,13 +246,13 @@ impl Display for Ratio {
 }
 
 impl Default for Ratio {
-    fn default() -> Self {
+    fn default() -> Ratio {
         Ratio::ZERO
     }
 }
 
 impl<T: Into<u64>> From<T> for Ratio {
-    fn from(value: T) -> Self {
+    fn from(value: T) -> Ratio {
         Ratio::integer(value.into())
     }
 }

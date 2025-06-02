@@ -41,7 +41,7 @@ impl Player {
 }
 
 impl From<Sink> for Player {
-    fn from(sink: Sink) -> Self {
+    fn from(sink: Sink) -> Player {
         sink.pause();
 
         Player {

@@ -12,7 +12,7 @@ pub struct Instant {
 impl Add<Instant> for metre::Instant {
     type Output = metre::Instant;
 
-    fn add(self, rhs: Instant) -> Self::Output {
+    fn add(self, rhs: Instant) -> metre::Instant {
         self + rhs.since_start
     }
 }

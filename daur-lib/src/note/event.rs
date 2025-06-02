@@ -17,22 +17,22 @@ impl AsRef<UnknownEvent> for Event {
     }
 }
 
-impl PartialEq<Self> for Event {
-    fn eq(&self, other: &Self) -> bool {
+impl PartialEq for Event {
+    fn eq(&self, other: &Event) -> bool {
         self.cmp(other).is_eq()
     }
 }
 
 impl Eq for Event {}
 
-impl PartialOrd<Self> for Event {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+impl PartialOrd for Event {
+    fn partial_cmp(&self, other: &Event) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
 impl Ord for Event {
-    fn cmp(&self, other: &Self) -> Ordering {
+    fn cmp(&self, other: &Event) -> Ordering {
         u32::cmp(
             &self.as_ref().header().time(),
             &other.as_ref().header().time(),

@@ -15,7 +15,7 @@ impl Add<Duration> for Instant {
 impl Sub<Duration> for Instant {
     type Output = Instant;
 
-    fn sub(mut self, rhs: Duration) -> Self::Output {
+    fn sub(mut self, rhs: Duration) -> Instant {
         self -= rhs;
         self
     }

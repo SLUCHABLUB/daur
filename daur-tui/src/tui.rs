@@ -121,7 +121,7 @@ const DEFAULT_TERMINAL_SIZE: Size = Size {
 };
 
 impl Default for Tui {
-    fn default() -> Self {
+    fn default() -> Tui {
         Tui {
             should_exit: false,
             key_actions: controls(),

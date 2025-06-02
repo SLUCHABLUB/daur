@@ -15,7 +15,7 @@ pub struct OnClick {
 
 impl OnClick {
     /// Construct a new function.
-    pub fn new<F: Fn(RenderArea, &mut Actions) + Send + Sync + 'static>(function: F) -> Self {
+    pub fn new<F: Fn(RenderArea, &mut Actions) + Send + Sync + 'static>(function: F) -> OnClick {
         OnClick {
             function: Some(Box::new(function)),
         }
@@ -25,7 +25,7 @@ impl OnClick {
     ///
     /// [`OnClick`] also implements [`From<Action>`] so if the action is available at call-time,
     /// [`from`](From::<Action>::from) is preferred.
-    pub fn action<F: Fn() -> Action + Send + Sync + 'static>(generator: F) -> Self {
+    pub fn action<F: Fn() -> Action + Send + Sync + 'static>(generator: F) -> OnClick {
         OnClick::new(move |_, actions| actions.push(generator()))
     }
 
@@ -38,13 +38,13 @@ impl OnClick {
 }
 
 impl From<Action> for OnClick {
-    fn from(action: Action) -> Self {
+    fn from(action: Action) -> OnClick {
         OnClick::action(move || action.clone())
     }
 }
 
 impl From<project::Edit> for OnClick {
-    fn from(action: project::Edit) -> Self {
+    fn from(action: project::Edit) -> OnClick {
         OnClick::from(Action::Edit(action))
     }
 }

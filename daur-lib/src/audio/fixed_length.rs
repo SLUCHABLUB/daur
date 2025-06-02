@@ -39,7 +39,7 @@ impl FixedLength {
         _crop_start: Length,
     ) -> Box<Painter> {
         // TODO: draw loudness graph
-        let _: &Self = self;
+        let _: &FixedLength = self;
         Box::new(|_| ())
     }
 }

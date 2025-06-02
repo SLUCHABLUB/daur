@@ -17,7 +17,7 @@ pub struct TimeContext {
 impl Div<Tempo> for TimeSignature {
     type Output = TimeContext;
 
-    fn div(self, rhs: Tempo) -> Self::Output {
+    fn div(self, rhs: Tempo) -> TimeContext {
         TimeContext {
             tempo: rhs,
             time_signature: self,
@@ -28,7 +28,7 @@ impl Div<Tempo> for TimeSignature {
 impl Div<&Changing<Tempo>> for &Changing<TimeSignature> {
     type Output = Changing<TimeContext>;
 
-    fn div(self, rhs: &Changing<Tempo>) -> Self::Output {
+    fn div(self, rhs: &Changing<Tempo>) -> Changing<TimeContext> {
         let time_signature = self;
         let tempo = rhs;
 
@@ -91,7 +91,7 @@ impl Div<&Changing<Tempo>> for &Changing<TimeSignature> {
 impl Mul<TimeContext> for metre::Duration {
     type Output = time::Duration;
 
-    fn mul(self, rhs: TimeContext) -> Self::Output {
+    fn mul(self, rhs: TimeContext) -> time::Duration {
         rhs.tempo.beat_duration().get() * (self / rhs.time_signature.beat_duration())
     }
 }
@@ -99,7 +99,7 @@ impl Mul<TimeContext> for metre::Duration {
 impl Mul<&Changing<TimeContext>> for metre::Instant {
     type Output = time::Instant;
 
-    fn mul(self, rhs: &Changing<TimeContext>) -> Self::Output {
+    fn mul(self, rhs: &Changing<TimeContext>) -> time::Instant {
         let mut instant = time::Instant::START;
 
         let mut change = metre::Instant::START;
@@ -129,7 +129,7 @@ impl Mul<&Changing<TimeContext>> for metre::Instant {
 impl Div<&Changing<TimeContext>> for time::Instant {
     type Output = metre::Instant;
 
-    fn div(self, rhs: &Changing<TimeContext>) -> Self::Output {
+    fn div(self, rhs: &Changing<TimeContext>) -> metre::Instant {
         let mut remaining = self.since_start;
         let mut instant = metre::Instant::START;
 

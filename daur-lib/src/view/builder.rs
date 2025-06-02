@@ -8,7 +8,7 @@ use log::warn;
 
 impl View {
     /// Puts a border around the view.
-    pub fn bordered(self) -> Self {
+    pub fn bordered(self) -> View {
         View::Bordered {
             thick: false,
             view: Box::new(self),
@@ -27,7 +27,7 @@ impl View {
     pub fn grabbable<F: Fn(RenderArea) -> Option<HoldableObject> + Send + Sync + 'static>(
         self,
         generator: F,
-    ) -> Self {
+    ) -> View {
         View::Grabbable {
             object: Box::new(generator),
             view: Box::new(self),
@@ -40,7 +40,7 @@ impl View {
     >(
         self,
         dropper: F,
-    ) -> Self {
+    ) -> View {
         View::ObjectAcceptor {
             drop: Box::new(dropper),
             view: Box::new(self),
@@ -48,17 +48,17 @@ impl View {
     }
 
     /// Positions the view in a rectangle.
-    pub fn positioned(self, at: relative::Rectangle) -> Self {
+    pub fn positioned(self, at: relative::Rectangle) -> View {
         self.quotated_2d(at.size).positioned(at.position)
     }
 
     /// Offsets the view along the x-axis.
-    pub fn x_positioned(self, offset: Length) -> Self {
+    pub fn x_positioned(self, offset: Length) -> View {
         self.fill_remaining().x_positioned(offset)
     }
 
     /// Makes the view scrollable.
-    pub fn scrollable(self, action: fn(Vector) -> Action) -> Self {
+    pub fn scrollable(self, action: fn(Vector) -> Action) -> View {
         View::Scrollable {
             action,
             view: Box::new(self),
@@ -66,7 +66,7 @@ impl View {
     }
 
     /// Makes the view selectable.
-    pub fn selectable(self, item: Selectable) -> Self {
+    pub fn selectable(self, item: Selectable) -> View {
         View::Selectable {
             item,
             view: Box::new(self),
@@ -74,7 +74,7 @@ impl View {
     }
 
     /// Puts a title on the view.
-    pub fn titled(self, title: ArcStr) -> Self {
+    pub fn titled(self, title: ArcStr) -> View {
         View::Titled {
             title,
             highlighted: false,
@@ -84,7 +84,7 @@ impl View {
     }
 
     /// Puts a title on the view where the title influences the [minimum size](View::minimum_size).
-    pub fn titled_non_cropping(self, title: ArcStr) -> Self {
+    pub fn titled_non_cropping(self, title: ArcStr) -> View {
         View::Titled {
             title,
             highlighted: false,
@@ -96,7 +96,7 @@ impl View {
     /// Sets the border thickness if the view is [bordered](View::Bordered).
     ///
     /// Also sets highlights the title if the view is [titled](View::Titled).
-    pub fn with_thickness(self, thickness: bool) -> Self {
+    pub fn with_thickness(self, thickness: bool) -> View {
         if let View::Bordered { view, .. } = self {
             View::Bordered {
                 thick: thickness,

@@ -170,7 +170,7 @@ impl Track {
 }
 
 impl Default for Track {
-    fn default() -> Self {
-        Self::new()
+    fn default() -> Track {
+        Track::new()
     }
 }

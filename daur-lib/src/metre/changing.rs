@@ -25,7 +25,7 @@ impl<T: Copy> Changing<T> {
 }
 
 impl<T> From<T> for Changing<T> {
-    fn from(start: T) -> Self {
+    fn from(start: T) -> Changing<T> {
         Changing {
             start,
             changes: BTreeMap::new(),

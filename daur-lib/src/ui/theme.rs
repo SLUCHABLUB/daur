@@ -26,7 +26,7 @@ impl Theme {
 }
 
 impl Default for Theme {
-    fn default() -> Self {
+    fn default() -> Theme {
         Theme {
             background: Colour::gray_scale(0xFF),
             black_key: Colour::gray_scale(0x00),

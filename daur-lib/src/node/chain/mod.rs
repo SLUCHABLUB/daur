@@ -21,7 +21,7 @@ impl Chain {
     reason = "the real implementation will not be derivable"
 )]
 impl Default for Chain {
-    fn default() -> Self {
+    fn default() -> Chain {
         Chain { _nodes: () }
     }
 }

@@ -24,7 +24,7 @@ impl<R: Into<Ratio>> Add<R> for Ratio {
 impl<R: Into<Ratio>> Sub<R> for Ratio {
     type Output = Ratio;
 
-    fn sub(self, rhs: R) -> Self::Output {
+    fn sub(self, rhs: R) -> Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
@@ -91,7 +91,7 @@ impl<N: Into<NonZeroRatio>> DivAssign<N> for Ratio {
 impl<N: Into<NonZeroRatio>> Div<N> for NonZeroRatio {
     type Output = NonZeroRatio;
 
-    fn div(self, rhs: N) -> Self::Output {
+    fn div(self, rhs: N) -> NonZeroRatio {
         #[expect(
             clippy::unwrap_used,
             reason = "the numerator is non-zero; therefore, the result will be too"

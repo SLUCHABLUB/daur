@@ -23,7 +23,7 @@ impl Period {
 impl Div<&Changing<TimeContext>> for Period {
     type Output = metre::Period;
 
-    fn div(self, rhs: &Changing<TimeContext>) -> Self::Output {
+    fn div(self, rhs: &Changing<TimeContext>) -> metre::Period {
         let start = self.start / rhs;
         let end = self.end() / rhs;
 

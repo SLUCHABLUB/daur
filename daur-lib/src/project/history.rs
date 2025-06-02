@@ -42,7 +42,7 @@ pub enum HistoryEntry {
 }
 
 impl FromIterator1<HistoryEntry> for HistoryEntry {
-    fn from_iter1<I>(items: I) -> Self
+    fn from_iter1<I>(items: I) -> HistoryEntry
     where
         I: IntoIterator1<Item = HistoryEntry>,
     {

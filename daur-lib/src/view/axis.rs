@@ -13,7 +13,7 @@ pub enum Axis {
 impl Mul<Offset> for Axis {
     type Output = Vector;
 
-    fn mul(self, rhs: Offset) -> Self::Output {
+    fn mul(self, rhs: Offset) -> Vector {
         match self {
             Axis::X => Vector::from_x(rhs),
             Axis::Y => Vector::from_y(rhs),

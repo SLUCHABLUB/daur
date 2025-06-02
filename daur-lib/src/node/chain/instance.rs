@@ -17,7 +17,7 @@ pub(crate) struct Instance {
 }
 
 impl Instance {
-    pub(super) fn new(sample_rate: sample::Rate) -> Self {
+    pub(super) fn new(sample_rate: sample::Rate) -> Instance {
         Instance {
             sample_rate,
             sample: 0,

@@ -3,7 +3,7 @@ use crate::{Popup, UserInterface};
 use indexmap::IndexMap;
 
 /// A manager for the open [popups](PopupSpecification).
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct Manager {
     popups: IndexMap<Id, Popup>,
 }
@@ -11,10 +11,8 @@ pub(crate) struct Manager {
 impl Manager {
     /// Constructs a new manager with no popups.
     #[must_use]
-    pub fn new() -> Self {
-        Manager {
-            popups: IndexMap::new(),
-        }
+    pub fn new() -> Manager {
+        Manager::default()
     }
 
     pub(crate) fn popups(&self) -> impl Iterator<Item = &Popup> {
@@ -33,11 +31,5 @@ impl Manager {
     pub fn close(&mut self, id: Id) {
         let popup = self.popups.shift_remove(&id);
         drop(popup);
-    }
-}
-
-impl Default for Manager {
-    fn default() -> Self {
-        Self::new()
     }
 }

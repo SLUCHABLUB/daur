@@ -9,7 +9,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, Sub, SubAssi
 impl<L: Into<Length>> Add<L> for Length {
     type Output = Length;
 
-    fn add(self, rhs: L) -> Self::Output {
+    fn add(self, rhs: L) -> Length {
         Length {
             pixels: self.pixels.saturating_add(rhs.into().pixels),
         }
@@ -19,7 +19,7 @@ impl<L: Into<Length>> Add<L> for Length {
 impl<L: Into<Length>> Sub<L> for Length {
     type Output = Length;
 
-    fn sub(self, rhs: L) -> Self::Output {
+    fn sub(self, rhs: L) -> Length {
         Length {
             pixels: self.pixels.saturating_sub(rhs.into().pixels),
         }
@@ -29,7 +29,7 @@ impl<L: Into<Length>> Sub<L> for Length {
 impl<R: Into<Ratio>> Mul<R> for Length {
     type Output = Length;
 
-    fn mul(self, rhs: R) -> Self::Output {
+    fn mul(self, rhs: R) -> Length {
         let pixels = (Ratio::from(self.pixels) * rhs).round().saturating_cast();
         Length { pixels }
     }
@@ -38,7 +38,7 @@ impl<R: Into<Ratio>> Mul<R> for Length {
 impl<N: Into<NonZeroRatio>> Div<N> for Length {
     type Output = Length;
 
-    fn div(self, rhs: N) -> Self::Output {
+    fn div(self, rhs: N) -> Length {
         #![expect(clippy::suspicious_arithmetic_impl, reason = "we take the reciprocal")]
         self * rhs.into().reciprocal().get()
     }
@@ -95,7 +95,7 @@ impl Rem<NonZeroLength> for Length {
 impl Add<Offset> for Length {
     type Output = Length;
 
-    fn add(self, rhs: Offset) -> Self::Output {
+    fn add(self, rhs: Offset) -> Length {
         (Offset::positive(self) + rhs).rectify()
     }
 }
@@ -103,7 +103,7 @@ impl Add<Offset> for Length {
 impl Sub<Offset> for Length {
     type Output = Length;
 
-    fn sub(self, rhs: Offset) -> Self::Output {
+    fn sub(self, rhs: Offset) -> Length {
         (Offset::positive(self) - rhs).rectify()
     }
 }

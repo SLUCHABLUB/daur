@@ -19,7 +19,7 @@ impl Pair {
 }
 
 impl From<Sample> for Pair {
-    fn from(sample: Sample) -> Self {
+    fn from(sample: Sample) -> Pair {
         Pair {
             left: sample,
             right: sample,
@@ -28,7 +28,7 @@ impl From<Sample> for Pair {
 }
 
 impl From<[Sample; 2]> for Pair {
-    fn from([left, right]: [Sample; 2]) -> Self {
+    fn from([left, right]: [Sample; 2]) -> Pair {
         Pair { left, right }
     }
 }
@@ -36,14 +36,14 @@ impl From<[Sample; 2]> for Pair {
 impl Add for Pair {
     type Output = Pair;
 
-    fn add(mut self, rhs: Self) -> Self::Output {
+    fn add(mut self, rhs: Pair) -> Pair {
         self += rhs;
         self
     }
 }
 
 impl AddAssign for Pair {
-    fn add_assign(&mut self, rhs: Self) {
+    fn add_assign(&mut self, rhs: Pair) {
         self.left += rhs.left;
         self.right += rhs.right;
     }

@@ -20,7 +20,7 @@ impl Default for Key {
     /// A quite arbitrary choice.
     /// _A_, since it is the first letter of the latin alphabet.
     /// _Minor_, since it uses all the white keys on the piano.
-    fn default() -> Self {
+    fn default() -> Key {
         Key {
             tonic: Chroma::A,
             sign: Sign::default(),
