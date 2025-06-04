@@ -137,6 +137,9 @@ impl Project {
                 let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION, track.id());
                 let id = clip.id();
 
+                selection.clear();
+                selection.push_clip(id);
+
                 track.try_insert_clip(cursor, clip)?;
 
                 Ok(HistoryEntry::InsertClip(id))
@@ -145,7 +148,9 @@ impl Project {
                 let track = Track::new();
                 let id = track.id();
 
+                selection.clear();
                 selection.push_track(id);
+
                 self.tracks.insert(id, track);
 
                 Ok(HistoryEntry::AddTrack(id))

@@ -23,7 +23,7 @@ pub trait Visitor {
     /// Whether views should be visited from inside out.
     /// This also reverses the order in which layers are visited.
     #[must_use]
-    fn reverse_order() -> bool {
+    fn reverse_layer_order() -> bool {
         false
     }
 
@@ -85,23 +85,6 @@ pub trait Visitor {
     }
 }
 
-macro_rules! compound {
-    (
-        $container:expr,
-        $content:expr,
-    ) => {{
-        if !V::reverse_order() {
-            $container;
-        }
-
-        $content;
-
-        if V::reverse_order() {
-            $container;
-        }
-    }};
-}
-
 impl View {
     /// Accepts a view visitor.
     #[expect(clippy::too_many_lines, reason = "`View` is a large enum")]
@@ -113,34 +96,34 @@ impl View {
     ) {
         #[sorted]
         match self {
-            View::Bordered { thick, view } => compound!(
-                visitor.visit_border(render_area.area, *thick),
-                view.accept::<Ui, V>(visitor, inner_area::<Ui>(render_area)),
-            ),
+            View::Bordered { thick, view } => {
+                visitor.visit_border(render_area.area, *thick);
+                view.accept::<Ui, V>(visitor, inner_area::<Ui>(render_area));
+            }
             View::Canvas {
                 background,
                 painter,
             } => visitor.visit_canvas(render_area.area, *background, painter),
-            View::Clickable { on_click, view } => compound!(
-                visitor.visit_clickable(render_area.area, on_click),
-                view.accept::<Ui, V>(visitor, render_area),
-            ),
-            View::Contextual { menu, view } => compound!(
-                visitor.visit_contextual(render_area.area, menu),
-                view.accept::<Ui, V>(visitor, render_area),
-            ),
+            View::Clickable { on_click, view } => {
+                visitor.visit_clickable(render_area.area, on_click);
+                view.accept::<Ui, V>(visitor, render_area);
+            }
+            View::Contextual { menu, view } => {
+                visitor.visit_contextual(render_area.area, menu);
+                view.accept::<Ui, V>(visitor, render_area);
+            }
             View::CursorWindow(window) => {
                 if let Some(offset) = window.offset() {
                     visitor.visit_cursor_window(render_area.area, offset);
                 }
             }
             View::Empty => (),
-            View::Grabbable { object, view } => compound!(
+            View::Grabbable { object, view } => {
                 if let Some(object) = object(render_area) {
                     visitor.visit_grabbable(render_area.area, object);
-                },
-                view.accept::<Ui, V>(visitor, render_area),
-            ),
+                }
+                view.accept::<Ui, V>(visitor, render_area);
+            }
             View::Hoverable { default, hovered } => {
                 if render_area.is_hovered() {
                     hovered.accept::<Ui, V>(visitor, render_area);
@@ -151,16 +134,16 @@ impl View {
             View::Layers(layers) => {
                 let visit = |layer: &View| layer.accept::<Ui, V>(visitor, render_area);
 
-                if V::reverse_order() {
+                if V::reverse_layer_order() {
                     layers.iter().rev().for_each(visit);
                 } else {
                     layers.iter().for_each(visit);
                 }
             }
-            View::ObjectAcceptor { drop, view } => compound!(
-                visitor.visit_object_acceptor(render_area.area, drop),
-                view.accept::<Ui, V>(visitor, render_area),
-            ),
+            View::ObjectAcceptor { drop, view } => {
+                visitor.visit_object_acceptor(render_area.area, drop);
+                view.accept::<Ui, V>(visitor, render_area);
+            }
             View::Positioned { position, view } => {
                 let max_size = Size {
                     width: render_area.area.size.width - position.x,
@@ -179,14 +162,14 @@ impl View {
             }
             View::Reactive(closure) => closure(render_area).accept::<Ui, V>(visitor, render_area),
             View::Rule { index, cells } => visitor.visit_rule(render_area.area, *index, *cells),
-            View::Scrollable { action, view } => compound!(
-                visitor.visit_scrollable(render_area.area, *action),
-                view.accept::<Ui, V>(visitor, render_area),
-            ),
-            View::Selectable { item, view } => compound!(
-                visitor.visit_selectable(render_area.area, *item),
-                view.accept::<Ui, V>(visitor, render_area),
-            ),
+            View::Scrollable { action, view } => {
+                visitor.visit_scrollable(render_area.area, *action);
+                view.accept::<Ui, V>(visitor, render_area);
+            }
+            View::Selectable { item, view } => {
+                visitor.visit_selectable(render_area.area, *item);
+                view.accept::<Ui, V>(visitor, render_area);
+            }
             View::SelectionBox => visitor.visit_selection_box(render_area.area),
             View::Shared(view) => view.accept::<Ui, V>(visitor, render_area),
             View::Solid(colour) => visitor.visit_solid(render_area.area, *colour),
@@ -212,23 +195,21 @@ impl View {
 
                 if let View::Bordered { thick, view } = &**view {
                     let inner_area = inner_area::<Ui>(titled_area);
-                    compound!(
-                        visitor.visit_titled_bordered(
-                            render_area.area,
-                            titled_area.area,
-                            title,
-                            *highlighted,
-                            *thick
-                        ),
-                        view.accept::<Ui, V>(visitor, inner_area),
+
+                    visitor.visit_titled_bordered(
+                        render_area.area,
+                        titled_area.area,
+                        title,
+                        *highlighted,
+                        *thick,
                     );
+                    view.accept::<Ui, V>(visitor, inner_area);
+
                     return;
                 }
 
-                compound!(
-                    visitor.visit_titled(render_area.area, title, *highlighted),
-                    view.accept::<Ui, V>(visitor, titled_area),
-                );
+                visitor.visit_titled(render_area.area, title, *highlighted);
+                view.accept::<Ui, V>(visitor, titled_area);
             }
         }
     }

@@ -88,7 +88,7 @@ fn handle_mouse_event(
 
                 let mut clicker = match button {
                     MouseButton::Left => Clicker::left_click(ui.mouse_position, !shift, actions),
-                    MouseButton::Right => Clicker::right_click(ui.mouse_position, !shift, actions),
+                    MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),
                     MouseButton::Middle => return,
                 };
 

@@ -5,7 +5,7 @@ use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
 use crate::project::Track;
 use crate::project::track::clip;
 use crate::select::Selection;
-use crate::ui::Length;
+use crate::ui::{Length, ThemeColour};
 use crate::view::context::Menu;
 use crate::view::{CursorWindow, View};
 
@@ -50,7 +50,12 @@ pub(crate) fn overview(
             .collect(),
     );
 
+    let background = View::Solid(ThemeColour::Background)
+        .contextual(Menu::track_overview())
+        .selectable(Selectable::Track(track.id));
+
     View::Layers(vec![
+        background,
         clips,
         CursorWindow::builder()
             .cursor(cursor)
@@ -61,7 +66,5 @@ pub(crate) fn overview(
             .build()
             .view(),
     ])
-    .contextual(Menu::track_overview())
     .scrollable(Action::MoveOverview)
-    .selectable(Selectable::Track(track.id))
 }

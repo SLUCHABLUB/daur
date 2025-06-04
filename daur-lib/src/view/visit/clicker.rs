@@ -14,6 +14,7 @@ pub struct Clicker<'actions> {
     actions: &'actions mut Actions,
     right_click: bool,
     captured: bool,
+    clear_selection: bool,
 }
 
 impl<'actions> Clicker<'actions> {
@@ -23,33 +24,23 @@ impl<'actions> Clicker<'actions> {
         clear_selection: bool,
         actions: &'actions mut Actions,
     ) -> Self {
-        if clear_selection {
-            actions.push(Action::ClearSelection);
-        }
-
         Clicker {
             position,
             actions,
             right_click: false,
             captured: false,
+            clear_selection,
         }
     }
 
     /// A clicker using the right mouse button.
-    pub fn right_click(
-        position: Point,
-        clear_selection: bool,
-        actions: &'actions mut Actions,
-    ) -> Self {
-        if clear_selection {
-            actions.push(Action::ClearSelection);
-        }
-
+    pub fn right_click(position: Point, actions: &'actions mut Actions) -> Self {
         Clicker {
             position,
             actions,
             right_click: true,
             captured: false,
+            clear_selection: false,
         }
     }
 
@@ -59,7 +50,7 @@ impl<'actions> Clicker<'actions> {
 }
 
 impl Visitor for Clicker<'_> {
-    fn reverse_order() -> bool {
+    fn reverse_layer_order() -> bool {
         true
     }
 
@@ -103,7 +94,11 @@ impl Visitor for Clicker<'_> {
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 
     fn visit_selectable(&mut self, area: Rectangle, item: Selectable) {
-        if area.contains(self.position) {
+        if self.should_click(area) {
+            if self.clear_selection {
+                self.actions.push(Action::ClearSelection);
+            }
+
             self.actions.push(Action::Select(item));
         }
     }
@@ -121,4 +116,10 @@ impl Visitor for Clicker<'_> {
     fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
 
     fn visit_titled(&mut self, _: Rectangle, _: &str, _: bool) {}
+}
+
+impl Drop for Clicker<'_> {
+    fn drop(&mut self) {
+        self.actions.push(Action::CloseContextMenu);
+    }
 }

@@ -54,6 +54,11 @@ impl Selection {
         self.items.push(Selectable::Track(track));
     }
 
+    /// Adds a clip to the top of the selection stack.
+    pub fn push_clip(&mut self, clip: clip::Id) {
+        self.items.push(Selectable::Clip(clip));
+    }
+
     /// Takes all tracks out of the selection.
     // TODO: return Option<HashSet1>
     pub fn take_tracks(&mut self) -> Option<HashSet<track::Id>> {
@@ -70,6 +75,7 @@ impl Selection {
         (!set.is_empty()).then_some(set)
     }
 
+    // TODO: replace clips with tracks
     /// Takes all clips out of the selection.
     // TODO: return Option<HashSet1>
     pub fn take_clips(&mut self) -> Option<HashSet<clip::Id>> {
@@ -90,6 +96,7 @@ impl Selection {
         (!set.is_empty()).then_some(set)
     }
 
+    // TODO: replace notes with clips
     /// Takes all notes out of the selection.
     // TODO: return Option<HashSet1>
     pub fn take_notes(&mut self) -> Option<HashSet<note::Id>> {

@@ -21,7 +21,7 @@ impl<'actions> Grabber<'actions> {
 }
 
 impl Visitor for Grabber<'_> {
-    fn reverse_order() -> bool {
+    fn reverse_layer_order() -> bool {
         true
     }
 
