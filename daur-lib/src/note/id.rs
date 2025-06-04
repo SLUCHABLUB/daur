@@ -24,8 +24,4 @@ impl Id {
             inner: COUNTER.fetch_add(1, Ordering::Relaxed),
         }
     }
-
-    pub(crate) fn to_u32(self) -> u32 {
-        self.inner
-    }
 }

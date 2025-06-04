@@ -21,7 +21,6 @@ derive_more = { version = "2.0.1", features = ["debug"] }
 dirs = "6.0.0"
 # TODO: use the official version when clone-getters get added
 getset = { git = "https://github.com/SLUCHABLUB/getset.git" }
-hound = "3.5.1"
 itertools = "0.14.0"
 num = "0.4.3"
 parking_lot = "0.12.3"
@@ -36,8 +35,7 @@ non-zero = "0.1.0"
 mitsein = { version = "0.6.1", features = ["indexmap"] }
 indexmap = "2.9.0"
 remain = "0.2.15"
-clack-host = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0", features = ["clack-plugin"] }
-clack-plugin = { git = "https://github.com/prokopyl/clack.git", version = "0.1.0" }
-sorted-vec = "0.8.6"
 typed-builder = "0.21.0"
 log = "0.4.27"
+symphonia = { version = "0.5.4", features = ["all"] }
+bytemuck = { version = "1.23.0", features = ["derive"] }

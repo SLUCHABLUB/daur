@@ -1,3 +1,7 @@
+use crate::audio::sample;
+use crate::{Ratio, time};
+use std::ops::Div;
+
 mod ops;
 
 /// A duration of sample time. A sample count.
@@ -13,4 +17,16 @@ impl Duration {
 
     /// One sample.
     pub const SAMPLE: Duration = Duration { samples: 1 };
+}
+
+impl Div<sample::Rate> for Duration {
+    type Output = time::Duration;
+
+    fn div(self, rhs: sample::Rate) -> time::Duration {
+        #![expect(
+            clippy::suspicious_arithmetic_impl,
+            reason = "`sample_duration` is the reciprocal"
+        )]
+        rhs.sample_duration().get() * Ratio::from_usize(self.samples)
+    }
 }

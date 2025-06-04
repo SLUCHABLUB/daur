@@ -7,17 +7,17 @@ use std::time::Duration;
 #[derive(Clone, Debug)]
 #[must_use = "`Source` is an iterator"]
 pub struct Source {
-    audio: Audio,
+    audio: Audio<'static>,
     right: bool,
-    offset: sample::Duration,
+    position: sample::Instant,
 }
 
 impl Source {
-    pub(super) fn new(audio: Audio) -> Source {
+    pub(super) fn new(audio: Audio<'static>) -> Source {
         Source {
             audio,
             right: false,
-            offset: sample::Duration::ZERO,
+            position: sample::Instant::START,
         }
     }
 }
@@ -26,11 +26,15 @@ impl Iterator for Source {
     type Item = f32;
 
     fn next(&mut self) -> Option<f32> {
-        let pair = self.audio.samples.get(self.offset.samples)?;
-        let sample = if self.right { pair.right } else { pair.left };
+        if self.position.since_start > self.audio.duration() {
+            return None;
+        }
+
+        let [left, right] = self.audio.sample_pair(self.position);
+        let sample = if self.right { right } else { left };
 
         if self.right {
-            self.offset += sample::Duration::SAMPLE;
+            self.position += sample::Duration::SAMPLE;
         }
         self.right = !self.right;
 
@@ -40,7 +44,7 @@ impl Iterator for Source {
 
 impl rodio::Source for Source {
     fn current_frame_len(&self) -> Option<usize> {
-        let remaining = self.audio.duration() - self.offset;
+        let remaining = self.audio.duration() - self.position.since_start;
         Some(remaining.samples)
     }
 
@@ -58,7 +62,7 @@ impl rodio::Source for Source {
 
     fn try_seek(&mut self, pos: Duration) -> Result<(), SeekError> {
         let duration = time::Duration::from(pos) * self.audio.sample_rate;
-        self.offset += duration;
+        self.position += duration;
 
         Ok(())
     }

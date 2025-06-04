@@ -1,7 +1,8 @@
 //! Types relating to [`Group`].
 
+pub(crate) mod event;
+
 mod chroma;
-mod event;
 mod group;
 mod id;
 mod interval;
@@ -20,6 +21,7 @@ pub use key_interval::KeyInterval;
 pub use pitch::Pitch;
 pub use sign::Sign;
 
+#[doc(inline)]
 pub(crate) use event::Event;
 
 use crate::metre::NonZeroDuration;

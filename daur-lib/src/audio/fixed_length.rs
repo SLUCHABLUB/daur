@@ -8,7 +8,7 @@ use crate::{Audio, time};
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct FixedLength {
     /// The audio.
-    pub audio: Audio,
+    pub audio: Audio<'static>,
     /// The length of the audio.
     pub duration: NonZeroDuration,
 }
@@ -16,7 +16,7 @@ pub struct FixedLength {
 impl FixedLength {
     #[must_use]
     pub(crate) fn from_audio(
-        audio: Audio,
+        audio: Audio<'static>,
         position: Instant,
         time_context: &Changing<TimeContext>,
     ) -> FixedLength {

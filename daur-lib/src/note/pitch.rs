@@ -14,11 +14,6 @@ impl Pitch {
     /// The lowest pitch available in the MIDI standard: C<sub>-1</sub>.
     pub const LOWEST: Pitch = Pitch { midi_number: 0 };
 
-    pub(crate) fn midi_number(self) -> u8 {
-        #![expect(clippy::cast_sign_loss, reason = "see the invariant")]
-        self.midi_number as u8
-    }
-
     /// Returns the croma of the pitch.
     #[must_use]
     pub fn chroma(self) -> Chroma {
@@ -48,6 +43,10 @@ impl Pitch {
     #[must_use]
     pub fn name(self, sign: Sign) -> String {
         format!("{}{}", self.chroma().name(sign), self.octave_number())
+    }
+
+    pub(crate) fn frequency(self) -> f32 {
+        440.0 * 2_f32.powf((f32::from(self.midi_number) - 69.0) / 12.0)
     }
 }
 

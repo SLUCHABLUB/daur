@@ -1,12 +1,9 @@
 use crate::audio::sample;
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, relative};
 use crate::note;
+use crate::note::event::Sequence;
 use crate::note::{Event, Note, Pitch};
 use crate::view::Painter;
-use clack_host::events::event_types::{NoteOffEvent, NoteOnEvent};
-use clack_host::events::{Match, Pckn};
-use saturating_cast::SaturatingCast as _;
-use sorted_vec::SortedVec;
 use std::cmp::min;
 use std::collections::HashMap;
 use thiserror::Error;
@@ -137,31 +134,23 @@ impl Group {
         start: Instant,
         time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
-    ) -> SortedVec<Event> {
-        let mut events = Vec::new();
+    ) -> Sequence {
+        self.notes
+            .iter()
+            .flat_map(|((note_start, pitch), note)| {
+                let id = note.id;
+                let pitch = *pitch;
 
-        #[expect(clippy::iter_over_hash_type, reason = "we sort the events")]
-        for ((note_start, pitch), note) in &self.notes {
-            let note_start = start + *note_start;
+                let note_start = start + *note_start;
 
-            let start = note_start * time_context * sample_rate;
-            let end = (note_start + note.duration.get()) * time_context * sample_rate;
+                let start = note_start * time_context * sample_rate;
+                let end = (note_start + note.duration.get()) * time_context * sample_rate;
 
-            let tuple = Pckn {
-                port_index: Match::Specific(0),
-                channel: Match::All,
-                key: Match::Specific(u16::from(pitch.midi_number())),
-                note_id: Match::Specific(note.id.to_u32()),
-            };
-
-            // TODO: take the velocity from the note
-            let on = NoteOnEvent::new(start.since_start.samples.saturating_cast(), tuple, 0.5);
-            let off = NoteOffEvent::new(end.since_start.samples.saturating_cast(), tuple, 0.5);
-
-            events.push(Event::NoteOn(on));
-            events.push(Event::NoteOff(off));
-        }
-
-        SortedVec::from_unsorted(events)
+                [
+                    (start, Event::NoteOn { id, pitch }),
+                    (end, Event::NoteOff(id)),
+                ]
+            })
+            .collect()
     }
 }

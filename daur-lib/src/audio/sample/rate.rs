@@ -4,19 +4,6 @@ use rodio::cpal;
 use std::num::{NonZeroU32, NonZeroU64};
 use thiserror::Error;
 
-/// Constructs a new sample rate at compile time.
-#[macro_export]
-macro_rules! sample_rate {
-    ($f:literal Hz) => {
-        const {
-            $crate::audio::sample::Rate {
-                samples_per_second: ::core::num::NonZeroU32::new($f)
-                    .expect("sample rates cannot be zero"),
-            }
-        }
-    };
-}
-
 /// A sample rate.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Rate {
@@ -34,6 +21,16 @@ impl Rate {
 
         NonZeroDuration::from_duration(duration).unwrap_or(NonZeroDuration::NANOSECOND)
     }
+
+    /// Returns self in Hz as an [`f32`].
+    #[must_use]
+    pub fn hz(self) -> f32 {
+        #![expect(
+            clippy::cast_precision_loss,
+            reason = "sample rates will in practice not need that high precision"
+        )]
+        self.samples_per_second.get() as f32
+    }
 }
 
 /// An error raised when a sample rate of zero is attempted to be constructed.
@@ -45,6 +42,14 @@ impl TryFrom<cpal::SampleRate> for Rate {
     type Error = ZeroRateError;
 
     fn try_from(cpal::SampleRate(sample_rate): cpal::SampleRate) -> Result<Rate, ZeroRateError> {
+        Rate::try_from(sample_rate)
+    }
+}
+
+impl TryFrom<u32> for Rate {
+    type Error = ZeroRateError;
+
+    fn try_from(sample_rate: u32) -> Result<Rate, ZeroRateError> {
         let samples_per_second = NonZeroU32::new(sample_rate).ok_or(ZeroRateError)?;
         Ok(Rate { samples_per_second })
     }

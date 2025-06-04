@@ -15,78 +15,99 @@ pub(crate) use config::Config;
 pub(crate) use player::Player;
 pub(crate) use source::Source;
 
-use crate::{Ratio, time};
+use crate::audio::sample::ZeroRateError;
+use crate::time;
 use anyhow::Result;
-use hound::{SampleFormat, WavReader};
-use itertools::Itertools as _;
+use bytemuck::cast_slice;
+use getset::CopyGetters;
 use log::error;
 use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
 use std::borrow::Cow;
 use std::cmp::max;
 use std::ffi::OsStr;
+use std::fs::File;
 use std::io;
-use std::io::Read;
-use std::iter::zip;
-use std::num::NonZeroU32;
-use std::ops::{Add, AddAssign};
+use std::io::ErrorKind;
 use std::path::Path;
+use symphonia::core::codecs::DecoderOptions;
+use symphonia::core::errors::Error as SymphoniaError;
+use symphonia::core::formats::FormatOptions;
+use symphonia::core::io::{MediaSourceStream, MediaSourceStreamOptions};
+use symphonia::core::meta::MetadataOptions;
+use symphonia::core::probe::Hint;
+use symphonia::default::{get_codecs, get_probe};
 use thiserror::Error;
 
 /// Some stereo 64-bit floating point audio.
-///
-/// # Addition
-///
-/// Two pieces of audio can be added together, using both `+` and `+=`.
-/// When this is done, the sample rate is taken from the audio on the left.
-/// See example:
-///
-/// ```
-/// # use daur::{sample_rate, Audio};
-///
-/// # let audio_one = Audio::empty(sample_rate!(44_100 Hz));
-/// # let audio_two = &Audio::empty(sample_rate!(48_000 Hz));
-///
-/// assert_eq!(audio_one.sample_rate, sample_rate!(44_100 Hz));
-/// assert_eq!(audio_two.sample_rate, sample_rate!(48_000 Hz));
-///
-/// let output = audio_one + audio_two;
-///
-/// assert_eq!(output.sample_rate, sample_rate!(44_100 Hz));
-/// ```
 #[cfg_attr(doc, doc(hidden))]
-#[derive(Clone, Eq, PartialEq, Debug)]
-pub struct Audio {
+#[derive(Clone, Eq, PartialEq, Debug, CopyGetters)]
+pub struct Audio<'samples> {
     /// The sample rate of the audio.
-    pub sample_rate: sample::Rate,
+    #[get_copy = "pub"]
+    sample_rate: sample::Rate,
     /// The left and right channels, in that order.
-    pub samples: Vec<sample::Pair>,
+    channels: [Cow<'samples, [Sample]>; 2],
 }
 
-/// An error that occurred whilst importing an audio file.
-#[derive(Debug, Error)]
-#[non_exhaustive]
-pub enum ImportAudioError {
-    /// The file has no extension. Thus, the format cannot be inferred.
-    #[error("the file has no extension; unable to infer a file type")]
-    NoExtension,
-    /// An io error occurred whilst reading the file.
-    #[error("error when reading file: {0}")]
-    ReadFile(#[from] io::Error),
-    /// A wav processing error.
-    #[error("{0}")]
-    Hound(#[from] hound::Error),
-    /// An unknown audio format was encountered.
-    #[error("the `{}` audio format is not (yet) supported", _0.display())]
-    UnsupportedFormat(Box<OsStr>),
-}
-
-impl Audio {
+impl Audio<'_> {
     /// Constructs an empty audio with the given sample rate.
     #[must_use]
-    pub const fn empty(sample_rate: sample::Rate) -> Audio {
+    pub const fn empty(sample_rate: sample::Rate) -> Self {
         Audio {
             sample_rate,
-            samples: Vec::new(),
+            channels: [Cow::Borrowed(&[]), Cow::Borrowed(&[])],
+        }
+    }
+
+    /// Constructs an empty audio with the given sample rate and capacity.
+    #[must_use]
+    pub fn with_capacity(sample_rate: sample::Rate, capacity: sample::Duration) -> Self {
+        Audio {
+            sample_rate,
+            channels: [
+                Cow::Owned(Vec::with_capacity(capacity.samples)),
+                Cow::Owned(Vec::with_capacity(capacity.samples)),
+            ],
+        }
+    }
+
+    /// Returns whether the audio is empty.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.duration().samples == 0
+    }
+
+    /// Constructs a reference to the audio.
+    #[must_use]
+    pub fn as_ref(&self) -> Audio {
+        Audio {
+            sample_rate: self.sample_rate,
+            channels: [
+                Cow::Borrowed(&self.channels[0]),
+                Cow::Borrowed(&self.channels[1]),
+            ],
+        }
+    }
+
+    /// Constructs an owned audio.
+    #[must_use]
+    pub fn into_owned(self) -> Audio<'static> {
+        let [left, right] = self.channels;
+
+        Audio {
+            sample_rate: self.sample_rate,
+            channels: [
+                Cow::Owned(left.into_owned()),
+                Cow::Owned(right.into_owned()),
+            ],
+        }
+    }
+
+    pub(crate) fn extend_to(&mut self, duration: sample::Duration) {
+        for channel in &mut self.channels {
+            if channel.len() < duration.samples {
+                channel.to_mut().resize(duration.samples, Sample::ZERO);
+            }
         }
     }
 
@@ -94,29 +115,29 @@ impl Audio {
     #[must_use]
     pub fn duration(&self) -> sample::Duration {
         sample::Duration {
-            samples: self.samples.len(),
+            samples: max(self.channels[0].len(), self.channels[1].len()),
         }
     }
 
     /// Returns the real-time duration of the audio.
     #[must_use]
     pub fn real_duration(&self) -> time::Duration {
-        self.sample_rate.sample_duration().get() * Ratio::from_usize(self.samples.len())
+        self.duration() / self.sample_rate
     }
 
     /// Resamples the audio to the given sample rate.
     #[must_use]
-    pub fn resample(&self, sample_rate: sample::Rate) -> Cow<Audio> {
+    pub fn resample(&self, sample_rate: sample::Rate) -> Audio {
         if self.sample_rate == sample_rate {
-            return Cow::Borrowed(self);
+            return self.as_ref();
         }
 
         match self.try_resample(sample_rate) {
-            Ok(audio) => Cow::Owned(audio),
+            Ok(audio) => audio,
             // this should be unreachable
             Err(error) => {
                 error!("Error when trying to resample audio: {error} ({error:?})");
-                Cow::Borrowed(self)
+                self.as_ref()
             }
         }
     }
@@ -131,7 +152,7 @@ impl Audio {
         let output_sample_rate = sample_rate.samples_per_second.get();
 
         let ratio = f64::from(output_sample_rate) / f64::from(input_sample_rate);
-        let sample_count = self.samples.len();
+        let sample_count = self.duration().samples;
 
         // TODO: allow the user to select an implementation?
         let mut resampler = FastFixedIn::new(
@@ -142,117 +163,213 @@ impl Audio {
             CHANNEL_COUNT,
         )?;
 
-        let (left, right): (Vec<_>, Vec<_>) = self
-            .samples
-            .iter()
-            .map(|pair| (pair.left.to_f64(), pair.right.to_f64()))
-            .unzip();
+        let [left, right] = &self.channels;
 
-        let mut output = resampler.process(&[left, right], ALL_CHANNELS_ENABLED)?;
+        let mut output =
+            resampler.process(&[cast_slice(left), cast_slice(right)], ALL_CHANNELS_ENABLED)?;
 
         let left = output
             .pop()
             .unwrap_or_default()
             .into_iter()
-            .map(Sample::new);
+            .map(Sample::new)
+            .collect();
         let right = output
             .pop()
             .unwrap_or_default()
             .into_iter()
-            .map(Sample::new);
-
-        let samples = zip(left, right)
-            .map_into::<[_; 2]>()
-            .map(sample::Pair::from)
+            .map(Sample::new)
             .collect();
 
         Ok(Audio {
             sample_rate,
-            samples,
+            channels: [left, right],
         })
     }
 
-    pub(crate) fn add_assign_at(&mut self, other: &Audio, offset: sample::Duration) {
+    pub(crate) fn superpose(&mut self, other: &Audio) {
+        self.superpose_with_offset(other, sample::Duration::ZERO);
+    }
+
+    pub(crate) fn superpose_with_offset(&mut self, other: &Audio, offset: sample::Duration) {
         let other = other.resample(self.sample_rate);
 
-        let sample_count = max(
-            self.samples.len(),
-            other.samples.len().saturating_add(offset.samples),
-        );
-        self.samples.resize(sample_count, sample::Pair::ZERO);
+        let length = max(self.duration().samples, other.duration().samples);
 
-        for (lhs, rhs) in zip(self.samples.iter_mut().skip(offset.samples), &other.samples) {
-            *lhs += *rhs;
+        for index in 0..length {
+            let self_instant = sample::Instant::from_index(index);
+            let other_instant = self_instant + offset;
+
+            let [self_left, self_right] = self.sample_pair_mut(self_instant);
+            let [other_left, other_right] = other.sample_pair(other_instant);
+
+            *self_left += other_left;
+            *self_right += other_right;
         }
     }
 
-    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio, ImportAudioError> {
-        let extension = file
-            .as_ref()
-            .extension()
-            .ok_or(ImportAudioError::NoExtension)?;
+    pub(crate) fn read_from_file<P: AsRef<Path>>(
+        file: P,
+    ) -> Result<Audio<'static>, ImportAudioError> {
+        let extension = file.as_ref().extension().and_then(OsStr::to_str);
 
-        // TODO: look at the symphonia crate
-        match extension.to_string_lossy().as_ref() {
-            "wav" | "wave" => {
-                let reader = WavReader::open(file)?;
-                Ok(Audio::try_from(reader)?)
+        let file = File::open(file.as_ref())?;
+
+        let stream = MediaSourceStream::new(Box::new(file), MediaSourceStreamOptions::default());
+
+        let probe = get_probe();
+
+        let mut hint = Hint::new();
+
+        if let Some(extension) = extension {
+            hint.with_extension(extension);
+        }
+
+        let mut format = probe
+            .format(
+                &hint,
+                stream,
+                &FormatOptions::default(),
+                &MetadataOptions::default(),
+            )?
+            .format;
+
+        let no_tracks = || ImportAudioError::Symphonia(SymphoniaError::DecodeError("no tracks"));
+
+        let mut track = format.default_track().ok_or(no_tracks())?;
+
+        let codecs = get_codecs();
+        let decoder_options = DecoderOptions { verify: true };
+
+        let mut decoder = codecs.make(&track.codec_params, &decoder_options)?;
+
+        let mut sample_rate = None;
+
+        let mut left_channel = Vec::new();
+        let mut right_channel = Vec::new();
+
+        loop {
+            let packet = match format.next_packet() {
+                Ok(packet) => packet,
+                Err(SymphoniaError::ResetRequired) => {
+                    track = format.default_track().ok_or(no_tracks())?;
+                    decoder = codecs.make(&track.codec_params, &decoder_options)?;
+                    continue;
+                }
+                Err(SymphoniaError::IoError(error)) if error.kind() == ErrorKind::UnexpectedEof => {
+                    break;
+                }
+                error => error?,
+            };
+
+            let audio_ref = decoder.decode(&packet)?;
+
+            let rate = sample::Rate::try_from(audio_ref.spec().rate)?;
+
+            match sample_rate {
+                None => sample_rate = Some(rate),
+                Some(sample_rate) => {
+                    if sample_rate != rate {
+                        return Err(ImportAudioError::SampleRateInconsistency);
+                    }
+                }
             }
-            _ => Err(ImportAudioError::UnsupportedFormat(Box::from(extension))),
+
+            let audio_ref = audio_ref.make_equivalent::<f32>();
+            let planes = audio_ref.planes();
+            let planes = planes.planes();
+
+            let empty: &[f32] = &[];
+
+            let [left, right] = match planes {
+                [] => [empty, empty],
+                [mono] => [*mono, *mono],
+                [left, right, ..] => [*left, *right],
+            };
+
+            for sample in left {
+                left_channel.push(Sample::new(*sample));
+            }
+
+            for sample in right {
+                right_channel.push(Sample::new(*sample));
+            }
         }
-    }
-}
-
-impl<R: Read> TryFrom<WavReader<R>> for Audio {
-    type Error = hound::Error;
-
-    fn try_from(mut reader: WavReader<R>) -> hound::Result<Audio> {
-        let spec = reader.spec();
-        let samples: Vec<_> = match spec.sample_format {
-            SampleFormat::Float => reader
-                .samples::<f32>()
-                .map_ok(Sample::from_f32)
-                .try_collect()?,
-            SampleFormat::Int => reader
-                .samples::<i32>()
-                .map_ok(Sample::from_i32)
-                .try_collect()?,
-        };
-
-        let samples = match spec.channels {
-            1 => samples.into_iter().map(sample::Pair::from).collect(),
-            2 => samples
-                .into_iter()
-                .tuples::<(_, _)>()
-                .map_into::<[_; 2]>()
-                .map(sample::Pair::from)
-                .collect(),
-            _ => return Err(hound::Error::Unsupported),
-        };
-
-        let samples_per_second = NonZeroU32::new(spec.sample_rate).ok_or(
-            hound::Error::FormatError("encountered a sample rate of zero"),
-        )?;
-        let sample_rate = sample::Rate { samples_per_second };
 
         Ok(Audio {
-            sample_rate,
-            samples,
+            sample_rate: sample_rate.ok_or(ImportAudioError::NoPackets)?,
+            channels: [Cow::Owned(left_channel), Cow::Owned(right_channel)],
         })
     }
-}
 
-impl Add<&Audio> for Audio {
-    type Output = Audio;
+    /// Returns a subsection of the audio.
+    #[must_use]
+    pub fn subsection(&self, period: sample::Period) -> Audio {
+        Audio {
+            sample_rate: self.sample_rate,
+            channels: [
+                Cow::Borrowed(
+                    self.channels[0]
+                        .get(period.range())
+                        .or_else(|| self.channels[0].get(period.start.index()..))
+                        .unwrap_or(&[]),
+                ),
+                Cow::Borrowed(
+                    self.channels[1]
+                        .get(period.range())
+                        .or_else(|| self.channels[0].get(period.start.index()..))
+                        .unwrap_or(&[]),
+                ),
+            ],
+        }
+    }
 
-    fn add(mut self, rhs: &Audio) -> Audio {
-        self += rhs;
-        self
+    /// Returns a left-right sample pair.
+    #[must_use]
+    pub fn sample_pair(&self, instant: sample::Instant) -> [Sample; 2] {
+        [
+            self.channels[0]
+                .get(instant.index())
+                .copied()
+                .unwrap_or(Sample::ZERO),
+            self.channels[1]
+                .get(instant.index())
+                .copied()
+                .unwrap_or(Sample::ZERO),
+        ]
+    }
+
+    /// Returns a mutable reference to a left-right sample pair.
+    #[must_use]
+    pub fn sample_pair_mut(&mut self, instant: sample::Instant) -> [&mut Sample; 2] {
+        self.extend_to(instant.since_start + sample::Duration::SAMPLE);
+
+        let [left, right] = &mut self.channels;
+
+        let left = left.to_mut();
+        let right = right.to_mut();
+
+        #[expect(clippy::indexing_slicing, reason = "we resize the vectors first")]
+        [&mut left[instant.index()], &mut right[instant.index()]]
     }
 }
 
-impl AddAssign<&Audio> for Audio {
-    fn add_assign(&mut self, rhs: &Audio) {
-        self.add_assign_at(rhs, sample::Duration::ZERO);
-    }
+/// An error when importing audio from a file.
+#[derive(Debug, Error)]
+pub enum ImportAudioError {
+    /// An error when reading the file.
+    #[error("Error reading the audio file: {0}")]
+    Io(#[from] io::Error),
+    /// AN error when decoding the file.
+    #[error("{0}")]
+    Symphonia(#[from] SymphoniaError),
+    /// The file had a sample rate of 0.
+    #[error("{0}")]
+    ZeroSampleRate(#[from] ZeroRateError),
+    /// The packets in the file had different sample rates.
+    #[error("audio packets had different sample rates")]
+    SampleRateInconsistency,
+    /// The audio file contained no audio packets.
+    #[error("no audio packets")]
+    NoPackets,
 }

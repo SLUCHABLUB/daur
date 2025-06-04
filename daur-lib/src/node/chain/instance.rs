@@ -1,128 +1,76 @@
-use crate::audio::sample;
-use anyhow::Result;
-use clack_host::events::spaces::CoreEventSpace;
-use clack_host::prelude::{InputAudioBuffers, InputEvents, OutputAudioBuffers, ProcessStatus};
-use clack_plugin::prelude::ChannelPair;
-use itertools::Itertools as _;
-use saturating_cast::SaturatingCast as _;
-use std::collections::{HashMap, HashSet};
-use std::iter::zip;
+use crate::audio::sample::Duration;
+use crate::audio::{Sample, sample};
+use crate::node::ProcessResult;
+use crate::note::event::Subsequence;
+use crate::note::{Event, Pitch};
+use crate::{Audio, note};
+use std::collections::HashMap;
 
 pub(crate) struct Instance {
     sample_rate: sample::Rate,
-    sample: usize,
+    position: sample::Instant,
 
-    // TODO: remove this abomination
-    keys: HashMap<usize, HashSet<u16>>,
+    keys: HashMap<note::Id, Pitch>,
 }
 
 impl Instance {
     pub(super) fn new(sample_rate: sample::Rate) -> Instance {
         Instance {
             sample_rate,
-            sample: 0,
+            position: sample::Instant::START,
             keys: HashMap::new(),
         }
     }
 
-    pub(crate) fn process<'buffers>(
+    pub(crate) fn process(
         &mut self,
-        audio_inputs: &'buffers InputAudioBuffers<'buffers>,
-        audio_outputs: &'buffers mut OutputAudioBuffers<'buffers>,
-        events: &InputEvents,
-    ) -> Result<ProcessStatus> {
+        duration: Duration,
+        input_audio: &Audio,
+        events: Subsequence,
+    ) -> ProcessResult {
         // TODO: pass to a plugin instance
 
-        #[expect(
-            clippy::cast_precision_loss,
-            reason = "part of the temporary implementation"
-        )]
-        let a440_frequency = 440.0 / self.sample_rate.samples_per_second.get() as f32;
+        let mut output_audio = Audio::with_capacity(input_audio.sample_rate(), duration);
 
-        let mut audio = audio_outputs.as_plugin_audio_with_inputs(audio_inputs);
+        let buffer_size = duration.samples;
 
-        let Some(mut main_port) = audio.port_pair(0) else {
-            return Ok(ProcessStatus::Sleep);
-        };
+        for index in 0..buffer_size {
+            let instant = sample::Instant::from_index(index);
 
-        let Some(channels) = main_port.channels()?.into_f32() else {
-            return Ok(ProcessStatus::Sleep);
-        };
-
-        for (channel_index, mut channel_pair) in channels.into_iter().enumerate() {
-            match &mut channel_pair {
-                ChannelPair::InputOnly(_) => continue,
-                ChannelPair::OutputOnly(buf) => buf.fill(0.0),
-                ChannelPair::InputOutput(input, output) => {
-                    for (input, output) in zip(*input, output.iter_mut()) {
-                        *output = *input;
+            for event in events.get(instant) {
+                match event {
+                    Event::NoteOn { id, pitch } => {
+                        self.keys.insert(*id, *pitch);
+                    }
+                    Event::NoteOff(id) => {
+                        self.keys.remove(id);
                     }
                 }
-                ChannelPair::InPlace(_) => {}
             }
 
-            let Some(output) = channel_pair.output_mut() else {
-                return Ok(ProcessStatus::Sleep);
-            };
+            let [left_input, right_input] = input_audio.sample_pair(instant);
+            let [left_output, right_output] = output_audio.sample_pair_mut(instant);
 
-            let mut events = events.iter();
-            let keys = self.keys.entry(channel_index).or_default();
+            let mut delta = Sample::ZERO;
 
-            // Process the events.
-            for (index, sample) in output.iter_mut().enumerate() {
-                let index = self.sample.saturating_add(index);
+            #[expect(clippy::iter_over_hash_type, reason = "order is irrelevant")]
+            for pitch in self.keys.values() {
+                let frequency = pitch.frequency() / self.sample_rate.hz();
+                #[expect(clippy::cast_precision_loss, reason = "approximating is fine")]
+                let time = self.position.since_start.samples as f32;
 
-                let events = events.take_while_ref(|event| {
-                    event.header().time() <= index.saturating_cast::<u32>()
-                });
-
-                for event in events {
-                    let Some(event) = event.as_core_event() else {
-                        continue;
-                    };
-
-                    #[expect(
-                        clippy::wildcard_enum_match_arm,
-                        reason = "this is a temporary implementation"
-                    )]
-                    match event {
-                        CoreEventSpace::NoteOn(event) => {
-                            let Some(key) = event.pckn().key.into_specific() else {
-                                continue;
-                            };
-                            keys.insert(key);
-                        }
-                        CoreEventSpace::NoteOff(event) => {
-                            let Some(key) = event.pckn().key.into_specific() else {
-                                continue;
-                            };
-                            keys.remove(&key);
-                        }
-                        _ => (),
-                    }
-                }
-
-                #[expect(
-                    clippy::cast_precision_loss,
-                    reason = "this is a temporary implementation"
-                )]
-                let time = index as f32;
-
-                #[expect(clippy::iter_over_hash_type, reason = "addition is commutative")]
-                for key in &*keys {
-                    let key_offset = f32::from(*key) - 69.0;
-
-                    let frequency = a440_frequency * f32::powf(2.0, key_offset / 12.0);
-
-                    *sample += f32::sin(time * frequency);
-                }
+                delta += Sample::new(f32::sin(frequency * time));
             }
+
+            *left_output = left_input + delta;
+            *right_output = right_input + delta;
         }
 
-        self.sample = self
-            .sample
-            .saturating_add(audio_inputs.frames_count().unwrap_or(0).saturating_cast());
+        self.position += input_audio.duration();
 
-        Ok(ProcessStatus::Sleep)
+        ProcessResult {
+            audio: output_audio,
+            should_continue: false,
+        }
     }
 }

@@ -14,13 +14,11 @@ pub(crate) use settings::settings;
 
 use crate::Audio;
 use crate::audio::sample;
-use crate::audio::sample::Pair;
 use crate::metre::{Changing, Duration, Instant, TimeContext};
-use crate::note::Event;
+use crate::note::event::Sequence;
 use crate::project::DEFAULT_TRACK_TITLE;
 use arcstr::ArcStr;
 use getset::{CopyGetters, Getters, MutGetters};
-use sorted_vec::SortedVec;
 use std::collections::{BTreeMap, HashMap};
 use thiserror::Error;
 
@@ -100,13 +98,9 @@ impl Track {
             since_start: self.minimum_duration(),
         };
         let minimum_end = minimum_end * time_context;
-        let minimum_end = minimum_end.since_start * sample_rate;
-        let minimum_sample_count = minimum_end.samples;
+        let minimum_duration = minimum_end.since_start * sample_rate;
 
-        let mut audio = Audio {
-            sample_rate,
-            samples: vec![Pair::ZERO; minimum_sample_count],
-        };
+        let mut audio = Audio::with_capacity(sample_rate, minimum_duration);
 
         for (start, clip_id) in &self.clip_ids {
             let Some(clip) = self.clips.get(clip_id) else {
@@ -116,9 +110,11 @@ impl Track {
             if let Some(clip) = clip.content().as_audio() {
                 let clip_start = *start * time_context * sample_rate;
 
-                audio.add_assign_at(&clip.audio, clip_start.since_start);
+                audio.superpose_with_offset(&clip.audio, clip_start.since_start);
             }
         }
+
+        audio.extend_to(minimum_duration);
 
         audio
     }
@@ -127,18 +123,15 @@ impl Track {
         &self,
         time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
-    ) -> SortedVec<Event> {
-        let mut events = SortedVec::new();
-
-        for (start, clip_id) in &self.clip_ids {
-            let Some(clip) = self.clips.get(clip_id) else {
-                continue;
-            };
-
-            events.extend(clip.events(*start, time_context, sample_rate));
-        }
-
-        events
+    ) -> Sequence {
+        self.clip_ids
+            .iter()
+            .filter_map(|(start, clip_id)| Some((start, self.clips.get(clip_id)?)))
+            .flat_map(|(start, clip)| {
+                clip.events(*start, time_context, sample_rate)
+                    .into_iterator()
+            })
+            .collect()
     }
 
     pub(super) fn try_insert_clip(

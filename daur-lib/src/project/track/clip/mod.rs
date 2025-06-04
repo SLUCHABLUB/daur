@@ -12,12 +12,11 @@ pub(crate) use overview::overview;
 use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext};
 use crate::note;
-use crate::note::Event;
+use crate::note::event::Sequence;
 use crate::project::track;
 use crate::ui::Colour;
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
-use sorted_vec::SortedVec;
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour {
     red: 0,
@@ -80,14 +79,14 @@ impl Clip {
         self.content.duration()
     }
 
-    pub(crate) fn events(
+    pub(super) fn events(
         &self,
         clip_start: Instant,
         time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
-    ) -> SortedVec<Event> {
+    ) -> Sequence {
         let Some(notes) = self.content.as_notes() else {
-            return SortedVec::new();
+            return Sequence::new();
         };
 
         notes.to_events(clip_start, time_context, sample_rate)
