@@ -3,7 +3,6 @@ use crate::ui::{Length, Point};
 
 /// An object that can be held.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
-#[must_use = "use `Holdable::let_go`"]
 #[remain::sorted]
 pub enum HoldableObject {
     /// A note in the process of being created.
