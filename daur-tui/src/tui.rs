@@ -1,6 +1,6 @@
 use crate::controls::controls;
 use crate::convert::to_length;
-use crossterm::event::{KeyCode, KeyModifiers};
+use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 use daur::app::Action;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use daur::{Ratio, UserInterface, View};
@@ -15,6 +15,8 @@ pub(crate) struct Tui {
     // TODO: move to app
     pub key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
     pub mouse_movement_since_mouse_down: bool,
+    // Some terminals do not send the mouse button on release.
+    pub last_mouse_button_down: MouseButton,
     // TODO: update
     pub should_redraw: bool,
     pub mouse_position: Point,
@@ -126,6 +128,7 @@ impl Default for Tui {
             should_exit: false,
             key_actions: controls(),
             mouse_movement_since_mouse_down: false,
+            last_mouse_button_down: MouseButton::Left,
             should_redraw: true,
             mouse_position: Point::ZERO,
             area: Rectangle {

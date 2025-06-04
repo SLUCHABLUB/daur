@@ -24,6 +24,8 @@ impl<'actions> Clicker<'actions> {
         clear_selection: bool,
         actions: &'actions mut Actions,
     ) -> Self {
+        actions.push(Action::CloseContextMenu);
+
         Clicker {
             position,
             actions,
@@ -35,6 +37,8 @@ impl<'actions> Clicker<'actions> {
 
     /// A clicker using the right mouse button.
     pub fn right_click(position: Point, actions: &'actions mut Actions) -> Self {
+        actions.push(Action::CloseContextMenu);
+
         Clicker {
             position,
             actions,
@@ -116,10 +120,4 @@ impl Visitor for Clicker<'_> {
     fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
 
     fn visit_titled(&mut self, _: Rectangle, _: &str, _: bool) {}
-}
-
-impl Drop for Clicker<'_> {
-    fn drop(&mut self) {
-        self.actions.push(Action::CloseContextMenu);
-    }
 }

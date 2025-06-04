@@ -64,64 +64,68 @@ fn handle_mouse_event(
 ) {
     app.ui_mut().mouse_position = to_point(Position::new(column, row));
 
-    let ui = app.ui();
-    let view = app.view();
-
     match kind {
         MouseEventKind::Down(button) => {
+            app.ui_mut().last_mouse_button_down = button;
+            app.ui_mut().mouse_movement_since_mouse_down = false;
+
             if button != MouseButton::Left {
                 return;
             }
 
-            let mut grabber = Grabber::new(ui.mouse_position, actions);
+            let mut grabber = Grabber::new(app.ui().mouse_position, actions);
 
-            view.accept::<Tui, _>(&mut grabber, ui.render_area());
-
-            app.ui_mut().mouse_movement_since_mouse_down = false;
+            app.view()
+                .accept::<Tui, _>(&mut grabber, app.ui().render_area());
         }
-        MouseEventKind::Up(button) => {
+        MouseEventKind::Up(_button) => {
+            let button = app.ui().last_mouse_button_down;
+            let position = app.ui().mouse_position;
+
             // click
 
-            if !ui.mouse_movement_since_mouse_down {
+            if !app.ui().mouse_movement_since_mouse_down {
                 // TODO: fix shift
                 let shift = modifiers.contains(KeyModifiers::ALT);
 
                 let mut clicker = match button {
-                    MouseButton::Left => Clicker::left_click(ui.mouse_position, !shift, actions),
-                    MouseButton::Right => Clicker::right_click(ui.mouse_position, actions),
+                    MouseButton::Left => Clicker::left_click(position, !shift, actions),
+                    MouseButton::Right => Clicker::right_click(position, actions),
                     MouseButton::Middle => return,
                 };
 
-                view.accept::<Tui, _>(&mut clicker, ui.render_area());
+                app.view()
+                    .accept::<Tui, _>(&mut clicker, app.ui().render_area());
             }
 
             // let go
 
             if let Some(object) = app.held_object() {
-                let mut dropper = Dropper::new(object, ui.mouse_position, actions);
+                let mut dropper = Dropper::new(object, position, actions);
 
-                view.accept::<Tui, _>(&mut dropper, ui.render_area());
+                app.view()
+                    .accept::<Tui, _>(&mut dropper, app.ui().render_area());
             }
         }
         MouseEventKind::Moved => {
             app.ui_mut().mouse_movement_since_mouse_down = true;
         }
         MouseEventKind::Drag(_) => {
-            actions.push(Action::MoveHeldObject(ui.mouse_position));
+            actions.push(Action::MoveHeldObject(app.ui().mouse_position));
 
             app.ui_mut().mouse_movement_since_mouse_down = true;
         }
         MouseEventKind::ScrollDown => {
-            scroll(Direction::Down, ui, view, actions);
+            scroll(Direction::Down, app.ui(), app.view(), actions);
         }
         MouseEventKind::ScrollUp => {
-            scroll(Direction::Up, ui, view, actions);
+            scroll(Direction::Up, app.ui(), app.view(), actions);
         }
         MouseEventKind::ScrollLeft => {
-            scroll(Direction::Left, ui, view, actions);
+            scroll(Direction::Left, app.ui(), app.view(), actions);
         }
         MouseEventKind::ScrollRight => {
-            scroll(Direction::Right, ui, view, actions);
+            scroll(Direction::Right, app.ui(), app.view(), actions);
         }
     }
 }

@@ -9,11 +9,12 @@ use daur::view::{Alignment, DropAction, OnClick, Painter};
 use daur::{App, HoldableObject, Selectable, UserInterface as _};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
+use ratatui::style::Stylize as _;
 use ratatui::symbols::border::{PLAIN, THICK};
 use ratatui::symbols::line::VERTICAL;
 use ratatui::text::{Line, Text};
 use ratatui::widgets::canvas::Canvas;
-use ratatui::widgets::{Block, Borders, Paragraph, Widget as _};
+use ratatui::widgets::{Block, Borders, Clear, Paragraph, Widget as _};
 use ratatui::{DefaultTerminal, layout};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
@@ -40,8 +41,6 @@ pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::
         })
         .map(|_| ())
 }
-
-type EmptyCanvas = Canvas<'static, fn(&mut ratatui::widgets::canvas::Context)>;
 
 struct Renderer<'buffer> {
     buffer: &'buffer mut Buffer,
@@ -128,8 +127,9 @@ impl Visitor for Renderer<'_> {
     fn visit_solid(&mut self, area: Rectangle, colour: ThemeColour) {
         let area = from_rectangle(area);
 
-        EmptyCanvas::default()
-            .background_color(approximate_colour(self.theme.resolve(colour)))
+        Clear.render(area, self.buffer);
+        Paragraph::default()
+            .bg(approximate_colour(self.theme.resolve(colour)))
             .render(area, self.buffer);
     }
 

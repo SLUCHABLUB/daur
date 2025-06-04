@@ -4,7 +4,7 @@ use crate::UserInterface;
 use crate::app::Action;
 use crate::popup::Specification;
 use crate::project::Edit;
-use crate::ui::{Point, Rectangle};
+use crate::ui::{Point, Rectangle, ThemeColour};
 use crate::view::{Axis, OnClick, View};
 use arcstr::{ArcStr, literal};
 use std::fmt;
@@ -45,14 +45,17 @@ impl Menu {
 
     /// Returns the view of the menu.
     pub fn into_view(self) -> View {
-        View::balanced_stack(
-            Axis::Y,
-            self.buttons
-                .into_iter()
-                .map(|(label, action)| View::simple_button(label, OnClick::from(action))),
-        )
-        .bordered()
-        .on_click(OnClick::from(Action::CloseContextMenu))
+        View::Layers(vec![
+            View::Solid(ThemeColour::Background),
+            View::balanced_stack(
+                Axis::Y,
+                self.buttons
+                    .into_iter()
+                    .map(|(label, action)| View::simple_button(label, OnClick::from(action))),
+            )
+            .bordered()
+            .on_click(OnClick::from(Action::CloseContextMenu)),
+        ])
     }
 
     /// Constructs a new [`MenuInstance`].

@@ -1,15 +1,14 @@
 use crate::app::{Action, Actions};
 use crate::project;
 use crate::view::RenderArea;
-use std::any::type_name;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
+use derive_more::Debug;
 
 type OnClickFunction = dyn Fn(RenderArea, &mut Actions) + Send + Sync;
 
 /// A function to run when a button is (left) clicked.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct OnClick {
+    #[debug(skip)]
     function: Option<Box<OnClickFunction>>,
 }
 
@@ -46,13 +45,5 @@ impl From<Action> for OnClick {
 impl From<project::Edit> for OnClick {
     fn from(action: project::Edit) -> OnClick {
         OnClick::from(Action::Edit(action))
-    }
-}
-
-impl Debug for OnClick {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.debug_struct(type_name::<OnClick>())
-            .field("function", &"(function)")
-            .finish()
     }
 }

@@ -20,8 +20,7 @@ use std::num::NonZeroU64;
 
 /// A type that can visit a [view](View).
 pub trait Visitor {
-    /// Whether views should be visited from inside out.
-    /// This also reverses the order in which layers are visited.
+    /// Whether layers should be visited from the front to the back.
     #[must_use]
     fn reverse_layer_order() -> bool {
         false
