@@ -15,9 +15,7 @@ use std::sync::Arc;
 /// Constructs a new file selector.
 pub fn file_selector(selected_file: Arc<ArcCell<Path>>) -> View {
     View::reactive(move |_| {
-        list(&selected_file)
-            .bordered()
-            .titled_non_cropping(selected_file.get().display().to_arc_str())
+        list(&selected_file).bordered_with_title(selected_file.get().display().to_arc_str())
     })
 }
 

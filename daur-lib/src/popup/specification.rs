@@ -87,8 +87,7 @@ impl Specification {
     fn view(&self, id: Id) -> View {
         let foreground = self
             .inner_view(id)
-            .bordered()
-            .titled(self.title())
+            .bordered_with_title(self.title())
             .on_click(OnClick::from(Action::CloseContextMenu));
 
         View::Layers(vec![View::Solid(ThemeColour::Background), foreground])

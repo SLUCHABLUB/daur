@@ -58,7 +58,7 @@ impl Visitor for Clicker<'_> {
         true
     }
 
-    fn visit_border(&mut self, _: Rectangle, _: bool) {}
+    fn visit_border(&mut self, _: Rectangle, _: Option<&str>, _: bool) {}
 
     fn visit_canvas(&mut self, area: Rectangle, _: Colour, _: &Painter) {
         if area.contains(self.position) {
@@ -119,5 +119,9 @@ impl Visitor for Clicker<'_> {
 
     fn visit_text(&mut self, _: Rectangle, _: &str, _: Alignment) {}
 
-    fn visit_titled(&mut self, _: Rectangle, _: &str, _: bool) {}
+    fn visit_title_bar(&mut self, area: Rectangle, _: &str, _: bool) {
+        if area.contains(self.position) {
+            self.captured = true;
+        }
+    }
 }

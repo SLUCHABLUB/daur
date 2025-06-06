@@ -68,10 +68,12 @@ pub(crate) fn bar<Ui: UserInterface>(
     // TODO: add functionality
     let loop_button = View::standard_button(LOOP, OnClick::default());
 
-    let edit_mode_button = View::standard_button(EDIT, OnClick::from(Action::ToggleEditMode))
-        .with_selection_status(edit_mode);
-    let piano_roll_button = View::standard_button(PIANO, OnClick::from(Action::TogglePianoRoll))
-        .with_selection_status(piano_roll_open);
+    let edit_mode_button = View::toggle(EDIT, OnClick::from(Action::ToggleEditMode), edit_mode);
+    let piano_roll_button = View::toggle(
+        PIANO,
+        OnClick::from(Action::TogglePianoRoll),
+        piano_roll_open,
+    );
     // TODO: add functionality
     let nodes_button = View::standard_button(NODES, OnClick::default());
 
@@ -96,7 +98,5 @@ pub(crate) fn bar<Ui: UserInterface>(
         playback_button.quotated(Ui::PLAYBACK_BUTTON_WIDTH.get()),
         right_side.fill_remaining(),
     ])
-    .bordered()
-    .titled(project.title())
-    .with_thickness(true)
+    .bordered_with_title_and_thickness(project.title.clone(), true)
 }

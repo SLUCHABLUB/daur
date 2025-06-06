@@ -8,9 +8,7 @@ use arcstr::literal;
 pub(crate) fn settings(track: &Track, selected: bool) -> View {
     literal!("TODO")
         .centred()
-        .bordered()
-        .titled(track.name.clone())
-        .with_thickness(selected)
+        .bordered_with_title_and_thickness(track.name.clone(), selected)
         .scrollable(Action::MoveOverview)
         .selectable(Selectable::Track(track.id))
 }

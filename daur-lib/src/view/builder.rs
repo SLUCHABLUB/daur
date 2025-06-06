@@ -1,16 +1,51 @@
 use crate::app::Action;
 use crate::ui::{Length, Vector, relative};
-use crate::view::RenderArea;
 use crate::view::context::Menu;
+use crate::view::{OnClick, RenderArea};
 use crate::{HoldableObject, Selectable, View};
 use arcstr::ArcStr;
-use log::warn;
 
 impl View {
     /// Puts a border around the view.
     pub fn bordered(self) -> View {
         View::Bordered {
+            title: None,
             thick: false,
+            view: Box::new(self),
+        }
+    }
+
+    /// Puts a border around the view.
+    pub fn bordered_with_thickness(self, thickness: bool) -> View {
+        View::Bordered {
+            title: None,
+            thick: thickness,
+            view: Box::new(self),
+        }
+    }
+
+    /// Puts a border around the view.
+    pub fn bordered_with_title(self, title: ArcStr) -> View {
+        View::Bordered {
+            title: Some(title),
+            thick: false,
+            view: Box::new(self),
+        }
+    }
+
+    /// Puts a border around the view.
+    pub fn bordered_with_title_and_thickness(self, title: ArcStr, thickness: bool) -> View {
+        View::Bordered {
+            title: Some(title),
+            thick: thickness,
+            view: Box::new(self),
+        }
+    }
+
+    /// Turns the view into a button.
+    pub fn on_click(self, on_click: OnClick) -> View {
+        View::Clickable {
+            on_click,
             view: Box::new(self),
         }
     }
@@ -70,54 +105,6 @@ impl View {
         View::Selectable {
             item,
             view: Box::new(self),
-        }
-    }
-
-    /// Puts a title on the view.
-    pub fn titled(self, title: ArcStr) -> View {
-        View::Titled {
-            title,
-            highlighted: false,
-            croppable: true,
-            view: Box::new(self),
-        }
-    }
-
-    /// Puts a title on the view where the title influences the [minimum size](View::minimum_size).
-    pub fn titled_non_cropping(self, title: ArcStr) -> View {
-        View::Titled {
-            title,
-            highlighted: false,
-            croppable: false,
-            view: Box::new(self),
-        }
-    }
-
-    /// Sets the border thickness if the view is [bordered](View::Bordered).
-    ///
-    /// Also sets highlights the title if the view is [titled](View::Titled).
-    pub fn with_thickness(self, thickness: bool) -> View {
-        if let View::Bordered { view, .. } = self {
-            View::Bordered {
-                thick: thickness,
-                view,
-            }
-        } else if let View::Titled {
-            title,
-            view,
-            croppable,
-            ..
-        } = self
-        {
-            View::Titled {
-                title,
-                highlighted: thickness,
-                view,
-                croppable,
-            }
-        } else {
-            warn!("`with_thickness` was called on a non-bordered view.");
-            self
         }
     }
 }

@@ -57,8 +57,10 @@ pub type Reactive = dyn Fn(RenderArea) -> View + Send + Sync;
 #[derive(Debug, Default)]
 #[remain::sorted]
 pub enum View {
-    /// A view with a border.
+    /// A view with a border and optional title.
     Bordered {
+        /// An optional title.
+        title: Option<ArcStr>,
         /// Whether the border is **thick**.
         thick: bool,
         /// The bordered view.
@@ -167,15 +169,11 @@ pub enum View {
         /// How the text should be aligned.
         alignment: Alignment,
     },
-    /// A view with a title bar.
-    Titled {
+    /// A standalone title bar.
+    TitleBar {
         /// The title.
         title: ArcStr,
         /// Whether the title is highlighted.
         highlighted: bool,
-        /// Whether the title is allowed to be cropped.
-        croppable: bool,
-        /// The view.
-        view: Box<View>,
     },
 }

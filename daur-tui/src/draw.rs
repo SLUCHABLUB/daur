@@ -48,8 +48,16 @@ struct Renderer<'buffer> {
 }
 
 impl Visitor for Renderer<'_> {
-    fn visit_border(&mut self, area: Rectangle, thick: bool) {
-        self.visit_titled_bordered(area, area, "", thick, thick);
+    fn visit_border(&mut self, area: Rectangle, title: Option<&str>, thick: bool) {
+        let area = from_rectangle(area);
+
+        let set = if thick { THICK } else { PLAIN };
+
+        Block::bordered()
+            .border_set(set)
+            .title_alignment(layout::Alignment::Center)
+            .title(title.unwrap_or(""))
+            .render(area, self.buffer);
     }
 
     fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter) {
@@ -119,7 +127,7 @@ impl Visitor for Renderer<'_> {
     fn visit_selectable(&mut self, _: Rectangle, _: Selectable) {}
 
     fn visit_selection_box(&mut self, area: Rectangle) {
-        self.visit_border(area, false);
+        self.visit_border(area, None, false);
     }
 
     fn visit_scrollable(&mut self, _: Rectangle, _: fn(Vector) -> Action) {}
@@ -172,33 +180,28 @@ impl Visitor for Renderer<'_> {
         paragraph.render(area, self.buffer);
     }
 
-    fn visit_titled(&mut self, area: Rectangle, title: &str, highlighted: bool) {
+    fn visit_title_bar(&mut self, area: Rectangle, title: &str, highlighted: bool) {
         let area = from_rectangle(area);
 
         let set = if highlighted { THICK } else { PLAIN };
 
-        Block::new()
-            .borders(Borders::TOP)
+        let block = Block::bordered()
             .border_set(set)
-            .title(title)
-            .render(area, self.buffer);
-    }
+            .title_alignment(layout::Alignment::Center);
 
-    fn visit_titled_bordered(
-        &mut self,
-        area: Rectangle,
-        _titled_area: Rectangle,
-        title: &str,
-        highlighted: bool,
-        thick: bool,
-    ) {
-        let area = from_rectangle(area);
+        match area.height {
+            0 => (),
+            1 => block
+                .borders(Borders::TOP)
+                .title(title)
+                .render(area, self.buffer),
+            2 => block.title(title).render(area, self.buffer),
+            3.. => {
+                let inner_area = to_rectangle(block.inner(area));
+                block.render(area, self.buffer);
 
-        let set = if thick || highlighted { THICK } else { PLAIN };
-
-        Block::bordered()
-            .border_set(set)
-            .title(title)
-            .render(area, self.buffer);
+                self.visit_text(inner_area, title, Alignment::Centre);
+            }
+        }
     }
 }

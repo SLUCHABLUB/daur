@@ -10,11 +10,17 @@ pub(crate) fn overview(
     offset_mapping: OffsetMapping,
     crop_start: Length,
 ) -> View {
-    View::canvas(
-        clip.colour,
-        clip.content.overview_painter(offset_mapping, crop_start),
-    )
-    .titled(clip.name())
-    .with_thickness(selected)
+    View::y_stack([
+        View::TitleBar {
+            title: clip.name(),
+            highlighted: selected,
+        }
+        .quotated_minimally(),
+        View::canvas(
+            clip.colour,
+            clip.content.overview_painter(offset_mapping, crop_start),
+        )
+        .fill_remaining(),
+    ])
     .selectable(Selectable::Clip(clip.id))
 }

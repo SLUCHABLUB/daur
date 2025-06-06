@@ -27,7 +27,7 @@ pub trait Visitor {
     }
 
     /// Visits a bordered view.
-    fn visit_border(&mut self, area: Rectangle, thick: bool);
+    fn visit_border(&mut self, area: Rectangle, title: Option<&str>, thick: bool);
 
     /// Visits a canvas.
     fn visit_canvas(&mut self, area: Rectangle, background: Colour, painter: &Painter);
@@ -65,28 +65,12 @@ pub trait Visitor {
     /// Visits a text view.
     fn visit_text(&mut self, area: Rectangle, string: &str, alignment: Alignment);
 
-    /// Visits a titled view.
-    fn visit_titled(&mut self, area: Rectangle, title: &str, highlighted: bool);
-
-    // --- compound methods ---
-
-    /// Visits a titled bordered view.
-    fn visit_titled_bordered(
-        &mut self,
-        area: Rectangle,
-        titled_area: Rectangle,
-        title: &str,
-        highlighted: bool,
-        thick: bool,
-    ) {
-        self.visit_titled(area, title, highlighted);
-        self.visit_border(titled_area, thick);
-    }
+    /// Visits a title bar.
+    fn visit_title_bar(&mut self, area: Rectangle, title: &str, highlighted: bool);
 }
 
 impl View {
     /// Accepts a view visitor.
-    #[expect(clippy::too_many_lines, reason = "`View` is a large enum")]
     #[remain::check]
     pub fn accept<Ui: UserInterface, V: Visitor + ?Sized>(
         &self,
@@ -95,8 +79,8 @@ impl View {
     ) {
         #[sorted]
         match self {
-            View::Bordered { thick, view } => {
-                visitor.visit_border(render_area.area, *thick);
+            View::Bordered { title, thick, view } => {
+                visitor.visit_border(render_area.area, title.as_deref(), *thick);
                 view.accept::<Ui, V>(visitor, inner_area::<Ui>(render_area));
             }
             View::Canvas {
@@ -184,45 +168,11 @@ impl View {
             View::Text { string, alignment } => {
                 visitor.visit_text(render_area.area, string, *alignment);
             }
-            View::Titled {
-                title,
-                highlighted,
-                view,
-                ..
-            } => {
-                let titled_area = titled_area::<Ui>(render_area, title, view);
-
-                if let View::Bordered { thick, view } = &**view {
-                    let inner_area = inner_area::<Ui>(titled_area);
-
-                    visitor.visit_titled_bordered(
-                        render_area.area,
-                        titled_area.area,
-                        title,
-                        *highlighted,
-                        *thick,
-                    );
-                    view.accept::<Ui, V>(visitor, inner_area);
-
-                    return;
-                }
-
-                visitor.visit_titled(render_area.area, title, *highlighted);
-                view.accept::<Ui, V>(visitor, titled_area);
-            }
+            View::TitleBar {
+                title, highlighted, ..
+            } => visitor.visit_title_bar(render_area.area, title, *highlighted),
         }
     }
-}
-
-fn titled_area<Ui: UserInterface>(
-    mut render_area: RenderArea,
-    title: &str,
-    view: &View,
-) -> RenderArea {
-    let title_height = Ui::title_height(title, view);
-    render_area.area.position.y += title_height;
-    render_area.area.size.height -= title_height;
-    render_area
 }
 
 fn inner_area<Ui: UserInterface>(mut render_area: RenderArea) -> RenderArea {

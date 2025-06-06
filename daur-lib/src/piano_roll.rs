@@ -90,12 +90,15 @@ impl PianoRoll {
             return Quotated::EMPTY;
         }
 
-        let title = selection
+        let clip_name = selection
             .top_clip()
             .and_then(|id| project.clip(id))
-            .map_or(PIANO_ROLL, |(_, clip)| clip.name());
+            .map(|(_, clip)| clip.name());
 
-        let view = self.content::<Ui>(
+        let highlighted = clip_name.is_some();
+        let title = clip_name.unwrap_or(PIANO_ROLL);
+
+        let content = self.content::<Ui>(
             selection,
             project,
             quantisation,
@@ -105,12 +108,15 @@ impl PianoRoll {
             edit_mode,
         );
 
-        let title_height = Ui::title_height(&title, &view);
+        let title_height = Ui::title_height(&title, &content);
 
-        view.scrollable(Action::MovePianoRoll)
-            .titled(title)
-            .grabbable(Self::handle_grabber(title_height))
-            .quotated(self.content_height + title_height)
+        let title = View::TitleBar { title, highlighted };
+
+        View::y_stack([
+            title.grabbable(Self::handle_grabber).quotated(title_height),
+            content.fill_remaining(),
+        ])
+        .quotated(self.content_height + title_height)
     }
 
     #[expect(clippy::too_many_arguments, reason = "the method is private")]
@@ -159,6 +165,7 @@ impl PianoRoll {
             ruler.quotated(Ui::RULER_HEIGHT.get()),
             workspace.fill_remaining(),
         ])
+        .scrollable(Action::MovePianoRoll)
     }
 
     #[expect(clippy::too_many_arguments, reason = "the method is internal")]
@@ -394,14 +401,10 @@ impl PianoRoll {
         ])
     }
 
-    fn handle_grabber(
-        title_height: Length,
-    ) -> impl Fn(RenderArea) -> Option<HoldableObject> + Send + Sync + 'static {
-        move |render_area| {
-            let y = render_area.relative_mouse_position()?.y;
+    fn handle_grabber(render_area: RenderArea) -> Option<HoldableObject> {
+        let y = render_area.relative_mouse_position()?.y;
 
-            (y < title_height).then_some(HoldableObject::PianoRollHandle { y })
-        }
+        Some(HoldableObject::PianoRollHandle { y })
     }
 
     fn held_object(

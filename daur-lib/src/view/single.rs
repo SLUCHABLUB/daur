@@ -37,7 +37,7 @@ pub fn selector_with_formatter<
                     cell.set(*variant);
                 });
 
-                View::standard_button(formatter(variant), on_click).with_selection_status(is_set)
+                View::toggle(formatter(variant), on_click, is_set)
             }))
         }),
     )
