@@ -1,11 +1,11 @@
-use crate::popup::{Id, Specification};
-use crate::{Popup, UserInterface};
+use crate::popup::Specification;
+use crate::{Id, Popup, UserInterface};
 use indexmap::IndexMap;
 
 /// A manager for the open [popups](PopupSpecification).
 #[derive(Debug, Default)]
 pub(crate) struct Manager {
-    popups: IndexMap<Id, Popup>,
+    popups: IndexMap<Id<Popup>, Popup>,
 }
 
 impl Manager {
@@ -28,7 +28,7 @@ impl Manager {
     }
 
     /// Closes a [popup](Popup).
-    pub fn close(&mut self, id: Id) {
+    pub fn close(&mut self, id: Id<Popup>) {
         let popup = self.popups.shift_remove(&id);
         drop(popup);
     }

@@ -4,6 +4,7 @@ use crate::audio::Player;
 use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
 use crate::project::Track;
 use crate::project::track::clip;
+use crate::project::track::clip::Path;
 use crate::select::Selection;
 use crate::ui::Length;
 use crate::view::context::Menu;
@@ -39,11 +40,12 @@ pub(crate) fn overview(
                 let clip_end = clip_start + clip.duration().get();
                 let clip_end_offset = offset_mapping.offset(clip_end) - negative_overview_offset;
 
-                let selected = selection.contains_clip(clip.id());
+                let selected = selection.contains_clip(Path::new(track.id, clip.id()));
 
                 let clip_width = clip_end_offset - clip_offset;
 
-                let overview = clip::overview(clip, selected, offset_mapping.clone(), start_crop);
+                let overview =
+                    clip::overview(clip, selected, offset_mapping.clone(), start_crop, track.id);
 
                 overview.quotated(clip_width).x_positioned(clip_offset)
             })

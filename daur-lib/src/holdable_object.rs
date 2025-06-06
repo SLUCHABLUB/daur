@@ -10,7 +10,7 @@ pub enum HoldableObject {
         /// Where the note should start.
         start: Instant,
     },
-    /// The handle/title bar of the piano roll.
+    /// The title bar of the piano roll.
     PianoRollHandle {
         /// How far down, on the handle, it was grabbed.
         y: Length,

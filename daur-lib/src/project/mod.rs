@@ -20,11 +20,11 @@ pub(crate) use history::HistoryEntry;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
-use crate::NonZeroRatio;
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, TimeSignature};
 use crate::note::Key;
 use crate::project::track::{Clip, clip};
 use crate::time::Tempo;
+use crate::{Id, NonZeroRatio};
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, Getters};
 use indexmap::IndexMap;
@@ -58,32 +58,32 @@ pub struct Project {
     key: Changing<Key>,
 
     /// The tracks in the project.
-    tracks: IndexMap<track::Id, Track>,
+    tracks: IndexMap<Id<Track>, Track>,
 }
 
 impl Project {
     /// Returns a reference to a track.
     #[must_use]
-    pub(super) fn track(&self, id: track::Id) -> Option<&Track> {
+    pub(super) fn track(&self, id: Id<Track>) -> Option<&Track> {
         self.tracks.get(&id)
     }
 
     /// Returns a mutable reference to a track.
     #[must_use]
-    fn track_mut(&mut self, id: track::Id) -> Option<&mut Track> {
+    fn track_mut(&mut self, id: Id<Track>) -> Option<&mut Track> {
         self.tracks.get_mut(&id)
     }
 
     /// Returns a reference to a clip.
     #[must_use]
-    pub(super) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
-        self.track(id.track())?.clip(id)
+    pub(super) fn clip(&self, path: clip::Path) -> Option<(Instant, &Clip)> {
+        self.track(path.track)?.clip(path.clip)
     }
 
     /// Returns a mutable reference to a clip.
     #[must_use]
-    fn clip_mut(&mut self, id: clip::Id) -> Option<(Instant, &mut Clip)> {
-        self.track_mut(id.track())?.clip_mut(id)
+    fn clip_mut(&mut self, path: clip::Path) -> Option<(Instant, &mut Clip)> {
+        self.track_mut(path.track)?.clip_mut(path.clip)
     }
 
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {

@@ -1,7 +1,9 @@
 use crate::metre::OffsetMapping;
+use crate::project::Track;
 use crate::project::track::Clip;
+use crate::project::track::clip::Path;
 use crate::ui::Length;
-use crate::{Selectable, View};
+use crate::{Id, Selectable, View};
 
 /// Returns a view of a clip's overview.
 pub(crate) fn overview(
@@ -9,6 +11,7 @@ pub(crate) fn overview(
     selected: bool,
     offset_mapping: OffsetMapping,
     crop_start: Length,
+    track: Id<Track>,
 ) -> View {
     View::y_stack([
         View::TitleBar {
@@ -22,5 +25,8 @@ pub(crate) fn overview(
         )
         .fill_remaining(),
     ])
-    .selectable(Selectable::Clip(clip.id))
+    .selectable(Selectable::Clip(Path {
+        track,
+        clip: clip.id,
+    }))
 }

@@ -1,27 +1,26 @@
-use crate::project::track::clip;
+use crate::project::Track;
+use crate::project::track::{Clip, clip};
+use crate::{Id, Note};
 use getset::CopyGetters;
 use std::fmt::Debug;
 use std::hash::Hash;
-use std::sync::atomic::{AtomicU32, Ordering};
 
 /// An identifier for a clip during runtime.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
-pub struct Id {
-    /// The id of the containing clip.
-    #[get_copy = "pub"]
-    clip: clip::Id,
-    /// The numeric id.
-    inner: u32,
+pub struct Path {
+    /// The path to the containing clip.
+    pub clip: clip::Path,
+    /// The id of the note.
+    pub note: Id<Note>,
 }
 
-impl Id {
-    /// Generates a new identifier.
-    pub(crate) fn generate(clip: clip::Id) -> Id {
-        static COUNTER: AtomicU32 = AtomicU32::new(0);
-
-        Id {
-            clip,
-            inner: COUNTER.fetch_add(1, Ordering::Relaxed),
+impl Path {
+    /// Constructs a new path.
+    #[must_use]
+    pub fn new(track: Id<Track>, clip: Id<Clip>, note: Id<Note>) -> Path {
+        Path {
+            clip: clip::Path::new(track, clip),
+            note,
         }
     }
 }

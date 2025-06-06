@@ -2,9 +2,9 @@ use crate::audio::{FixedLength, ImportAudioError};
 use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
 use crate::note::{Key, Pitch};
 use crate::project::track::{Clip, ClipInsertionError, clip};
-use crate::project::{DEFAULT_NOTES_DURATION, HistoryEntry, Track, track};
+use crate::project::{DEFAULT_NOTES_DURATION, HistoryEntry, Track};
 use crate::select::Selection;
-use crate::{Audio, Note, Project, note};
+use crate::{Audio, Id, Note, Project, note};
 use arcstr::ArcStr;
 use mitsein::iter1::IteratorExt as _;
 use std::collections::HashSet;
@@ -33,11 +33,11 @@ pub enum Edit {
     /// Deletes the selected item(s).
     Delete,
     /// Deletes some clips.
-    DeleteClips(HashSet<clip::Id>),
+    DeleteClips(HashSet<clip::Path>),
     /// Deletes some notes.
-    DeleteNotes(HashSet<note::Id>),
+    DeleteNotes(HashSet<note::Path>),
     /// Deletes a track.
-    DeleteTracks(HashSet<track::Id>),
+    DeleteTracks(HashSet<Id<Track>>),
     /// Imports an audio file into the selected track at the cursor.
     ImportAudio {
         /// The path to the file.
@@ -108,6 +108,7 @@ impl Project {
                 pitch,
                 mut duration,
             } => {
+                let track = selection.top_track().ok_or(Error::NoTrackSelected)?;
                 let (clip_start, clip) = self.resolve_clip(selection)?;
 
                 if position < clip_start {
@@ -120,9 +121,9 @@ impl Project {
 
                 let position = position.relative_to(clip_start);
 
-                let note = Note::new(duration, clip.id());
+                let note = Note::new(duration);
 
-                let entry = HistoryEntry::InsertNote(note.id());
+                let entry = HistoryEntry::InsertNote(note::Path::new(track, clip.id(), note.id()));
 
                 clip.content_mut()
                     .as_notes_mut()
@@ -134,15 +135,16 @@ impl Project {
             Edit::AddNoteGroup => {
                 let track = self.resolve_track(selection)?;
 
-                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION, track.id());
-                let id = clip.id();
+                let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION);
+
+                let path = clip::Path::new(track.id(), clip.id());
 
                 selection.clear();
-                selection.push_clip(id);
+                selection.push_clip(clip::Path::new(track.id(), clip.id()));
 
                 track.try_insert_clip(cursor, clip)?;
 
-                Ok(HistoryEntry::InsertClip(id))
+                Ok(HistoryEntry::InsertClip(path))
             }
             Edit::AddTrack => {
                 let track = Track::new();
@@ -170,9 +172,9 @@ impl Project {
             }
             Edit::DeleteClips(clips) => clips
                 .into_iter()
-                .filter_map(|clip| {
-                    let track = self.track_mut(clip.track())?;
-                    let (start, clip) = track.remove_clip(clip)?;
+                .filter_map(|path| {
+                    let track = self.track_mut(path.track)?;
+                    let (start, clip) = track.remove_clip(path.clip)?;
 
                     Some(HistoryEntry::DeleteClip { start, clip })
                 })
@@ -180,10 +182,11 @@ impl Project {
                 .map_err(|_empty| Error::NoClipSelected),
             Edit::DeleteNotes(notes) => notes
                 .into_iter()
-                .filter_map(|note| {
-                    let (_, clip) = self.clip_mut(note.clip())?;
+                .filter_map(|path| {
+                    let (_, clip) = self.clip_mut(path.clip)?;
 
-                    let (instant, pitch, note) = clip.content_mut().as_notes_mut()?.remove(note)?;
+                    let (instant, pitch, note) =
+                        clip.content_mut().as_notes_mut()?.remove(path.note)?;
 
                     Some(HistoryEntry::DeleteNote {
                         instant,
@@ -218,9 +221,9 @@ impl Project {
                     .map(ArcStr::from)
                     .unwrap_or_default();
 
-                let clip = Clip::from_audio(name, audio, track.id());
+                let clip = Clip::from_audio(name, audio);
 
-                let entry = HistoryEntry::InsertClip(clip.id());
+                let entry = HistoryEntry::InsertClip(clip::Path::new(track.id(), clip.id()));
 
                 track.try_insert_clip(cursor, clip)?;
 

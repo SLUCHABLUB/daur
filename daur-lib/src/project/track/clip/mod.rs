@@ -1,20 +1,19 @@
 //! Items pertaining to [`Clip`].
 
 mod content;
-mod id;
 mod overview;
+mod path;
 
 pub use content::Content;
-pub use id::Id;
+pub use path::Path;
 
 pub(crate) use overview::overview;
 
 use crate::audio::{FixedLength, sample};
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext};
-use crate::note;
 use crate::note::event::Sequence;
-use crate::project::track;
 use crate::ui::Colour;
+use crate::{Id, note};
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
@@ -37,7 +36,7 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour {
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters, MutGetters)]
 pub struct Clip {
     #[get_copy = "pub(crate)"]
-    id: Id,
+    id: Id<Clip>,
     /// The name of the clip.
     #[get_clone = "pub"]
     name: ArcStr,
@@ -56,9 +55,9 @@ impl Clip {
     }
 
     #[must_use]
-    pub(crate) fn from_audio(name: ArcStr, audio: FixedLength, track: track::Id) -> Clip {
+    pub(crate) fn from_audio(name: ArcStr, audio: FixedLength) -> Clip {
         Clip {
-            id: Id::generate(track),
+            id: Id::generate(),
             name,
             colour: DEFAULT_AUDIO_COLOUR,
             content: Content::Audio(audio),
@@ -66,9 +65,9 @@ impl Clip {
     }
 
     #[must_use]
-    pub(crate) fn empty_notes(duration: NonZeroDuration, track: track::Id) -> Clip {
+    pub(crate) fn empty_notes(duration: NonZeroDuration) -> Clip {
         Clip {
-            id: Id::generate(track),
+            id: Id::generate(),
             name: DEFAULT_NOTES_NAME,
             colour: DEFAULT_NOTES_COLOUR,
             content: Content::Notes(note::Group::empty(duration)),

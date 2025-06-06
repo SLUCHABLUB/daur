@@ -1,6 +1,6 @@
+use crate::Id;
 use crate::audio::sample;
 use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, relative};
-use crate::note;
 use crate::note::event::Sequence;
 use crate::note::{Event, Note, Pitch};
 use crate::view::Painter;
@@ -16,7 +16,7 @@ pub struct Group {
     // INVARIANT: notes are non-overlapping
     /// The notes in the group.
     notes: HashMap<(relative::Instant, Pitch), Note>,
-    note_positions: HashMap<note::Id, (relative::Instant, Pitch)>,
+    note_positions: HashMap<Id<Note>, (relative::Instant, Pitch)>,
     /// The duration of the whole note group.
     duration: NonZeroDuration,
 }
@@ -104,7 +104,7 @@ impl Group {
         Ok(())
     }
 
-    pub(crate) fn remove(&mut self, note: note::Id) -> Option<(relative::Instant, Pitch, Note)> {
+    pub(crate) fn remove(&mut self, note: Id<Note>) -> Option<(relative::Instant, Pitch, Note)> {
         let position = self.note_positions.remove(&note)?;
         let note = self.notes.remove(&position)?;
 

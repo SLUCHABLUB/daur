@@ -1,22 +1,20 @@
 //! Items pertaining to [`Track`].
 
 pub mod clip;
-mod id;
 mod overview;
 mod settings;
 
 #[doc(inline)]
 pub use clip::Clip;
-pub use id::Id;
 
 pub(crate) use overview::overview;
 pub(crate) use settings::settings;
 
-use crate::Audio;
 use crate::audio::sample;
 use crate::metre::{Changing, Duration, Instant, TimeContext};
 use crate::note::event::Sequence;
 use crate::project::DEFAULT_TRACK_TITLE;
+use crate::{Audio, Id};
 use arcstr::ArcStr;
 use getset::{CopyGetters, Getters, MutGetters};
 use std::collections::{BTreeMap, HashMap};
@@ -36,16 +34,16 @@ pub enum ClipInsertionError {
 #[derive(Debug, Getters, MutGetters, CopyGetters)]
 pub struct Track {
     #[get_copy = "pub(super)"]
-    id: Id,
+    id: Id<Track>,
     /// The name of the track.
     name: ArcStr,
     // TODO: use `Dimap<Instant, Id<Clip>, Clip, Bi<Btree, StdHash>, StdHash>`
     /// The clips in the track.
-    clip_ids: BTreeMap<Instant, clip::Id>,
-    clip_starts: HashMap<clip::Id, Instant>,
+    clip_ids: BTreeMap<Instant, Id<Clip>>,
+    clip_starts: HashMap<Id<Clip>, Instant>,
     // TODO: remove getter
     #[get_mut = "pub(super)"]
-    clips: HashMap<clip::Id, Clip>,
+    clips: HashMap<Id<Clip>, Clip>,
 }
 
 impl Track {
@@ -63,7 +61,7 @@ impl Track {
 
     /// Returns a reference to a clip.
     #[must_use]
-    pub(super) fn clip(&self, id: clip::Id) -> Option<(Instant, &Clip)> {
+    pub(super) fn clip(&self, id: Id<Clip>) -> Option<(Instant, &Clip)> {
         let clip = self.clips.get(&id)?;
         let start = self.clip_starts.get(&id)?;
         Some((*start, clip))
@@ -71,7 +69,7 @@ impl Track {
 
     /// Returns a reference to a clip.
     #[must_use]
-    pub(super) fn clip_mut(&mut self, id: clip::Id) -> Option<(Instant, &mut Clip)> {
+    pub(super) fn clip_mut(&mut self, id: Id<Clip>) -> Option<(Instant, &mut Clip)> {
         let clip = self.clips.get_mut(&id)?;
         let start = self.clip_starts.get(&id)?;
         Some((*start, clip))
@@ -153,7 +151,7 @@ impl Track {
     }
 
     // TODO: replace with a pub(super) mut-getter for the dimap
-    pub(super) fn remove_clip(&mut self, id: clip::Id) -> Option<(Instant, Clip)> {
+    pub(super) fn remove_clip(&mut self, id: Id<Clip>) -> Option<(Instant, Clip)> {
         let start = self.clip_starts.remove(&id)?;
         self.clip_ids.remove(&start);
         let clip = self.clips.remove(&id)?;

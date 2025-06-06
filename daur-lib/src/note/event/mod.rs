@@ -4,12 +4,12 @@ mod subsequence;
 pub(crate) use sequence::Sequence;
 pub(crate) use subsequence::Subsequence;
 
-use crate::note;
 use crate::note::Pitch;
+use crate::{Id, Note};
 
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum Event {
-    NoteOn { id: note::Id, pitch: Pitch },
-    NoteOff(note::Id),
+    NoteOn { id: Id<Note>, pitch: Pitch },
+    NoteOff(Id<Note>),
 }

@@ -14,7 +14,7 @@ mod sign;
 pub use chroma::Chroma;
 use getset::CopyGetters;
 pub use group::{Group, InsertionError};
-pub use id::Id;
+pub use id::Path;
 pub use interval::Interval;
 pub use key::Key;
 pub use key_interval::KeyInterval;
@@ -24,8 +24,8 @@ pub use sign::Sign;
 #[doc(inline)]
 pub(crate) use event::Event;
 
+use crate::Id;
 use crate::metre::NonZeroDuration;
-use crate::project::track::clip;
 use sign::{FLAT, SHARP};
 
 // TODO: Test that this isn't `Clone` (bc. id).
@@ -36,7 +36,7 @@ use sign::{FLAT, SHARP};
 #[expect(missing_copy_implementations, reason = "`Id`s should be unique")]
 pub struct Note {
     #[get_copy = "pub(crate)"]
-    id: Id,
+    id: Id<Note>,
     /// The duration of the note.
     #[get_copy = "pub(crate)"]
     duration: NonZeroDuration,
@@ -44,9 +44,9 @@ pub struct Note {
 }
 
 impl Note {
-    pub(crate) fn new(duration: NonZeroDuration, clip: clip::Id) -> Note {
+    pub(crate) fn new(duration: NonZeroDuration) -> Note {
         Note {
-            id: Id::generate(clip),
+            id: Id::generate(),
             duration,
         }
     }

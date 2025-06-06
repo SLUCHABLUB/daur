@@ -3,14 +3,14 @@ use crate::audio::{Sample, sample};
 use crate::node::ProcessResult;
 use crate::note::event::Subsequence;
 use crate::note::{Event, Pitch};
-use crate::{Audio, note};
+use crate::{Audio, Id, Note};
 use std::collections::HashMap;
 
 pub(crate) struct Instance {
     sample_rate: sample::Rate,
     position: sample::Instant,
 
-    keys: HashMap<note::Id, Pitch>,
+    keys: HashMap<Id<Note>, Pitch>,
 }
 
 impl Instance {

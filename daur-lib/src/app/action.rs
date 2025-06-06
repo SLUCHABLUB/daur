@@ -4,7 +4,7 @@ use crate::popup::Specification;
 use crate::project::Edit;
 use crate::ui::{Length, Point, Vector};
 use crate::view::context::Menu;
-use crate::{App, HoldableObject, Selectable, UserInterface, popup};
+use crate::{App, HoldableObject, Id, Popup, Selectable, UserInterface};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -19,7 +19,7 @@ pub enum Action {
     /// Opens the context menu.
     CloseContextMenu,
     /// Closes a popup.
-    ClosePopup(popup::Id),
+    ClosePopup(Id<Popup>),
     /// A project edit.
     Edit(Edit),
     /// Enters _edit mode_.

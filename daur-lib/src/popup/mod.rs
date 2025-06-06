@@ -1,10 +1,8 @@
 //! Types pertaining to [`Popup`].
 
-mod id;
 mod manager;
 mod specification;
 
-pub use id::Id;
 pub use specification::Specification;
 
 pub(crate) use manager::Manager;
