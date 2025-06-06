@@ -24,8 +24,4 @@ impl Subsequence<'_> {
 
         self.events.get(timestamp)
     }
-
-    pub(crate) fn is_empty(&self) -> bool {
-        self.events.get_range(self.period).next().is_none()
-    }
 }

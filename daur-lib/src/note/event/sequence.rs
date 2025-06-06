@@ -26,15 +26,6 @@ impl Sequence {
         self.events.get(&timestamp).map_or(&[], Vec1::as_ref)
     }
 
-    pub(crate) fn get_range(
-        &self,
-        timestamps: Period,
-    ) -> impl Iterator<Item = (Instant, &[Event])> {
-        self.events
-            .range(timestamps.start..timestamps.end())
-            .map(|(timestamp, events)| (*timestamp, events.as_slice()))
-    }
-
     pub(crate) fn insert(&mut self, timestamp: Instant, event: Event) {
         match self.events.entry(timestamp) {
             Entry::Vacant(entry) => {
@@ -48,6 +39,10 @@ impl Sequence {
         self.events
             .into_iter()
             .flat_map(|(timestamp, events)| events.into_iter().map(move |event| (timestamp, event)))
+    }
+
+    pub(crate) fn last_timestamp(&self) -> Option<Instant> {
+        self.events.keys().next_back().copied()
     }
 }
 

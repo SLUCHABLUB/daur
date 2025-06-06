@@ -1,14 +1,15 @@
+use crate::audio::sample::Instant;
 use crate::audio::{Player, sample};
 use crate::node::Chain;
 use crate::note::event::Sequence;
 use crate::sync::Cell;
-use crate::time::Instant;
-use crate::{Audio, Project};
+use crate::{Audio, Project, time};
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
 use parking_lot::Mutex;
 use saturating_cast::SaturatingCast as _;
+use std::cmp::max;
 use std::mem::{replace, take};
 use std::sync::{Arc, OnceLock};
 
@@ -36,12 +37,12 @@ struct Progress {
 }
 
 struct ShouldPlay {
-    from: Instant,
+    from: time::Instant,
     player: Player,
 }
 
 impl Renderer {
-    pub(crate) fn play_when_finished(&mut self, from: Instant, player: Player) {
+    pub(crate) fn play_when_finished(&mut self, from: time::Instant, player: Player) {
         let main_player = player.clone();
 
         // it is important that we set this before checking the audio cell
@@ -115,9 +116,17 @@ fn rendering_job(
 
         let mut output_audio = Audio::empty(sample_rate);
 
-        let mut should_process = true;
-        let mut position = sample::Instant::START;
-        loop {
+        let input_end_point = max(
+            Instant {
+                since_start: input_audio.duration(),
+            },
+            events.last_timestamp().unwrap_or(Instant::START),
+        );
+
+        let mut position = Instant::START;
+        let mut should_continue = position < input_end_point;
+
+        while should_continue || position < input_end_point {
             let period = sample::Period {
                 start: position,
                 duration: batch_duration,
@@ -126,16 +135,14 @@ fn rendering_job(
             let audio = input_audio.subsection(period);
             let events = events.subsequence(period);
 
-            if !should_process && audio.is_empty() && events.is_empty() {
-                break;
-            }
-
             let result = instance.process(batch_duration, &audio, events);
 
-            should_process = result.should_continue;
-            output_audio.superpose_with_offset(&result.audio, period.start.since_start);
+            output_audio.superpose_with_offset(&result.audio, position.since_start);
             position += batch_duration;
+            should_continue = result.should_continue;
         }
+
+        output_audio.truncate_silence(input_audio.duration());
 
         let mut tracks = progress.unmastered_tracks.lock();
         tracks.push(output_audio);
@@ -161,6 +168,9 @@ fn master(
 
     // TODO: apply the master plugin chain
 
+    // TODO: truncate audio
+
+    // Set `progress.audio` to `audio` is it is not already set.
     let audio = progress.audio.get_or_init(|| audio);
 
     if let Some(should_play) = should_play.replace(None) {

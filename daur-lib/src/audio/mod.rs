@@ -71,12 +71,6 @@ impl Audio<'_> {
         }
     }
 
-    /// Returns whether the audio is empty.
-    #[must_use]
-    pub fn is_empty(&self) -> bool {
-        self.duration().samples == 0
-    }
-
     /// Constructs a reference to the audio.
     #[must_use]
     pub fn as_ref(&self) -> Audio {
@@ -108,6 +102,22 @@ impl Audio<'_> {
             if channel.len() < duration.samples {
                 channel.to_mut().resize(duration.samples, Sample::ZERO);
             }
+        }
+    }
+
+    pub(crate) fn truncate_silence(&mut self, minimum_duration: sample::Duration) {
+        for channel in &mut self.channels {
+            let Some(extra) = channel
+                .iter()
+                .skip(minimum_duration.samples)
+                .position(|sample| *sample == Sample::ZERO)
+            else {
+                continue;
+            };
+
+            let new_len = minimum_duration.samples.saturating_add(extra);
+
+            channel.to_mut().truncate(new_len);
         }
     }
 
@@ -194,14 +204,12 @@ impl Audio<'_> {
     pub(crate) fn superpose_with_offset(&mut self, other: &Audio, offset: sample::Duration) {
         let other = other.resample(self.sample_rate);
 
-        let length = max(self.duration().samples, other.duration().samples);
+        for index in 0..other.duration().samples {
+            let instant_in_other = sample::Instant::from_index(index);
+            let instant_in_self = instant_in_other + offset;
 
-        for index in 0..length {
-            let self_instant = sample::Instant::from_index(index);
-            let other_instant = self_instant + offset;
-
-            let [self_left, self_right] = self.sample_pair_mut(self_instant);
-            let [other_left, other_right] = other.sample_pair(other_instant);
+            let [self_left, self_right] = self.sample_pair_mut(instant_in_self);
+            let [other_left, other_right] = other.sample_pair(instant_in_other);
 
             *self_left += other_left;
             *self_right += other_right;
@@ -275,7 +283,11 @@ impl Audio<'_> {
                 }
             }
 
-            let audio_ref = audio_ref.make_equivalent::<f32>();
+            let mut audio_ref_32 = audio_ref.make_equivalent();
+            audio_ref.convert::<f32>(&mut audio_ref_32);
+
+            let audio_ref = audio_ref_32;
+
             let planes = audio_ref.planes();
             let planes = planes.planes();
 
