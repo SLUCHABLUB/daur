@@ -21,8 +21,18 @@ use std::collections::{BTreeMap, HashMap};
 use thiserror::Error;
 
 /// An error occurred when trying to insert a clip.
+#[derive(Debug)]
+pub struct ClipInsertionError {
+    // Boxed due to `clippy::result_large_err`.
+    /// The clip that was attempted to be inserted.
+    pub clip: Box<Clip>,
+    /// The kind of error that occurred.
+    pub kind: ClipInsertionErrorKind,
+}
+
+/// An error occurred when trying to insert a clip.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Error)]
-pub enum ClipInsertionError {
+pub enum ClipInsertionErrorKind {
     /// Tried inserting a clip at a position where there was already a clip.
     #[error("there is already a clip at that position")]
     PositionOccupied,
@@ -67,12 +77,20 @@ impl Track {
         Some((*start, clip))
     }
 
-    /// Returns a reference to a clip.
+    /// Returns a mutable reference to a clip.
     #[must_use]
     pub(super) fn clip_mut(&mut self, id: Id<Clip>) -> Option<(Instant, &mut Clip)> {
         let clip = self.clips.get_mut(&id)?;
         let start = self.clip_starts.get(&id)?;
         Some((*start, clip))
+    }
+
+    pub(super) fn remove_clip(&mut self, id: Id<Clip>) -> Option<(Instant, Clip)> {
+        let start = self.clip_starts.remove(&id)?;
+        self.clip_ids.remove(&start);
+        let clip = self.clips.remove(&id)?;
+
+        Some((start, clip))
     }
 
     fn minimum_duration(&self) -> Duration {
@@ -136,27 +154,23 @@ impl Track {
         &mut self,
         position: Instant,
         clip: Clip,
-    ) -> Result<(), ClipInsertionError> {
+    ) -> Result<clip::Path, ClipInsertionError> {
         if self.clip_ids.contains_key(&position) {
-            return Err(ClipInsertionError::PositionOccupied);
+            return Err(ClipInsertionError {
+                clip: Box::new(clip),
+                kind: ClipInsertionErrorKind::PositionOccupied,
+            });
         }
 
         // TODO: check for overlap
 
-        self.clip_ids.insert(position, clip.id());
-        self.clip_starts.insert(clip.id(), position);
-        self.clips.insert(clip.id(), clip);
+        let clip_id = clip.id();
 
-        Ok(())
-    }
+        self.clip_ids.insert(position, clip_id);
+        self.clip_starts.insert(clip_id, position);
+        self.clips.insert(clip_id, clip);
 
-    // TODO: replace with a pub(super) mut-getter for the dimap
-    pub(super) fn remove_clip(&mut self, id: Id<Clip>) -> Option<(Instant, Clip)> {
-        let start = self.clip_starts.remove(&id)?;
-        self.clip_ids.remove(&start);
-        let clip = self.clips.remove(&id)?;
-
-        Some((start, clip))
+        Ok(clip::Path::new(self.id, clip_id))
     }
 }
 

@@ -1,14 +1,14 @@
-use crate::Selectable;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
-use crate::project::Track;
 use crate::project::track::clip;
 use crate::project::track::clip::Path;
+use crate::project::{Edit, Track};
 use crate::select::Selection;
 use crate::ui::Length;
 use crate::view::context::Menu;
-use crate::view::{CursorWindow, View};
+use crate::view::{CursorWindow, RenderArea, View};
+use crate::{Holdable, Id, Selectable};
 
 // TODO: add a selection box
 /// Returns the track overview.
@@ -54,7 +54,12 @@ pub(crate) fn overview(
 
     let background = View::Empty
         .contextual(Menu::track_overview())
-        .selectable(Selectable::Track(track.id));
+        .selectable(Selectable::Track(track.id))
+        .object_accepting(object_acceptor(
+            track.id,
+            offset_mapping.clone(),
+            negative_overview_offset,
+        ));
 
     View::Layers(vec![
         background,
@@ -69,4 +74,26 @@ pub(crate) fn overview(
             .view(),
     ])
     .scrollable(Action::MoveOverview)
+}
+
+fn object_acceptor(
+    track: Id<Track>,
+    offset_mapping: OffsetMapping,
+    negative_overview_offset: Length,
+) -> impl Fn(Holdable, RenderArea) -> Option<Action> {
+    move |holdable, render_area| {
+        let Holdable::Clip(clip) = holdable else {
+            return None;
+        };
+
+        let mouse = render_area.relative_mouse_position()?;
+
+        let position = offset_mapping.quantised_instant(mouse.x + negative_overview_offset);
+
+        Some(Action::Edit(Edit::MoveClip {
+            clip,
+            track,
+            position,
+        }))
+    }
 }

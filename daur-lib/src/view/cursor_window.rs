@@ -6,6 +6,7 @@ use crate::ui::Length;
 use crate::view::OnClick;
 use derive_more::Debug;
 use typed_builder::TypedBuilder;
+
 //       |---o---|
 //
 // 0             | <- cursor

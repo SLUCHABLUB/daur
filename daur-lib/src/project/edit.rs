@@ -1,7 +1,7 @@
 use crate::audio::{FixedLength, ImportAudioError};
 use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
 use crate::note::{Key, Pitch};
-use crate::project::track::{Clip, ClipInsertionError, clip};
+use crate::project::track::{Clip, ClipInsertionErrorKind, clip};
 use crate::project::{DEFAULT_NOTES_DURATION, HistoryEntry, Track};
 use crate::select::Selection;
 use crate::{Audio, Id, Note, Project, note};
@@ -43,6 +43,15 @@ pub enum Edit {
         /// The path to the file.
         file: PathBuf,
     },
+    /// Moves a clip.
+    MoveClip {
+        /// The clip to be moved.
+        clip: clip::Path,
+        /// The track that clip should be moved to.
+        track: Id<Track>,
+        /// The position in `track` that the clip should be moved to.
+        position: Instant,
+    },
     /// Sets the key at an instant in the project.
     SetKey {
         /// The instant of the key change.
@@ -57,7 +66,7 @@ pub enum Edit {
 pub enum Error {
     /// Tried inserting a note outside the selected clip.
     #[error("{0}")]
-    ClipInsertion(#[from] ClipInsertionError),
+    ClipInsertion(#[from] ClipInsertionErrorKind),
     /// Failed to import audio from a file.
     #[error("{0}")]
     ImportAudio(#[from] ImportAudioError),
@@ -67,6 +76,12 @@ pub enum Error {
     /// The action required a note to be selected.
     #[error("no note is selected")]
     NoNoteSelected,
+    /// Unable to resolve a clip id.
+    #[error("the clip does not exist")]
+    NonExistentClip,
+    /// Unable to resolve a track id.
+    #[error("the track does not exist")]
+    NonExistentTrack,
     /// The action required a note clip to be selected.
     #[error("the selected clip is not a note clip")]
     NonNoteCLip,
@@ -82,17 +97,16 @@ pub enum Error {
 }
 
 impl Project {
-    fn resolve_track(&mut self, selection: &Selection) -> Result<&mut Track, Error> {
+    fn selected_track(&mut self, selection: &Selection) -> Result<&mut Track, Error> {
         self.track_mut(selection.top_track().ok_or(Error::NoTrackSelected)?)
             .ok_or(Error::NoTrackSelected)
     }
 
-    fn resolve_clip(&mut self, selection: &Selection) -> Result<(Instant, &mut Clip), Error> {
+    fn selected_clip(&mut self, selection: &Selection) -> Result<(Instant, &mut Clip), Error> {
         self.clip_mut(selection.top_clip().ok_or(Error::NoClipSelected)?)
             .ok_or(Error::NoClipSelected)
     }
 
-    // TODO: `EditError`
     #[expect(clippy::too_many_lines, reason = "`Edit` is a large enum")]
     #[remain::check]
     pub(crate) fn edit(
@@ -109,7 +123,7 @@ impl Project {
                 mut duration,
             } => {
                 let track = selection.top_track().ok_or(Error::NoTrackSelected)?;
-                let (clip_start, clip) = self.resolve_clip(selection)?;
+                let (clip_start, clip) = self.selected_clip(selection)?;
 
                 if position < clip_start {
                     let difference = clip_start - position;
@@ -133,7 +147,7 @@ impl Project {
                 Ok(entry)
             }
             Edit::AddNoteGroup => {
-                let track = self.resolve_track(selection)?;
+                let track = self.selected_track(selection)?;
 
                 let clip = Clip::empty_notes(DEFAULT_NOTES_DURATION);
 
@@ -142,7 +156,9 @@ impl Project {
                 selection.clear();
                 selection.push_clip(clip::Path::new(track.id(), clip.id()));
 
-                track.try_insert_clip(cursor, clip)?;
+                track
+                    .try_insert_clip(cursor, clip)
+                    .map_err(|error| error.kind)?;
 
                 Ok(HistoryEntry::InsertClip(path))
             }
@@ -209,7 +225,7 @@ impl Project {
             Edit::ImportAudio { file } => {
                 let time_context = self.time_context();
 
-                let track = self.resolve_track(selection)?;
+                let track = self.selected_track(selection)?;
 
                 let audio = Audio::read_from_file(&file)?;
 
@@ -225,9 +241,50 @@ impl Project {
 
                 let entry = HistoryEntry::InsertClip(clip::Path::new(track.id(), clip.id()));
 
-                track.try_insert_clip(cursor, clip)?;
+                track
+                    .try_insert_clip(cursor, clip)
+                    .map_err(|error| error.kind)?;
 
                 Ok(entry)
+            }
+            Edit::MoveClip {
+                clip,
+                track,
+                position,
+            } => {
+                let original_track = clip.track;
+
+                let (original_position, clip) =
+                    self.remove_clip(clip).ok_or(Error::NonExistentClip)?;
+
+                let Some(track) = self.track_mut(track) else {
+                    // Put back the clip into the original track.
+                    // This should be infallible.
+                    self.track_mut(original_track)
+                        .ok_or(Error::NonExistentTrack)?
+                        .try_insert_clip(original_position, clip)
+                        .map_err(|error| error.kind)?;
+
+                    return Err(Error::NonExistentTrack);
+                };
+
+                match track.try_insert_clip(position, clip) {
+                    Ok(new_path) => Ok(HistoryEntry::MoveClip {
+                        original_track,
+                        original_position,
+                        new_path,
+                    }),
+                    Err(error) => {
+                        // Put back the clip into the original track.
+                        // This should be infallible.
+                        self.track_mut(original_track)
+                            .ok_or(Error::NonExistentTrack)?
+                            .try_insert_clip(original_position, *error.clip)
+                            .map_err(|error| error.kind)?;
+
+                        Err(error.kind.into())
+                    }
+                }
             }
             Edit::SetKey { instant, key } => {
                 let old = if let Some(position) = NonZeroInstant::from_instant(instant) {

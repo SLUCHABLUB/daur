@@ -34,6 +34,11 @@ pub enum HistoryEntry {
     /// The insertion of a clip.
     InsertClip(clip::Path),
     InsertNote(note::Path),
+    MoveClip {
+        original_track: Id<Track>,
+        original_position: Instant,
+        new_path: clip::Path,
+    },
     SetKey {
         at: Instant,
         to: Key,

@@ -86,6 +86,12 @@ impl Project {
         self.track_mut(path.track)?.clip_mut(path.clip)
     }
 
+    /// Removes a clip from a track.
+    #[must_use]
+    fn remove_clip(&mut self, path: clip::Path) -> Option<(Instant, Clip)> {
+        self.track_mut(path.track)?.remove_clip(path.clip)
+    }
+
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {
         &self.time_signature / &self.tempo
     }
