@@ -6,10 +6,12 @@ mod config;
 mod fixed_length;
 mod player;
 mod source;
+mod subsection;
 
 pub use fixed_length::FixedLength;
 #[doc(inline)]
 pub use sample::Sample;
+pub use subsection::Subsection;
 
 pub(crate) use config::Config;
 pub(crate) use player::Player;
@@ -41,21 +43,20 @@ use thiserror::Error;
 /// Some stereo 64-bit floating point audio.
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Clone, Eq, PartialEq, Debug, CopyGetters)]
-pub struct Audio<'samples> {
+pub struct Audio {
     /// The sample rate of the audio.
-    #[get_copy = "pub"]
-    sample_rate: sample::Rate,
-    /// The left and right channels, in that order.
-    channels: [Cow<'samples, [Sample]>; 2],
+    pub sample_rate: sample::Rate,
+    /// The left and right channels of the audio, in said order.
+    pub channels: [Vec<Sample>; 2],
 }
 
-impl Audio<'_> {
+impl Audio {
     /// Constructs an empty audio with the given sample rate.
     #[must_use]
     pub const fn empty(sample_rate: sample::Rate) -> Self {
         Audio {
             sample_rate,
-            channels: [Cow::Borrowed(&[]), Cow::Borrowed(&[])],
+            channels: [Vec::new(), Vec::new()],
         }
     }
 
@@ -65,34 +66,8 @@ impl Audio<'_> {
         Audio {
             sample_rate,
             channels: [
-                Cow::Owned(Vec::with_capacity(capacity.samples)),
-                Cow::Owned(Vec::with_capacity(capacity.samples)),
-            ],
-        }
-    }
-
-    /// Constructs a reference to the audio.
-    #[must_use]
-    pub fn as_ref(&self) -> Audio {
-        Audio {
-            sample_rate: self.sample_rate,
-            channels: [
-                Cow::Borrowed(&self.channels[0]),
-                Cow::Borrowed(&self.channels[1]),
-            ],
-        }
-    }
-
-    /// Constructs an owned audio.
-    #[must_use]
-    pub fn into_owned(self) -> Audio<'static> {
-        let [left, right] = self.channels;
-
-        Audio {
-            sample_rate: self.sample_rate,
-            channels: [
-                Cow::Owned(left.into_owned()),
-                Cow::Owned(right.into_owned()),
+                Vec::with_capacity(capacity.samples),
+                Vec::with_capacity(capacity.samples),
             ],
         }
     }
@@ -100,7 +75,7 @@ impl Audio<'_> {
     pub(crate) fn extend_to(&mut self, duration: sample::Duration) {
         for channel in &mut self.channels {
             if channel.len() < duration.samples {
-                channel.to_mut().resize(duration.samples, Sample::ZERO);
+                channel.resize(duration.samples, Sample::ZERO);
             }
         }
     }
@@ -117,7 +92,7 @@ impl Audio<'_> {
 
             let new_len = minimum_duration.samples.saturating_add(extra);
 
-            channel.to_mut().truncate(new_len);
+            channel.truncate(new_len);
         }
     }
 
@@ -137,17 +112,17 @@ impl Audio<'_> {
 
     /// Resamples the audio to the given sample rate.
     #[must_use]
-    pub fn resample(&self, sample_rate: sample::Rate) -> Audio {
+    pub fn resample(&self, sample_rate: sample::Rate) -> Cow<Audio> {
         if self.sample_rate == sample_rate {
-            return self.as_ref();
+            return Cow::Borrowed(self);
         }
 
         match self.try_resample(sample_rate) {
-            Ok(audio) => audio,
-            // this should be unreachable
+            Ok(audio) => Cow::Owned(audio),
+            // This should be unreachable.
             Err(error) => {
                 error!("Error when trying to resample audio: {error} ({error:?})");
-                self.as_ref()
+                Cow::Borrowed(self)
             }
         }
     }
@@ -216,9 +191,7 @@ impl Audio<'_> {
         }
     }
 
-    pub(crate) fn read_from_file<P: AsRef<Path>>(
-        file: P,
-    ) -> Result<Audio<'static>, ImportAudioError> {
+    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio, ImportAudioError> {
         let extension = file.as_ref().extension().and_then(OsStr::to_str);
 
         let file = File::open(file.as_ref())?;
@@ -310,28 +283,24 @@ impl Audio<'_> {
 
         Ok(Audio {
             sample_rate: sample_rate.ok_or(ImportAudioError::NoPackets)?,
-            channels: [Cow::Owned(left_channel), Cow::Owned(right_channel)],
+            channels: [left_channel, right_channel],
         })
     }
 
     /// Returns a subsection of the audio.
     #[must_use]
-    pub fn subsection(&self, period: sample::Period) -> Audio {
-        Audio {
+    pub fn subsection(&self, period: sample::Period) -> Subsection {
+        Subsection {
             sample_rate: self.sample_rate,
             channels: [
-                Cow::Borrowed(
-                    self.channels[0]
-                        .get(period.range())
-                        .or_else(|| self.channels[0].get(period.start.index()..))
-                        .unwrap_or(&[]),
-                ),
-                Cow::Borrowed(
-                    self.channels[1]
-                        .get(period.range())
-                        .or_else(|| self.channels[0].get(period.start.index()..))
-                        .unwrap_or(&[]),
-                ),
+                self.channels[0]
+                    .get(period.range())
+                    .or_else(|| self.channels[0].get(period.start.index()..))
+                    .unwrap_or(&[]),
+                self.channels[1]
+                    .get(period.range())
+                    .or_else(|| self.channels[0].get(period.start.index()..))
+                    .unwrap_or(&[]),
             ],
         }
     }
@@ -357,9 +326,6 @@ impl Audio<'_> {
         self.extend_to(instant.since_start + sample::Duration::SAMPLE);
 
         let [left, right] = &mut self.channels;
-
-        let left = left.to_mut();
-        let right = right.to_mut();
 
         #[expect(clippy::indexing_slicing, reason = "we resize the vectors first")]
         [&mut left[instant.index()], &mut right[instant.index()]]

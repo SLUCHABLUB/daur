@@ -1,5 +1,5 @@
 use crate::audio::sample::Duration;
-use crate::audio::{Sample, sample};
+use crate::audio::{Sample, Subsection, sample};
 use crate::node::ProcessResult;
 use crate::note::event::Subsequence;
 use crate::note::{Event, Pitch};
@@ -25,12 +25,12 @@ impl Instance {
     pub(crate) fn process(
         &mut self,
         duration: Duration,
-        input_audio: &Audio,
+        input_audio: Subsection,
         events: Subsequence,
     ) -> ProcessResult {
         // TODO: pass to a plugin instance
 
-        let mut output_audio = Audio::with_capacity(input_audio.sample_rate(), duration);
+        let mut output_audio = Audio::with_capacity(input_audio.sample_rate, duration);
 
         let buffer_size = duration.samples;
 

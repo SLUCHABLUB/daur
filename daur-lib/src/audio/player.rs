@@ -29,7 +29,7 @@ impl Player {
         position
     }
 
-    pub(crate) fn play(&self, audio: Audio<'static>, from: Instant) {
+    pub(crate) fn play(&self, audio: Audio, from: Instant) {
         self.sink.clear();
         self.sink.append(Source::new(audio));
 

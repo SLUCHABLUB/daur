@@ -32,8 +32,8 @@ pub(crate) struct Renderer {
 #[derive(Default)]
 struct Progress {
     should_stop: Cell<bool>,
-    unmastered_tracks: Mutex<Vec<Audio<'static>>>,
-    audio: OnceLock<Audio<'static>>,
+    unmastered_tracks: Mutex<Vec<Audio>>,
+    audio: OnceLock<Audio>,
 }
 
 struct ShouldPlay {
@@ -72,7 +72,7 @@ impl Renderer {
         let time_context = project.time_context();
 
         for track in project.tracks.values() {
-            let audio = track.audio_sum(&time_context, sample_rate).into_owned();
+            let audio = track.audio_sum(&time_context, sample_rate);
             let events = track.events(&time_context, sample_rate);
 
             // TODO: take from the track
@@ -103,7 +103,7 @@ fn render(
     progress: &Progress,
     should_play: &Cell<Option<ShouldPlay>>,
 ) {
-    let sample_rate = input_audio.sample_rate();
+    let sample_rate = input_audio.sample_rate;
 
     // TODO: un-hardcode
     let batch_size = sample_rate.samples_per_second.get().saturating_cast();
@@ -134,7 +134,7 @@ fn render(
         let audio = input_audio.subsection(period);
         let events = events.subsequence(period);
 
-        let result = instance.process(batch_duration, &audio, events);
+        let result = instance.process(batch_duration, audio, events);
 
         output_audio.superpose_with_offset(&result.audio, position.since_start);
         position += batch_duration;

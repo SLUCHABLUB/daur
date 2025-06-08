@@ -7,13 +7,13 @@ use std::time::Duration;
 #[derive(Clone, Debug)]
 #[must_use = "`Source` is an iterator"]
 pub struct Source {
-    audio: Audio<'static>,
+    audio: Audio,
     right: bool,
     position: sample::Instant,
 }
 
 impl Source {
-    pub(super) fn new(audio: Audio<'static>) -> Source {
+    pub(super) fn new(audio: Audio) -> Source {
         Source {
             audio,
             right: false,
