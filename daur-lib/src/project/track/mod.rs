@@ -7,7 +7,7 @@ mod settings;
 #[doc(inline)]
 pub use clip::Clip;
 
-pub(crate) use overview::overview;
+pub(super) use overview::Overview;
 pub(crate) use settings::settings;
 
 use crate::audio::sample;

@@ -1,7 +1,7 @@
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Changing, Instant, OffsetMapping, Quantisation, TimeContext};
-use crate::project::track::{clip, overview, settings};
+use crate::project::track::{Overview, clip, settings};
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::select::Selection;
 use crate::ui::{Length, Size, relative};
@@ -25,19 +25,28 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let offset_mapping = OffsetMapping::new(project.time_signature.clone(), quantisation);
     let time_context = project.time_context();
 
+    let held_clip = match held_object {
+        Some(Holdable::Clip(id)) => Some(id.clip),
+        _ => None,
+    };
+
     for track in project.tracks.values() {
         let selected = selection.contains_track(track.id());
 
         track_settings.push(settings(track, selected));
-        track_overviews.push(overview(
-            track,
-            selection,
-            offset_mapping.clone(),
-            time_context.clone(),
-            ui_settings.negative_overview_offset,
-            cursor,
-            player.cloned(),
-        ));
+        track_overviews.push(
+            Overview::builder()
+                .track(track)
+                .selection(selection)
+                .offset_mapping(offset_mapping.clone())
+                .time_context(time_context.clone())
+                .negative_overview_offset(ui_settings.negative_overview_offset)
+                .cursor(cursor)
+                .player(player.cloned())
+                .held_clip(held_clip)
+                .build()
+                .view(),
+        );
     }
 
     // The "add track" button
