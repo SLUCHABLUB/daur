@@ -82,7 +82,7 @@ impl Renderer {
             let should_play = Arc::clone(&self.should_play);
 
             self.thread_pool
-                .execute(rendering_job(audio, events, chain, progress, should_play));
+                .execute(move || render(&audio, &events, &chain, &progress, &should_play));
         }
 
         if zero_tracks {
@@ -96,61 +96,59 @@ impl Renderer {
     }
 }
 
-fn rendering_job(
-    input_audio: Audio,
-    events: Sequence,
-    chain: Chain,
-    progress: Arc<Progress>,
-    should_play: Arc<Cell<Option<ShouldPlay>>>,
-) -> impl FnOnce() {
-    move || {
-        let sample_rate = input_audio.sample_rate();
+fn render(
+    input_audio: &Audio,
+    events: &Sequence,
+    chain: &Chain,
+    progress: &Progress,
+    should_play: &Cell<Option<ShouldPlay>>,
+) {
+    let sample_rate = input_audio.sample_rate();
 
-        // TODO: un-hardcode
-        let batch_size = sample_rate.samples_per_second.get().saturating_cast();
-        let batch_duration = sample::Duration {
-            samples: batch_size,
+    // TODO: un-hardcode
+    let batch_size = sample_rate.samples_per_second.get().saturating_cast();
+    let batch_duration = sample::Duration {
+        samples: batch_size,
+    };
+
+    let mut instance = chain.instantiate(sample_rate);
+
+    let mut output_audio = Audio::empty(sample_rate);
+
+    let input_end_point = max(
+        Instant {
+            since_start: input_audio.duration(),
+        },
+        events.last_timestamp().unwrap_or(Instant::START),
+    );
+
+    let mut position = Instant::START;
+    let mut should_continue = position < input_end_point;
+
+    while should_continue || position < input_end_point {
+        let period = sample::Period {
+            start: position,
+            duration: batch_duration,
         };
 
-        let mut instance = chain.instantiate(sample_rate);
+        let audio = input_audio.subsection(period);
+        let events = events.subsequence(period);
 
-        let mut output_audio = Audio::empty(sample_rate);
+        let result = instance.process(batch_duration, &audio, events);
 
-        let input_end_point = max(
-            Instant {
-                since_start: input_audio.duration(),
-            },
-            events.last_timestamp().unwrap_or(Instant::START),
-        );
+        output_audio.superpose_with_offset(&result.audio, position.since_start);
+        position += batch_duration;
+        should_continue = result.should_continue;
+    }
 
-        let mut position = Instant::START;
-        let mut should_continue = position < input_end_point;
+    output_audio.truncate_silence(input_audio.duration());
 
-        while should_continue || position < input_end_point {
-            let period = sample::Period {
-                start: position,
-                duration: batch_duration,
-            };
+    let mut tracks = progress.unmastered_tracks.lock();
+    tracks.push(output_audio);
+    if tracks.len() == tracks.capacity() {
+        let tracks = take(&mut *tracks);
 
-            let audio = input_audio.subsection(period);
-            let events = events.subsequence(period);
-
-            let result = instance.process(batch_duration, &audio, events);
-
-            output_audio.superpose_with_offset(&result.audio, position.since_start);
-            position += batch_duration;
-            should_continue = result.should_continue;
-        }
-
-        output_audio.truncate_silence(input_audio.duration());
-
-        let mut tracks = progress.unmastered_tracks.lock();
-        tracks.push(output_audio);
-        if tracks.len() == tracks.capacity() {
-            let tracks = take(&mut *tracks);
-
-            master(tracks, sample_rate, &progress, &should_play);
-        }
+        master(tracks, sample_rate, progress, should_play);
     }
 }
 
