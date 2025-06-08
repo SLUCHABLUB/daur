@@ -69,11 +69,15 @@ impl Overview<'_, '_> {
                 .collect(),
         );
 
-        // TODO: add a selection box
         let background = View::Empty
             .contextual(Menu::track_overview())
-            .selectable(Selectable::Track(self.track.id))
-            .object_accepting(self.object_acceptor());
+            .grabbable(|render_area| {
+                Some(Holdable::SelectionBox {
+                    start: render_area.mouse_position,
+                })
+            })
+            .object_accepting(self.object_acceptor())
+            .selectable(Selectable::Track(self.track.id));
 
         View::Layers(vec![
             background,
