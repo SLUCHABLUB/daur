@@ -51,8 +51,6 @@ pub struct Track {
     /// The clips in the track.
     clip_ids: BTreeMap<Instant, Id<Clip>>,
     clip_starts: HashMap<Id<Clip>, Instant>,
-    // TODO: remove getter
-    #[get_mut = "pub(super)"]
     clips: HashMap<Id<Clip>, Clip>,
 }
 
