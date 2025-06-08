@@ -161,11 +161,8 @@ impl PianoRoll {
             .fill_remaining()
             .x_positioned(self.piano_depth.get());
 
-        View::y_stack([
-            ruler.quotated(Ui::RULER_HEIGHT.get()),
-            workspace.fill_remaining(),
-        ])
-        .scrollable(Action::MovePianoRoll)
+        View::y_stack([ruler.quotated(Ui::RULER_HEIGHT), workspace.fill_remaining()])
+            .scrollable(Action::MovePianoRoll)
     }
 
     #[expect(clippy::too_many_arguments, reason = "the method is internal")]
@@ -276,7 +273,7 @@ impl PianoRoll {
                     edit_mode,
                     key,
                 )
-                .quotated(self.key_width.get()),
+                .quotated(self.key_width),
             );
         }
 
@@ -366,7 +363,7 @@ impl PianoRoll {
         let overview = view.grabbable(grabber).object_accepting(dropper);
 
         View::x_stack([
-            self.piano_key(pitch, key).quotated(self.piano_depth.get()),
+            self.piano_key(pitch, key).quotated(self.piano_depth),
             overview.fill_remaining(),
         ])
     }
@@ -395,10 +392,7 @@ impl PianoRoll {
 
         let bottom = View::Layers(vec![View::Solid(ThemeColour::WhiteKey), text]);
 
-        View::x_stack([
-            top.quotated(self.black_key_depth.get()),
-            bottom.fill_remaining(),
-        ])
+        View::x_stack([top.quotated(self.black_key_depth), bottom.fill_remaining()])
     }
 
     fn handle_grabber(render_area: RenderArea) -> Option<Holdable> {

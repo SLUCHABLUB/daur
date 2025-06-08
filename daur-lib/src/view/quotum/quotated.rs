@@ -14,7 +14,7 @@ pub struct Quotated {
 
 impl Quotated {
     /// An [empty view](View::Empty) with a zero quotum.
-    pub const EMPTY: Quotated = View::Empty.quotated(Length::ZERO);
+    pub const EMPTY: Quotated = View::Empty.with_quotum(Length::ZERO.quotum());
 
     pub(crate) fn size_parallel_to<Ui: UserInterface>(
         &self,
@@ -54,10 +54,9 @@ impl View {
         self.with_quotum(Quotum::Remaining)
     }
 
-    // TODO: take an `Into<Length>` to accept non-zero lengths
     /// Makes the view take up the specified [amount of space](Length).
-    pub const fn quotated(self, size: Length) -> Quotated {
-        self.with_quotum(size.quotum())
+    pub fn quotated<L: Into<Length>>(self, size: L) -> Quotated {
+        self.with_quotum(size.into().quotum())
     }
 
     /// Adds a quotum to the view using [`minimum_size`](View::minimum_size).

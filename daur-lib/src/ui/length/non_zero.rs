@@ -26,3 +26,9 @@ impl NonZeroLength {
         }
     }
 }
+
+impl From<NonZeroLength> for Length {
+    fn from(value: NonZeroLength) -> Self {
+        value.get()
+    }
+}

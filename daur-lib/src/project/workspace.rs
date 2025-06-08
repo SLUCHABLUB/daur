@@ -80,12 +80,12 @@ pub(crate) fn workspace<Ui: UserInterface>(
     ]);
 
     let track_area = View::x_stack([
-        settings_column.quotated(ui_settings.track_settings_width.get()),
+        settings_column.quotated(ui_settings.track_settings_width),
         overview_column.fill_remaining(),
     ]);
 
     View::y_stack([
-        ruler_row.quotated(Ui::RULER_HEIGHT.get()),
+        ruler_row.quotated(Ui::RULER_HEIGHT),
         track_area.fill_remaining(),
     ])
 }

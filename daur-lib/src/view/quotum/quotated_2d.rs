@@ -58,7 +58,6 @@ impl View {
         self.with_2d_quotum(Quotum2D::REMAINING)
     }
 
-    // TODO: take an `Into<Length>` to accept non-zero lengths
     /// Makes the view take up the specified [amount of space](Size).
     pub const fn quotated_2d(self, size: Size) -> Quotated2D {
         self.with_2d_quotum(size.quotum())
