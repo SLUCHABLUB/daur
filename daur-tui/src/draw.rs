@@ -6,7 +6,7 @@ use daur::ui::{Colour, Length, Offset, Rectangle, Size, Theme, ThemeColour, Vect
 use daur::view::context::Menu;
 use daur::view::visit::Visitor;
 use daur::view::{Alignment, DropAction, OnClick, Painter};
-use daur::{App, HoldableObject, Selectable, UserInterface as _};
+use daur::{App, Holdable, Selectable, UserInterface as _};
 use ratatui::buffer::Buffer;
 use ratatui::layout::Rect;
 use ratatui::style::Stylize as _;
@@ -99,7 +99,7 @@ impl Visitor for Renderer<'_> {
         Text::from(vec![Line::raw(VERTICAL); line_count]).render(area, self.buffer);
     }
 
-    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
+    fn visit_grabbable(&mut self, _: Rectangle, _: Holdable) {}
 
     fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 

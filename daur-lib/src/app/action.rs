@@ -4,7 +4,7 @@ use crate::popup::Specification;
 use crate::project::Edit;
 use crate::ui::{Length, Point, Vector};
 use crate::view::context::Menu;
-use crate::{App, HoldableObject, Id, Popup, Selectable, UserInterface};
+use crate::{App, Holdable, Id, Popup, Selectable, UserInterface};
 use anyhow::Result;
 use derive_more::Debug;
 use std::path::PathBuf;
@@ -51,7 +51,7 @@ pub enum Action {
     /// Stop playing.
     Pause,
     /// Picks up an object.
-    PickUp(HoldableObject),
+    PickUp(Holdable),
     /// Start playing.
     Play,
     /// Selects an item.
@@ -140,12 +140,14 @@ impl<Ui: UserInterface> App<Ui> {
                 };
 
                 match object {
-                    HoldableObject::PianoRollHandle { y } => {
+                    Holdable::PianoRollHandle { y } => {
                         self.piano_roll
                             .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
                     }
                     // These are processed when they are dropped.
-                    HoldableObject::NoteCreation { .. } | HoldableObject::SelectionBox { .. } => (),
+                    Holdable::Clip(_)
+                    | Holdable::NoteCreation { .. }
+                    | Holdable::SelectionBox { .. } => (),
                 }
             }
             Action::MoveOverview(by) => {

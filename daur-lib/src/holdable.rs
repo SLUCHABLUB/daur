@@ -1,10 +1,13 @@
 use crate::metre::Instant;
+use crate::project::track::clip;
 use crate::ui::{Length, Point};
 
 /// An object that can be held.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 #[remain::sorted]
-pub enum HoldableObject {
+pub enum Holdable {
+    /// A clip in the track workspace.
+    Clip(clip::Path),
     /// A note in the process of being created.
     NoteCreation {
         /// Where the note should start.

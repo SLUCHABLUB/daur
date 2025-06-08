@@ -1,12 +1,14 @@
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::{Changing, Instant, OffsetMapping, Quantisation, TimeContext};
-use crate::project::track::{overview, settings};
+use crate::project::track::{clip, overview, settings};
 use crate::project::{self, ADD_TRACK_DESCRIPTION, ADD_TRACK_LABEL};
 use crate::select::Selection;
-use crate::ui::Length;
+use crate::ui::{Length, Size, relative};
 use crate::view::{Axis, CursorWindow, OnClick, View, ruler};
-use crate::{Project, UserInterface, ui};
+use crate::{Holdable, Project, UserInterface, ui};
+use non_zero::non_zero;
+use std::sync::Arc;
 
 pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
@@ -15,6 +17,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
     quantisation: Quantisation,
     cursor: Instant,
     player: Option<&Player>,
+    held_object: Option<Holdable>,
 ) -> View {
     let mut track_settings = Vec::new();
     let mut track_overviews = Vec::new();
@@ -62,6 +65,11 @@ pub(crate) fn workspace<Ui: UserInterface>(
     let settings_column = View::balanced_stack(Axis::Y, track_settings);
     let overview_column = View::balanced_stack(Axis::Y, track_overviews);
 
+    let overview_column = View::Layers(vec![
+        overview_column,
+        held_object_view(held_object, project, quantisation).unwrap_or(View::Empty),
+    ]);
+
     let track_area = View::x_stack([
         settings_column.quotated(ui_settings.track_settings_width.get()),
         overview_column.fill_remaining(),
@@ -71,6 +79,52 @@ pub(crate) fn workspace<Ui: UserInterface>(
         ruler_row.quotated(Ui::RULER_HEIGHT.get()),
         track_area.fill_remaining(),
     ])
+}
+
+fn held_object_view(
+    held_object: Option<Holdable>,
+    project: &Project,
+    quantisation: Quantisation,
+) -> Option<View> {
+    Some(match held_object? {
+        Holdable::Clip(path) => {
+            let (clip_start, clip) = project.clip(path)?;
+            let mapping = OffsetMapping::new(project.time_signature().clone(), quantisation);
+
+            let clip_offset = mapping.offset(clip_start);
+
+            let clip_end = clip_start + clip.duration().get();
+            let clip_end_offset = mapping.offset(clip_end);
+
+            let width = clip_end_offset - clip_offset;
+
+            let overview = clip::overview(clip, true, mapping, Length::ZERO, path.track);
+
+            let overview = Arc::new(overview);
+
+            let row_count = non_zero!(1_u64).saturating_add(project.tracks.len() as u64);
+
+            View::reactive(move |render_area| {
+                let height = render_area.area.size.height / row_count;
+
+                let position = render_area.saturated_mouse_position();
+                let size = Size { width, height };
+
+                View::Shared(Arc::clone(&overview))
+                    .quotated_2d(size)
+                    .positioned(position)
+            })
+        }
+        Holdable::NoteCreation { .. } | Holdable::PianoRollHandle { .. } => return None,
+        Holdable::SelectionBox { start } => View::reactive(move |render_area| {
+            let start = start.relative_to(render_area.area.position);
+            let end = render_area.saturated_mouse_position();
+
+            let area = relative::Rectangle::containing_both(start, end);
+
+            View::SelectionBox.positioned(area)
+        }),
+    })
 }
 
 fn empty_track_overview(

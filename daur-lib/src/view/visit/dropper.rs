@@ -3,20 +3,20 @@ use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
-use crate::{HoldableObject, Selectable};
+use crate::{Holdable, Selectable};
 use std::num::NonZeroU64;
 
-/// A [visitor](Visitor) for dropping an [object](HoldableObject).
+/// A [visitor](Visitor) for dropping an [object](Holdable).
 #[derive(Debug)]
 pub struct Dropper<'actions> {
     actions: &'actions mut Actions,
-    object: HoldableObject,
+    object: Holdable,
     position: Point,
 }
 
 impl<'actions> Dropper<'actions> {
     /// Constructs a new dropper.
-    pub fn new(object: HoldableObject, position: Point, actions: &'actions mut Actions) -> Self {
+    pub fn new(object: Holdable, position: Point, actions: &'actions mut Actions) -> Self {
         actions.push(Action::LetGo);
 
         Dropper {
@@ -38,7 +38,7 @@ impl Visitor for Dropper<'_> {
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
 
-    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
+    fn visit_grabbable(&mut self, _: Rectangle, _: Holdable) {}
 
     fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction) {
         if area.contains(self.position) {
@@ -57,7 +57,7 @@ impl Visitor for Dropper<'_> {
     fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
 
     fn visit_selectable(&mut self, area: Rectangle, item: Selectable) {
-        let HoldableObject::SelectionBox { start } = self.object else {
+        let Holdable::SelectionBox { start } = self.object else {
             return;
         };
         let end = self.position;

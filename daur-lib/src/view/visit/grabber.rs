@@ -3,7 +3,7 @@ use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter};
-use crate::{HoldableObject, Selectable};
+use crate::{Holdable, Selectable};
 use std::num::NonZeroU64;
 
 /// A visitor that grabs objects.
@@ -35,7 +35,7 @@ impl Visitor for Grabber<'_> {
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
 
-    fn visit_grabbable(&mut self, area: Rectangle, object: HoldableObject) {
+    fn visit_grabbable(&mut self, area: Rectangle, object: Holdable) {
         if area.contains(self.position) {
             self.actions.push(Action::PickUp(object));
         }

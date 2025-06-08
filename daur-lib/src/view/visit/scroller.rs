@@ -3,7 +3,7 @@ use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
 use crate::view::{Alignment, DropAction, OnClick, Painter};
-use crate::{HoldableObject, Selectable};
+use crate::{Holdable, Selectable};
 use std::num::NonZeroU64;
 
 /// A visitor that scrolls (moves) objects.
@@ -38,7 +38,7 @@ impl Visitor for Scroller<'_> {
 
     fn visit_cursor_window(&mut self, _: Rectangle, _: Length) {}
 
-    fn visit_grabbable(&mut self, _: Rectangle, _: HoldableObject) {}
+    fn visit_grabbable(&mut self, _: Rectangle, _: Holdable) {}
 
     fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 

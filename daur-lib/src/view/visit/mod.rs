@@ -14,7 +14,7 @@ use crate::app::Action;
 use crate::ui::{Colour, Length, Rectangle, Size, ThemeColour, Vector};
 use crate::view::context::Menu;
 use crate::view::{Alignment, DropAction, OnClick, Painter, RenderArea};
-use crate::{HoldableObject, Ratio, Selectable, UserInterface, View};
+use crate::{Holdable, Ratio, Selectable, UserInterface, View};
 use std::iter::zip;
 use std::num::NonZeroU64;
 
@@ -42,7 +42,7 @@ pub trait Visitor {
     fn visit_cursor_window(&mut self, area: Rectangle, offset: Length);
 
     /// Visits a grabbable view.
-    fn visit_grabbable(&mut self, area: Rectangle, object: HoldableObject);
+    fn visit_grabbable(&mut self, area: Rectangle, object: Holdable);
 
     /// Visits a view that accepts objects.
     fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction);

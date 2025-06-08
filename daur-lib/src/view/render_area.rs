@@ -3,6 +3,7 @@ use crate::view::{Axis, Quotated};
 use crate::{Ratio, UserInterface};
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
+use std::cmp::min;
 use std::num::NonZeroU64;
 
 /// Information about the user interface that a reactive view may use.
@@ -27,6 +28,18 @@ impl RenderArea {
     pub fn relative_mouse_position(self) -> Option<relative::Point> {
         self.is_hovered()
             .then_some(self.mouse_position.relative_to(self.area.position))
+    }
+
+    /// Returns the position of the mouse cursor relative to the area.
+    /// If it is not within the area, it is snapped to an edge.
+    #[must_use]
+    pub fn saturated_mouse_position(self) -> relative::Point {
+        let point = self.mouse_position.relative_to(self.area.position);
+
+        relative::Point {
+            x: min(point.x, self.area.size.width - Length::PIXEL),
+            y: min(point.y, self.area.size.height - Length::PIXEL),
+        }
     }
 
     /// Returns a moved copy of the rendering area.

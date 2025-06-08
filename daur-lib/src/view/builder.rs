@@ -2,7 +2,7 @@ use crate::app::Action;
 use crate::ui::{Length, Vector, relative};
 use crate::view::context::Menu;
 use crate::view::{OnClick, RenderArea};
-use crate::{HoldableObject, Selectable, View};
+use crate::{Holdable, Selectable, View};
 use arcstr::ArcStr;
 
 impl View {
@@ -59,7 +59,7 @@ impl View {
     }
 
     /// Adds a grabbable object to the view.
-    pub fn grabbable<F: Fn(RenderArea) -> Option<HoldableObject> + Send + Sync + 'static>(
+    pub fn grabbable<F: Fn(RenderArea) -> Option<Holdable> + Send + Sync + 'static>(
         self,
         generator: F,
     ) -> View {
@@ -71,7 +71,7 @@ impl View {
 
     /// Adds a function that accepts droppable objects to the view.
     pub fn object_accepting<
-        F: Fn(HoldableObject, RenderArea) -> Option<Action> + Send + Sync + 'static,
+        F: Fn(Holdable, RenderArea) -> Option<Action> + Send + Sync + 'static,
     >(
         self,
         dropper: F,

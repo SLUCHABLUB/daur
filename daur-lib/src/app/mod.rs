@@ -13,7 +13,7 @@ use crate::metre::{Instant, NonZeroDuration, Quantisation};
 use crate::select::Selection;
 use crate::ui::Theme;
 use crate::view::context::MenuInstance;
-use crate::{HoldableObject, PianoRoll, UserInterface, View, popup, project, ui};
+use crate::{Holdable, PianoRoll, UserInterface, View, popup, project, ui};
 use derive_more::Debug;
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
@@ -48,7 +48,7 @@ pub struct App<Ui: UserInterface> {
     context_menu: Option<MenuInstance>,
     /// The currently held object.
     #[get_copy = "pub"]
-    held_object: Option<HoldableObject>,
+    held_object: Option<Holdable>,
     popup_manager: popup::Manager,
 
     /// The position of the musical cursor.

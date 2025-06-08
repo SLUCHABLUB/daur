@@ -36,7 +36,7 @@ pub(crate) use feed::feed;
 use crate::app::Action;
 use crate::ui::{Colour, ThemeColour, Vector, relative};
 use crate::view::context::Menu;
-use crate::{HoldableObject, Selectable};
+use crate::{Holdable, Selectable};
 use arcstr::ArcStr;
 use derive_more::Debug;
 use std::num::NonZeroU64;
@@ -45,9 +45,9 @@ use std::sync::Arc;
 /// A function for painting a canvas.
 pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;
 /// A function for getting an action when dropping an object on a view.
-pub type DropAction = dyn Fn(HoldableObject, RenderArea) -> Option<Action> + Send + Sync;
+pub type DropAction = dyn Fn(Holdable, RenderArea) -> Option<Action> + Send + Sync;
 /// A function for getting an object when grabbing a view.
-pub type GrabObject = dyn Fn(RenderArea) -> Option<HoldableObject> + Send + Sync;
+pub type GrabObject = dyn Fn(RenderArea) -> Option<Holdable> + Send + Sync;
 /// A function for a reactive view.
 pub type Reactive = dyn Fn(RenderArea) -> View + Send + Sync;
 
@@ -111,7 +111,7 @@ pub enum View {
     },
     /// Multiple views layered on each other.
     Layers(Vec<View>),
-    /// A view on which an [object](HoldableObject) may be dropped.
+    /// A view on which an [object](Holdable) may be dropped.
     ObjectAcceptor {
         /// The action to take when an object is dropped on the view.
         #[debug(skip)]

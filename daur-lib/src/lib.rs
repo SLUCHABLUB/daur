@@ -12,7 +12,7 @@ pub mod ui;
 pub mod view;
 
 mod extension;
-mod holdable_object;
+mod holdable;
 mod id;
 mod node;
 mod piano_roll;
@@ -20,7 +20,7 @@ mod ratio;
 mod select;
 mod string;
 
-pub use holdable_object::HoldableObject;
+pub use holdable::Holdable;
 pub use id::Id;
 pub use piano_roll::PianoRoll;
 pub use ratio::{NonZeroRatio, Ratio};

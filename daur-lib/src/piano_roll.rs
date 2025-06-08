@@ -6,7 +6,7 @@ use crate::project::Edit;
 use crate::select::Selection;
 use crate::ui::{Colour, Length, NonZeroLength, Size, ThemeColour, Vector, relative};
 use crate::view::{Alignment, CursorWindow, Quotated, RenderArea, ToText as _, ruler};
-use crate::{HoldableObject, Project, Ratio, UserInterface, View};
+use crate::{Holdable, Project, Ratio, UserInterface, View};
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use getset::{CopyGetters, Setters};
@@ -83,7 +83,7 @@ impl PianoRoll {
         quantisation: Quantisation,
         player: Option<Player>,
         cursor: Instant,
-        held_object: Option<HoldableObject>,
+        held_object: Option<Holdable>,
         edit_mode: bool,
     ) -> Quotated {
         if !self.is_open {
@@ -127,7 +127,7 @@ impl PianoRoll {
         quantisation: Quantisation,
         player: Option<Player>,
         cursor: Instant,
-        held_object: Option<HoldableObject>,
+        held_object: Option<Holdable>,
         edit_mode: bool,
     ) -> View {
         let Some((clip_start, clip)) = selection.top_clip().and_then(|clip| project.clip(clip))
@@ -178,7 +178,7 @@ impl PianoRoll {
         time_context: Changing<TimeContext>,
         player: Option<Player>,
         cursor: Instant,
-        held_object: Option<HoldableObject>,
+        held_object: Option<Holdable>,
         edit_mode: bool,
         key: &Changing<Key>,
     ) -> View {
@@ -336,16 +336,16 @@ impl PianoRoll {
             Some(if edit_mode {
                 let start = offset_mapping.quantised_instant(mouse_position.x + self.negative_x_offset);
 
-               HoldableObject::NoteCreation { start }
+               Holdable::NoteCreation { start }
             } else {
-                HoldableObject::SelectionBox {
+                Holdable::SelectionBox {
                     start: render_area.mouse_position,
                 }
             })
         });
 
         let dropper = move |object, render_area: RenderArea| {
-            let HoldableObject::NoteCreation { start } = object else {
+            let Holdable::NoteCreation { start } = object else {
                 return None;
             };
             let end = offset_mapping.quantised_instant(
@@ -401,15 +401,15 @@ impl PianoRoll {
         ])
     }
 
-    fn handle_grabber(render_area: RenderArea) -> Option<HoldableObject> {
+    fn handle_grabber(render_area: RenderArea) -> Option<Holdable> {
         let y = render_area.relative_mouse_position()?.y;
 
-        Some(HoldableObject::PianoRollHandle { y })
+        Some(Holdable::PianoRollHandle { y })
     }
 
     fn held_object(
         self,
-        held_object: Option<HoldableObject>,
+        held_object: Option<Holdable>,
         clip_colour: Colour,
         offset_mapping: &OffsetMapping,
     ) -> View {
@@ -418,9 +418,11 @@ impl PianoRoll {
         };
 
         let start = match held_object {
-            HoldableObject::NoteCreation { start } => start,
+            Holdable::NoteCreation { start } => start,
             // selection boxes are drawn on the app level
-            HoldableObject::PianoRollHandle { .. } | HoldableObject::SelectionBox { .. } => {
+            Holdable::Clip(_)
+            | Holdable::PianoRollHandle { .. }
+            | Holdable::SelectionBox { .. } => {
                 return View::Empty;
             }
         };
