@@ -52,13 +52,8 @@ pub enum Edit {
         /// The position in `track` that the clip should be moved to.
         position: Instant,
     },
-    /// Sets the key at an instant in the project.
-    SetKey {
-        /// The instant of the key change.
-        instant: Instant,
-        /// The new key.
-        key: Key,
-    },
+    /// Sets the key at the cursor.
+    SetKey(Key),
 }
 
 #[derive(Debug, Error)]
@@ -286,15 +281,15 @@ impl Project {
                     }
                 }
             }
-            Edit::SetKey { instant, key } => {
-                let old = if let Some(position) = NonZeroInstant::from_instant(instant) {
+            Edit::SetKey(key) => {
+                let old = if let Some(position) = NonZeroInstant::from_instant(cursor) {
                     self.key.changes.insert(position, key)
                 } else {
                     Some(replace(&mut self.key.start, key))
                 };
 
                 Ok(HistoryEntry::SetKey {
-                    at: instant,
+                    at: cursor,
                     to: key,
                     from: old,
                 })

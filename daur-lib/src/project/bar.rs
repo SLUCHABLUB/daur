@@ -1,7 +1,6 @@
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
-use crate::note::Key;
 use crate::popup::Specification;
 use crate::view::{Axis, OnClick, View};
 use crate::{Project, ToArcStr as _, UserInterface};
@@ -26,31 +25,28 @@ const PIANO: ArcStr = literal!("piano roll");
 /// "CONTROL KNOBS"
 const NODES: ArcStr = literal!("plugins");
 
-fn open_key_selector(instant: Instant, key: Key) -> OnClick {
-    OnClick::from(Action::OpenPopup(Specification::KeySelector {
-        instant,
-        key,
-    }))
-}
-
 /// The bar att the top of the window.
 pub(crate) fn bar<Ui: UserInterface>(
     project: &Project,
+    cursor: Instant,
     player: Option<Player>,
     edit_mode: bool,
     piano_roll_open: bool,
 ) -> View {
     let key_button = View::standard_button(
         project.key.start.to_arc_str(),
-        open_key_selector(Instant::START, project.key.start),
+        OnClick::from(Action::OpenPopup(Specification::KeySelector {
+            key: project.key.get(cursor),
+        })),
     );
     // TODO: add functionality
     let time_signature_button = View::standard_button(
-        project.time_signature.start.to_arc_str(),
+        project.time_signature.get(cursor).to_arc_str(),
         OnClick::default(),
     );
     // TODO: add functionality
-    let tempo_button = View::standard_button(project.tempo.start.to_arc_str(), OnClick::default());
+    let tempo_button =
+        View::standard_button(project.tempo.get(cursor).to_arc_str(), OnClick::default());
 
     let to_start_button =
         View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));

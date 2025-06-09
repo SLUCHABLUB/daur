@@ -81,8 +81,8 @@ impl PianoRoll {
         selection: &Selection,
         project: &Project,
         quantisation: Quantisation,
-        player: Option<Player>,
         cursor: Instant,
+        player: Option<Player>,
         held_object: Option<Holdable>,
         edit_mode: bool,
     ) -> Quotated {

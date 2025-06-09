@@ -5,6 +5,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
     let background = View::y_stack([
         bar::<Ui>(
             app.project_manager.project(),
+            app.cursor(),
             app.audio_config.try_player().cloned(),
             app.edit_mode,
             app.piano_roll.is_open(),
@@ -24,8 +25,8 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
             &app.selection,
             app.project_manager.project(),
             app.quantisation,
+            app.cursor(),
             app.audio_config.try_player().cloned(),
-            app.cursor,
             app.held_object,
             app.edit_mode,
         ),

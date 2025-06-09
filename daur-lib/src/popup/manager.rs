@@ -21,7 +21,7 @@ impl Manager {
 
     /// Opens a new [popup](Popup).
     pub fn open<Ui: UserInterface>(&mut self, specification: &Specification, ui: &Ui) {
-        let id = Id::generate();
+        let id = specification.generate_id();
 
         self.popups
             .insert(id, specification.instantiate::<Ui>(id, ui));

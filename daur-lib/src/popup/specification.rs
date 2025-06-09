@@ -1,6 +1,5 @@
 use crate::app::Action;
 use crate::holdable::WindowSide;
-use crate::metre::Instant;
 use crate::note::Key;
 use crate::sync::{ArcCell, Cell};
 use crate::ui::{Point, Rectangle, ThemeColour};
@@ -13,10 +12,9 @@ use arcstr::{ArcStr, literal};
 use closure::closure;
 use derive_more::Debug;
 use dirs::home_dir;
-use mitsein::vec1::Vec1;
 use std::env::current_dir;
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, LazyLock};
 
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 const CANCEL: ArcStr = literal!("cancel");
@@ -30,13 +28,6 @@ const KEY_SELECTOR_TITLE: ArcStr = literal!("select key");
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Clone, Debug)]
 pub enum Specification {
-    /// A panel of buttons.
-    ButtonPanel {
-        /// The title of the popup.
-        title: ArcStr,
-        /// The buttons.
-        buttons: Vec1<(ArcStr, Action)>,
-    },
     /// An error message.
     Error(Arc<Error>),
     /// A file selector.
@@ -51,8 +42,6 @@ pub enum Specification {
     },
     /// A window for selecting a key.
     KeySelector {
-        /// The instant at which the key should be changed.
-        instant: Instant,
         /// The current key.
         key: Key,
     },
@@ -77,11 +66,21 @@ impl Specification {
     #[must_use]
     pub fn title(&self) -> ArcStr {
         match self {
-            Specification::ButtonPanel { title, .. }
-            | Specification::FileSelector { title, .. } => title.clone(),
+            Specification::FileSelector { title, .. } => title.clone(),
             Specification::Error { .. } => ERROR_TITLE,
             // TODO: Display at what instant the key is being set.
             Specification::KeySelector { .. } => KEY_SELECTOR_TITLE,
+        }
+    }
+
+    pub(crate) fn generate_id(&self) -> Id<Popup> {
+        static FILE_SELECTOR: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
+        static KEY_SELECTOR: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
+
+        match self {
+            Specification::Error(_) => Id::generate(),
+            Specification::FileSelector { .. } => *FILE_SELECTOR,
+            Specification::KeySelector { .. } => *KEY_SELECTOR,
         }
     }
 
@@ -134,13 +133,6 @@ impl Specification {
     /// Returns the popups inner [view](View), with no border and title.
     fn inner_view(&self, id: Id<Popup>) -> View {
         match self {
-            Specification::ButtonPanel { buttons, .. } => View::balanced_stack(
-                Axis::Y,
-                buttons.iter().map(|(label, action)| {
-                    View::simple_button(label.clone(), OnClick::from(action.clone()))
-                        .terminating(id)
-                }),
-            ),
             Specification::Error(error) => {
                 let acknowledge_button = ACKNOWLEDGE.centred().bordered();
 
@@ -176,9 +168,7 @@ impl Specification {
                     buttons.quotated_minimally(),
                 ])
             }
-            Specification::KeySelector { instant, key } => {
-                let instant = *instant;
-
+            Specification::KeySelector { key } => {
                 let tonic = Arc::new(Cell::new(key.tonic));
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
@@ -191,14 +181,11 @@ impl Specification {
                             CONFIRM,
                             OnClick::action(
                                 closure!([clone tonic, clone sign, clone intervals] move || {
-                                    Action::Edit(project::Edit::SetKey {
-                                        instant,
-                                        key: Key {
+                                    Action::Edit(project::Edit::SetKey(Key {
                                             tonic: tonic.get(),
                                             sign: sign.get(),
                                             intervals: intervals.get(),
-                                        },
-                                    })
+                                        }))
                                 }),
                             ),
                         )
