@@ -1,5 +1,8 @@
-use crate::metre::{Changing, Duration, Instant, Period, Quantisation, TimeSignature};
+use crate::metre::{
+    Changing, Instant, NonZeroDuration, NonZeroPeriod, Quantisation, TimeSignature,
+};
 use crate::ui::Length;
+use std::num::NonZeroU64;
 
 /// A [measure](https://en.wikipedia.org/wiki/Measure_(music)).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
@@ -13,28 +16,32 @@ pub struct Measure {
 impl Measure {
     /// Returns the duration of the measure.
     #[must_use]
-    pub fn duration(self) -> Duration {
-        self.time_signature.measure_duration().get()
+    pub fn duration(self) -> NonZeroDuration {
+        self.time_signature.measure_duration()
     }
 
     /// Returns the period of the measure.
     #[must_use]
-    pub fn period(self) -> Period {
-        Period {
+    pub fn period(self) -> NonZeroPeriod {
+        NonZeroPeriod {
             start: self.start,
             duration: self.duration(),
         }
     }
 
     pub(crate) fn next(self, time_signature: &Changing<TimeSignature>) -> Measure {
-        let start = self.period().end();
+        let start = self.period().get().end();
         Measure {
             start,
             time_signature: time_signature.get(start),
         }
     }
 
-    pub(crate) fn width(&self, quantisation: Quantisation) -> Length {
-        quantisation.cell_width.get() * (self.duration() / quantisation.cell_duration).ceiled()
+    pub(crate) fn cell_count(self, quantisation: Quantisation) -> NonZeroU64 {
+        (self.duration() / quantisation.cell_duration).ceil()
+    }
+
+    pub(crate) fn width(self, quantisation: Quantisation) -> Length {
+        quantisation.cell_width.get() * (self.duration() / quantisation.cell_duration).ceil()
     }
 }

@@ -3,6 +3,7 @@ arithmetic-side-effects-allowed = [
     # daur internal type names
     "audio::Audio",
     "audio::sample::duration::Duration",
+    "audio::sample::instant::Instant",
     "audio::sample::pair::Pair",
     "audio::sample::Sample",
     "metre::duration::Duration",

@@ -2,6 +2,8 @@ use crate::metre::{Duration, NonZeroDuration};
 use crate::{NonZeroRatio, Ratio};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
+// --- INFIX OPERATIONS ---
+
 impl<D: Into<Duration>> Add<D> for Duration {
     type Output = Duration;
 
@@ -64,12 +66,20 @@ impl<N: Into<NonZeroRatio>> DivAssign<N> for Duration {
     }
 }
 
-// --- STRICTLY INFIX OPERATIONS ---
+// --- NON-CLOSED OPERATIONS ---
 
 impl Div<NonZeroDuration> for Duration {
     type Output = Ratio;
 
     fn div(self, rhs: NonZeroDuration) -> Ratio {
+        self.whole_notes / rhs.whole_notes
+    }
+}
+
+impl Div<NonZeroDuration> for NonZeroDuration {
+    type Output = NonZeroRatio;
+
+    fn div(self, rhs: NonZeroDuration) -> NonZeroRatio {
         self.whole_notes / rhs.whole_notes
     }
 }

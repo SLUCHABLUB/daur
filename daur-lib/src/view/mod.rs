@@ -12,7 +12,6 @@ mod button;
 mod canvas;
 mod constructors;
 mod cursor_window;
-mod feed;
 mod file_selector;
 mod minimum_size;
 mod quotum;
@@ -31,10 +30,8 @@ pub use render_area::RenderArea;
 pub use ruler::ruler;
 pub use text::ToText;
 
-pub(crate) use feed::feed;
-
 use crate::app::Action;
-use crate::ui::{Colour, ThemeColour, Vector, relative};
+use crate::ui::{Colour, Length, ThemeColour, Vector, relative};
 use crate::view::context::Menu;
 use crate::{Holdable, Selectable};
 use arcstr::ArcStr;
@@ -131,9 +128,13 @@ pub enum View {
     /// A rule of a ruler.
     Rule {
         /// The display-index of the rule.
-        index: isize,
+        index: usize,
         /// The number of cells (the number of markings - 1).
         cells: NonZeroU64,
+        /// How far from the left the rule is cropped.
+        left_crop: Length,
+        /// The full (uncropped) width of the rule.
+        width: Length,
     },
     /// A scrollable view.
     Scrollable {

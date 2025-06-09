@@ -3,19 +3,19 @@ use std::ops::{Add, AddAssign, Sub, SubAssign};
 
 // --- INFIX OPERATIONS ---
 
-impl Add<Duration> for Instant {
+impl<D: Into<Duration>> Add<D> for Instant {
     type Output = Instant;
 
-    fn add(mut self, rhs: Duration) -> Instant {
+    fn add(mut self, rhs: D) -> Instant {
         self += rhs;
         self
     }
 }
 
-impl Sub<Duration> for Instant {
+impl<D: Into<Duration>> Sub<D> for Instant {
     type Output = Instant;
 
-    fn sub(mut self, rhs: Duration) -> Instant {
+    fn sub(mut self, rhs: D) -> Instant {
         self -= rhs;
         self
     }
@@ -23,14 +23,14 @@ impl Sub<Duration> for Instant {
 
 // --- ASSIGNMENT OPERATIONS ---
 
-impl AddAssign<Duration> for Instant {
-    fn add_assign(&mut self, rhs: Duration) {
+impl<D: Into<Duration>> AddAssign<D> for Instant {
+    fn add_assign(&mut self, rhs: D) {
         self.since_start += rhs;
     }
 }
 
-impl SubAssign<Duration> for Instant {
-    fn sub_assign(&mut self, rhs: Duration) {
+impl<D: Into<Duration>> SubAssign<D> for Instant {
+    fn sub_assign(&mut self, rhs: D) {
         self.since_start -= rhs;
     }
 }

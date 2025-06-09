@@ -70,7 +70,7 @@ impl Ratio {
         }
     }
 
-    /// Calculates the ceiling of the ratio
+    /// Calculates the ceiling of the ratio.
     #[must_use]
     pub fn ceil(self) -> u64 {
         let quotient = self.numerator / self.denominator;
@@ -83,7 +83,7 @@ impl Ratio {
         }
     }
 
-    /// Returns a ratio representing the ceiling of the ratio
+    /// Returns a ratio representing the ceiling of the ratio.
     #[must_use]
     pub fn ceiled(self) -> Ratio {
         Ratio::integer(self.ceil())

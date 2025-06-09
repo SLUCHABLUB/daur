@@ -86,6 +86,18 @@ impl NonZeroRatio {
         })
     }
 
+    /// Calculates the ceiling of the ratio.
+    #[must_use]
+    pub fn ceil(self) -> NonZeroU64 {
+        NonZeroU64::new(self.get().ceil()).unwrap_or(non_zero!(1))
+    }
+
+    /// Returns a ratio representing the ceiling of the ratio.
+    #[must_use]
+    pub fn ceiled(self) -> NonZeroRatio {
+        NonZeroRatio::integer(self.ceil())
+    }
+
     pub(super) fn approximate_big(
         mut numerator: NonZeroU128,
         mut denominator: NonZeroU128,
@@ -125,6 +137,12 @@ impl PartialOrd for NonZeroRatio {
 impl Ord for NonZeroRatio {
     fn cmp(&self, other: &NonZeroRatio) -> Ordering {
         self.get().cmp(&other.get())
+    }
+}
+
+impl From<NonZeroRatio> for Ratio {
+    fn from(value: NonZeroRatio) -> Self {
+        value.get()
     }
 }
 

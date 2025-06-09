@@ -66,7 +66,7 @@ impl Changing<TimeSignature> {
         }
     }
 
-    pub(crate) fn measures(&self) -> impl Iterator<Item = Measure> + use<'_> {
+    pub(crate) fn measures(&self) -> impl Iterator<Item = Measure> + Clone + use<'_> {
         let mut start = Instant::START;
 
         from_fn(move || {
@@ -79,10 +79,5 @@ impl Changing<TimeSignature> {
 
             Some(measure)
         })
-    }
-
-    pub(crate) fn measure_n(&self, index: usize) -> Measure {
-        #[expect(clippy::unwrap_used, reason = "`bars()` never returns `None`")]
-        self.measures().nth(index).unwrap()
     }
 }

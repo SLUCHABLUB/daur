@@ -157,7 +157,7 @@ impl PianoRoll {
             project.key(),
         );
 
-        let ruler = ruler::<Ui>(self.negative_x_offset, offset_mapping)
+        let ruler = ruler(self.negative_x_offset, offset_mapping)
             .fill_remaining()
             .x_positioned(self.piano_depth.get());
 

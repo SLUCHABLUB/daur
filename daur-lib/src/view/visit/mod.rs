@@ -48,7 +48,14 @@ pub trait Visitor {
     fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction);
 
     /// Visits a rule.
-    fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64);
+    fn visit_rule(
+        &mut self,
+        area: Rectangle,
+        index: usize,
+        cells: NonZeroU64,
+        left_crop: Length,
+        full_width: Length,
+    );
 
     /// Visits a selectable view.
     fn visit_selectable(&mut self, area: Rectangle, item: Selectable);
@@ -144,7 +151,12 @@ impl View {
                 }
             }
             View::Reactive(closure) => closure(render_area).accept::<Ui, V>(visitor, render_area),
-            View::Rule { index, cells } => visitor.visit_rule(render_area.area, *index, *cells),
+            View::Rule {
+                index,
+                cells,
+                left_crop,
+                width,
+            } => visitor.visit_rule(render_area.area, *index, *cells, *left_crop, *width),
             View::Scrollable { action, view } => {
                 visitor.visit_scrollable(render_area.area, *action);
                 view.accept::<Ui, V>(visitor, render_area);

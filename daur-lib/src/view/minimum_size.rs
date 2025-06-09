@@ -62,8 +62,10 @@ fn minimum_size<Ui: UserInterface>(view: &View, render_area: RenderArea) -> Size
             }
         }
         View::Reactive(reactive) => reactive(render_area).minimum_size::<Ui>(render_area),
-        View::Rule { .. } => Size {
-            width: Length::ZERO,
+        View::Rule {
+            left_crop, width, ..
+        } => Size {
+            width: *width - *left_crop,
             height: Ui::RULER_HEIGHT.get(),
         },
         View::Shared(view) => view.minimum_size::<Ui>(render_area),

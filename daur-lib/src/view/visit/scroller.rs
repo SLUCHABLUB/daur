@@ -42,7 +42,7 @@ impl Visitor for Scroller<'_> {
 
     fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 
-    fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
+    fn visit_rule(&mut self, _: Rectangle, _: usize, _: NonZeroU64, _: Length, _: Length) {}
 
     fn visit_selectable(&mut self, _: Rectangle, _: Selectable) {}
 

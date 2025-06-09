@@ -76,7 +76,7 @@ impl OffsetMapping {
         let mut measure = self.time_signature.first_measure();
 
         loop {
-            if remaining < measure.duration() {
+            if remaining < measure.duration().get() {
                 let cell_count = remaining / self.quantisation.cell_duration;
                 offset += self.quantisation.cell_width.get() * cell_count;
 

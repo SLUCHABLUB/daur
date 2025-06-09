@@ -30,3 +30,9 @@ impl NonZeroDuration {
         })
     }
 }
+
+impl From<NonZeroDuration> for Duration {
+    fn from(value: NonZeroDuration) -> Self {
+        value.get()
+    }
+}

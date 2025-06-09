@@ -65,7 +65,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
         player.cloned(),
     ));
 
-    let ruler = ruler::<Ui>(ui_settings.negative_overview_offset, offset_mapping);
+    let ruler = ruler(ui_settings.negative_overview_offset, offset_mapping);
     let ruler_row = ruler
         .scrollable(Action::MoveOverview)
         .fill_remaining()

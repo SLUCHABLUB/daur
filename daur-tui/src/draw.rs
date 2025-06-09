@@ -1,6 +1,7 @@
 use crate::canvas::Context;
 use crate::convert::{approximate_colour, from_rectangle, to_rectangle};
 use crate::tui::Tui;
+use ascii::{AsciiChar, AsciiStr};
 use daur::app::Action;
 use daur::ui::{Colour, Length, Offset, Rectangle, Size, Theme, ThemeColour, Vector};
 use daur::view::context::Menu;
@@ -19,6 +20,7 @@ use ratatui::{DefaultTerminal, layout};
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
 use std::io;
+use std::iter::repeat_n;
 use std::num::{NonZeroU64, NonZeroUsize};
 
 pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
@@ -103,25 +105,48 @@ impl Visitor for Renderer<'_> {
 
     fn visit_object_acceptor(&mut self, _: Rectangle, _: &DropAction) {}
 
-    fn visit_rule(&mut self, area: Rectangle, index: isize, cells: NonZeroU64) {
-        let area = from_rectangle(area);
-
-        let width = usize::from(area.width);
+    fn visit_rule(
+        &mut self,
+        area: Rectangle,
+        index: usize,
+        cells: NonZeroU64,
+        left_crop: Length,
+        full_width: Length,
+    ) {
         let cells = NonZeroUsize::try_from(cells).unwrap_or(NonZeroUsize::MAX);
 
-        if index < 0 {
-            Text::raw(format!("{index:<width$}\n{:><width$}", "|"))
-        } else {
-            let first_row = format!("{index:<width$}\n");
-            let cell_width = width / cells;
-            let first_cell = format!("{:<cell_width$}", "|");
+        let first_line = format!("{index:<0$}\n", full_width.pixels as usize);
+        // This should be infallible.
+        let first_line = first_line
+            .get((left_crop.pixels as usize)..)
+            .unwrap_or(&first_line);
 
-            let standard_cells = cells.get().saturating_sub(1);
-            let standard_cell = format!("{:<cell_width$}", ".");
+        let cell_width = usize::from(full_width.pixels).div_ceil(cells.get());
+        // The spacing between cells.
+        let cell_space = cell_width.saturating_sub(1);
 
-            Text::raw(first_row + &*first_cell + &*standard_cell.repeat(standard_cells))
+        let mut second_line = Vec::with_capacity(full_width.pixels as usize);
+
+        for _ in 0..cells.get() {
+            second_line.push(AsciiChar::Dot);
+            second_line.extend(repeat_n(AsciiChar::Space, cell_space));
         }
-        .render(area, self.buffer);
+
+        if let Some(first) = second_line.get_mut(0) {
+            *first = AsciiChar::VerticalBar;
+        }
+
+        let start_index = left_crop.pixels as usize;
+        let end_index = (left_crop + area.size.width).pixels as usize;
+
+        let second_line: &AsciiStr = second_line
+            .get(start_index..end_index)
+            .unwrap_or(&[])
+            .as_ref();
+        let second_line = second_line.as_str();
+
+        Text::from(vec![Line::raw(first_line), Line::raw(second_line)])
+            .render(from_rectangle(area), self.buffer);
     }
 
     fn visit_selectable(&mut self, _: Rectangle, _: Selectable) {}

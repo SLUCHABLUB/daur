@@ -54,7 +54,7 @@ impl Visitor for Dropper<'_> {
         }
     }
 
-    fn visit_rule(&mut self, _: Rectangle, _: isize, _: NonZeroU64) {}
+    fn visit_rule(&mut self, _: Rectangle, _: usize, _: NonZeroU64, _: Length, _: Length) {}
 
     fn visit_selectable(&mut self, area: Rectangle, item: Selectable) {
         let Holdable::SelectionBox { start } = self.object else {
