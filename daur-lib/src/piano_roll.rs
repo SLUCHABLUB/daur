@@ -413,7 +413,6 @@ impl PianoRoll {
 
         let start = match held_object {
             Holdable::NoteCreation { start } => start,
-            // selection boxes are drawn on the app level
             Holdable::Clip(_)
             | Holdable::PianoRollHandle { .. }
             | Holdable::Popup { .. }
