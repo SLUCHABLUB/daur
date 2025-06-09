@@ -416,6 +416,7 @@ impl PianoRoll {
             // selection boxes are drawn on the app level
             Holdable::Clip(_)
             | Holdable::PianoRollHandle { .. }
+            | Holdable::ResizePopup { .. }
             | Holdable::SelectionBox { .. } => {
                 return View::Empty;
             }

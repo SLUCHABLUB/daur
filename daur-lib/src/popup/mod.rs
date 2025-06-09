@@ -9,13 +9,16 @@ pub(crate) use manager::Manager;
 
 use crate::View;
 use crate::ui::{Point, Rectangle};
-use getset::{CloneGetters, CopyGetters};
+use getset::{CopyGetters, MutGetters, Setters};
 use std::sync::Arc;
 
 /// An instance of a popup window.
-#[derive(Clone, Debug, CopyGetters, CloneGetters)]
+#[derive(Clone, Debug, CopyGetters, MutGetters, Setters)]
 pub struct Popup {
     /// The area of the popup.
+    #[get_copy = "pub"]
+    #[get_mut = "pub"]
+    #[set = "pub"]
     area: Rectangle,
     /// The view of the popup.
     view: Arc<View>,

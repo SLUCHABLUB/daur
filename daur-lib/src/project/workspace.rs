@@ -124,7 +124,9 @@ fn held_object_view(
                     .positioned(position)
             })
         }
-        Holdable::NoteCreation { .. } | Holdable::PianoRollHandle { .. } => return None,
+        Holdable::NoteCreation { .. }
+        | Holdable::PianoRollHandle { .. }
+        | Holdable::ResizePopup { .. } => return None,
         Holdable::SelectionBox { start } => View::reactive(move |render_area| {
             let start = start.relative_to(render_area.area.position);
             let end = render_area.saturated_mouse_position();

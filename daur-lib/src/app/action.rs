@@ -144,6 +144,11 @@ impl<Ui: UserInterface> App<Ui> {
                         self.piano_roll
                             .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
                     }
+                    Holdable::ResizePopup { popup, side } => {
+                        if let Some(popup) = self.popup_manager.popup_mut(popup) {
+                            popup.set_area(side.resize(popup.area(), to));
+                        }
+                    }
                     // These are processed when they are dropped.
                     Holdable::Clip(_)
                     | Holdable::NoteCreation { .. }

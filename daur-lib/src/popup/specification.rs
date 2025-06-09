@@ -1,10 +1,13 @@
 use crate::app::Action;
+use crate::holdable::WindowSide;
 use crate::metre::Instant;
 use crate::note::Key;
 use crate::sync::{ArcCell, Cell};
 use crate::ui::{Point, Rectangle, ThemeColour};
-use crate::view::{Alignment, Axis, OnClick, ToText as _, file_selector, multi, single};
-use crate::{Id, Popup, Ratio, UserInterface, View, project};
+use crate::view::{
+    Alignment, Axis, OnClick, RenderArea, ToText as _, file_selector, multi, single,
+};
+use crate::{Holdable, Id, Popup, Ratio, UserInterface, View, project};
 use anyhow::Error;
 use arcstr::{ArcStr, literal};
 use closure::closure;
@@ -83,10 +86,44 @@ impl Specification {
     }
 
     /// Returns the popups [view](View) with a border and title.
-    fn view(&self, id: Id<Popup>) -> View {
+    fn view<Ui: UserInterface>(&self, id: Id<Popup>) -> View {
+        let grab_edge = move |render_area: RenderArea| {
+            let mouse_position = render_area.relative_mouse_position()?;
+
+            let left = mouse_position.x < Ui::BORDER_THICKNESS;
+            let top = mouse_position.y < Ui::BORDER_THICKNESS;
+
+            let right = render_area.area.size.width - Ui::BORDER_THICKNESS <= mouse_position.x;
+            let bottom = render_area.area.size.height - Ui::BORDER_THICKNESS <= mouse_position.y;
+
+            let side = if top && left {
+                WindowSide::TopLeft
+            } else if top && right {
+                WindowSide::TopRight
+            } else if top {
+                // TODO: move the popup
+                return None;
+            } else if bottom && left {
+                WindowSide::BottomLeft
+            } else if bottom && right {
+                WindowSide::BottomRight
+            } else if bottom {
+                WindowSide::Bottom
+            } else if left {
+                WindowSide::Left
+            } else if right {
+                WindowSide::Right
+            } else {
+                return None;
+            };
+
+            Some(Holdable::ResizePopup { side, popup: id })
+        };
+
         let foreground = self
             .inner_view(id)
             .bordered_with_title(self.title())
+            .grabbable(grab_edge)
             .on_click(OnClick::from(Action::CloseContextMenu));
 
         View::Layers(vec![View::Solid(ThemeColour::Background), foreground])
@@ -188,7 +225,7 @@ impl Specification {
     }
 
     pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Popup>, ui: &Ui) -> Popup {
-        let view = Arc::new(self.view(id));
+        let view = Arc::new(self.view::<Ui>(id));
 
         let size = view.minimum_size::<Ui>(ui.render_area());
 

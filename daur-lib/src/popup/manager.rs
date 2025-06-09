@@ -32,4 +32,9 @@ impl Manager {
         let popup = self.popups.shift_remove(&id);
         drop(popup);
     }
+
+    #[must_use]
+    pub fn popup_mut(&mut self, id: Id<Popup>) -> Option<&mut Popup> {
+        self.popups.get_mut(&id)
+    }
 }

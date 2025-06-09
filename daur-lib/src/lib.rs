@@ -2,6 +2,7 @@
 
 pub mod app;
 pub mod audio;
+pub mod holdable;
 pub mod metre;
 pub mod note;
 pub mod popup;
@@ -12,7 +13,6 @@ pub mod ui;
 pub mod view;
 
 mod extension;
-mod holdable;
 mod id;
 mod node;
 mod piano_roll;
@@ -20,7 +20,6 @@ mod ratio;
 mod select;
 mod string;
 
-pub use holdable::Holdable;
 pub use id::Id;
 pub use piano_roll::PianoRoll;
 pub use ratio::{NonZeroRatio, Ratio};
@@ -31,6 +30,8 @@ pub use string::ToArcStr;
 pub use app::App;
 #[doc(inline)]
 pub use audio::Audio;
+#[doc(inline)]
+pub use holdable::Holdable;
 #[doc(inline)]
 pub use note::Note;
 #[doc(inline)]
