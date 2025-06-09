@@ -6,7 +6,7 @@ pub use window_size::WindowSide;
 
 use crate::metre::Instant;
 use crate::project::track::clip;
-use crate::ui::{Length, Point};
+use crate::ui::{Length, Point, relative};
 use crate::{Id, Popup};
 
 /// An object that can be held.
@@ -27,8 +27,15 @@ pub enum Holdable {
         /// How far down, on the handle, it was grabbed.
         y: Length,
     },
-    /// A side of a popup to resize it.
-    ResizePopup {
+    /// A popup, to move it.
+    Popup {
+        /// The id of the popup.
+        id: Id<Popup>,
+        /// The point, relative to the popup, where it was grabbed.
+        point: relative::Point,
+    },
+    /// A side of a popup, to resize it.
+    PopupSide {
         /// The popup being resized.
         popup: Id<Popup>,
         /// The side that is grabbed.

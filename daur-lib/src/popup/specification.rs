@@ -101,8 +101,10 @@ impl Specification {
             } else if top && right {
                 WindowSide::TopRight
             } else if top {
-                // TODO: move the popup
-                return None;
+                return Some(Holdable::Popup {
+                    id,
+                    point: mouse_position,
+                });
             } else if bottom && left {
                 WindowSide::BottomLeft
             } else if bottom && right {
@@ -117,7 +119,7 @@ impl Specification {
                 return None;
             };
 
-            Some(Holdable::ResizePopup { side, popup: id })
+            Some(Holdable::PopupSide { side, popup: id })
         };
 
         let foreground = self

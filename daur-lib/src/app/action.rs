@@ -144,7 +144,12 @@ impl<Ui: UserInterface> App<Ui> {
                         self.piano_roll
                             .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
                     }
-                    Holdable::ResizePopup { popup, side } => {
+                    Holdable::Popup { id, point } => {
+                        if let Some(popup) = self.popup_manager.popup_mut(id) {
+                            popup.area_mut().position = to - point;
+                        }
+                    }
+                    Holdable::PopupSide { popup, side } => {
                         if let Some(popup) = self.popup_manager.popup_mut(popup) {
                             popup.set_area(side.resize(popup.area(), to));
                         }
