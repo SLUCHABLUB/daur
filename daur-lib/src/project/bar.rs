@@ -2,28 +2,27 @@ use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::popup::Specification;
-use crate::view::{Axis, OnClick, View};
+use crate::view::{Axis, OnClick, ToText as _, View};
 use crate::{Project, ToArcStr as _, UserInterface};
 use arcstr::{ArcStr, literal};
 
 // TODO: add a symbol view instead of using chars
 // there is sadly no "single" variant
 /// "BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR"
-const TO_START: ArcStr = literal!(" \u{23EE} ");
-/// "BLACK RIGHT-POINTING TRIANGLE"
-const PLAY: ArcStr = literal!(" \u{25B6} ");
+const BACK: ArcStr = literal!(" \u{23EE} ");
 /// "DOUBLE VERTICAL BAR"
 const PAUSE: ArcStr = literal!(" \u{23F8} ");
+/// "BLACK RIGHT-POINTING TRIANGLE"
+const PLAY: ArcStr = literal!(" \u{25B6} ");
 /// "BLACK CIRCLE FOR RECORD"
 const RECORD: ArcStr = literal!(" \u{23FA} ");
-/// "CLOCKWISE RIGHTWARDS AND LEFTWARDS OPEN CIRCLE ARROWS"
-const LOOP: ArcStr = literal!("loop");
-/// "LOWER RIGHT PENCIL"
+
 const EDIT: ArcStr = literal!("edit mode");
-/// "MUSICAL KEYBOARD"
+const LOOP: ArcStr = literal!("loop");
 const PIANO: ArcStr = literal!("piano roll");
-/// "CONTROL KNOBS"
-const NODES: ArcStr = literal!("plugins");
+const PLUGINS: ArcStr = literal!("plugins");
+const RENDER: ArcStr = literal!("render");
+const SETTINGS: ArcStr = literal!("settings");
 
 /// The bar att the top of the window.
 pub(crate) fn bar<Ui: UserInterface>(
@@ -33,6 +32,18 @@ pub(crate) fn bar<Ui: UserInterface>(
     edit_mode: bool,
     piano_roll_open: bool,
 ) -> View {
+    // --- BUTTONS ---
+
+    // TODO: add functionality
+    let plugins_button = View::standard_button(PLUGINS, OnClick::default());
+    let piano_roll_button = View::toggle(
+        PIANO,
+        OnClick::from(Action::TogglePianoRoll),
+        piano_roll_open,
+    );
+    let edit_mode_button = View::toggle(EDIT, OnClick::from(Action::ToggleEditMode), edit_mode);
+
+    // TODO: add functionality
     let key_button = View::standard_button(
         project.key.start.to_arc_str(),
         OnClick::from(Action::OpenPopup(Specification::KeySelector {
@@ -48,8 +59,8 @@ pub(crate) fn bar<Ui: UserInterface>(
     let tempo_button =
         View::standard_button(project.tempo.get(cursor).to_arc_str(), OnClick::default());
 
-    let to_start_button =
-        View::standard_button(TO_START, OnClick::from(Action::MoveCursor(Instant::START)));
+    let back_button =
+        View::standard_button(BACK, OnClick::from(Action::MoveCursor(Instant::START)));
     let playback_button = View::reactive(move |_| {
         let is_playing = player.as_ref().is_some_and(Player::is_playing);
 
@@ -64,30 +75,39 @@ pub(crate) fn bar<Ui: UserInterface>(
     // TODO: add functionality
     let loop_button = View::standard_button(LOOP, OnClick::default());
 
-    let edit_mode_button = View::toggle(EDIT, OnClick::from(Action::ToggleEditMode), edit_mode);
-    let piano_roll_button = View::toggle(
-        PIANO,
-        OnClick::from(Action::TogglePianoRoll),
-        piano_roll_open,
-    );
     // TODO: add functionality
-    let nodes_button = View::standard_button(NODES, OnClick::default());
+    let loudness_metre = literal!("0 LUFS").centred().bordered();
 
-    // TODO: show the settings at the cursor?
+    // TODO: add functionality
+    let render_button = View::standard_button(RENDER, OnClick::default());
+    // TODO: add functionality
+    let settings_button = View::standard_button(SETTINGS, OnClick::default());
+
+    // --- BUTTON CLUSTERS ---
+
+    let leftmost_buttons = View::minimal_stack(
+        Axis::X,
+        [plugins_button, piano_roll_button, edit_mode_button],
+    );
+
     let project_settings =
-        View::balanced_stack(Axis::X, [key_button, time_signature_button, tempo_button])
-            .quotated_minimally();
+        View::balanced_stack(Axis::X, [key_button, time_signature_button, tempo_button]);
 
-    let left_playback_buttons = to_start_button.quotated_minimally();
+    let left_playback_buttons = back_button;
 
     let right_playback_buttons = View::minimal_stack(Axis::X, [record_button, loop_button]);
 
-    let miscellaneous_buttons =
-        View::minimal_stack(Axis::X, [edit_mode_button, piano_roll_button, nodes_button]);
+    let rightmost_buttons = View::minimal_stack(Axis::X, [render_button, settings_button]);
 
-    let left_side = View::x_stack([project_settings, left_playback_buttons]);
+    let left_side = View::minimal_stack(
+        Axis::X,
+        [leftmost_buttons, project_settings, left_playback_buttons],
+    );
 
-    let right_side = View::minimal_stack(Axis::X, [right_playback_buttons, miscellaneous_buttons]);
+    let right_side = View::minimal_stack(
+        Axis::X,
+        [right_playback_buttons, loudness_metre, rightmost_buttons],
+    );
 
     View::x_stack([
         left_side.fill_remaining(),
