@@ -56,6 +56,8 @@ impl RenderArea {
         axis: Axis,
         views: &[Quotated],
     ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_, Ui> {
+        let count = views.len();
+
         // cache the sizes or None if Quotum::Remaining is used
         let sizes: Vec<Option<Length>> = views
             .iter()
@@ -84,25 +86,42 @@ impl RenderArea {
             fill_size *= Ratio::reciprocal_of(fill_count);
             spacing = Length::ZERO;
         } else {
-            let space_count = NonZeroU64::new(views.len().saturating_sub(1).saturating_cast())
-                .unwrap_or(non_zero!(1));
+            let space_count =
+                NonZeroU64::new(count.saturating_sub(1).saturating_cast()).unwrap_or(non_zero!(1));
             spacing = fill_size * Ratio::reciprocal_of(space_count);
         }
 
         let mut offset = Offset::ZERO;
 
-        sizes.into_iter().filter_map(move |size| {
-            let parallel = size.unwrap_or(fill_size);
+        let next_to_last = count.saturating_sub(2);
+        let last_size = sizes
+            .last()
+            .copied()
+            .unwrap_or_default()
+            .unwrap_or(fill_size);
 
-            let position = self.area.position + axis * offset;
+        sizes
+            .into_iter()
+            .enumerate()
+            .filter_map(move |(index, size)| {
+                let parallel = size.unwrap_or(fill_size);
 
-            offset += parallel;
-            offset += spacing;
+                let position = self.area.position + axis * offset;
 
-            self.area.intersection(Rectangle {
-                position,
-                size: Size::from_parallel_orthogonal(parallel, orthogonal, axis),
+                offset += parallel;
+
+                if index == next_to_last {
+                    let last_spacing: Length =
+                        self.area.size.parallel_to(axis) - last_size - offset;
+                    offset += last_spacing;
+                } else {
+                    offset += spacing;
+                }
+
+                self.area.intersection(Rectangle {
+                    position,
+                    size: Size::from_parallel_orthogonal(parallel, orthogonal, axis),
+                })
             })
-        })
     }
 }
