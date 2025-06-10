@@ -43,7 +43,6 @@ pub(crate) fn bar<Ui: UserInterface>(
     );
     let edit_mode_button = View::toggle(EDIT, OnClick::from(Action::ToggleEditMode), edit_mode);
 
-    // TODO: add functionality
     let key_button = View::standard_button(
         project.key.start.to_arc_str(),
         OnClick::from(Action::OpenPopup(Specification::KeySelector {
