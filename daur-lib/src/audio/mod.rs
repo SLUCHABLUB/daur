@@ -222,6 +222,8 @@ impl Audio {
 
         let mut track = format.default_track().ok_or(no_tracks())?;
 
+        let track_id = track.id;
+
         let codecs = get_codecs();
         let decoder_options = DecoderOptions { verify: true };
 
@@ -245,6 +247,10 @@ impl Audio {
                 }
                 error => error?,
             };
+
+            if packet.track_id() != track_id {
+                continue;
+            }
 
             let audio_ref = decoder.decode(&packet)?;
 
