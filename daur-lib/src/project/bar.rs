@@ -18,10 +18,10 @@ const PLAY: ArcStr = literal!(" \u{25B6} ");
 const RECORD: ArcStr = literal!(" \u{23FA} ");
 
 const EDIT: ArcStr = literal!("edit mode");
+const EXPORT: ArcStr = literal!("export");
 const LOOP: ArcStr = literal!("loop");
 const PIANO: ArcStr = literal!("piano roll");
 const PLUGINS: ArcStr = literal!("plugins");
-const RENDER: ArcStr = literal!("render");
 const SETTINGS: ArcStr = literal!("settings");
 
 /// The bar att the top of the window.
@@ -77,8 +77,8 @@ pub(crate) fn bar<Ui: UserInterface>(
     // TODO: add functionality
     let loudness_metre = literal!("0 LUFS").centred().bordered();
 
-    // TODO: add functionality
-    let render_button = View::standard_button(RENDER, OnClick::default());
+    // TODO: display if the project haas been exported
+    let export_button = View::standard_button(EXPORT, OnClick::from(Action::ExportProject));
     // TODO: add functionality
     let settings_button = View::standard_button(SETTINGS, OnClick::default());
 
@@ -96,7 +96,7 @@ pub(crate) fn bar<Ui: UserInterface>(
 
     let right_playback_buttons = View::minimal_stack(Axis::X, [record_button, loop_button]);
 
-    let rightmost_buttons = View::minimal_stack(Axis::X, [render_button, settings_button]);
+    let rightmost_buttons = View::minimal_stack(Axis::X, [export_button, settings_button]);
 
     let left_side = View::minimal_stack(
         Axis::X,
@@ -113,5 +113,5 @@ pub(crate) fn bar<Ui: UserInterface>(
         playback_button.quotated(Ui::PLAYBACK_BUTTON_WIDTH),
         right_side.fill_remaining(),
     ])
-    .bordered_with_title_and_thickness(project.title.clone(), true)
+    .bordered_with_title_and_thickness(project.name.clone(), true)
 }

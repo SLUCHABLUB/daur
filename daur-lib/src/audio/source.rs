@@ -3,6 +3,7 @@ use crate::{Audio, time};
 use rodio::source::SeekError;
 use std::time::Duration;
 
+// TODO: use `Audio::interleaved_samples`
 /// An [audio source](rodio::Source) for an [audio](Audio).
 #[derive(Clone, Debug)]
 #[must_use = "`Source` is an iterator"]

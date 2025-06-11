@@ -45,7 +45,7 @@ const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
 pub struct Project {
     /// The name of the project.
     #[get_clone = "pub"]
-    title: ArcStr,
+    name: ArcStr,
 
     // TODO: continuous change
     /// The tempo of the project

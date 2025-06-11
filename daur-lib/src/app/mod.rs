@@ -78,7 +78,7 @@ impl<Ui: UserInterface> App<Ui> {
             view: View::Empty,
 
             project_manager: project::Manager::default(),
-            renderer: project::Renderer::default(),
+            renderer: project::Renderer::new(),
 
             audio_config: Config::default(),
 

@@ -4,16 +4,19 @@ use crate::node::Chain;
 use crate::note::event::Sequence;
 use crate::sync::Cell;
 use crate::{Audio, Project, time};
+use anyhow::Result;
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
+use log::error;
+use non_zero::non_zero;
 use parking_lot::Mutex;
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
 use std::mem::{replace, take};
-use std::sync::{Arc, OnceLock};
+use std::path::PathBuf;
+use std::sync::Arc;
 
-#[derive(Default)]
 pub(crate) struct Renderer {
     /// The thread pool.
     ///
@@ -21,53 +24,97 @@ pub(crate) struct Renderer {
     ///
     /// > If you don't know what hardware your code is going to run on, use the crossbeam_workstealing_pool
     thread_pool: ThreadPool<DynParker>,
-    // data that is shared across threads and should be reset on rerender
+    /// Data that is shared across the workers in the tread pool.
     progress: Arc<Progress>,
-
-    // this is not part of progress since as it should it not reset
-    /// This is set if the audio should play.
-    should_play: Arc<Cell<Option<ShouldPlay>>>,
 }
 
-#[derive(Default)]
 struct Progress {
     should_stop: Cell<bool>,
     unmastered_tracks: Mutex<Vec<Audio>>,
-    audio: OnceLock<Audio>,
+    master: Mutex<Master>,
 }
 
-struct ShouldPlay {
+struct Play {
     from: time::Instant,
     player: Player,
 }
 
+enum Master {
+    Finished(Audio),
+    OnFinish {
+        should_play: Option<Play>,
+        should_export: Option<PathBuf>,
+    },
+}
+
 impl Renderer {
-    pub(crate) fn play_when_finished(&mut self, from: time::Instant, player: Player) {
-        let main_player = player.clone();
-
-        // it is important that we set this before checking the audio cell
-        // whilst it may run `Player::play` twice, it will guarantee that it is run
-        self.should_play.set(Some(ShouldPlay { from, player }));
-
-        if let Some(audio) = self.progress.audio.get() {
-            // check that the mastering thread has not started playing the audio
-            if self.should_play.replace(None).is_none() {
-                return;
-            }
-
-            main_player.play(audio.clone(), from);
+    pub(crate) fn new() -> Renderer {
+        Renderer {
+            thread_pool: ThreadPool::default(),
+            progress: Arc::new(Progress {
+                should_stop: Cell::new(true),
+                unmastered_tracks: Mutex::new(Vec::new()),
+                master: Mutex::new(Master::Finished(Audio::empty(sample::Rate {
+                    samples_per_second: non_zero!(1),
+                }))),
+            }),
         }
     }
 
+    pub(crate) fn play_when_finished(&self, from: time::Instant, player: Player) {
+        match &mut *self.progress.master.lock() {
+            Master::Finished(audio) => {
+                player.play(audio.clone(), from);
+            }
+            Master::OnFinish { should_play, .. } => {
+                *should_play = Some(Play { from, player });
+            }
+        }
+    }
+
+    pub(crate) fn export_when_finished(&self, to: PathBuf) -> Result<()> {
+        match &mut *self.progress.master.lock() {
+            Master::Finished(audio) => {
+                audio.export(&to)?;
+            }
+            Master::OnFinish { should_export, .. } => {
+                *should_export = Some(to);
+            }
+        }
+
+        Ok(())
+    }
+
     // TODO: the audio up to the point of the change may be reused
-    pub(crate) fn restart(&mut self, project: &Project, sample_rate: sample::Rate) {
-        let progress = Arc::new(Progress {
+    pub(crate) fn restart(&mut self, project: &Project, sample_rate: sample::Rate) -> Result<()> {
+        // Stop the threads that are rendering the old project
+        self.progress.should_stop.set(true);
+
+        let new_master = match replace(
+            &mut *self.progress.master.lock(),
+            Master::OnFinish {
+                should_play: None,
+                should_export: None,
+            },
+        ) {
+            Master::OnFinish {
+                should_play,
+                should_export,
+            } => Master::OnFinish {
+                should_play,
+                should_export,
+            },
+            Master::Finished(_) => Master::OnFinish {
+                should_play: None,
+                should_export: None,
+            },
+        };
+
+        self.progress = Arc::new(Progress {
             should_stop: Cell::new(false),
             unmastered_tracks: Mutex::new(Vec::with_capacity(project.tracks.len())),
-            audio: OnceLock::new(),
+            master: Mutex::new(new_master),
         });
-
-        let zero_tracks = project.tracks.is_empty();
 
         let time_context = project.time_context();
 
@@ -78,31 +125,30 @@ impl Renderer {
             // TODO: take from the track
             let chain = Chain::default();
 
-            let progress = Arc::clone(&progress);
-            let should_play = Arc::clone(&self.should_play);
+            let progress = Arc::clone(&self.progress);
 
             self.thread_pool
-                .execute(move || render(&audio, &events, &chain, &progress, &should_play));
+                .execute(move || render(&audio, &events, &chain, &progress));
         }
 
-        if zero_tracks {
-            master(Vec::new(), sample_rate, &progress, &self.should_play);
+        if project.tracks.is_empty() {
+            master(Vec::new(), sample_rate, &self.progress)?;
         }
 
-        let old_progress = replace(&mut self.progress, progress);
-
-        // Stop the threads that are rendering the old project
-        old_progress.should_stop.set(true);
+        Ok(())
     }
 }
 
-fn render(
+fn render(input_audio: &Audio, events: &Sequence, chain: &Chain, progress: &Progress) {
+    try_render(input_audio, events, chain, progress).unwrap_or_else(|error| error!("{error}"));
+}
+
+fn try_render(
     input_audio: &Audio,
     events: &Sequence,
     chain: &Chain,
     progress: &Progress,
-    should_play: &Cell<Option<ShouldPlay>>,
-) {
+) -> Result<()> {
     let sample_rate = input_audio.sample_rate;
 
     // TODO: un-hardcode
@@ -145,19 +191,17 @@ fn render(
 
     let mut tracks = progress.unmastered_tracks.lock();
     tracks.push(output_audio);
+
     if tracks.len() == tracks.capacity() {
         let tracks = take(&mut *tracks);
 
-        master(tracks, sample_rate, progress, should_play);
+        master(tracks, sample_rate, progress)?;
     }
+
+    Ok(())
 }
 
-fn master(
-    tracks: Vec<Audio>,
-    sample_rate: sample::Rate,
-    progress: &Progress,
-    should_play: &Cell<Option<ShouldPlay>>,
-) {
+fn master(tracks: Vec<Audio>, sample_rate: sample::Rate, progress: &Progress) -> Result<()> {
     let mut audio = Audio::empty(sample_rate);
 
     for track in tracks {
@@ -168,10 +212,23 @@ fn master(
 
     // TODO: truncate audio
 
-    // Set `progress.audio` to `audio` is it is not already set.
-    let audio = progress.audio.get_or_init(|| audio);
+    let mut audio_progress = progress.master.lock();
 
-    if let Some(should_play) = should_play.replace(None) {
-        should_play.player.play(audio.clone(), should_play.from);
+    if let Master::OnFinish {
+        should_play,
+        should_export,
+    } = &*audio_progress
+    {
+        if let Some(Play { from, player }) = should_play {
+            player.play(audio.clone(), *from);
+        }
+
+        if let Some(file) = should_export {
+            audio.export(file)?;
+        }
     }
+
+    *audio_progress = Master::Finished(audio);
+
+    Ok(())
 }

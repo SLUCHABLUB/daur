@@ -10,7 +10,8 @@ use mitsein::iter1::IteratorExt as _;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::mem::replace;
-use std::path::PathBuf;
+use std::path::Path;
+use std::sync::Arc;
 use thiserror::Error;
 
 /// An edit to a [project](super::Project).
@@ -41,7 +42,7 @@ pub enum Edit {
     /// Imports an audio file into the selected track at the cursor.
     ImportAudio {
         /// The path to the file.
-        file: PathBuf,
+        file: Arc<Path>,
     },
     /// Moves a clip.
     MoveClip {

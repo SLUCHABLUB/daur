@@ -22,6 +22,7 @@ use crate::time;
 use anyhow::Result;
 use bytemuck::cast_slice;
 use getset::CopyGetters;
+use hound::{SampleFormat, WavSpec, WavWriter};
 use log::error;
 use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
 use std::borrow::Cow;
@@ -30,6 +31,7 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::io::ErrorKind;
+use std::iter::from_fn;
 use std::path::Path;
 use symphonia::core::codecs::DecoderOptions;
 use symphonia::core::errors::Error as SymphoniaError;
@@ -329,6 +331,43 @@ impl Audio {
 
         #[expect(clippy::indexing_slicing, reason = "we resize the vectors first")]
         [&mut left[instant.index()], &mut right[instant.index()]]
+    }
+
+    pub(crate) fn interleaved_samples(&self) -> impl Iterator<Item = Sample> {
+        let mut position = sample::Instant::START;
+        let mut right_channel = false;
+
+        from_fn(move || {
+            if position.since_start > self.duration() {
+                return None;
+            }
+
+            let [left, right] = self.sample_pair(position);
+            let sample = if right_channel { right } else { left };
+
+            if right_channel {
+                position += sample::Duration::SAMPLE;
+            }
+            right_channel = !right_channel;
+
+            Some(sample)
+        })
+    }
+
+    pub(crate) fn export(&self, to: &Path) -> Result<(), hound::Error> {
+        let spec = WavSpec {
+            channels: 2,
+            sample_rate: self.sample_rate.samples_per_second.get(),
+            bits_per_sample: 32,
+            sample_format: SampleFormat::Float,
+        };
+        let mut writer = WavWriter::create(to, spec)?;
+
+        for sample in self.interleaved_samples() {
+            writer.write_sample(sample.to_f32())?;
+        }
+
+        Ok(())
     }
 }
 

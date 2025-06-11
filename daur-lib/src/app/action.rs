@@ -7,7 +7,9 @@ use crate::view::context::Menu;
 use crate::{App, Holdable, Id, Popup, Selectable, UserInterface};
 use anyhow::Result;
 use derive_more::Debug;
-use std::path::PathBuf;
+use std::env::current_dir;
+
+const DEFAULT_EXPORT_FILE_NAME: &str = "render";
 
 /// An action to take on the app
 #[derive(Clone, Debug)]
@@ -28,6 +30,8 @@ pub enum Action {
     Exit,
     /// Exits _edit mode_.
     ExitEditMode,
+    /// Renders and exports the project to a file.
+    ExportProject,
     /// Removes the held object.
     LetGo,
     /// Moves the (musical) cursor.
@@ -63,13 +67,6 @@ pub enum Action {
     /// Toggles whether the app is playing.
     TogglePlayback,
     // TODO: add scripting
-}
-
-impl Action {
-    /// Returns an action for importing audio
-    pub fn import_audio<P: Into<PathBuf>>(file: P) -> Action {
-        Action::Edit(Edit::ImportAudio { file: file.into() })
-    }
 }
 
 impl<Ui: UserInterface> App<Ui> {
@@ -119,11 +116,30 @@ impl<Ui: UserInterface> App<Ui> {
                 self.renderer.restart(
                     self.project_manager.project(),
                     self.audio_config.sample_rate()?,
-                );
+                )?;
             }
             Action::EnterEditMode => self.edit_mode = true,
             Action::Exit => self.ui.exit(),
             Action::ExitEditMode => self.edit_mode = false,
+            Action::ExportProject => {
+                // TODO: read the project path from the app
+                let project_directory = current_dir()?;
+
+                let project_name = self.project_manager.project().name();
+
+                let file_name = if project_name.is_empty() {
+                    DEFAULT_EXPORT_FILE_NAME
+                } else {
+                    &project_name
+                };
+
+                let mut export_file = project_directory.join(file_name);
+
+                // Currently only wav files are supported for export since symphonia only does decoding.
+                export_file.set_extension("wav");
+
+                self.renderer.export_when_finished(export_file)?;
+            }
             Action::LetGo => self.held_object = None,
             Action::MoveCursor(instant) => {
                 self.cursor = instant;
@@ -134,32 +150,7 @@ impl<Ui: UserInterface> App<Ui> {
                     self.audio_config.pause_player();
                 }
             }
-            Action::MoveHeldObject(to) => {
-                let Some(object) = self.held_object else {
-                    return Ok(());
-                };
-
-                match object {
-                    Holdable::PianoRollHandle { y } => {
-                        self.piano_roll
-                            .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
-                    }
-                    Holdable::Popup { id, point } => {
-                        if let Some(popup) = self.popup_manager.popup_mut(id) {
-                            popup.area_mut().position = to - point;
-                        }
-                    }
-                    Holdable::PopupSide { popup, side } => {
-                        if let Some(popup) = self.popup_manager.popup_mut(popup) {
-                            popup.set_area(side.resize(popup.area(), to));
-                        }
-                    }
-                    // These are processed when they are dropped.
-                    Holdable::Clip(_)
-                    | Holdable::NoteCreation { .. }
-                    | Holdable::SelectionBox { .. } => (),
-                }
-            }
+            Action::MoveHeldObject(to) => self.move_held_object(to),
             Action::MoveOverview(by) => {
                 self.ui_settings.negative_overview_offset -= by.x;
                 // TODO: scroll tracks vertically
@@ -204,5 +195,30 @@ impl<Ui: UserInterface> App<Ui> {
         }
 
         Ok(())
+    }
+
+    fn move_held_object(&mut self, to: Point) {
+        let Some(object) = self.held_object else {
+            return;
+        };
+
+        match object {
+            Holdable::PianoRollHandle { y } => {
+                self.piano_roll
+                    .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
+            }
+            Holdable::Popup { id, point } => {
+                if let Some(popup) = self.popup_manager.popup_mut(id) {
+                    popup.area_mut().position = to - point;
+                }
+            }
+            Holdable::PopupSide { popup, side } => {
+                if let Some(popup) = self.popup_manager.popup_mut(popup) {
+                    popup.set_area(side.resize(popup.area(), to));
+                }
+            }
+            // These are processed when they are dropped.
+            Holdable::Clip(_) | Holdable::NoteCreation { .. } | Holdable::SelectionBox { .. } => (),
+        }
     }
 }

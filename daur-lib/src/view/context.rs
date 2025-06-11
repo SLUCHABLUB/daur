@@ -9,19 +9,11 @@ use crate::view::{Axis, OnClick, View};
 use arcstr::{ArcStr, literal};
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use std::path::Path;
 use std::sync::Arc;
 
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
 const ADD_NOTES: ArcStr = literal!("add notes");
 const TOGGLE_PIANO_ROLL: ArcStr = literal!("toggle piano roll");
-
-/// Opens a popup for importing audio.
-pub fn open_import_audio_popup() -> Action {
-    let action = move |file: &Path| Action::import_audio(file);
-
-    Action::OpenPopup(Specification::file_selector(IMPORT_AUDIO, action))
-}
 
 /// A context (right-click) menu specification.
 #[derive(Clone)]
@@ -36,7 +28,10 @@ impl Menu {
     pub fn track_overview() -> Menu {
         Menu {
             buttons: vec![
-                (IMPORT_AUDIO, open_import_audio_popup()),
+                (
+                    IMPORT_AUDIO,
+                    Action::OpenPopup(Specification::AudioImporter),
+                ),
                 (ADD_NOTES, Action::Edit(Edit::AddNoteGroup)),
                 (TOGGLE_PIANO_ROLL, Action::TogglePianoRoll),
             ],
