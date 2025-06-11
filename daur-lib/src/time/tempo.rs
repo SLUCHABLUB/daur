@@ -4,7 +4,6 @@ use std::fmt;
 use std::fmt::{Display, Formatter};
 use std::num::{NonZeroU16, NonZeroU64};
 
-// TODO: make transparent
 /// A musical tempo.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 pub struct Tempo {
