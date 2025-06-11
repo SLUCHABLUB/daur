@@ -1,4 +1,4 @@
-use crate::audio::{FixedLength, ImportAudioError};
+use crate::audio::{FixedLength, ImportError};
 use crate::metre::{Instant, NonZeroDuration, NonZeroInstant};
 use crate::note::{Key, Pitch};
 use crate::project::track::{Clip, ClipInsertionErrorKind, clip};
@@ -65,7 +65,7 @@ pub enum Error {
     ClipInsertion(#[from] ClipInsertionErrorKind),
     /// Failed to import audio from a file.
     #[error("{0}")]
-    ImportAudio(#[from] ImportAudioError),
+    ImportAudio(#[from] ImportError),
     /// The action required a clip to be selected.
     #[error("no clip is selected")]
     NoClipSelected,

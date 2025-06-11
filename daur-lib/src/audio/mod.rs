@@ -4,12 +4,15 @@ pub mod sample;
 
 mod config;
 mod fixed_length;
+mod import;
 mod interleaved_samples;
 mod player;
+mod resample;
 mod source;
 mod subsection;
 
 pub use fixed_length::FixedLength;
+pub use import::ImportError;
 pub use interleaved_samples::InterleavedSamples;
 #[doc(inline)]
 pub use sample::Sample;
@@ -19,29 +22,12 @@ pub(crate) use config::Config;
 pub(crate) use player::Player;
 pub(crate) use source::Source;
 
-use crate::audio::sample::ZeroRateError;
 use crate::time;
 use anyhow::Result;
-use bytemuck::cast_slice;
 use getset::CopyGetters;
 use hound::{SampleFormat, WavSpec, WavWriter};
-use log::error;
-use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
-use std::borrow::Cow;
 use std::cmp::max;
-use std::ffi::OsStr;
-use std::fs::File;
-use std::io;
-use std::io::ErrorKind;
 use std::path::Path;
-use symphonia::core::codecs::DecoderOptions;
-use symphonia::core::errors::Error as SymphoniaError;
-use symphonia::core::formats::FormatOptions;
-use symphonia::core::io::{MediaSourceStream, MediaSourceStreamOptions};
-use symphonia::core::meta::MetadataOptions;
-use symphonia::core::probe::Hint;
-use symphonia::default::{get_codecs, get_probe};
-use thiserror::Error;
 
 /// Some stereo 64-bit floating point audio.
 #[cfg_attr(doc, doc(hidden))]
@@ -113,68 +99,6 @@ impl Audio {
         self.duration() / self.sample_rate
     }
 
-    /// Resamples the audio to the given sample rate.
-    #[must_use]
-    pub fn resample(&self, sample_rate: sample::Rate) -> Cow<Audio> {
-        if self.sample_rate == sample_rate {
-            return Cow::Borrowed(self);
-        }
-
-        match self.try_resample(sample_rate) {
-            Ok(audio) => Cow::Owned(audio),
-            // This should be unreachable.
-            Err(error) => {
-                error!("Error when trying to resample audio: {error} ({error:?})");
-                Cow::Borrowed(self)
-            }
-        }
-    }
-
-    fn try_resample(&self, sample_rate: sample::Rate) -> Result<Audio> {
-        const ALL_CHANNELS_ENABLED: Option<&[bool]> = None;
-        const CHANNEL_COUNT: usize = 2;
-        // we want exact resampling
-        const MAX_RESAMPLE_RATIO_RELATIVE: f64 = 1.0;
-
-        let input_sample_rate = self.sample_rate.samples_per_second.get();
-        let output_sample_rate = sample_rate.samples_per_second.get();
-
-        let ratio = f64::from(output_sample_rate) / f64::from(input_sample_rate);
-        let sample_count = self.duration().samples;
-
-        // TODO: allow the user to select an implementation?
-        let mut resampler = FastFixedIn::new(
-            ratio,
-            MAX_RESAMPLE_RATIO_RELATIVE,
-            PolynomialDegree::Septic,
-            sample_count,
-            CHANNEL_COUNT,
-        )?;
-
-        let [left, right] = &self.channels;
-
-        let mut output =
-            resampler.process(&[cast_slice(left), cast_slice(right)], ALL_CHANNELS_ENABLED)?;
-
-        let left = output
-            .pop()
-            .unwrap_or_default()
-            .into_iter()
-            .map(Sample::new)
-            .collect();
-        let right = output
-            .pop()
-            .unwrap_or_default()
-            .into_iter()
-            .map(Sample::new)
-            .collect();
-
-        Ok(Audio {
-            sample_rate,
-            channels: [left, right],
-        })
-    }
-
     pub(crate) fn superpose(&mut self, other: &Audio) {
         self.superpose_with_offset(other, sample::Duration::ZERO);
     }
@@ -192,108 +116,6 @@ impl Audio {
             *self_left += other_left;
             *self_right += other_right;
         }
-    }
-
-    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio, ImportAudioError> {
-        let extension = file.as_ref().extension().and_then(OsStr::to_str);
-
-        let file = File::open(file.as_ref())?;
-
-        let stream = MediaSourceStream::new(Box::new(file), MediaSourceStreamOptions::default());
-
-        let probe = get_probe();
-
-        let mut hint = Hint::new();
-
-        if let Some(extension) = extension {
-            hint.with_extension(extension);
-        }
-
-        let mut format = probe
-            .format(
-                &hint,
-                stream,
-                &FormatOptions::default(),
-                &MetadataOptions::default(),
-            )?
-            .format;
-
-        let no_tracks = || ImportAudioError::Symphonia(SymphoniaError::DecodeError("no tracks"));
-
-        let mut track = format.default_track().ok_or(no_tracks())?;
-
-        let track_id = track.id;
-
-        let codecs = get_codecs();
-        let decoder_options = DecoderOptions { verify: true };
-
-        let mut decoder = codecs.make(&track.codec_params, &decoder_options)?;
-
-        let mut sample_rate = None;
-
-        let mut left_channel = Vec::new();
-        let mut right_channel = Vec::new();
-
-        loop {
-            let packet = match format.next_packet() {
-                Ok(packet) => packet,
-                Err(SymphoniaError::ResetRequired) => {
-                    track = format.default_track().ok_or(no_tracks())?;
-                    decoder = codecs.make(&track.codec_params, &decoder_options)?;
-                    continue;
-                }
-                Err(SymphoniaError::IoError(error)) if error.kind() == ErrorKind::UnexpectedEof => {
-                    break;
-                }
-                error => error?,
-            };
-
-            if packet.track_id() != track_id {
-                continue;
-            }
-
-            let audio_ref = decoder.decode(&packet)?;
-
-            let rate = sample::Rate::try_from(audio_ref.spec().rate)?;
-
-            match sample_rate {
-                None => sample_rate = Some(rate),
-                Some(sample_rate) => {
-                    if sample_rate != rate {
-                        return Err(ImportAudioError::SampleRateInconsistency);
-                    }
-                }
-            }
-
-            let mut audio_ref_32 = audio_ref.make_equivalent();
-            audio_ref.convert::<f32>(&mut audio_ref_32);
-
-            let audio_ref = audio_ref_32;
-
-            let planes = audio_ref.planes();
-            let planes = planes.planes();
-
-            let empty: &[f32] = &[];
-
-            let [left, right] = match planes {
-                [] => [empty, empty],
-                [mono] => [*mono, *mono],
-                [left, right, ..] => [*left, *right],
-            };
-
-            for sample in left {
-                left_channel.push(Sample::new(*sample));
-            }
-
-            for sample in right {
-                right_channel.push(Sample::new(*sample));
-            }
-        }
-
-        Ok(Audio {
-            sample_rate: sample_rate.ok_or(ImportAudioError::NoPackets)?,
-            channels: [left_channel, right_channel],
-        })
     }
 
     /// Returns a subsection of the audio.
@@ -355,24 +177,4 @@ impl Audio {
 
         Ok(())
     }
-}
-
-/// An error when importing audio from a file.
-#[derive(Debug, Error)]
-pub enum ImportAudioError {
-    /// An error when reading the file.
-    #[error("Error reading the audio file: {0}")]
-    Io(#[from] io::Error),
-    /// AN error when decoding the file.
-    #[error("{0}")]
-    Symphonia(#[from] SymphoniaError),
-    /// The file had a sample rate of 0.
-    #[error("{0}")]
-    ZeroSampleRate(#[from] ZeroRateError),
-    /// The packets in the file had different sample rates.
-    #[error("audio packets had different sample rates")]
-    SampleRateInconsistency,
-    /// The audio file contained no audio packets.
-    #[error("no audio packets")]
-    NoPackets,
 }
