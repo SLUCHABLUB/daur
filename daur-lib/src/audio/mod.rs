@@ -4,11 +4,13 @@ pub mod sample;
 
 mod config;
 mod fixed_length;
+mod interleaved_samples;
 mod player;
 mod source;
 mod subsection;
 
 pub use fixed_length::FixedLength;
+pub use interleaved_samples::InterleavedSamples;
 #[doc(inline)]
 pub use sample::Sample;
 pub use subsection::Subsection;
@@ -31,7 +33,6 @@ use std::ffi::OsStr;
 use std::fs::File;
 use std::io;
 use std::io::ErrorKind;
-use std::iter::from_fn;
 use std::path::Path;
 use symphonia::core::codecs::DecoderOptions;
 use symphonia::core::errors::Error as SymphoniaError;
@@ -331,27 +332,6 @@ impl Audio {
 
         #[expect(clippy::indexing_slicing, reason = "we resize the vectors first")]
         [&mut left[instant.index()], &mut right[instant.index()]]
-    }
-
-    pub(crate) fn interleaved_samples(&self) -> impl Iterator<Item = Sample> {
-        let mut position = sample::Instant::START;
-        let mut right_channel = false;
-
-        from_fn(move || {
-            if position.since_start > self.duration() {
-                return None;
-            }
-
-            let [left, right] = self.sample_pair(position);
-            let sample = if right_channel { right } else { left };
-
-            if right_channel {
-                position += sample::Duration::SAMPLE;
-            }
-            right_channel = !right_channel;
-
-            Some(sample)
-        })
     }
 
     pub(crate) fn export(&self, to: &Path) -> Result<(), hound::Error> {
