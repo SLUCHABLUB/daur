@@ -6,6 +6,7 @@ mod view;
 
 pub use action::Action;
 pub use actions::Actions;
+use std::sync::Arc;
 
 use crate::app::view::view;
 use crate::audio::Config;
@@ -49,7 +50,7 @@ pub struct App<Ui: UserInterface> {
     /// The currently held object.
     #[get_copy = "pub"]
     held_object: Option<Holdable>,
-    popup_manager: popup::Manager,
+    popup_manager: Arc<popup::Manager>,
 
     /// The position of the musical cursor.
     ///
@@ -71,6 +72,8 @@ impl<Ui: UserInterface> App<Ui> {
     /// Creates a new instance
     #[must_use]
     pub fn new(ui: Ui) -> App<Ui> {
+        let popup_manager = Arc::new(popup::Manager::new());
+
         let mut app = App {
             ui,
             ui_settings: ui::Settings::default_in::<Ui>(),
@@ -78,11 +81,11 @@ impl<Ui: UserInterface> App<Ui> {
             view: View::Empty,
 
             project_manager: project::Manager::default(),
-            renderer: project::Renderer::new(),
+            renderer: project::Renderer::new(Arc::clone(&popup_manager)),
 
             audio_config: Config::default(),
 
-            popup_manager: popup::Manager::new(),
+            popup_manager,
             context_menu: None,
             held_object: None,
 

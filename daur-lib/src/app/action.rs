@@ -2,7 +2,7 @@ use crate::app::Actions;
 use crate::metre::Instant;
 use crate::popup::Specification;
 use crate::project::Edit;
-use crate::ui::{Length, Point, Vector};
+use crate::ui::{Length, Point, Rectangle, Vector};
 use crate::view::context::Menu;
 use crate::{App, Holdable, Id, Popup, Selectable, UserInterface};
 use anyhow::Result;
@@ -91,8 +91,7 @@ impl<Ui: UserInterface> App<Ui> {
 
     fn take(&mut self, action: Action) {
         if let Err(error) = self.try_take(action) {
-            self.popup_manager
-                .open(&Specification::from(error), &self.ui);
+            self.popup_manager.open::<Ui>(&Specification::from(error));
         }
     }
 
@@ -113,7 +112,7 @@ impl<Ui: UserInterface> App<Ui> {
                 self.project_manager
                     .edit(edit, self.cursor(), &mut self.selection)?;
 
-                self.renderer.restart(
+                self.renderer.restart::<Ui>(
                     self.project_manager.project(),
                     self.audio_config.sample_rate()?,
                 )?;
@@ -162,7 +161,7 @@ impl<Ui: UserInterface> App<Ui> {
                 self.context_menu = Some(menu.instantiate::<Ui>(position, self.ui()));
             }
             Action::OpenPopup(popup) => {
-                self.popup_manager.open(&popup, &self.ui);
+                self.popup_manager.open::<Ui>(&popup);
             }
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
@@ -208,15 +207,14 @@ impl<Ui: UserInterface> App<Ui> {
                     .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
             }
             Holdable::Popup { id, point } => {
-                if let Some(popup) = self.popup_manager.popup_mut(id) {
-                    popup.area_mut().position = to - point;
-                }
+                self.popup_manager.transform_popup(id, |area| Rectangle {
+                    position: to - point,
+                    size: area.size,
+                });
             }
-            Holdable::PopupSide { popup, side } => {
-                if let Some(popup) = self.popup_manager.popup_mut(popup) {
-                    popup.set_area(side.resize(popup.area(), to));
-                }
-            }
+            Holdable::PopupSide { popup, side } => self
+                .popup_manager
+                .transform_popup(popup, |area| side.resize(area, to)),
             // These are processed when they are dropped.
             Holdable::Clip(_) | Holdable::NoteCreation { .. } | Holdable::SelectionBox { .. } => (),
         }

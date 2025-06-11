@@ -3,12 +3,11 @@ use crate::audio::{Player, sample};
 use crate::node::Chain;
 use crate::note::event::Sequence;
 use crate::sync::Cell;
-use crate::{Audio, Project, time};
+use crate::{Audio, Project, UserInterface, popup, time};
 use anyhow::Result;
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
-use log::error;
 use non_zero::non_zero;
 use parking_lot::Mutex;
 use saturating_cast::SaturatingCast as _;
@@ -24,6 +23,7 @@ pub(crate) struct Renderer {
     ///
     /// > If you don't know what hardware your code is going to run on, use the crossbeam_workstealing_pool
     thread_pool: ThreadPool<DynParker>,
+    popups: Arc<popup::Manager>,
     /// Data that is shared across the workers in the tread pool.
     progress: Arc<Progress>,
 }
@@ -48,9 +48,10 @@ enum Master {
 }
 
 impl Renderer {
-    pub(crate) fn new() -> Renderer {
+    pub(crate) fn new(popups: Arc<popup::Manager>) -> Renderer {
         Renderer {
             thread_pool: ThreadPool::default(),
+            popups,
             progress: Arc::new(Progress {
                 should_stop: Cell::new(true),
                 unmastered_tracks: Mutex::new(Vec::new()),
@@ -86,7 +87,11 @@ impl Renderer {
     }
 
     // TODO: the audio up to the point of the change may be reused
-    pub(crate) fn restart(&mut self, project: &Project, sample_rate: sample::Rate) -> Result<()> {
+    pub(crate) fn restart<Ui: UserInterface>(
+        &mut self,
+        project: &Project,
+        sample_rate: sample::Rate,
+    ) -> Result<()> {
         // Stop the threads that are rendering the old project
         self.progress.should_stop.set(true);
 
@@ -126,9 +131,10 @@ impl Renderer {
             let chain = Chain::default();
 
             let progress = Arc::clone(&self.progress);
+            let popups = Arc::clone(&self.popups);
 
             self.thread_pool
-                .execute(move || render(&audio, &events, &chain, &progress));
+                .execute(move || render::<Ui>(&audio, &events, &chain, &progress, &popups));
         }
 
         if project.tracks.is_empty() {
@@ -139,8 +145,15 @@ impl Renderer {
     }
 }
 
-fn render(input_audio: &Audio, events: &Sequence, chain: &Chain, progress: &Progress) {
-    try_render(input_audio, events, chain, progress).unwrap_or_else(|error| error!("{error}"));
+fn render<Ui: UserInterface>(
+    input_audio: &Audio,
+    events: &Sequence,
+    chain: &Chain,
+    progress: &Progress,
+    popups: &popup::Manager,
+) {
+    try_render(input_audio, events, chain, progress)
+        .unwrap_or_else(|error| popups.open::<Ui>(&error.into()));
 }
 
 fn try_render(
