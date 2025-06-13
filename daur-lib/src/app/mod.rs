@@ -23,9 +23,8 @@ use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.
-    #[get = "pub"]
-    #[get_mut = "pub"]
-    ui: Ui,
+    #[get_copy = "pub"]
+    ui: &'static Ui,
     ui_settings: ui::Settings,
 
     /// The view of the app.
@@ -37,7 +36,7 @@ pub struct App<Ui: UserInterface> {
 
     project_manager: project::Manager,
     #[debug(skip)]
-    renderer: project::Renderer,
+    renderer: project::Renderer<Ui>,
 
     #[debug(skip)]
     audio_config: Config,
@@ -50,7 +49,7 @@ pub struct App<Ui: UserInterface> {
     /// The currently held object.
     #[get_copy = "pub"]
     held_object: Option<Holdable>,
-    popup_manager: Arc<popup::Manager>,
+    popup_manager: Arc<popup::Manager<Ui>>,
 
     /// The position of the musical cursor.
     ///
@@ -71,8 +70,8 @@ pub struct App<Ui: UserInterface> {
 impl<Ui: UserInterface> App<Ui> {
     /// Creates a new instance
     #[must_use]
-    pub fn new(ui: Ui) -> App<Ui> {
-        let popup_manager = Arc::new(popup::Manager::new());
+    pub fn new(ui: &'static Ui) -> Self {
+        let popup_manager = Arc::new(popup::Manager::new(ui));
 
         let mut app = App {
             ui,

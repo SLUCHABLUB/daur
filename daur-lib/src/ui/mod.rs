@@ -31,7 +31,7 @@ use std::path::Path;
 
 /// A user interface for the DAW.
 #[cfg_attr(doc, doc(hidden))]
-pub trait UserInterface {
+pub trait UserInterface: Sync + 'static {
     /// The default depth of the black keys on the piano roll.
     const BLACK_KEY_DEPTH: NonZeroLength;
     /// The border thickness of a [bordered view](View::Bordered).
@@ -58,7 +58,7 @@ pub trait UserInterface {
     ///
     /// It is OK for implementations not to do anything or restart when this is run.
     /// This may be the case if the application, for example, cannot close itself.
-    fn exit(&mut self);
+    fn exit(&self);
 
     /// Returns the current screen size.
     #[must_use]

@@ -24,12 +24,10 @@ pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Actions) {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
         Event::Key(event) => handle_key_event(event, app.ui(), actions),
         Event::Mouse(event) => handle_mouse_event(event, app, actions),
-        Event::Resize(width, height) => {
-            app.ui_mut().area = Rectangle {
-                position: Point::ZERO,
-                size: to_size(Size { width, height }),
-            }
-        }
+        Event::Resize(width, height) => app.ui().area.set(Rectangle {
+            position: Point::ZERO,
+            size: to_size(Size { width, height }),
+        }),
     }
 }
 
@@ -62,29 +60,31 @@ fn handle_mouse_event(
     app: &mut App<Tui>,
     actions: &mut Actions,
 ) {
-    app.ui_mut().mouse_position = to_point(Position::new(column, row));
+    app.ui()
+        .mouse_position
+        .set(to_point(Position::new(column, row)));
 
     match kind {
         MouseEventKind::Down(button) => {
-            app.ui_mut().last_mouse_button_down = button;
-            app.ui_mut().mouse_movement_since_mouse_down = false;
+            app.ui().last_mouse_button_down.set(button);
+            app.ui().mouse_movement_since_mouse_down.set(false);
 
             if button != MouseButton::Left {
                 return;
             }
 
-            let mut grabber = Grabber::new(app.ui().mouse_position, actions);
+            let mut grabber = Grabber::new(app.ui().mouse_position.get(), actions);
 
             app.view()
                 .accept::<Tui, _>(&mut grabber, app.ui().render_area());
         }
         MouseEventKind::Up(_button) => {
-            let button = app.ui().last_mouse_button_down;
-            let position = app.ui().mouse_position;
+            let button = app.ui().last_mouse_button_down.get();
+            let position = app.ui().mouse_position.get();
 
             // click
 
-            if !app.ui().mouse_movement_since_mouse_down {
+            if !app.ui().mouse_movement_since_mouse_down.get() {
                 // TODO: fix shift
                 let shift = modifiers.contains(KeyModifiers::ALT);
 
@@ -108,12 +108,12 @@ fn handle_mouse_event(
             }
         }
         MouseEventKind::Moved => {
-            app.ui_mut().mouse_movement_since_mouse_down = true;
+            app.ui().mouse_movement_since_mouse_down.set(true);
         }
         MouseEventKind::Drag(_) => {
-            actions.push(Action::MoveHeldObject(app.ui().mouse_position));
+            actions.push(Action::MoveHeldObject(app.ui().mouse_position.get()));
 
-            app.ui_mut().mouse_movement_since_mouse_down = true;
+            app.ui().mouse_movement_since_mouse_down.set(true);
         }
         MouseEventKind::ScrollDown => {
             scroll(Direction::Down, app.ui(), app.view(), actions);
@@ -133,7 +133,7 @@ fn handle_mouse_event(
 fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Actions) {
     let offset = -direction * Length::PIXEL;
 
-    let mut scroller = Scroller::new(ui.mouse_position, offset, actions);
+    let mut scroller = Scroller::new(ui.mouse_position.get(), offset, actions);
 
     view.accept::<Tui, _>(&mut scroller, ui.render_area());
 }

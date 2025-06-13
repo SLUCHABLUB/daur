@@ -29,7 +29,7 @@ pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::
             let area = to_rectangle(frame.area());
             let buffer = frame.buffer_mut();
 
-            app.ui_mut().area = area;
+            app.ui().area.set(area);
 
             let ui = app.ui();
 

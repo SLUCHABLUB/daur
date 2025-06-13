@@ -3,7 +3,7 @@ use crate::holdable::WindowSide;
 use crate::note::Key;
 use crate::project::Edit;
 use crate::sync::{ArcCell, Cell};
-use crate::ui::{Point, Rectangle, Size, ThemeColour};
+use crate::ui::{Point, Rectangle, ThemeColour};
 use crate::view::{
     Alignment, Axis, OnClick, RenderArea, ToText as _, file_selector, multi, single,
 };
@@ -187,16 +187,12 @@ impl Specification {
         .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
-    pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Popup>, ui_size: Size) -> Popup {
+    pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Popup>, ui: &Ui) -> Popup {
+        let ui_size = ui.size();
+
         let view = Arc::new(self.view::<Ui>(id));
 
-        let size = view.minimum_size::<Ui>(RenderArea {
-            area: Rectangle {
-                position: Point::ZERO,
-                size: ui_size,
-            },
-            mouse_position: Point::ZERO,
-        });
+        let size = view.minimum_size::<Ui>(ui.render_area());
 
         let position = Point {
             x: (ui_size.width - size.width) * Ratio::HALF,

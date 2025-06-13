@@ -2,6 +2,7 @@ use crate::controls::controls;
 use crate::convert::to_length;
 use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
 use daur::app::Action;
+use daur::sync::Cell;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use daur::{Ratio, UserInterface, View};
 use non_zero::non_zero;
@@ -11,16 +12,16 @@ use std::path::Path;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 pub(crate) struct Tui {
-    pub should_exit: bool,
+    pub should_exit: Cell<bool>,
     // TODO: move to app
     pub key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
-    pub mouse_movement_since_mouse_down: bool,
+    pub mouse_movement_since_mouse_down: Cell<bool>,
     // Some terminals do not send the mouse button on release.
-    pub last_mouse_button_down: MouseButton,
+    pub last_mouse_button_down: Cell<MouseButton>,
     // TODO: update
     pub should_redraw: bool,
-    pub mouse_position: Point,
-    pub area: Rectangle,
+    pub mouse_position: Cell<Point>,
+    pub area: Cell<Rectangle>,
 }
 
 impl Tui {
@@ -56,16 +57,16 @@ impl UserInterface for Tui {
         pixels: non_zero!(20),
     };
 
-    fn exit(&mut self) {
-        self.should_exit = true;
+    fn exit(&self) {
+        self.should_exit.set(true);
     }
 
     fn size(&self) -> Size {
-        self.area.size
+        self.area.get().size
     }
 
     fn mouse_position(&self) -> Point {
-        self.mouse_position
+        self.mouse_position.get()
     }
 
     fn string_width(string: &str) -> Length {
@@ -125,16 +126,16 @@ const DEFAULT_TERMINAL_SIZE: Size = Size {
 impl Default for Tui {
     fn default() -> Tui {
         Tui {
-            should_exit: false,
+            should_exit: Cell::new(false),
             key_actions: controls(),
-            mouse_movement_since_mouse_down: false,
-            last_mouse_button_down: MouseButton::Left,
+            mouse_movement_since_mouse_down: Cell::new(false),
+            last_mouse_button_down: Cell::new(MouseButton::Left),
             should_redraw: true,
-            mouse_position: Point::ZERO,
-            area: Rectangle {
+            mouse_position: Cell::new(Point::ZERO),
+            area: Cell::new(Rectangle {
                 position: Point::ZERO,
                 size: DEFAULT_TERMINAL_SIZE,
-            },
+            }),
         }
     }
 }
