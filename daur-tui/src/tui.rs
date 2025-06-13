@@ -87,21 +87,12 @@ impl UserInterface for Tui {
         Length { pixels }
     }
 
-    fn title_width(title: &str, titled: &View) -> Length {
+    fn title_width(title: &str, _: &View) -> Length {
         Self::string_width(title)
-            + if matches!(titled, View::Bordered { .. }) {
-                Length::PIXEL * Ratio::integer(2)
-            } else {
-                Length::ZERO
-            }
     }
 
-    fn title_height(_title: &str, titled: &View) -> Length {
-        if matches!(titled, View::Bordered { .. }) {
-            Length::ZERO
-        } else {
-            Length::PIXEL
-        }
+    fn title_height(_title: &str, _: &View) -> Length {
+        Length::PIXEL
     }
 
     fn file_selector_size(path: &Path) -> Size {
