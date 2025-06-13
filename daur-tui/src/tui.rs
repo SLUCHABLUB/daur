@@ -1,14 +1,13 @@
 use crate::controls::controls;
 use crate::convert::to_length;
 use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
+use daur::UserInterface;
 use daur::app::Action;
 use daur::sync::Cell;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
-use daur::{Ratio, UserInterface, View};
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use std::collections::HashMap;
-use std::path::Path;
 use unicode_segmentation::UnicodeSegmentation as _;
 
 pub(crate) struct Tui {
@@ -53,6 +52,7 @@ impl UserInterface for Tui {
     const RULER_HEIGHT: NonZeroLength = NonZeroLength {
         pixels: non_zero!(2),
     };
+    const TITLE_PADDING: Length = Length::ZERO;
     const TRACK_SETTINGS_WITH: NonZeroLength = NonZeroLength {
         pixels: non_zero!(20),
     };
@@ -85,27 +85,6 @@ impl UserInterface for Tui {
         let pixels = string.lines().count().saturating_cast();
 
         Length { pixels }
-    }
-
-    fn title_width(title: &str, _: &View) -> Length {
-        Self::string_width(title)
-    }
-
-    fn title_height(_title: &str, _: &View) -> Length {
-        Length::PIXEL
-    }
-
-    fn file_selector_size(path: &Path) -> Size {
-        let Ok(reader) = path.read_dir() else {
-            return Size::ZERO;
-        };
-
-        // + 1 for ".."
-        let height = Length::PIXEL * Ratio::from_usize(reader.count()) + Length::PIXEL;
-        // This is not very important, the user can resize the popup.
-        let width = Length::PIXEL * Ratio::from_usize(path.as_os_str().len());
-
-        Size { height, width }
     }
 }
 

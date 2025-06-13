@@ -25,16 +25,14 @@ pub use vector::Vector;
 
 pub(crate) use settings::Settings;
 
-use crate::View;
 use crate::view::RenderArea;
-use std::path::Path;
 
 /// A user interface for the DAW.
 #[cfg_attr(doc, doc(hidden))]
 pub trait UserInterface: Sync + 'static {
     /// The default depth of the black keys on the piano roll.
     const BLACK_KEY_DEPTH: NonZeroLength;
-    /// The border thickness of a [bordered view](View::Bordered).
+    /// The border thickness of a [bordered view](crate::View::Bordered).
     ///
     /// This should be the same for thick and non-thick borders.
     /// Padding may be added to non-thick borders.
@@ -51,6 +49,8 @@ pub trait UserInterface: Sync + 'static {
     const PROJECT_BAR_HEIGHT: NonZeroLength;
     /// The height of the ruler.
     const RULER_HEIGHT: NonZeroLength;
+    /// The amount of padding to apply to all sides of a title in a [title bar](crate::View::TitleBar).
+    const TITLE_PADDING: Length;
     /// The default width for the track settings.
     const TRACK_SETTINGS_WITH: NonZeroLength;
 
@@ -76,18 +76,6 @@ pub trait UserInterface: Sync + 'static {
     /// Returns the height of the string
     #[must_use]
     fn string_height(string: &str) -> Length;
-
-    /// Returns the width of the title if it was to be applied to the view.
-    #[must_use]
-    fn title_width(title: &str, titled: &View) -> Length;
-
-    /// Returns the height of the title if it was to be applied to the view.
-    #[must_use]
-    fn title_height(title: &str, titled: &View) -> Length;
-
-    /// Returns the default size for a file selector.
-    #[must_use]
-    fn file_selector_size(path: &Path) -> Size;
 
     /// Returns the [rendering area](RenderArea) of the user interface.
     #[must_use]

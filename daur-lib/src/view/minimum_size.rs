@@ -100,8 +100,8 @@ fn minimum_size<Ui: UserInterface>(view: &View, render_area: RenderArea) -> Size
             height: Ui::string_height(string),
         },
         View::TitleBar { title, .. } => Size {
-            width: Ui::title_width(title, view),
-            height: Ui::title_height(title, view),
+            width: Ui::string_width(title) + Ui::TITLE_PADDING * Ratio::integer(2),
+            height: Ui::string_height(title) + Ui::TITLE_PADDING * Ratio::integer(2),
         },
     }
 }

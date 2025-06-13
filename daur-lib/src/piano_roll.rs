@@ -108,12 +108,12 @@ impl PianoRoll {
             edit_mode,
         );
 
-        let title_height = Ui::title_height(&title, &content);
+        let title_height = Ui::string_height(&title) + Ui::TITLE_PADDING * Ratio::integer(2);
 
         let title = View::TitleBar { title, highlighted };
 
         View::y_stack([
-            title.grabbable(Self::handle_grabber).quotated(title_height),
+            title.grabbable(Self::handle_grabber).quotated_minimally(),
             content.fill_remaining(),
         ])
         .quotated(self.content_height + title_height)
