@@ -17,4 +17,4 @@ daur = { path = "../daur-lib" }
 non-zero = "0.1.0"
 ratatui = { version = "0.29.0", features = ["unstable-rendered-line-info"] }
 saturating_cast = "0.1.0"
-unicode-segmentation = "1.12.0"
+unicode-width = "0.2"

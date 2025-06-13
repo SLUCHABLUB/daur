@@ -8,7 +8,7 @@ use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use std::collections::HashMap;
-use unicode_segmentation::UnicodeSegmentation as _;
+use unicode_width::UnicodeWidthStr;
 
 pub(crate) struct Tui {
     pub should_exit: Cell<bool>,
@@ -70,14 +70,14 @@ impl UserInterface for Tui {
     }
 
     fn string_width(string: &str) -> Length {
-        let graphemes = string
+        let width = string
             .lines()
-            .map(|line| line.graphemes(true).count())
+            .map(UnicodeWidthStr::width)
             .max()
             .unwrap_or(0);
 
         Length {
-            pixels: graphemes.saturating_cast(),
+            pixels: width.saturating_cast(),
         }
     }
 
