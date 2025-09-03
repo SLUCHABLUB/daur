@@ -120,7 +120,7 @@ impl Audio {
 
     /// Returns a subsection of the audio.
     #[must_use]
-    pub fn subsection(&self, period: sample::Period) -> Subsection {
+    pub fn subsection(&self, period: sample::Period) -> Subsection<'_> {
         Subsection {
             sample_rate: self.sample_rate,
             channels: [

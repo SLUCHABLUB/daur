@@ -16,7 +16,11 @@ impl Tempo {
     #[must_use]
     pub fn beat_duration(self) -> NonZeroDuration {
         let bpm = NonZeroU64::from(self.bpm);
+
+        // TODO: round.
+        #[expect(clippy::integer_division, reason = "see TODO")]
         let nanoseconds = Duration::MINUTE.nanoseconds / bpm;
+
         // The minimum value of `nanoseconds` is 15,259, so we could technically unwrap.
         let nanoseconds = NonZeroU64::new(nanoseconds).unwrap_or(NonZeroU64::MIN);
 

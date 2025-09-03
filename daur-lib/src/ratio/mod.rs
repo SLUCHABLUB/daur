@@ -73,6 +73,7 @@ impl Ratio {
     /// Calculates the ceiling of the ratio.
     #[must_use]
     pub fn ceil(self) -> u64 {
+        #[expect(clippy::integer_division, reason = "we also take the remainder")]
         let quotient = self.numerator / self.denominator;
         let remainder = self.numerator % self.denominator;
 
@@ -92,6 +93,7 @@ impl Ratio {
     /// Calculates the floor of the ratio
     #[must_use]
     pub fn floor(self) -> u64 {
+        #![expect(clippy::integer_division, reason = "we want the floor")]
         self.numerator / self.denominator
     }
 
@@ -104,6 +106,7 @@ impl Ratio {
     /// Rounds the ratio to an integer.
     #[must_use]
     pub fn round(self) -> u64 {
+        #[expect(clippy::integer_division, reason = "we also take the remainder")]
         let quotient = self.numerator / self.denominator;
         let remainder = self.numerator % self.denominator;
 
@@ -125,6 +128,7 @@ impl Ratio {
     /// Like [`Ratio::round`] but rounds 1/2 towards zero.
     #[must_use]
     pub fn round_half_down(self) -> u64 {
+        #[expect(clippy::integer_division, reason = "we also take the remainder")]
         let quotient = self.numerator / self.denominator;
         let remainder = self.numerator % self.denominator;
 

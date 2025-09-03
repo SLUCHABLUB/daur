@@ -41,16 +41,16 @@ impl Visitor for Dropper<'_> {
     fn visit_grabbable(&mut self, _: Rectangle, _: Holdable) {}
 
     fn visit_object_acceptor(&mut self, area: Rectangle, action: &DropAction) {
-        if area.contains(self.position) {
-            if let Some(action) = action(
+        if area.contains(self.position)
+            && let Some(action) = action(
                 self.object,
                 RenderArea {
                     area,
                     mouse_position: self.position,
                 },
-            ) {
-                self.actions.push(action);
-            }
+            )
+        {
+            self.actions.push(action);
         }
     }
 

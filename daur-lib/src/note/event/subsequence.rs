@@ -10,7 +10,7 @@ pub struct Subsequence<'events> {
 }
 
 impl Subsequence<'_> {
-    pub(super) fn new(events: &Sequence, period: sample::Period) -> Subsequence {
+    pub(super) fn new(events: &Sequence, period: sample::Period) -> Subsequence<'_> {
         Subsequence { events, period }
     }
 

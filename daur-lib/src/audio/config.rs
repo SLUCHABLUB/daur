@@ -4,7 +4,7 @@ use crate::time::Instant;
 use anyhow::Result;
 use rodio::cpal::Host;
 use rodio::cpal::traits::HostTrait as _;
-use rodio::{Device, DeviceTrait as _, OutputStream, Sink};
+use rodio::{Device, DeviceTrait as _, OutputStream, OutputStreamBuilder, Sink};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -51,8 +51,8 @@ impl Config {
 
         stream_config
             .get_or_try_insert_with(|| {
-                let (stream, handle) = OutputStream::try_from_device(device)?;
-                let sink = Sink::try_new(&handle)?;
+                let stream = OutputStreamBuilder::from_device(device.clone())?.open_stream()?;
+                let sink = Sink::connect_new(stream.mixer());
                 let player = Player::from(sink);
 
                 Ok(StreamCache { stream, player })

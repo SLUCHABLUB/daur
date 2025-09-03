@@ -49,7 +49,7 @@ impl FusedIterator for InterleavedSamples<'_> {}
 
 impl Audio {
     /// Returns an iterator over the samples in interleaved format.
-    pub fn interleaved_samples(&self) -> InterleavedSamples {
+    pub fn interleaved_samples(&self) -> InterleavedSamples<'_> {
         InterleavedSamples {
             audio: Cow::Borrowed(self),
             position: Instant::START,

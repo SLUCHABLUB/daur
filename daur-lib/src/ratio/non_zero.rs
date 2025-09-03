@@ -109,10 +109,10 @@ impl NonZeroRatio {
         };
 
         loop {
-            if let Ok(numerator) = NonZeroU64::try_from(numerator) {
-                if let Ok(denominator) = NonZeroU64::try_from(denominator) {
-                    return NonZeroRatio::new(numerator, denominator);
-                }
+            if let Ok(numerator) = NonZeroU64::try_from(numerator)
+                && let Ok(denominator) = NonZeroU64::try_from(denominator)
+            {
+                return NonZeroRatio::new(numerator, denominator);
             }
 
             let Some(new_numerator) = NonZeroU128::new(numerator.get() >> 1) else {

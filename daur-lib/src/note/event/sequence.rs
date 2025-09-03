@@ -18,7 +18,7 @@ impl Sequence {
         }
     }
 
-    pub(crate) fn subsequence(&self, period: Period) -> Subsequence {
+    pub(crate) fn subsequence(&self, period: Period) -> Subsequence<'_> {
         Subsequence::new(self, period)
     }
 

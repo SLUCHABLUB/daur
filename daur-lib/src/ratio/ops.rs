@@ -8,6 +8,11 @@ impl<R: Into<Ratio>> Add<R> for Ratio {
     type Output = Ratio;
 
     fn add(self, rhs: R) -> Ratio {
+        #![expect(
+            clippy::integer_division,
+            reason = "the lcm is divisible by its factors"
+        )]
+
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
@@ -25,6 +30,11 @@ impl<R: Into<Ratio>> Sub<R> for Ratio {
     type Output = Ratio;
 
     fn sub(self, rhs: R) -> Ratio {
+        #![expect(
+            clippy::integer_division,
+            reason = "the lcm is divisible by its factors"
+        )]
+
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 

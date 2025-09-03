@@ -88,10 +88,9 @@ impl Group {
             .map(|(note_position, _)| note_position)
             .filter(|note_position| *note_position < position)
             .max()
+            && position < last_note_end
         {
-            if position < last_note_end {
-                return Err(InsertionError::InsideOther);
-            }
+            return Err(InsertionError::InsideOther);
         }
 
         if self.notes.contains_key(&(position, pitch)) {

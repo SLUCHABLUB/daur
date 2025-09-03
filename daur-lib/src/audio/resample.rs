@@ -7,7 +7,7 @@ use std::borrow::Cow;
 impl Audio {
     /// Resamples the audio to the given sample rate.
     #[must_use]
-    pub fn resample(&self, sample_rate: sample::Rate) -> Cow<Audio> {
+    pub fn resample(&self, sample_rate: sample::Rate) -> Cow<'_, Audio> {
         if self.sample_rate == sample_rate {
             return Cow::Borrowed(self);
         }

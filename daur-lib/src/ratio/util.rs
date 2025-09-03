@@ -9,6 +9,7 @@ fn gcd(a: NonZeroU64, b: NonZeroU64) -> NonZeroU64 {
 }
 
 pub(super) fn make_coprime(a: NonZeroU64, b: NonZeroU64) -> [NonZeroU64; 2] {
+    #![expect(clippy::integer_division, reason = "the gcd divides the numbers")]
     let gcd = gcd(a, b);
     [
         NonZeroU64::new(a.get() / gcd).unwrap_or(non_zero!(1)),

@@ -37,6 +37,7 @@ impl<R: Into<Ratio>> Mul<R> for Duration {
 
         // TODO: round
         #[expect(clippy::arithmetic_side_effects, reason = "we encapsulate in u128")]
+        #[expect(clippy::integer_division, reason = "see TODO")]
         let nanoseconds = nanoseconds * numerator / denominator;
         let nanoseconds = u64::try_from(nanoseconds).unwrap_or(u64::MAX);
 
