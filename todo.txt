@@ -1,0 +1,29 @@
+TODO: note group onion skin
+TODO: interval highlighter
+
+TODO: settings menu
+      - Audio
+      - Display: Language & Theme
+      - Input: MIDI & Keyboard Shortcuts
+      - Semantics
+
+FIXME: moving cursor whilst playing
+FIXME: cropping rules
+
+--- WAITING ON CRATE ---
+
+TODO: rounded add/sub/mul/div
+TODO: use calm-ops
+TODO: cargo fmt closures
+
+--- LONG TIME ---
+
+TODO: keyboard input
+
+ENSURE: `use` paths are optimal
+
+--- BEFORE PUBLISHING ---
+TODO: add nodes
+TODO: note selecting
+TODO: fix workers panic:ing when dropping the app
+TODO: check api
