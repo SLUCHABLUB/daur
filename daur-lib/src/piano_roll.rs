@@ -302,9 +302,9 @@ impl PianoRoll {
         //  - highlight key based on settings
         // TODO: use a theme colour
         let background_colour = if (pitch - Pitch::LOWEST).semitones() % 2 == 0 {
-            ThemeColour::Custom(Colour::gray_scale(0xAA))
+            ThemeColour::PianoRollBackground
         } else {
-            ThemeColour::Custom(Colour::gray_scale(0x55))
+            ThemeColour::AlternatePianoRollBackground
         };
 
         let background = View::Solid(background_colour);
