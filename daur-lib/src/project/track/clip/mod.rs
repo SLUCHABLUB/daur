@@ -17,18 +17,10 @@ use crate::{Id, note};
 use arcstr::{ArcStr, literal};
 use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
 
-const DEFAULT_AUDIO_COLOUR: Colour = Colour {
-    red: 0,
-    green: 255,
-    blue: 0,
-};
+const DEFAULT_AUDIO_COLOUR: Colour = Colour::LIME;
 
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
-const DEFAULT_NOTES_COLOUR: Colour = Colour {
-    red: 255,
-    green: 0,
-    blue: 255,
-};
+const DEFAULT_NOTES_COLOUR: Colour = Colour::MAGENTA;
 
 /// A part of a [track](super::Track).
 // TODO: Test that this isn't `Clone` (bc. id).

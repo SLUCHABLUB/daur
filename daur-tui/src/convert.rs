@@ -43,5 +43,6 @@ pub(crate) fn from_rectangle(rectangle: Rectangle) -> Rect {
 
 pub(crate) fn approximate_colour(colour: Colour) -> Color {
     // TODO: support lower bit-depth colours
-    Color::Rgb(colour.red, colour.green, colour.blue)
+    let [red, green, blue] = colour.to_srgb();
+    Color::Rgb(red, green, blue)
 }

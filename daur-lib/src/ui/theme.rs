@@ -45,7 +45,7 @@ impl Default for Theme {
             black_key: Colour::BLACK,
             white_key: Colour::WHITE,
             piano_roll_background: None,
-            alternate_piano_roll_background: None,
+            alternate_piano_roll_background: Some(Colour::SILVER),
         }
     }
 }
