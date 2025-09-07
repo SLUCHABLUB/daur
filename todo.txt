@@ -24,6 +24,8 @@ ENSURE: `use` paths are optimal
 
 --- BEFORE PUBLISHING ---
 
+TODO: remove "method is private" justifications for expecting lints
+
 TODO: add nodes
 TODO: note selecting
 TODO: fix workers panic:ing when dropping the app
