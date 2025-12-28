@@ -10,10 +10,14 @@ pub(crate) fn controls() -> HashMap<(KeyModifiers, KeyCode), Action> {
             (KeyModifiers::NONE, KeyCode::Char(' ')),
             Action::TogglePlayback,
         ),
-        ((KeyModifiers::CONTROL, KeyCode::Char('c')), Action::Exit),
+        ((KeyModifiers::CONTROL, KeyCode::Char('q')), Action::Exit),
         (
             (KeyModifiers::NONE, KeyCode::Char('e')),
             Action::ToggleEditMode,
+        ),
+        (
+            (KeyModifiers::NONE, KeyCode::Char('x')),
+            Action::ExportProject,
         ),
         (
             (KeyModifiers::NONE, KeyCode::Char('i')),

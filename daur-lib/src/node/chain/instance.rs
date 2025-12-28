@@ -57,7 +57,7 @@ impl Instance {
             for pitch in self.keys.values() {
                 let frequency = pitch.frequency() / self.sample_rate.hz();
                 #[expect(clippy::cast_precision_loss, reason = "approximating is fine")]
-                let time = self.position.since_start.samples as f32;
+                let time = (self.position.since_start + instant.since_start).samples as f32;
 
                 delta += Sample::new(f32::sin(frequency * time));
             }
@@ -66,6 +66,7 @@ impl Instance {
             *right_output = right_input + delta;
         }
 
+        // TODO: why is this `input_audio.duration()` and not `duration`?
         self.position += input_audio.duration();
 
         ProcessResult {
