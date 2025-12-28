@@ -12,29 +12,32 @@ workspace = true
 
 # TODO: sort
 [dependencies]
+anyhow = "1.0.98"
 arcstr = "1.2.0"
 bitbag = "0.3.0"
-const-str = "0.6.1"
-closure = { git = "https://github.com/SLUCHABLUB/closure.git" }
+bytemuck = { version = "1.23.0", features = ["derive"] }
+const-str = "0.7.1"
 crossbeam = "0.8.4"
 derive_more = { version = "2.0.1", features = ["debug"] }
-# TODO: use the official version when clone-getters get added
-getset = { git = "https://github.com/SLUCHABLUB/getset.git" }
+executors = "0.10.0"
+hound = "3.5.1"
+indexmap = "2.9.0"
 itertools = "0.14.0"
+mitsein = { version = "0.8.0", features = ["indexmap"] }
+non-zero = "0.1.0"
 num = "0.4.3"
 parking_lot = "0.12.3"
+remain = "0.2.15"
+rodio = "0.21.0"
+rubato = "0.16.2"
 saturating_cast = "0.1.0"
 strum = { version = "0.27.1", features = ["derive"] }
-thiserror = "2.0.11"
-rodio = "0.21.0"
-executors = "0.10.0"
-rubato = "0.16.2"
-anyhow = "1.0.98"
-non-zero = "0.1.0"
-mitsein = { version = "0.6.1", features = ["indexmap"] }
-indexmap = "2.9.0"
-remain = "0.2.15"
-typed-builder = "0.21.0"
 symphonia = { version = "0.5.4", features = ["all"] }
-bytemuck = { version = "1.23.0", features = ["derive"] }
-hound = "3.5.1"
+thiserror = "2.0.11"
+typed-builder = "0.23.2"
+
+# TODO: remove
+closure = { git = "https://github.com/SLUCHABLUB/closure.git" }
+
+# TODO: use the official version when clone-getters get added
+getset = { git = "https://github.com/SLUCHABLUB/getset.git" }
