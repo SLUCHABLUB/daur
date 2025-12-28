@@ -46,34 +46,48 @@ unused_qualifications = "deny"
 all = { level = "deny", priority = -1 }
 pedantic = { level = "deny", priority = -1 }
 
-blanket_clippy_restriction_lints = "allow" # we deny more restriction lints than we allow
+# We deny more restriction lints than we allow.
+blanket_clippy_restriction_lints = "allow"
 restriction = { level = "deny", priority = -1 }
 
-arbitrary_source_item_ordering = "allow" # does not genrally aid readability imo
-as_conversions = "allow" # more specififc lints are recomended
+# These restrictions worsen readability IMO.
+arbitrary_source_item_ordering = "allow"
+error_impl_error = "allow" # Qualified syntax is fine IMO.
+implicit_return = "allow"
+shadow_reuse = "allow"
+shadow_same = "allow"
+shadow_unrelated = "allow"
+single_call_fn = "allow"
+pattern_type_mismatch = "allow"
+pub_use = "allow" # Reexports allow for smaller files.
+
+# Allowing exhaustive matching is good in most cases IMO.
+exhaustive_enums = "allow"
+exhaustive_structs = "allow"
+
+# These are mutually exclusive with other lints
+mod_module_files = "allow"
+semicolon_outside_block = "allow" # This naming is weird, but semicolons go inside blocks.
+separated_literal_suffix = "allow"
+pub_with_shorthand = "allow"
+
+# These are not relevant for our domain.
+float_arithmetic = "allow"
+integer_division_remainder_used = "allow"
+
+# We need `std`, so this decreases clutter in my opinion.
+std_instead_of_alloc = "allow"
+std_instead_of_core = "allow"
+
+# These are not intended for global use.
+missing_trait_methods = "allow"
+question_mark_used = "allow"
+
+# Miscellaneous lints.
+as_conversions = "allow" # more specific lints are recommended
 default_numeric_fallback = "allow" # has false positives
-error_impl_error = "allow" # qualified syntax is fine imo
-exhaustive_enums = "allow" # exhaustivity is good
-exhaustive_structs = "allow" # exhaustivity is good
-float_arithmetic = "allow" # we are not embedded
-implicit_return = "allow" # aids readability imo
-integer_division_remainder_used = "allow" # timing sidechannel vulnerabilities is of no concern
-missing_docs_in_private_items = "allow" # for now
-missing_inline_in_public_items = "allow" # the performance increase is probably not worth the clutter
-missing_trait_methods = "allow" # not intended for global use
-mod_module_files = "allow" # this groups files more meaningfully imo
-modulo_arithmetic = "allow" # we do not do language interop
-multiple_inherent_impl = "allow" # allows splitting impls across files
-pattern_type_mismatch = "allow" # this allows for dereferencing
-pub_use = "allow" # reexports allow for smaller files
-pub_with_shorthand = "allow" # the shortahnds are good imo
-question_mark_used = "allow" # not intended for global use
-semicolon_outside_block = "allow" # semicolons look better on the insides of blocks imo
-separated_literal_suffix = "allow" # separations aids redability
-shadow_reuse = "allow" # I do not find it problematic
-shadow_same = "allow" # I do not find it problematic
-shadow_unrelated = "allow" # I do not find it problematic
-single_call_fn = "allow" # splitting functions aids readbility
-std_instead_of_alloc = "allow" # we need std
-std_instead_of_core = "allow" # we need std
-string_add = "allow" # I do not suffer from commutativity normativity
+
+# TODO: Maybe deny these later.
+missing_docs_in_private_items = "allow"
+missing_inline_in_public_items = "allow"
+multiple_inherent_impl = "allow"
