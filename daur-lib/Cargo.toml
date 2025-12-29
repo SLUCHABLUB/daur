@@ -10,7 +10,6 @@ license.workspace = true
 [lints]
 workspace = true
 
-# TODO: sort
 [dependencies]
 anyhow = "1.0.98"
 arcstr = "1.2.0"
@@ -31,6 +30,7 @@ remain = "0.2.15"
 rodio = "0.21.0"
 rubato = "0.16.2"
 saturating_cast = "0.1.0"
+serde = { version = "1.0.228", features = ["derive"] }
 strum = { version = "0.27.1", features = ["derive"] }
 symphonia = { version = "0.5.4", features = ["all"] }
 thiserror = "2.0.11"

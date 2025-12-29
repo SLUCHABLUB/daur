@@ -12,6 +12,7 @@ use anyhow::Error;
 use arcstr::{ArcStr, literal};
 use closure::closure;
 use derive_more::Debug;
+use serde::Deserialize;
 use std::env::current_dir;
 use std::sync::{Arc, LazyLock};
 
@@ -26,13 +27,16 @@ const KEY_SELECTOR_TITLE: ArcStr = literal!("select key");
 // TODO: keyboard navigation of popups
 /// A specification for a popup window.
 #[cfg_attr(doc, doc(hidden))]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Specification {
     /// A file selector for importing an audio file.
     AudioImporter,
     /// An error message.
+    #[serde(skip)]
     Error(Arc<Error>),
     /// A window for selecting a key.
+    #[serde(skip)]
     KeySelector {
         /// The current key.
         key: Key,

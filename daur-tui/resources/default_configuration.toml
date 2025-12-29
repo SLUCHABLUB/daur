@@ -1,0 +1,11 @@
+[key_map]
+space = "toggle_playback"
+backspace = { edit = "delete" }
+
+control_q = "exit"
+
+e = "toggle_edit_mode"
+i = { open_popup = "audio_importer" }
+n = { edit = "add_note_group" }
+p = "toggle_piano_roll"
+x = "export_project"

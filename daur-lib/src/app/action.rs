@@ -7,20 +7,23 @@ use crate::view::context::Menu;
 use crate::{App, Holdable, Id, Popup, Selectable, UserInterface};
 use anyhow::Result;
 use derive_more::Debug;
+use serde::Deserialize;
 use std::env::current_dir;
 
 const DEFAULT_EXPORT_FILE_NAME: &str = "render";
 
 /// An action to take on the app
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 #[must_use = "actions are lazy and must be \"taken\""]
 #[remain::sorted]
+#[serde(rename_all = "snake_case")]
 pub enum Action {
     /// Clears the selection.
     ClearSelection,
     /// Opens the context menu.
     CloseContextMenu,
     /// Closes a popup.
+    #[serde(skip)]
     ClosePopup(Id<Popup>),
     /// A project edit.
     Edit(Edit),
@@ -37,12 +40,16 @@ pub enum Action {
     /// Moves the (musical) cursor.
     MoveCursor(Instant),
     /// Moves the held object.
+    #[serde(skip)]
     MoveHeldObject(Point),
     /// Moves the overview.
+    #[serde(skip)]
     MoveOverview(Vector),
     /// Moves the piano roll.
+    #[serde(skip)]
     MovePianoRoll(Vector),
     /// Opens a context menu.
+    #[serde(skip)]
     OpenContextMenu {
         /// The context menu to open.
         menu: Menu,
@@ -55,10 +62,12 @@ pub enum Action {
     /// Stop playing.
     Pause,
     /// Picks up an object.
+    #[serde(skip)]
     PickUp(Holdable),
     /// Start playing.
     Play,
     /// Selects an item.
+    #[serde(skip)]
     Select(Selectable),
     /// Toggles _edit mode_.
     ToggleEditMode,

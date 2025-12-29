@@ -1,31 +1,42 @@
-use crate::controls::controls;
-use crate::convert::to_length;
-use crossterm::event::{KeyCode, KeyModifiers, MouseButton};
+use crate::configuration::Configuration;
+use crossterm::event::MouseButton;
 use daur::UserInterface;
-use daur::app::Action;
 use daur::sync::Cell;
 use daur::ui::{Length, NonZeroLength, Point, Rectangle, Size};
+use directories::ProjectDirs;
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
-use std::collections::HashMap;
 use unicode_width::UnicodeWidthStr;
 
 pub(crate) struct Tui {
+    pub configuration: Configuration,
+
     pub should_exit: Cell<bool>,
-    // TODO: move to app
-    pub key_actions: HashMap<(KeyModifiers, KeyCode), Action>,
+    // TODO: update
+    pub should_redraw: bool,
+
+    pub mouse_position: Cell<Point>,
+    pub area: Cell<Rectangle>,
+
     pub mouse_movement_since_mouse_down: Cell<bool>,
     // Some terminals do not send the mouse button on release.
     pub last_mouse_button_down: Cell<MouseButton>,
-    // TODO: update
-    pub should_redraw: bool,
-    pub mouse_position: Cell<Point>,
-    pub area: Cell<Rectangle>,
 }
 
 impl Tui {
-    pub(crate) fn key_action(&self, modifiers: KeyModifiers, code: KeyCode) -> Option<Action> {
-        self.key_actions.get(&(modifiers, code)).cloned()
+    pub(crate) fn new(directories: &ProjectDirs) -> anyhow::Result<Tui> {
+        Ok(Tui {
+            configuration: Configuration::read_from_file(directories)?,
+
+            should_exit: Cell::new(false),
+            should_redraw: true,
+
+            mouse_position: Cell::new(Point::ZERO),
+            area: Cell::new(Rectangle::default()),
+
+            mouse_movement_since_mouse_down: Cell::new(false),
+            last_mouse_button_down: Cell::new(MouseButton::Left),
+        })
     }
 }
 
@@ -85,27 +96,5 @@ impl UserInterface for Tui {
         let pixels = string.lines().count().saturating_cast();
 
         Length { pixels }
-    }
-}
-
-const DEFAULT_TERMINAL_SIZE: Size = Size {
-    width: to_length(80),
-    height: to_length(24),
-};
-
-impl Default for Tui {
-    fn default() -> Tui {
-        Tui {
-            should_exit: Cell::new(false),
-            key_actions: controls(),
-            mouse_movement_since_mouse_down: Cell::new(false),
-            last_mouse_button_down: Cell::new(MouseButton::Left),
-            should_redraw: true,
-            mouse_position: Cell::new(Point::ZERO),
-            area: Cell::new(Rectangle {
-                position: Point::ZERO,
-                size: DEFAULT_TERMINAL_SIZE,
-            }),
-        }
     }
 }

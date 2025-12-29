@@ -7,6 +7,7 @@ use crate::select::Selection;
 use crate::{Audio, Id, Note, Project, note};
 use arcstr::ArcStr;
 use mitsein::iter1::IteratorExt as _;
+use serde::Deserialize;
 use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::mem::replace;
@@ -15,10 +16,12 @@ use std::sync::Arc;
 use thiserror::Error;
 
 /// An edit to a [project](super::Project).
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize)]
 #[remain::sorted]
+#[serde(rename_all = "snake_case")]
 pub enum Edit {
     /// Adds a note to the selected clip.
+    #[serde(skip)]
     AddNote {
         /// The position of the note.
         position: Instant,
@@ -34,17 +37,22 @@ pub enum Edit {
     /// Deletes the selected item(s).
     Delete,
     /// Deletes some clips.
+    #[serde(skip)]
     DeleteClips(HashSet<clip::Path>),
     /// Deletes some notes.
+    #[serde(skip)]
     DeleteNotes(HashSet<note::Path>),
     /// Deletes a track.
+    #[serde(skip)]
     DeleteTracks(HashSet<Id<Track>>),
     /// Imports an audio file into the selected track at the cursor.
+    #[serde(skip)]
     ImportAudio {
         /// The path to the file.
         file: Arc<Path>,
     },
     /// Moves a clip.
+    #[serde(skip)]
     MoveClip {
         /// The clip to be moved.
         clip: clip::Path,
@@ -54,6 +62,7 @@ pub enum Edit {
         position: Instant,
     },
     /// Sets the key at the cursor.
+    #[serde(skip)]
     SetKey(Key),
 }
 

@@ -4,9 +4,10 @@ mod ops;
 pub use non_zero::NonZeroInstant;
 
 use crate::metre::{Duration, relative};
+use serde::Deserialize;
 
 /// An instant in musical time.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Deserialize)]
 pub struct Instant {
     /// The duration since the starting point.
     pub since_start: Duration,

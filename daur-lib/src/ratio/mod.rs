@@ -1,5 +1,6 @@
 mod non_zero;
 mod ops;
+mod serde;
 mod util;
 
 pub use non_zero::NonZeroRatio;

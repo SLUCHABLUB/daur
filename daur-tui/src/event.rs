@@ -1,5 +1,5 @@
 use crate::convert::{to_point, to_size};
-use crate::tui::Tui;
+use crate::{Key, Tui};
 use crossterm::event::{
     Event, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
 };
@@ -31,22 +31,15 @@ pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Actions) {
     }
 }
 
-fn handle_key_event(
-    KeyEvent {
-        code,
-        modifiers,
-        kind,
-        ..
-    }: KeyEvent,
-    ui: &Tui,
-    actions: &mut Actions,
-) {
-    if kind != KeyEventKind::Press {
+fn handle_key_event(event: KeyEvent, ui: &Tui, actions: &mut Actions) {
+    if event.kind != KeyEventKind::Press {
         return;
     }
 
-    if let Some(action) = ui.key_action(modifiers, code) {
-        actions.push(action);
+    let key = Key::from(event);
+
+    if let Some(action) = ui.configuration.key_map.get(&key) {
+        actions.push(action.clone());
     }
 }
 
