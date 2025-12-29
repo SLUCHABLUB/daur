@@ -44,4 +44,14 @@ impl Configuration {
     }
 }
 
-// TODO: add test: check that default config parses
+#[cfg(test)]
+mod test {
+    use super::{Configuration, DEFAULT_CONFIGURATION};
+
+    #[test]
+    fn parse_default_configuration() -> anyhow::Result<()> {
+        toml::from_str::<Configuration>(DEFAULT_CONFIGURATION)?;
+
+        Ok(())
+    }
+}
