@@ -13,10 +13,14 @@ use crate::event::handle_events;
 use crate::key::Key;
 use crate::tui::Tui;
 use anyhow::Context as _;
-use crossterm::event::{
-    DisableMouseCapture, EnableMouseCapture, Event, KeyboardEnhancementFlags,
-    PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags, poll, read,
-};
+use crossterm::event::DisableMouseCapture;
+use crossterm::event::EnableMouseCapture;
+use crossterm::event::Event;
+use crossterm::event::KeyboardEnhancementFlags;
+use crossterm::event::PopKeyboardEnhancementFlags;
+use crossterm::event::PushKeyboardEnhancementFlags;
+use crossterm::event::poll;
+use crossterm::event::read;
 use crossterm::execute;
 use daur::App;
 use directories::ProjectDirs;

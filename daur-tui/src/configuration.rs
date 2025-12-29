@@ -46,7 +46,8 @@ impl Configuration {
 
 #[cfg(test)]
 mod test {
-    use super::{Configuration, DEFAULT_CONFIGURATION};
+    use super::Configuration;
+    use super::DEFAULT_CONFIGURATION;
 
     #[test]
     fn parse_default_configuration() -> anyhow::Result<()> {

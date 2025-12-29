@@ -1,7 +1,12 @@
-use crate::metre::{Changing, Instant, NonZeroDuration, OffsetMapping, TimeContext};
+use crate::Audio;
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::OffsetMapping;
+use crate::metre::TimeContext;
+use crate::time;
 use crate::ui::Length;
 use crate::view::Painter;
-use crate::{Audio, time};
 
 // TODO: add a "reset size" context-menu item for recalculating the duration
 /// Some audio that may be cropped or extended with silence to fit a duration.

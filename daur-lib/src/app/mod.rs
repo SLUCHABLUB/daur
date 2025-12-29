@@ -8,15 +8,26 @@ pub use action::Action;
 pub use actions::Actions;
 use std::sync::Arc;
 
+use crate::Holdable;
+use crate::PianoRoll;
+use crate::UserInterface;
+use crate::View;
 use crate::app::view::view;
 use crate::audio::Config;
-use crate::metre::{Instant, NonZeroDuration, Quantisation};
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::Quantisation;
+use crate::popup;
+use crate::project;
 use crate::select::Selection;
+use crate::ui;
 use crate::ui::Theme;
 use crate::view::context::MenuInstance;
-use crate::{Holdable, PianoRoll, UserInterface, View, popup, project, ui};
 use derive_more::Debug;
-use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
+use getset::CloneGetters;
+use getset::CopyGetters;
+use getset::Getters;
+use getset::MutGetters;
 
 /// A running instance of the DAW.
 #[cfg_attr(doc, doc(hidden))]

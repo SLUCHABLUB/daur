@@ -2,7 +2,9 @@
 
 use crate::ToArcStr;
 use crate::sync::Cell;
-use crate::view::{Axis, OnClick, View};
+use crate::view::Axis;
+use crate::view::OnClick;
+use crate::view::View;
 use arcstr::ArcStr;
 use closure::closure;
 use std::fmt::Display;

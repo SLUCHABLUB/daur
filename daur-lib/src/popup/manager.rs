@@ -1,6 +1,8 @@
+use crate::Id;
+use crate::Popup;
+use crate::UserInterface;
 use crate::popup::Specification;
 use crate::ui::Rectangle;
-use crate::{Id, Popup, UserInterface};
 use indexmap::IndexMap;
 use parking_lot::Mutex;
 

@@ -1,4 +1,5 @@
-use crate::metre::{Instant, NonZeroInstant};
+use crate::metre::Instant;
+use crate::metre::NonZeroInstant;
 use std::collections::BTreeMap;
 
 /// A setting that changes over time.

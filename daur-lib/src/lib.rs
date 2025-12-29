@@ -22,7 +22,8 @@ mod string;
 
 pub use id::Id;
 pub use piano_roll::PianoRoll;
-pub use ratio::{NonZeroRatio, Ratio};
+pub use ratio::NonZeroRatio;
+pub use ratio::Ratio;
 pub use select::Selectable;
 pub use string::ToArcStr;
 

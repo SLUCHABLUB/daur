@@ -1,13 +1,29 @@
-use crate::convert::{to_point, to_size};
-use crate::{Key, Tui};
-use crossterm::event::{
-    Event, KeyEvent, KeyEventKind, KeyModifiers, MouseButton, MouseEvent, MouseEventKind,
-};
-use daur::app::{Action, Actions};
-use daur::ui::{Direction, Length, Point, Rectangle};
-use daur::view::visit::{Clicker, Dropper, Grabber, Scroller};
-use daur::{App, UserInterface as _, View};
-use ratatui::layout::{Position, Size};
+use crate::Key;
+use crate::Tui;
+use crate::convert::to_point;
+use crate::convert::to_size;
+use crossterm::event::Event;
+use crossterm::event::KeyEvent;
+use crossterm::event::KeyEventKind;
+use crossterm::event::KeyModifiers;
+use crossterm::event::MouseButton;
+use crossterm::event::MouseEvent;
+use crossterm::event::MouseEventKind;
+use daur::App;
+use daur::UserInterface as _;
+use daur::View;
+use daur::app::Action;
+use daur::app::Actions;
+use daur::ui::Direction;
+use daur::ui::Length;
+use daur::ui::Point;
+use daur::ui::Rectangle;
+use daur::view::visit::Clicker;
+use daur::view::visit::Dropper;
+use daur::view::visit::Grabber;
+use daur::view::visit::Scroller;
+use ratatui::layout::Position;
+use ratatui::layout::Size;
 
 pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
     let mut actions = Actions::new();

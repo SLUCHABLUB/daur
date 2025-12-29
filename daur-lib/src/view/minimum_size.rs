@@ -1,6 +1,10 @@
-use crate::ui::{Length, Size};
-use crate::view::{Quotum, RenderArea};
-use crate::{Ratio, UserInterface, View};
+use crate::Ratio;
+use crate::UserInterface;
+use crate::View;
+use crate::ui::Length;
+use crate::ui::Size;
+use crate::view::Quotum;
+use crate::view::RenderArea;
 use std::cmp::max;
 
 impl View {

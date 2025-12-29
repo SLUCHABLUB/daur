@@ -1,6 +1,7 @@
 mod ops;
 
-use crate::ui::{Offset, Point};
+use crate::ui::Offset;
+use crate::ui::Point;
 
 /// A vector
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]

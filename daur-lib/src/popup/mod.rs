@@ -8,8 +8,11 @@ pub use specification::Specification;
 pub(crate) use manager::Manager;
 
 use crate::View;
-use crate::ui::{Point, Rectangle};
-use getset::{CopyGetters, MutGetters, Setters};
+use crate::ui::Point;
+use crate::ui::Rectangle;
+use getset::CopyGetters;
+use getset::MutGetters;
+use getset::Setters;
 use std::sync::Arc;
 
 /// An instance of a popup window.

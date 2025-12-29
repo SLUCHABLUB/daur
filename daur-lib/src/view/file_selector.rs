@@ -1,6 +1,10 @@
+use crate::ToArcStr as _;
+use crate::View;
 use crate::sync::ArcCell;
-use crate::view::{Alignment, OnClick, Quotated, ToText as _};
-use crate::{ToArcStr as _, View};
+use crate::view::Alignment;
+use crate::view::OnClick;
+use crate::view::Quotated;
+use crate::view::ToText as _;
 use std::fs::DirEntry;
 use std::path::Path;
 use std::sync::Arc;

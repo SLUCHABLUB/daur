@@ -1,8 +1,11 @@
-use crate::time::{Duration, NonZeroDuration};
+use crate::time::Duration;
+use crate::time::NonZeroDuration;
 use non_zero::non_zero;
 use std::fmt;
-use std::fmt::{Display, Formatter};
-use std::num::{NonZeroU16, NonZeroU64};
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::num::NonZeroU16;
+use std::num::NonZeroU64;
 
 /// A musical tempo.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

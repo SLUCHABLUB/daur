@@ -1,4 +1,5 @@
-use crate::app::{Action, Actions};
+use crate::app::Action;
+use crate::app::Actions;
 use crate::project;
 use crate::view::RenderArea;
 use derive_more::Debug;

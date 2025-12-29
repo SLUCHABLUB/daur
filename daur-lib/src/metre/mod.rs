@@ -17,11 +17,14 @@ mod time_context;
 mod time_signature;
 
 pub use changing::Changing;
-pub use duration::{Duration, NonZeroDuration};
-pub use instant::{Instant, NonZeroInstant};
+pub use duration::Duration;
+pub use duration::NonZeroDuration;
+pub use instant::Instant;
+pub use instant::NonZeroInstant;
 pub use measure::Measure;
 pub use offset_mapping::OffsetMapping;
-pub use period::{NonZeroPeriod, Period};
+pub use period::NonZeroPeriod;
+pub use period::Period;
 pub use quantisation::Quantisation;
 pub use time_context::TimeContext;
 pub use time_signature::TimeSignature;

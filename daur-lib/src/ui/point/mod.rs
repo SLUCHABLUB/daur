@@ -1,6 +1,7 @@
 mod ops;
 
-use crate::ui::{Length, relative};
+use crate::ui::Length;
+use crate::ui::relative;
 
 /// A point on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

@@ -1,6 +1,7 @@
 use crate::Audio;
+use crate::audio::Sample;
+use crate::audio::sample;
 use crate::audio::sample::ZeroRateError;
-use crate::audio::{Sample, sample};
 use anyhow::Result;
 use std::ffi::OsStr;
 use std::fs::File;
@@ -10,10 +11,12 @@ use std::path::Path;
 use symphonia::core::codecs::DecoderOptions;
 use symphonia::core::errors::Error as SymphoniaError;
 use symphonia::core::formats::FormatOptions;
-use symphonia::core::io::{MediaSourceStream, MediaSourceStreamOptions};
+use symphonia::core::io::MediaSourceStream;
+use symphonia::core::io::MediaSourceStreamOptions;
 use symphonia::core::meta::MetadataOptions;
 use symphonia::core::probe::Hint;
-use symphonia::default::{get_codecs, get_probe};
+use symphonia::default::get_codecs;
+use symphonia::default::get_probe;
 use thiserror::Error;
 
 /// An error when importing audio from a file.

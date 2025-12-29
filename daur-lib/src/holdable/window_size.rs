@@ -1,5 +1,8 @@
-use crate::ui::{Point, Rectangle, Size};
-use std::cmp::{max, min};
+use crate::ui::Point;
+use crate::ui::Rectangle;
+use crate::ui::Size;
+use std::cmp::max;
+use std::cmp::min;
 
 /// A side of a window that can be grabbed to resize it.
 /// This does not include the top part as it is used for moving the window.

@@ -1,6 +1,7 @@
 use crossbeam::atomic::AtomicCell;
 use std::fmt;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
+use std::fmt::Formatter;
 
 /// A thread-safe version of [`Cell`](std::cell::Cell).
 #[derive(Default)]

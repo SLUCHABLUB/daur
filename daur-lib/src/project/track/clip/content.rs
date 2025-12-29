@@ -1,7 +1,9 @@
-use crate::metre::{NonZeroDuration, OffsetMapping};
+use crate::audio;
+use crate::metre::NonZeroDuration;
+use crate::metre::OffsetMapping;
+use crate::note;
 use crate::ui::Length;
 use crate::view::Painter;
-use crate::{audio, note};
 
 /// The content of a [clip](super::Clip).
 #[derive(Eq, PartialEq, Debug)]

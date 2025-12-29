@@ -4,10 +4,13 @@ mod window_size;
 
 pub use window_size::WindowSide;
 
+use crate::Id;
+use crate::Popup;
 use crate::metre::Instant;
 use crate::project::track::clip;
-use crate::ui::{Length, Point, relative};
-use crate::{Id, Popup};
+use crate::ui::Length;
+use crate::ui::Point;
+use crate::ui::relative;
 
 /// An object that can be held.
 #[cfg_attr(doc, doc(hidden))]

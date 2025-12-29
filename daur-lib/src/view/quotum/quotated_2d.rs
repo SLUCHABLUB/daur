@@ -1,6 +1,10 @@
-use crate::ui::{Size, relative};
-use crate::view::{Quotum, Quotum2D, RenderArea};
-use crate::{UserInterface, View};
+use crate::UserInterface;
+use crate::View;
+use crate::ui::Size;
+use crate::ui::relative;
+use crate::view::Quotum;
+use crate::view::Quotum2D;
+use crate::view::RenderArea;
 use std::cell::LazyCell;
 
 /// A [view](View) with a two-dimensional [quotum](Quotum2D).

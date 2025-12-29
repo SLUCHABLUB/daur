@@ -2,8 +2,11 @@
 
 use crate::ToArcStr;
 use crate::sync::Cell;
-use crate::view::{Axis, OnClick, View};
-use bitbag::{BitBag, Flags};
+use crate::view::Axis;
+use crate::view::OnClick;
+use crate::view::View;
+use bitbag::BitBag;
+use bitbag::Flags;
 use std::sync::Arc;
 
 /// A simple multi-selection view

@@ -1,4 +1,5 @@
-use crate::ui::{Offset, Vector};
+use crate::ui::Offset;
+use crate::ui::Vector;
 use std::ops::Mul;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

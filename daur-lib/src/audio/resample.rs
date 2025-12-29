@@ -1,7 +1,10 @@
 use crate::Audio;
-use crate::audio::{Sample, sample};
+use crate::audio::Sample;
+use crate::audio::sample;
 use bytemuck::cast_slice;
-use rubato::{FastFixedIn, PolynomialDegree, Resampler as _};
+use rubato::FastFixedIn;
+use rubato::PolynomialDegree;
+use rubato::Resampler as _;
 use std::borrow::Cow;
 
 impl Audio {

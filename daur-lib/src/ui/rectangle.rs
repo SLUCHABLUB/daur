@@ -1,6 +1,11 @@
-use crate::ui::{Length, Point, Size, Vector};
-use std::cmp::{max, min};
-use std::ops::{Add, AddAssign};
+use crate::ui::Length;
+use crate::ui::Point;
+use crate::ui::Size;
+use crate::ui::Vector;
+use std::cmp::max;
+use std::cmp::min;
+use std::ops::Add;
+use std::ops::AddAssign;
 
 /// A rectangle on the screen.
 #[derive(Copy, Clone, Default, Debug)]

@@ -1,5 +1,7 @@
-use crate::audio::sample::{Duration, Instant};
-use crate::audio::{Sample, sample};
+use crate::audio::Sample;
+use crate::audio::sample;
+use crate::audio::sample::Duration;
+use crate::audio::sample::Instant;
 use std::cmp::max;
 
 /// A section of an [audio](super::Audio).

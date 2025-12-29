@@ -1,4 +1,8 @@
-use crate::ui::{Colour, Length, Point, Rectangle, Size};
+use crate::ui::Colour;
+use crate::ui::Length;
+use crate::ui::Point;
+use crate::ui::Rectangle;
+use crate::ui::Size;
 
 /// A [canvas](crate::View::Canvas) context, used for drawing.
 pub trait Context {

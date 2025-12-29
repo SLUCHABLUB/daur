@@ -13,7 +13,8 @@ mod sign;
 
 pub use chroma::Chroma;
 use getset::CopyGetters;
-pub use group::{Group, InsertionError};
+pub use group::Group;
+pub use group::InsertionError;
 pub use id::Path;
 pub use interval::Interval;
 pub use key::Key;
@@ -26,7 +27,8 @@ pub(crate) use event::Event;
 
 use crate::Id;
 use crate::metre::NonZeroDuration;
-use sign::{FLAT, SHARP};
+use sign::FLAT;
+use sign::SHARP;
 
 // TODO: Test that this isn't `Clone` (bc. id).
 // TODO: pitch-bends?

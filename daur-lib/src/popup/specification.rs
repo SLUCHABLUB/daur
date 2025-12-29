@@ -1,20 +1,35 @@
+use crate::Holdable;
+use crate::Id;
+use crate::Popup;
+use crate::Ratio;
+use crate::UserInterface;
+use crate::View;
 use crate::app::Action;
 use crate::holdable::WindowSide;
 use crate::note::Key;
 use crate::project::Edit;
-use crate::sync::{ArcCell, Cell};
-use crate::ui::{Point, Rectangle, ThemeColour};
-use crate::view::{
-    Alignment, Axis, OnClick, RenderArea, ToText as _, file_selector, multi, single,
-};
-use crate::{Holdable, Id, Popup, Ratio, UserInterface, View};
+use crate::sync::ArcCell;
+use crate::sync::Cell;
+use crate::ui::Point;
+use crate::ui::Rectangle;
+use crate::ui::ThemeColour;
+use crate::view::Alignment;
+use crate::view::Axis;
+use crate::view::OnClick;
+use crate::view::RenderArea;
+use crate::view::ToText as _;
+use crate::view::file_selector;
+use crate::view::multi;
+use crate::view::single;
 use anyhow::Error;
-use arcstr::{ArcStr, literal};
+use arcstr::ArcStr;
+use arcstr::literal;
 use closure::closure;
 use derive_more::Debug;
 use serde::Deserialize;
 use std::env::current_dir;
-use std::sync::{Arc, LazyLock};
+use std::sync::Arc;
+use std::sync::LazyLock;
 
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 const CANCEL: ArcStr = literal!("cancel");

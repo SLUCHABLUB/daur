@@ -1,5 +1,9 @@
-use crate::time::{Duration, Instant};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use crate::time::Duration;
+use crate::time::Instant;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

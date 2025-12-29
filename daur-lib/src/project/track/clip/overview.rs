@@ -1,9 +1,12 @@
+use crate::Holdable;
+use crate::Id;
+use crate::Selectable;
+use crate::View;
 use crate::metre::OffsetMapping;
 use crate::project::Track;
 use crate::project::track::Clip;
 use crate::project::track::clip::Path;
 use crate::ui::Length;
-use crate::{Holdable, Id, Selectable, View};
 
 /// Returns a view of a clip's overview.
 pub(crate) fn overview(

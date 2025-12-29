@@ -1,7 +1,10 @@
 use crate::View;
 use crate::app::Action;
 use crate::audio::Player;
-use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::OffsetMapping;
+use crate::metre::TimeContext;
 use crate::ui::Length;
 use crate::view::OnClick;
 use derive_more::Debug;

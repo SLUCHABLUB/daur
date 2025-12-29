@@ -1,6 +1,13 @@
-use crate::ui::{Length, Offset, Point, Rectangle, Size, relative};
-use crate::view::{Axis, Quotated};
-use crate::{Ratio, UserInterface};
+use crate::Ratio;
+use crate::UserInterface;
+use crate::ui::Length;
+use crate::ui::Offset;
+use crate::ui::Point;
+use crate::ui::Rectangle;
+use crate::ui::Size;
+use crate::ui::relative;
+use crate::view::Axis;
+use crate::view::Quotated;
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;

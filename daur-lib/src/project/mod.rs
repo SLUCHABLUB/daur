@@ -20,13 +20,21 @@ pub(crate) use history::HistoryEntry;
 pub(crate) use renderer::Renderer;
 pub(crate) use workspace::workspace;
 
-use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, TimeSignature};
+use crate::Id;
+use crate::NonZeroRatio;
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::TimeContext;
+use crate::metre::TimeSignature;
 use crate::note::Key;
-use crate::project::track::{Clip, clip};
+use crate::project::track::Clip;
+use crate::project::track::clip;
 use crate::time::Tempo;
-use crate::{Id, NonZeroRatio};
-use arcstr::{ArcStr, literal};
-use getset::{CloneGetters, Getters};
+use arcstr::ArcStr;
+use arcstr::literal;
+use getset::CloneGetters;
+use getset::Getters;
 use indexmap::IndexMap;
 use non_zero::non_zero;
 

@@ -1,5 +1,9 @@
-use crate::metre::{Duration, Instant};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use crate::metre::Duration;
+use crate::metre::Instant;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

@@ -1,6 +1,8 @@
+use crate::Id;
+use crate::Note;
 use crate::project::Track;
-use crate::project::track::{Clip, clip};
-use crate::{Id, Note};
+use crate::project::track::Clip;
+use crate::project::track::clip;
 use getset::CopyGetters;
 use std::fmt::Debug;
 use std::hash::Hash;

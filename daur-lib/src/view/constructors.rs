@@ -1,6 +1,9 @@
 use crate::View;
 use crate::ui::Colour;
-use crate::view::{Axis, Context, Quotated, RenderArea};
+use crate::view::Axis;
+use crate::view::Context;
+use crate::view::Quotated;
+use crate::view::RenderArea;
 
 impl View {
     /// Constructs a new [canvas](View::Canvas).

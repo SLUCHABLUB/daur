@@ -1,9 +1,12 @@
-use crate::metre::{Changing, TimeSignature};
+use crate::metre;
+use crate::metre::Changing;
+use crate::metre::TimeSignature;
+use crate::time;
 use crate::time::Tempo;
-use crate::{metre, time};
 use std::cmp::min;
 use std::collections::BTreeMap;
-use std::ops::{Div, Mul};
+use std::ops::Div;
+use std::ops::Mul;
 
 /// Relevant information for converting between (metre)[metre] and [real time](time).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]

@@ -1,5 +1,6 @@
 use crate::UserInterface;
-use crate::ui::{Length, NonZeroLength};
+use crate::ui::Length;
+use crate::ui::NonZeroLength;
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) struct Settings {

@@ -1,9 +1,14 @@
+use crate::Audio;
+use crate::Project;
+use crate::UserInterface;
+use crate::audio::Player;
+use crate::audio::sample;
 use crate::audio::sample::Instant;
-use crate::audio::{Player, sample};
 use crate::node::Chain;
 use crate::note::event::Sequence;
+use crate::popup;
 use crate::sync::Cell;
-use crate::{Audio, Project, UserInterface, popup, time};
+use crate::time;
 use anyhow::Result;
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
@@ -12,7 +17,8 @@ use non_zero::non_zero;
 use parking_lot::Mutex;
 use saturating_cast::SaturatingCast as _;
 use std::cmp::max;
-use std::mem::{replace, take};
+use std::mem::replace;
+use std::mem::take;
 use std::path::PathBuf;
 use std::sync::Arc;
 

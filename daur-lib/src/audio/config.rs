@@ -1,10 +1,15 @@
-use crate::audio::{Player, sample};
+use crate::audio::Player;
+use crate::audio::sample;
 use crate::extension::OptionExt as _;
 use crate::time::Instant;
 use anyhow::Result;
+use rodio::Device;
+use rodio::DeviceTrait as _;
+use rodio::OutputStream;
+use rodio::OutputStreamBuilder;
+use rodio::Sink;
 use rodio::cpal::Host;
 use rodio::cpal::traits::HostTrait as _;
-use rodio::{Device, DeviceTrait as _, OutputStream, OutputStreamBuilder, Sink};
 use thiserror::Error;
 
 #[derive(Debug, Error)]

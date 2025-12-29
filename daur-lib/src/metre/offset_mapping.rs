@@ -1,7 +1,11 @@
 use crate::Ratio;
-use crate::metre::{Changing, Instant, Quantisation, TimeSignature};
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::Quantisation;
+use crate::metre::TimeSignature;
 use crate::ui::Length;
-use getset::{CopyGetters, Getters};
+use getset::CopyGetters;
+use getset::Getters;
 use std::convert::identity;
 
 /// A mapping from [musical time](crate::metre) to a screen offset.

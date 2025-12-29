@@ -1,6 +1,9 @@
-use crate::metre::{
-    Changing, Instant, NonZeroDuration, NonZeroPeriod, Quantisation, TimeSignature,
-};
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::NonZeroPeriod;
+use crate::metre::Quantisation;
+use crate::metre::TimeSignature;
 use crate::ui::Length;
 use std::num::NonZeroU64;
 

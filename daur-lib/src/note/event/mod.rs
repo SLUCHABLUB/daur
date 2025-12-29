@@ -4,8 +4,9 @@ mod subsequence;
 pub(crate) use sequence::Sequence;
 pub(crate) use subsequence::Subsequence;
 
+use crate::Id;
+use crate::Note;
 use crate::note::Pitch;
-use crate::{Id, Note};
 
 #[cfg_attr(doc, doc(hidden))]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

@@ -3,7 +3,8 @@ use crate::ratio::util::make_coprime;
 use getset::CopyGetters;
 use non_zero::non_zero;
 use std::cmp::Ordering;
-use std::num::{NonZeroU64, NonZeroU128};
+use std::num::NonZeroU64;
+use std::num::NonZeroU128;
 
 /// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]

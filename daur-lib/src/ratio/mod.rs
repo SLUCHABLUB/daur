@@ -10,8 +10,11 @@ use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
 use std::cmp::Ordering;
 use std::fmt;
-use std::fmt::{Display, Formatter};
-use std::num::{FpCategory, NonZeroU64, NonZeroU128};
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::num::FpCategory;
+use std::num::NonZeroU64;
+use std::num::NonZeroU128;
 
 /// A rational number with saturating semantics.
 /// When operations would result in a non-representable value, the result is an approximation.

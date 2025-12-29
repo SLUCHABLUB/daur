@@ -10,14 +10,21 @@ pub use clip::Clip;
 pub(super) use overview::Overview;
 pub(crate) use settings::settings;
 
+use crate::Audio;
+use crate::Id;
 use crate::audio::sample;
-use crate::metre::{Changing, Duration, Instant, TimeContext};
+use crate::metre::Changing;
+use crate::metre::Duration;
+use crate::metre::Instant;
+use crate::metre::TimeContext;
 use crate::note::event::Sequence;
 use crate::project::DEFAULT_TRACK_TITLE;
-use crate::{Audio, Id};
 use arcstr::ArcStr;
-use getset::{CopyGetters, Getters, MutGetters};
-use std::collections::{BTreeMap, HashMap};
+use getset::CopyGetters;
+use getset::Getters;
+use getset::MutGetters;
+use std::collections::BTreeMap;
+use std::collections::HashMap;
 use thiserror::Error;
 
 /// An error occurred when trying to insert a clip.

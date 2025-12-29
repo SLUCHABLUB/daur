@@ -1,6 +1,8 @@
 use crate::metre;
-use crate::metre::{Changing, TimeContext};
-use crate::time::{Duration, Instant};
+use crate::metre::Changing;
+use crate::metre::TimeContext;
+use crate::time::Duration;
+use crate::time::Instant;
 use std::ops::Div;
 
 /// A period of real time.

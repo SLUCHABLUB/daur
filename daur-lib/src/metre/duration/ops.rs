@@ -1,6 +1,15 @@
-use crate::metre::{Duration, NonZeroDuration};
-use crate::{NonZeroRatio, Ratio};
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use crate::NonZeroRatio;
+use crate::Ratio;
+use crate::metre::Duration;
+use crate::metre::NonZeroDuration;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Div;
+use std::ops::DivAssign;
+use std::ops::Mul;
+use std::ops::MulAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

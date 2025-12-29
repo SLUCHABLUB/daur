@@ -1,9 +1,14 @@
+use crate::Audio;
+use crate::Id;
+use crate::Note;
+use crate::audio::Sample;
+use crate::audio::Subsection;
+use crate::audio::sample;
 use crate::audio::sample::Duration;
-use crate::audio::{Sample, Subsection, sample};
 use crate::node::ProcessResult;
+use crate::note::Event;
+use crate::note::Pitch;
 use crate::note::event::Subsequence;
-use crate::note::{Event, Pitch};
-use crate::{Audio, Id, Note};
 use std::collections::HashMap;
 
 pub(crate) struct Instance {

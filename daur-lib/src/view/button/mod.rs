@@ -2,7 +2,9 @@ mod on_click;
 
 pub use on_click::OnClick;
 
-use crate::view::{Alignment, ToText as _, View};
+use crate::view::Alignment;
+use crate::view::ToText as _;
+use crate::view::View;
 use arcstr::ArcStr;
 
 impl View {

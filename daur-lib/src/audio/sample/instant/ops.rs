@@ -1,5 +1,9 @@
-use crate::audio::sample::{Duration, Instant};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use crate::audio::sample::Duration;
+use crate::audio::sample::Instant;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

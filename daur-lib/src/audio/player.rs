@@ -1,6 +1,7 @@
 use crate::Audio;
 use crate::audio::Source;
-use crate::time::{Duration, Instant};
+use crate::time::Duration;
+use crate::time::Instant;
 use derive_more::Debug;
 use rodio::Sink;
 use std::sync::Arc;

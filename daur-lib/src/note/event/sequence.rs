@@ -1,4 +1,5 @@
-use crate::audio::sample::{Instant, Period};
+use crate::audio::sample::Instant;
+use crate::audio::sample::Period;
 use crate::note::Event;
 use crate::note::event::Subsequence;
 use mitsein::vec1::Vec1;

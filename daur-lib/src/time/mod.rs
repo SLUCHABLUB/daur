@@ -5,7 +5,9 @@ mod instant;
 mod period;
 mod tempo;
 
-pub use duration::{Duration, NonZeroDuration};
-pub use instant::{Instant, NonZeroInstant};
+pub use duration::Duration;
+pub use duration::NonZeroDuration;
+pub use instant::Instant;
+pub use instant::NonZeroInstant;
 pub use period::Period;
 pub use tempo::Tempo;

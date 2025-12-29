@@ -1,8 +1,14 @@
 use crate::Id;
 use crate::audio::sample;
-use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext, relative};
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::TimeContext;
+use crate::metre::relative;
+use crate::note::Event;
+use crate::note::Note;
+use crate::note::Pitch;
 use crate::note::event::Sequence;
-use crate::note::{Event, Note, Pitch};
 use crate::view::Painter;
 use std::cmp::min;
 use std::collections::HashMap;

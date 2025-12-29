@@ -1,8 +1,19 @@
-use crate::ui::{Length, NonZeroLength, Offset};
-use crate::{NonZeroRatio, Ratio};
+use crate::NonZeroRatio;
+use crate::Ratio;
+use crate::ui::Length;
+use crate::ui::NonZeroLength;
+use crate::ui::Offset;
 use saturating_cast::SaturatingCast as _;
 use std::num::NonZeroU64;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Rem, Sub, SubAssign};
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Div;
+use std::ops::DivAssign;
+use std::ops::Mul;
+use std::ops::MulAssign;
+use std::ops::Rem;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

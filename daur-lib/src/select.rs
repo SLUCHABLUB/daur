@@ -1,6 +1,7 @@
+use crate::Id;
+use crate::note;
 use crate::project::Track;
 use crate::project::track::clip;
-use crate::{Id, note};
 use std::collections::HashSet;
 
 /// An item that can be selected.

@@ -1,4 +1,5 @@
-use crate::metre::{Instant, NonZeroDuration};
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
 
 /// An instant that is strictly after the starting point.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

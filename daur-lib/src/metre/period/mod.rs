@@ -2,8 +2,10 @@ mod non_zero;
 
 pub use non_zero::NonZeroPeriod;
 
-use crate::metre::{Duration, Instant};
-use std::cmp::{max, min};
+use crate::metre::Duration;
+use crate::metre::Instant;
+use std::cmp::max;
+use std::cmp::min;
 use std::ops::Range;
 
 /// A period of musical time.

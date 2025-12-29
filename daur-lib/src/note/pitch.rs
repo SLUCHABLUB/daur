@@ -1,7 +1,11 @@
-use crate::note::{Chroma, Interval, Sign};
+use crate::note::Chroma;
+use crate::note::Interval;
+use crate::note::Sign;
 use num::Integer as _;
 use std::hash::Hash;
-use std::ops::{Add, AddAssign, Sub};
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Sub;
 
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 /// A pitch / frequency within the MIDI range.

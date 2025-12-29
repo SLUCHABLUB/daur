@@ -9,13 +9,22 @@ pub use path::Path;
 
 pub(crate) use overview::overview;
 
-use crate::audio::{FixedLength, sample};
-use crate::metre::{Changing, Instant, NonZeroDuration, TimeContext};
+use crate::Id;
+use crate::audio::FixedLength;
+use crate::audio::sample;
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::TimeContext;
+use crate::note;
 use crate::note::event::Sequence;
 use crate::ui::Colour;
-use crate::{Id, note};
-use arcstr::{ArcStr, literal};
-use getset::{CloneGetters, CopyGetters, Getters, MutGetters};
+use arcstr::ArcStr;
+use arcstr::literal;
+use getset::CloneGetters;
+use getset::CopyGetters;
+use getset::Getters;
+use getset::MutGetters;
 
 const DEFAULT_AUDIO_COLOUR: Colour = Colour::LIME;
 

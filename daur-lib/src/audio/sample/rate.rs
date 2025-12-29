@@ -1,7 +1,9 @@
 use crate::Ratio;
-use crate::time::{Duration, NonZeroDuration};
+use crate::time::Duration;
+use crate::time::NonZeroDuration;
 use rodio::cpal;
-use std::num::{NonZeroU32, NonZeroU64};
+use std::num::NonZeroU32;
+use std::num::NonZeroU64;
 use thiserror::Error;
 
 /// A sample rate.

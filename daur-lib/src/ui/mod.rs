@@ -15,12 +15,14 @@ mod vector;
 
 pub use colour::Colour;
 pub use direction::Direction;
-pub use length::{Length, NonZeroLength};
+pub use length::Length;
+pub use length::NonZeroLength;
 pub use offset::Offset;
 pub use point::Point;
 pub use rectangle::Rectangle;
 pub use size::Size;
-pub use theme::{Theme, ThemeColour};
+pub use theme::Theme;
+pub use theme::ThemeColour;
 pub use vector::Vector;
 
 pub(crate) use settings::Settings;

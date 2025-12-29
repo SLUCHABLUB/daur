@@ -8,11 +8,15 @@ mod rate;
 pub use duration::Duration;
 pub use instant::Instant;
 pub use period::Period;
-pub use rate::{Rate, ZeroRateError};
+pub use rate::Rate;
+pub use rate::ZeroRateError;
 
 use bytemuck::NoUninit;
-use std::fmt::{self, Debug, Formatter};
-use std::ops::{Add, AddAssign};
+use std::fmt;
+use std::fmt::Debug;
+use std::fmt::Formatter;
+use std::ops::Add;
+use std::ops::AddAssign;
 
 /// A 32-bit float sample
 #[derive(Copy, Clone, PartialEq, Default, NoUninit)]

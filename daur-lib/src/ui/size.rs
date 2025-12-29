@@ -1,5 +1,6 @@
 use crate::ui::Length;
-use crate::view::{Axis, Quotum2D};
+use crate::view::Axis;
+use crate::view::Quotum2D;
 
 /// The size of something on the screen
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]

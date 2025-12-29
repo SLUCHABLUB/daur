@@ -1,8 +1,13 @@
+use crate::Holdable;
+use crate::Selectable;
+use crate::View;
 use crate::app::Action;
-use crate::ui::{Length, Vector, relative};
+use crate::ui::Length;
+use crate::ui::Vector;
+use crate::ui::relative;
+use crate::view::OnClick;
+use crate::view::RenderArea;
 use crate::view::context::Menu;
-use crate::view::{OnClick, RenderArea};
-use crate::{Holdable, Selectable, View};
 use arcstr::ArcStr;
 
 impl View {

@@ -1,6 +1,11 @@
-use crate::ui::{Length, relative};
-use crate::view::{Axis, Quotum, Quotum2D, RenderArea};
-use crate::{UserInterface, View};
+use crate::UserInterface;
+use crate::View;
+use crate::ui::Length;
+use crate::ui::relative;
+use crate::view::Axis;
+use crate::view::Quotum;
+use crate::view::Quotum2D;
+use crate::view::RenderArea;
 
 /// A [view](View) with a [quotum](Quotum).
 #[must_use = "the inner View must be used"]

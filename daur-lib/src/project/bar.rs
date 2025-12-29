@@ -1,10 +1,16 @@
+use crate::Project;
+use crate::ToArcStr as _;
+use crate::UserInterface;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::popup::Specification;
-use crate::view::{Axis, OnClick, ToText as _, View};
-use crate::{Project, ToArcStr as _, UserInterface};
-use arcstr::{ArcStr, literal};
+use crate::view::Axis;
+use crate::view::OnClick;
+use crate::view::ToText as _;
+use crate::view::View;
+use arcstr::ArcStr;
+use arcstr::literal;
 
 // TODO: add a symbol view instead of using chars
 // there is sadly no "single" variant

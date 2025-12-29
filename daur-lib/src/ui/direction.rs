@@ -1,6 +1,9 @@
-use crate::ui::{Length, Offset, Vector};
+use crate::ui::Length;
+use crate::ui::Offset;
+use crate::ui::Vector;
 use crate::view::Axis;
-use std::ops::{Mul, Neg};
+use std::ops::Mul;
+use std::ops::Neg;
 
 /// A direction in which items can be laid out
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]

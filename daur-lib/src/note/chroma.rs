@@ -1,5 +1,8 @@
-use crate::note::{FLAT, SHARP, Sign};
-use arcstr::{ArcStr, literal};
+use crate::note::FLAT;
+use crate::note::SHARP;
+use crate::note::Sign;
+use arcstr::ArcStr;
+use arcstr::literal;
 use const_str::concat;
 use strum::VariantArray;
 

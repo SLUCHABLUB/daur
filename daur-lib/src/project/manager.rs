@@ -1,5 +1,7 @@
 use crate::metre::Instant;
-use crate::project::{Edit, HistoryEntry, Project};
+use crate::project::Edit;
+use crate::project::HistoryEntry;
+use crate::project::Project;
 use crate::select::Selection;
 use anyhow::Result;
 use getset::Getters;

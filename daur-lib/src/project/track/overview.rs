@@ -1,14 +1,23 @@
+use crate::Holdable;
+use crate::Id;
+use crate::Selectable;
 use crate::app::Action;
 use crate::audio::Player;
-use crate::metre::{Changing, Instant, OffsetMapping, TimeContext};
+use crate::metre::Changing;
+use crate::metre::Instant;
+use crate::metre::OffsetMapping;
+use crate::metre::TimeContext;
+use crate::project::Edit;
+use crate::project::Track;
+use crate::project::track::Clip;
+use crate::project::track::clip;
 use crate::project::track::clip::Path;
-use crate::project::track::{Clip, clip};
-use crate::project::{Edit, Track};
 use crate::select::Selection;
 use crate::ui::Length;
+use crate::view::CursorWindow;
+use crate::view::RenderArea;
+use crate::view::View;
 use crate::view::context::Menu;
-use crate::view::{CursorWindow, RenderArea, View};
-use crate::{Holdable, Id, Selectable};
 use typed_builder::TypedBuilder;
 
 #[derive(TypedBuilder)]

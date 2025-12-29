@@ -1,5 +1,7 @@
 use std::fmt;
-use std::fmt::{Display, Formatter, Write as _};
+use std::fmt::Display;
+use std::fmt::Formatter;
+use std::fmt::Write as _;
 use std::ops::Not;
 use strum::VariantArray;
 

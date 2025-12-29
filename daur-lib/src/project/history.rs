@@ -1,9 +1,15 @@
-use crate::metre::{Instant, relative};
-use crate::note::{Key, Pitch};
+use crate::Id;
+use crate::Note;
+use crate::metre::Instant;
+use crate::metre::relative;
+use crate::note;
+use crate::note::Key;
+use crate::note::Pitch;
 use crate::project::Track;
-use crate::project::track::{Clip, clip};
-use crate::{Id, Note, note};
-use mitsein::iter1::{FromIterator1, IntoIterator1};
+use crate::project::track::Clip;
+use crate::project::track::clip;
+use mitsein::iter1::FromIterator1;
+use mitsein::iter1::IntoIterator1;
 use mitsein::vec1::Vec1;
 
 // TODO: method for constructing an undoing action

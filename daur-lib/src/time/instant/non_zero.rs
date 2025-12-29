@@ -1,4 +1,5 @@
-use crate::time::{Instant, NonZeroDuration};
+use crate::time::Instant;
+use crate::time::NonZeroDuration;
 
 /// An [instant](super::Instant) that is strictly after the starting point.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]

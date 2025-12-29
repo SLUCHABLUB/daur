@@ -1,9 +1,19 @@
-use crate::app::{Action, Actions};
-use crate::ui::{Colour, Length, Point, Rectangle, ThemeColour, Vector};
+use crate::Holdable;
+use crate::Selectable;
+use crate::app::Action;
+use crate::app::Actions;
+use crate::ui::Colour;
+use crate::ui::Length;
+use crate::ui::Point;
+use crate::ui::Rectangle;
+use crate::ui::ThemeColour;
+use crate::ui::Vector;
+use crate::view::Alignment;
+use crate::view::DropAction;
+use crate::view::OnClick;
+use crate::view::Painter;
 use crate::view::context::Menu;
 use crate::view::visit::Visitor;
-use crate::view::{Alignment, DropAction, OnClick, Painter};
-use crate::{Holdable, Selectable};
 use std::num::NonZeroU64;
 
 /// A visitor that grabs objects.

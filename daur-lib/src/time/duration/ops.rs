@@ -1,7 +1,16 @@
-use crate::time::{Duration, NonZeroDuration};
-use crate::{NonZeroRatio, Ratio};
+use crate::NonZeroRatio;
+use crate::Ratio;
+use crate::time::Duration;
+use crate::time::NonZeroDuration;
 use std::num::NonZeroU128;
-use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Div;
+use std::ops::DivAssign;
+use std::ops::Mul;
+use std::ops::MulAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

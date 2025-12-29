@@ -1,6 +1,7 @@
 use parking_lot::Mutex;
 use std::fmt;
-use std::fmt::{Debug, Formatter};
+use std::fmt::Debug;
+use std::fmt::Formatter;
 use std::sync::Arc;
 
 /// A cell containing an [atomically reference counted](Arc) value.

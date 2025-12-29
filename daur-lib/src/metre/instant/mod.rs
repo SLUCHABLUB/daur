@@ -3,7 +3,8 @@ mod ops;
 
 pub use non_zero::NonZeroInstant;
 
-use crate::metre::{Duration, relative};
+use crate::metre::Duration;
+use crate::metre::relative;
 use serde::Deserialize;
 
 /// An instant in musical time.

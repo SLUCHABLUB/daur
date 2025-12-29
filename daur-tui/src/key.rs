@@ -1,4 +1,8 @@
-use crossterm::event::{KeyCode, KeyEvent, KeyModifiers, MediaKeyCode, ModifierKeyCode};
+use crossterm::event::KeyCode;
+use crossterm::event::KeyEvent;
+use crossterm::event::KeyModifiers;
+use crossterm::event::MediaKeyCode;
+use crossterm::event::ModifierKeyCode;
 use serde::Deserialize;
 use serde::de::Error;
 use std::borrow::Cow;

@@ -1,4 +1,6 @@
-use crate::metre::{Instant, NonZeroDuration, Period};
+use crate::metre::Instant;
+use crate::metre::NonZeroDuration;
+use crate::metre::Period;
 
 /// A period of musical time with a non-zero duration.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]

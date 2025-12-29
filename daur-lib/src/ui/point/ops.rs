@@ -1,5 +1,9 @@
-use crate::ui::{Point, Vector};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
+use crate::ui::Point;
+use crate::ui::Vector;
+use std::ops::Add;
+use std::ops::AddAssign;
+use std::ops::Sub;
+use std::ops::SubAssign;
 
 // --- INFIX OPERATIONS ---
 

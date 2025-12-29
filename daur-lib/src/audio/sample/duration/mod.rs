@@ -1,5 +1,6 @@
+use crate::Ratio;
 use crate::audio::sample;
-use crate::{Ratio, time};
+use crate::time;
 use std::ops::Div;
 
 mod ops;

@@ -25,7 +25,9 @@ pub(crate) use source::Source;
 use crate::time;
 use anyhow::Result;
 use getset::CopyGetters;
-use hound::{SampleFormat, WavSpec, WavWriter};
+use hound::SampleFormat;
+use hound::WavSpec;
+use hound::WavWriter;
 use std::cmp::max;
 use std::path::Path;
 

@@ -1,6 +1,7 @@
 use crate::ui;
 use crate::ui::Length;
-use std::ops::{Add, Sub};
+use std::ops::Add;
+use std::ops::Sub;
 
 /// A point on the screen, relative to some other point.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
