@@ -1,10 +1,10 @@
 use crate::Project;
-use crate::ToArcStr as _;
 use crate::UserInterface;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::popup::Specification;
+use crate::string::ToArcStr as _;
 use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::ToText as _;

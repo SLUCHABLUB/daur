@@ -1,18 +1,19 @@
 //! A simple multi-selection view
 
-use crate::ToArcStr;
+use crate::string::ToArcStr as _;
 use crate::sync::Cell;
 use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::View;
 use enumset::EnumSet;
 use enumset::EnumSetType;
+use std::fmt::Display;
 use std::sync::Arc;
 
 /// A simple multi-selection view.
 pub fn selector<T>(cell: &Arc<Cell<EnumSet<T>>>, axis: Axis) -> View
 where
-    T: EnumSetType + ToArcStr + Send + Sync + 'static,
+    T: EnumSetType + Display + Send + Sync + 'static,
 {
     View::balanced_stack(
         axis,

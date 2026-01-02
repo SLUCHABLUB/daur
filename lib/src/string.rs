@@ -1,9 +1,8 @@
 use arcstr::ArcStr;
 use std::fmt::Display;
 
-// TODO: make crate private?
 /// Like [`ToString`] but for [`ArcStr`].
-pub trait ToArcStr {
+pub(crate) trait ToArcStr {
     /// Converts the value to an [`ArcStr`].
     fn to_arc_str(&self) -> ArcStr;
 }

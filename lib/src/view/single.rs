@@ -1,6 +1,6 @@
 //! A simple single-selection view
 
-use crate::ToArcStr;
+use crate::string::ToArcStr;
 use crate::sync::Cell;
 use crate::view::Axis;
 use crate::view::OnClick;

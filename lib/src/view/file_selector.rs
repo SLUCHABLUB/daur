@@ -1,5 +1,5 @@
-use crate::ToArcStr as _;
 use crate::View;
+use crate::string::ToArcStr as _;
 use crate::sync::ArcCell;
 use crate::view::Alignment;
 use crate::view::OnClick;
