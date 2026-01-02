@@ -11,18 +11,24 @@ license.workspace = true
 workspace = true
 
 [dependencies]
-# TODO: Sort into public and private.
+# Public dependencies.
+
 anyhow = "1.0.98"
 arcstr = "1.2.0"
+indexmap = { version = "2.9.0", features = ["serde"] }
+mitsein = { version = "0.8.0", features = ["indexmap"] }
+serde = { version = "1.0.228", features = ["derive"] }
+symphonia = { version = "0.5.4", features = ["all"] }
+
+# Non-public dependencies.
+
 bytemuck = { version = "1.23.0", features = ["derive"] }
 const-str = "0.7.1"
 crossbeam = "0.8.4"
 derive_more = { version = "2.0.1", features = ["debug"] }
 executors = "0.10.0"
 hound = "3.5.1"
-indexmap = { version = "2.9.0", features = ["serde"] }
 itertools = "0.14.0"
-mitsein = { version = "0.8.0", features = ["indexmap"] }
 non-zero = "0.1.0"
 num = "0.4.3"
 parking_lot = "0.12.3"
@@ -30,14 +36,12 @@ remain = "0.2.15"
 rodio = "0.21.0"
 rubato = "0.16.2"
 saturating_cast = "0.1.0"
-serde = { version = "1.0.228", features = ["derive"] }
-strum = { version = "0.27.1", features = ["derive"] }
-symphonia = { version = "0.5.4", features = ["all"] }
 thiserror = "2.0.11"
 typed-builder = "0.23.2"
 
 # TODO: remove
 closure = { git = "https://github.com/SLUCHABLUB/closure.git" }
+strum = { version = "0.27.1", features = ["derive"] }
 
 # TODO: Use the official version when `EnumSet` is thread safe.
 enumset = { git = "https://github.com/SLUCHABLUB/enumset.git", features = ["serde"] }

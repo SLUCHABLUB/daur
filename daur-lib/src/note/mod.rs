@@ -33,7 +33,6 @@ use sign::SHARP;
 // TODO: Test that this isn't `Clone` (bc. id).
 // TODO: pitch-bends?
 /// A [note](https://en.wikipedia.org/wiki/Musical_note).
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Eq, PartialEq, Debug, CopyGetters)]
 #[expect(missing_copy_implementations, reason = "`Id`s should be unique")]
 pub struct Note {

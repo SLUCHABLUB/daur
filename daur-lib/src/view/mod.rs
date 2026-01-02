@@ -57,7 +57,6 @@ pub type GrabObject = dyn Fn(RenderArea) -> Option<Holdable> + Send + Sync;
 pub type Reactive = dyn Fn(RenderArea) -> View + Send + Sync;
 
 /// A UI element.
-#[cfg_attr(doc, doc(hidden))]
 #[must_use]
 #[derive(Debug, Default)]
 #[remain::sorted]

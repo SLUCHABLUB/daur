@@ -32,7 +32,6 @@ use std::cmp::max;
 use std::path::Path;
 
 /// Some stereo 64-bit floating point audio.
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Clone, Eq, PartialEq, Debug, CopyGetters)]
 pub struct Audio {
     /// The sample rate of the audio.

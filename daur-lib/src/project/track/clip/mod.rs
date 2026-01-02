@@ -33,7 +33,6 @@ const DEFAULT_NOTES_COLOUR: Colour = Colour::MAGENTA;
 
 /// A part of a [track](super::Track).
 // TODO: Test that this isn't `Clone` (bc. id).
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters, MutGetters)]
 pub struct Clip {
     #[get_copy = "pub(crate)"]

@@ -30,7 +30,6 @@ use getset::Getters;
 use getset::MutGetters;
 
 /// A running instance of the DAW.
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.

@@ -8,7 +8,6 @@ use crate::Id;
 use crate::Note;
 use crate::note::Pitch;
 
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum Event {
     NoteOn { id: Id<Note>, pitch: Pitch },

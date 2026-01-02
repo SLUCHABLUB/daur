@@ -13,7 +13,6 @@ use crate::ui::Point;
 use crate::ui::relative;
 
 /// An object that can be held.
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 #[remain::sorted]
 pub enum Holdable {

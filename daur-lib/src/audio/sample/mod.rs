@@ -21,7 +21,6 @@ use std::ops::AddAssign;
 /// A 32-bit float sample
 #[derive(Copy, Clone, PartialEq, Default, NoUninit)]
 #[repr(transparent)]
-#[cfg_attr(doc, doc(hidden))]
 pub struct Sample {
     // INVARIANT: this is on the interval [-1, 1].
     inner: f32,

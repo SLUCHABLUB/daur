@@ -47,7 +47,6 @@ pub enum ClipInsertionErrorKind {
 
 /// A musical track.
 // TODO: Test that this isn't `Clone` (bc. id).
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Getters, MutGetters, CopyGetters)]
 pub struct Track {
     #[get_copy = "pub(super)"]

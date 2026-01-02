@@ -52,7 +52,6 @@ const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
 
 // TODO: Test that this isn't `Clone` (bc. id).
 /// A musical piece consisting of multiple [tracks](Track).
-#[cfg_attr(doc, doc(hidden))]
 #[derive(Debug, Default, Getters, CloneGetters, Deserialize)]
 #[serde(from = "Serial")]
 pub struct Project {

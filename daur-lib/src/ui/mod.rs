@@ -30,7 +30,6 @@ pub(crate) use settings::Settings;
 use crate::view::RenderArea;
 
 /// A user interface for the DAW.
-#[cfg_attr(doc, doc(hidden))]
 pub trait UserInterface: Sync + 'static {
     /// The default depth of the black keys on the piano roll.
     const BLACK_KEY_DEPTH: NonZeroLength;

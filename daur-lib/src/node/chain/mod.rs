@@ -3,7 +3,6 @@ mod instance;
 use crate::audio::sample;
 pub(crate) use instance::Instance;
 
-#[cfg_attr(doc, doc(hidden))]
 pub(crate) struct Chain {
     // TODO: add a Dag<Node, NodeConnection>
     _nodes: (),
