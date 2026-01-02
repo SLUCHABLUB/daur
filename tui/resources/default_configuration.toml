@@ -2,6 +2,7 @@
 space = "toggle_playback"
 backspace = { edit = "delete" }
 
+control_s = "save"
 control_q = "exit"
 
 e = "toggle_edit_mode"

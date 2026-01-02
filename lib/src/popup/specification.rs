@@ -24,7 +24,6 @@ use crate::view::ToText as _;
 use crate::view::file_selector;
 use crate::view::multi;
 use crate::view::single;
-use anyhow::Error;
 use arcstr::ArcStr;
 use arcstr::literal;
 use derive_more::Debug;
@@ -41,23 +40,27 @@ const CONFIRM: ArcStr = literal!("confirm");
 const AUDIO_IMPORTER_TITLE: ArcStr = literal!("import audio");
 const ERROR_TITLE: ArcStr = literal!("error");
 const KEY_SELECTOR_TITLE: ArcStr = literal!("select key");
+const SAVE_LOCATION_PICKER_TITLE: ArcStr = literal!("pick save location");
 
 // TODO: keyboard navigation of popups
 /// A specification for a popup window.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "snake_case")]
+#[non_exhaustive]
 pub enum Specification {
     /// A file selector for importing an audio file.
     AudioImporter,
     /// An error message.
     #[serde(skip)]
-    Error(Arc<Error>),
+    Error(Arc<anyhow::Error>),
     /// A window for selecting a key.
     #[serde(skip)]
     KeySelector {
         /// The current key.
         key: Key,
     },
+    /// A file selector for selecting the save location.
+    SaveLocationPicker,
 }
 
 impl Specification {
@@ -68,17 +71,20 @@ impl Specification {
             Specification::AudioImporter => AUDIO_IMPORTER_TITLE,
             Specification::Error { .. } => ERROR_TITLE,
             Specification::KeySelector { .. } => KEY_SELECTOR_TITLE,
+            Specification::SaveLocationPicker => SAVE_LOCATION_PICKER_TITLE,
         }
     }
 
     pub(crate) fn generate_id(&self) -> Id<Popup> {
         static AUDIO_FILE_IMPORTER: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
         static KEY_SELECTOR: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
+        static SAVE_LOCATION_PICKER: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
 
         match self {
             Specification::AudioImporter => *AUDIO_FILE_IMPORTER,
             Specification::Error(_) => Id::generate(),
             Specification::KeySelector { .. } => *KEY_SELECTOR,
+            Specification::SaveLocationPicker => *SAVE_LOCATION_PICKER,
         }
     }
 
@@ -132,7 +138,6 @@ impl Specification {
     fn inner_view(&self, id: Id<Popup>) -> View {
         match self {
             Specification::AudioImporter => {
-                // TODO: use the project dir rather than the current dir
                 let selected_file =
                     Arc::new(ArcCell::new(Arc::from(current_dir().unwrap_or_default())));
 
@@ -214,6 +219,26 @@ impl Specification {
                     vec![tonic_selector, sign_selector, interval_selector, buttons],
                 )
             }
+            Specification::SaveLocationPicker => {
+                let selected_file =
+                    Arc::new(ArcCell::new(Arc::from(current_dir().unwrap_or_default())));
+
+                let file = Arc::clone(&selected_file);
+
+                let confirm = View::standard_button(
+                    CONFIRM,
+                    OnClick::action(move || Action::SaveAs(file.get())),
+                )
+                .terminating(id);
+                let cancel = CANCEL.centred().bordered().terminating(id);
+
+                let buttons = View::minimal_stack(Axis::X, vec![cancel, confirm]);
+
+                View::y_stack([
+                    file_selector(selected_file).fill_remaining(),
+                    buttons.quotated_minimally(),
+                ])
+            }
         }
         .on_click(OnClick::from(Action::CloseContextMenu))
     }
@@ -236,7 +261,7 @@ impl Specification {
     }
 }
 
-impl<E: Into<Error>> From<E> for Specification {
+impl<E: Into<anyhow::Error>> From<E> for Specification {
     fn from(error: E) -> Specification {
         Specification::Error(Arc::new(error.into()))
     }

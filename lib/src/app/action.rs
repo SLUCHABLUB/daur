@@ -6,16 +6,17 @@ use crate::Selectable;
 use crate::UserInterface;
 use crate::app::Actions;
 use crate::metre::Instant;
-use crate::popup::Specification;
+use crate::popup;
 use crate::project::Edit;
 use crate::ui::Length;
 use crate::ui::Point;
 use crate::ui::Rectangle;
 use crate::ui::Vector;
 use crate::view::context::Menu;
-use anyhow::Result;
 use serde::Deserialize;
 use std::env::current_dir;
+use std::path::Path;
+use std::sync::Arc;
 
 const DEFAULT_EXPORT_FILE_NAME: &str = "render";
 
@@ -65,7 +66,7 @@ pub enum Action {
         position: Point,
     },
     /// Opens a popup.
-    OpenPopup(Specification),
+    OpenPopup(popup::Specification),
     /// Stop playing.
     Pause,
     /// Picks up an object.
@@ -73,6 +74,11 @@ pub enum Action {
     PickUp(Holdable),
     /// Start playing.
     Play,
+    /// Same the project.
+    Save,
+    /// Same the project.
+    #[serde(skip)]
+    SaveAs(Arc<Path>),
     /// Selects an item.
     #[serde(skip)]
     Select(Selectable),
@@ -106,14 +112,13 @@ impl<Ui: UserInterface> App<Ui> {
     }
 
     fn take(&mut self, action: Action) {
-        if let Err(error) = self.try_take(action) {
-            self.popup_manager
-                .open(&Specification::from(error), self.ui);
+        if let Err(popup) = self.try_take(action) {
+            self.popup_manager.open(&popup, self.ui);
         }
     }
 
     #[remain::check]
-    fn try_take(&mut self, action: Action) -> Result<()> {
+    fn try_take(&mut self, action: Action) -> Result<(), popup::Specification> {
         #[sorted]
         match action {
             Action::ClearSelection => {
@@ -189,7 +194,7 @@ impl<Ui: UserInterface> App<Ui> {
                     self.cursor = position / &self.project_manager.project().time_context();
                 }
             }
-            // the currently held object should already have been let go.
+            // The currently held object should already have been let go.
             Action::PickUp(object) => self.held_object = Some(object),
             Action::Play => {
                 let from = self.cursor() * &self.project_manager.project().time_context();
@@ -198,6 +203,8 @@ impl<Ui: UserInterface> App<Ui> {
 
                 self.renderer.play_when_finished(from, player);
             }
+            Action::Save => self.project_manager.save()?,
+            Action::SaveAs(path) => self.project_manager.save_as(&path)?,
             Action::Select(item) => {
                 self.selection.push(item);
             }

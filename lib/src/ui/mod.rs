@@ -70,11 +70,11 @@ pub trait UserInterface: Sync + 'static {
     #[must_use]
     fn mouse_position(&self) -> Point;
 
-    /// Returns the width of the string
+    /// Returns the width of the string.
     #[must_use]
     fn string_width(string: &str) -> Length;
 
-    /// Returns the height of the string
+    /// Returns the height of the string.
     #[must_use]
     fn string_height(string: &str) -> Length;
 

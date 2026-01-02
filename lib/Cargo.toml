@@ -38,11 +38,9 @@ remain = "0.2.15"
 rodio = "0.21.0"
 rubato = "0.16.2"
 saturating_cast = "0.1.0"
+toml = "0.9.10"
 thiserror = "2.0.11"
 typed-builder = "0.23.2"
 
 # TODO: Use the official version when `EnumSet` is thread safe.
 enumset = { git = "https://github.com/SLUCHABLUB/enumset.git", features = ["serde"] }
-
-[dev-dependencies]
-toml = "0.9.10"

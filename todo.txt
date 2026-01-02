@@ -1,3 +1,6 @@
+TODO: purge usage of "chroma"
+TODO: purge anyhow imports
+
 TODO: note group onion skin
 TODO: interval highlighter
 
