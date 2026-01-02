@@ -186,7 +186,7 @@ impl Specification {
                 fn pitch_class_formatter(
                     sign: Arc<Cell<Sign>>,
                 ) -> impl Fn(&PitchClass) -> ArcStr + Clone {
-                    move |chroma| chroma.name(sign.get())
+                    move |class| class.name(sign.get())
                 }
 
                 let tonic = Arc::new(Cell::new(key.tonic));

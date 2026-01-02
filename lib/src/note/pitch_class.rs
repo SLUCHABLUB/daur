@@ -57,7 +57,7 @@ pub enum PitchClass {
 }
 
 impl PitchClass {
-    /// Returns the name of the chroma.
+    /// Returns the name of the pitch class.
     #[must_use]
     pub fn name(self, sign: Sign) -> ArcStr {
         match sign {
@@ -66,18 +66,18 @@ impl PitchClass {
         }
     }
 
-    /// Whether the chroma represents a black key on the piano.
+    /// Whether the pitch class represents a black key on the piano.
     #[must_use]
     pub fn is_black_key(self) -> bool {
         self.sharp_name() != self.flat_name()
     }
 
-    /// Moves the chroma by one semitone.
+    /// Moves the pitch class by one semitone.
     #[must_use]
     pub fn with_sign(self, sign: Sign) -> PitchClass {
         #![expect(
             clippy::wildcard_enum_match_arm,
-            reason = "no new chromas will be added"
+            reason = "no new pitch classes will be added"
         )]
         match sign {
             Sign::Sharp => match self {
