@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["daur-lib", "daur-tui"]
+members = ["lib", "tui"]
 
 [workspace.package]
 authors = ["SLUCHABLUB"]
