@@ -22,14 +22,14 @@ use std::mem::take;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-pub(crate) struct Renderer<Ui: 'static> {
+pub(crate) struct Renderer {
     /// The thread pool.
     ///
     /// This executor type is used due to this recommendation in the `executors` crate's readme:
     ///
     /// > If you don't know what hardware your code is going to run on, use the crossbeam_workstealing_pool
     thread_pool: ThreadPool<DynParker>,
-    popups: Arc<popup::Manager<Ui>>,
+    popups: Arc<popup::Manager>,
     /// Data that is shared across the workers in the tread pool.
     progress: Arc<Progress>,
 }
@@ -53,8 +53,8 @@ enum Master {
     },
 }
 
-impl<Ui> Renderer<Ui> {
-    pub(crate) fn new(popups: Arc<popup::Manager<Ui>>) -> Self {
+impl Renderer {
+    pub(crate) fn new(popups: Arc<popup::Manager>) -> Self {
         Renderer {
             thread_pool: ThreadPool::default(),
             popups,
@@ -93,9 +93,14 @@ impl<Ui> Renderer<Ui> {
     }
 }
 
-impl<Ui: UserInterface> Renderer<Ui> {
+impl Renderer {
     // TODO: the audio up to the point of the change may be reused
-    pub(crate) fn restart(&mut self, project: &Project, sample_rate: sample::Rate) -> Result<()> {
+    pub(crate) fn restart<Ui: UserInterface>(
+        &mut self,
+        project: &Project,
+        sample_rate: sample::Rate,
+        ui: &'static Ui,
+    ) -> Result<()> {
         // Stop the threads that are rendering the old project
         self.progress.should_stop.set(true);
 
@@ -138,7 +143,7 @@ impl<Ui: UserInterface> Renderer<Ui> {
             let popups = Arc::clone(&self.popups);
 
             self.thread_pool
-                .execute(move || render(&audio, &events, &chain, &progress, &popups));
+                .execute(move || render(&audio, &events, &chain, &progress, &popups, ui));
         }
 
         if project.tracks.is_empty() {
@@ -154,10 +159,11 @@ fn render<Ui: UserInterface>(
     events: &Sequence,
     chain: &Chain,
     progress: &Progress,
-    popups: &popup::Manager<Ui>,
+    popups: &popup::Manager,
+    ui: &Ui,
 ) {
     try_render(input_audio, events, chain, progress)
-        .unwrap_or_else(|error| popups.open(&error.into()));
+        .unwrap_or_else(|error| popups.open(&error.into(), ui));
 }
 
 fn try_render(

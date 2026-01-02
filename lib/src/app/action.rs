@@ -107,7 +107,8 @@ impl<Ui: UserInterface> App<Ui> {
 
     fn take(&mut self, action: Action) {
         if let Err(error) = self.try_take(action) {
-            self.popup_manager.open(&Specification::from(error));
+            self.popup_manager
+                .open(&Specification::from(error), self.ui);
         }
     }
 
@@ -131,6 +132,7 @@ impl<Ui: UserInterface> App<Ui> {
                 self.renderer.restart(
                     self.project_manager.project(),
                     self.audio_config.sample_rate()?,
+                    self.ui,
                 )?;
             }
             Action::EnterEditMode => self.edit_mode = true,
@@ -177,7 +179,7 @@ impl<Ui: UserInterface> App<Ui> {
                 self.context_menu = Some(menu.instantiate::<Ui>(position, self.ui()));
             }
             Action::OpenPopup(popup) => {
-                self.popup_manager.open(&popup);
+                self.popup_manager.open(&popup, self.ui);
             }
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {

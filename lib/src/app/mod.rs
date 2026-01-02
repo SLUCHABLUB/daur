@@ -46,7 +46,7 @@ pub struct App<Ui: UserInterface> {
 
     project_manager: project::Manager,
     #[debug(skip)]
-    renderer: project::Renderer<Ui>,
+    renderer: project::Renderer,
 
     #[debug(skip)]
     audio_config: Config,
@@ -59,7 +59,7 @@ pub struct App<Ui: UserInterface> {
     /// The currently held object.
     #[get_copy = "pub"]
     held_object: Option<Holdable>,
-    popup_manager: Arc<popup::Manager<Ui>>,
+    popup_manager: Arc<popup::Manager>,
 
     /// The position of the musical cursor.
     ///
@@ -81,7 +81,7 @@ impl<Ui: UserInterface> App<Ui> {
     /// Creates a new instance
     #[must_use]
     pub fn new(ui: &'static Ui) -> Self {
-        let popup_manager = Arc::new(popup::Manager::new(ui));
+        let popup_manager = Arc::new(popup::Manager::new());
 
         let mut app = App {
             ui,
