@@ -1,3 +1,4 @@
+use enum_iterator::Sequence;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use enumset::enum_set;
@@ -6,7 +7,6 @@ use serde::Serialize;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
-use strum::VariantArray;
 
 // TODO: don't use short names?
 /// Positive intervals less than an octave and greater than a perfect unison.
@@ -14,7 +14,7 @@ use strum::VariantArray;
     non_camel_case_types,
     reason = "the (standardised?) short names for intervals require casing for distinction"
 )]
-#[derive(EnumSetType, Hash, Debug, VariantArray, Serialize, Deserialize)]
+#[derive(EnumSetType, Hash, Debug, Sequence, Serialize, Deserialize)]
 #[enumset(serialize_repr = "list")]
 pub enum NonUnisonSimpleInterval {
     /// A minor second.

@@ -15,6 +15,7 @@ workspace = true
 
 anyhow = "1.0.98"
 arcstr = "1.2.0"
+enum-iterator = "2.3.0"
 indexmap = { version = "2.9.0", features = ["serde"] }
 mitsein = { version = "0.8.0", features = ["indexmap"] }
 serde = { version = "1.0.228", features = ["derive"] }
@@ -39,9 +40,6 @@ rubato = "0.16.2"
 saturating_cast = "0.1.0"
 thiserror = "2.0.11"
 typed-builder = "0.23.2"
-
-# TODO: remove
-strum = { version = "0.27.1", features = ["derive"] }
 
 # TODO: Use the official version when `EnumSet` is thread safe.
 enumset = { git = "https://github.com/SLUCHABLUB/enumset.git", features = ["serde"] }

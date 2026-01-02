@@ -1,3 +1,4 @@
+use enum_iterator::Sequence;
 use serde::Deserialize;
 use serde::Serialize;
 use std::fmt;
@@ -5,15 +6,12 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use std::fmt::Write as _;
 use std::ops::Not;
-use strum::VariantArray;
 
 pub(super) const SHARP: char = '\u{266F}';
 pub(super) const FLAT: char = '\u{266D}';
 
 /// A flat or sharp sign.
-#[derive(
-    Copy, Clone, Eq, PartialEq, Hash, Debug, Default, VariantArray, Serialize, Deserialize,
-)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default, Sequence, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Sign {
     /// ♯

@@ -4,9 +4,9 @@ use crate::note::Sign;
 use arcstr::ArcStr;
 use arcstr::literal;
 use const_str::concat;
+use enum_iterator::Sequence;
 use serde::Deserialize;
 use serde::Serialize;
-use strum::VariantArray;
 
 // TODO: use `FromStr` for `Deserialize`
 /// A [pitch class](https://en.wikipedia.org/wiki/Pitch_class).
@@ -24,7 +24,7 @@ use strum::VariantArray;
     Hash,
     Debug,
     Default,
-    VariantArray,
+    Sequence,
     Serialize,
     Deserialize,
 )]
