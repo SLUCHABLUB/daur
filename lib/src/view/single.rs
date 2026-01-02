@@ -6,7 +6,6 @@ use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::View;
 use arcstr::ArcStr;
-use closure::closure;
 use std::fmt::Display;
 use std::sync::Arc;
 use strum::VariantArray;
@@ -31,7 +30,10 @@ pub fn selector_with_formatter<
     View::balanced_stack(
         axis,
         T::VARIANTS.iter().map(|variant| {
-            View::reactive(closure!([clone cell, clone formatter] move |_| {
+            let cell = Arc::clone(cell);
+            let formatter = formatter.clone();
+
+            View::reactive(move |_| {
                 let is_set = cell.get() == *variant;
 
                 let cell = Arc::clone(&cell);
@@ -40,7 +42,7 @@ pub fn selector_with_formatter<
                 });
 
                 View::toggle(formatter(variant), on_click, is_set)
-            }))
+            })
         }),
     )
 }

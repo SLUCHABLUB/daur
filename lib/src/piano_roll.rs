@@ -32,7 +32,6 @@ use crate::view::ToText as _;
 use crate::view::ruler;
 use arcstr::ArcStr;
 use arcstr::literal;
-use closure::closure;
 use getset::CopyGetters;
 use getset::Setters;
 use itertools::chain;
@@ -320,6 +319,27 @@ impl PianoRoll {
         edit_mode: bool,
         key: &Changing<Key>,
     ) -> View {
+        fn grabber(
+            negative_x_offset: Length,
+            offset_mapping: OffsetMapping,
+            edit_mode: bool,
+        ) -> impl Fn(RenderArea) -> Option<Holdable> {
+            move |render_area: RenderArea| {
+                let mouse_position = render_area.relative_mouse_position()?;
+
+                Some(if edit_mode {
+                    let start =
+                        offset_mapping.quantised_instant(mouse_position.x + negative_x_offset);
+
+                    Holdable::NoteCreation { start }
+                } else {
+                    Holdable::SelectionBox {
+                        start: render_area.mouse_position,
+                    }
+                })
+            }
+        }
+
         let key = key.get(offset_mapping.instant(self.negative_x_offset));
 
         // TODO:
@@ -353,19 +373,7 @@ impl PianoRoll {
             .collect(),
         );
 
-        let grabber = closure!([clone offset_mapping] move |render_area: RenderArea| {
-            let mouse_position = render_area.relative_mouse_position()?;
-
-            Some(if edit_mode {
-                let start = offset_mapping.quantised_instant(mouse_position.x + self.negative_x_offset);
-
-               Holdable::NoteCreation { start }
-            } else {
-                Holdable::SelectionBox {
-                    start: render_area.mouse_position,
-                }
-            })
-        });
+        let grabber = grabber(self.negative_x_offset, offset_mapping.clone(), edit_mode);
 
         let dropper = move |object, render_area: RenderArea| {
             let Holdable::NoteCreation { start } = object else {

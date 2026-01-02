@@ -14,7 +14,6 @@ FIXME: cropping rules
 
 TODO: rounded add/sub/mul/div
 TODO: use calm-ops
-TODO: cargo fmt closures
 
 --- LONG TIME ---
 

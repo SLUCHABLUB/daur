@@ -7,6 +7,9 @@ use crate::View;
 use crate::app::Action;
 use crate::holdable::WindowSide;
 use crate::note::Key;
+use crate::note::NonUnisonSimpleInterval;
+use crate::note::PitchClass;
+use crate::note::Sign;
 use crate::project::Edit;
 use crate::sync::ArcCell;
 use crate::sync::Cell;
@@ -24,8 +27,8 @@ use crate::view::single;
 use anyhow::Error;
 use arcstr::ArcStr;
 use arcstr::literal;
-use closure::closure;
 use derive_more::Debug;
+use enumset::EnumSet;
 use serde::Deserialize;
 use std::env::current_dir;
 use std::sync::Arc;
@@ -161,9 +164,38 @@ impl Specification {
                 )
             }
             Specification::KeySelector { key } => {
+                fn confirm_action(
+                    tonic: Arc<Cell<PitchClass>>,
+                    sign: Arc<Cell<Sign>>,
+                    intervals: Arc<Cell<EnumSet<NonUnisonSimpleInterval>>>,
+                ) -> impl Fn() -> Action {
+                    move || {
+                        Action::Edit(Edit::SetKey(Key {
+                            tonic: tonic.get(),
+                            sign: sign.get(),
+                            intervals: intervals.get(),
+                        }))
+                    }
+                }
+
+                fn pitch_class_formatter(
+                    sign: Arc<Cell<Sign>>,
+                ) -> impl Fn(&PitchClass) -> ArcStr + Clone {
+                    move |chroma| chroma.name(sign.get())
+                }
+
                 let tonic = Arc::new(Cell::new(key.tonic));
                 let sign = Arc::new(Cell::new(key.sign));
                 let intervals = Arc::new(Cell::new(key.intervals));
+
+                let sign_selector = single::selector(&sign, Axis::X);
+                let interval_selector = multi::selector(&intervals, Axis::X);
+
+                let tonic_selector = single::selector_with_formatter(
+                    &tonic,
+                    Axis::X,
+                    pitch_class_formatter(Arc::clone(&sign)),
+                );
 
                 let buttons = View::minimal_stack(
                     Axis::X,
@@ -171,15 +203,7 @@ impl Specification {
                         CANCEL.centred().bordered().terminating(id),
                         View::standard_button(
                             CONFIRM,
-                            OnClick::action(
-                                closure!([clone tonic, clone sign, clone intervals] move || {
-                                    Action::Edit(Edit::SetKey(Key {
-                                        tonic: tonic.get(),
-                                        sign: sign.get(),
-                                        intervals: intervals.get(),
-                                    }))
-                                }),
-                            ),
+                            OnClick::action(confirm_action(tonic, sign, intervals)),
                         )
                         .terminating(id),
                     ],
@@ -187,18 +211,7 @@ impl Specification {
 
                 View::minimal_stack(
                     Axis::Y,
-                    vec![
-                        single::selector_with_formatter(
-                            &tonic,
-                            Axis::X,
-                            closure!([clone sign] move |chroma| {
-                                chroma.name(sign.get())
-                            }),
-                        ),
-                        single::selector(&sign, Axis::X),
-                        multi::selector(&intervals, Axis::X),
-                        buttons,
-                    ],
+                    vec![tonic_selector, sign_selector, interval_selector, buttons],
                 )
             }
         }
