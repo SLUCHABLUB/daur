@@ -1,5 +1,5 @@
-use crate::note::Chroma;
-use crate::note::KeyInterval;
+use crate::note::NonUnisonSimpleInterval;
+use crate::note::PitchClass;
 use crate::note::Sign;
 use enumset::EnumSet;
 use serde::Deserialize;
@@ -12,11 +12,11 @@ use std::fmt::Formatter;
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
 pub struct Key {
     /// The tonic.
-    pub tonic: Chroma,
+    pub tonic: PitchClass,
     /// How the "black piano notes" should be displayed.
     pub sign: Sign,
     /// The intervals in the key (relative to the tonic).
-    pub intervals: EnumSet<KeyInterval>,
+    pub intervals: EnumSet<NonUnisonSimpleInterval>,
 }
 
 impl Default for Key {
@@ -27,9 +27,9 @@ impl Default for Key {
     /// _Minor_, since it uses all the white keys on the piano.
     fn default() -> Key {
         Key {
-            tonic: Chroma::A,
+            tonic: PitchClass::A,
             sign: Sign::default(),
-            intervals: KeyInterval::MINOR,
+            intervals: NonUnisonSimpleInterval::MINOR,
         }
     }
 }
@@ -40,7 +40,7 @@ impl Display for Key {
             f,
             "{} {}",
             self.tonic.name(self.sign),
-            KeyInterval::name(self.intervals)
+            NonUnisonSimpleInterval::collection_name(self.intervals)
         )
     }
 }

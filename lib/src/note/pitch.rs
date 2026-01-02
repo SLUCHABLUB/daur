@@ -1,5 +1,5 @@
-use crate::note::Chroma;
 use crate::note::Interval;
+use crate::note::PitchClass;
 use crate::note::Sign;
 use num::Integer as _;
 use std::hash::Hash;
@@ -20,22 +20,22 @@ impl Pitch {
 
     /// Returns the croma of the pitch.
     #[must_use]
-    pub fn chroma(self) -> Chroma {
+    pub fn class(self) -> PitchClass {
         match self.midi_number.rem_euclid(12) {
-            0 => Chroma::C,
-            1 => Chroma::Db,
-            2 => Chroma::D,
-            3 => Chroma::Eb,
-            4 => Chroma::E,
-            5 => Chroma::F,
-            6 => Chroma::Gb,
-            7 => Chroma::G,
-            8 => Chroma::Ab,
-            9 => Chroma::A,
-            10 => Chroma::Bb,
-            11 => Chroma::B,
+            0 => PitchClass::C,
+            1 => PitchClass::Db,
+            2 => PitchClass::D,
+            3 => PitchClass::Eb,
+            4 => PitchClass::E,
+            5 => PitchClass::F,
+            6 => PitchClass::Gb,
+            7 => PitchClass::G,
+            8 => PitchClass::Ab,
+            9 => PitchClass::A,
+            10 => PitchClass::Bb,
+            11 => PitchClass::B,
             // unreachable
-            _ => Chroma::default(),
+            _ => PitchClass::default(),
         }
     }
 
@@ -46,7 +46,7 @@ impl Pitch {
     /// Returns the name of the pitch.
     #[must_use]
     pub fn name(self, sign: Sign) -> String {
-        format!("{}{}", self.chroma().name(sign), self.octave_number())
+        format!("{}{}", self.class().name(sign), self.octave_number())
     }
 
     pub(crate) fn frequency(self) -> f32 {

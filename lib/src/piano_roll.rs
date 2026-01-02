@@ -403,13 +403,13 @@ impl PianoRoll {
     //  - selecting all notes with the key's pitch
     /// Return the view for a key on the piano-roll piano.
     fn piano_key(self, pitch: Pitch, key: Key) -> View {
-        let top = View::Solid(if pitch.chroma().is_black_key() {
+        let top = View::Solid(if pitch.class().is_black_key() {
             ThemeColour::BlackKey
         } else {
             ThemeColour::WhiteKey
         });
 
-        let text = if pitch.chroma() == key.tonic {
+        let text = if pitch.class() == key.tonic {
             ArcStr::from(pitch.name(key.sign))
         } else {
             ArcStr::new()

@@ -8,7 +8,6 @@ use std::fmt::Display;
 use std::fmt::Formatter;
 use strum::VariantArray;
 
-// TODO: rename to `NonUnisonSimpleInterval`
 // TODO: don't use short names?
 /// Positive intervals less than an octave and greater than a perfect unison.
 #[expect(
@@ -17,7 +16,7 @@ use strum::VariantArray;
 )]
 #[derive(EnumSetType, Hash, Debug, VariantArray, Serialize, Deserialize)]
 #[enumset(serialize_repr = "list")]
-pub enum KeyInterval {
+pub enum NonUnisonSimpleInterval {
     /// A minor second.
     m2,
     /// A major second.
@@ -42,21 +41,21 @@ pub enum KeyInterval {
     M7,
 }
 
-impl KeyInterval {
+impl NonUnisonSimpleInterval {
     /// The intervals in the minor key.
-    pub const MINOR: EnumSet<KeyInterval> = enum_set!(
-        KeyInterval::M2
-            | KeyInterval::m3
-            | KeyInterval::P4
-            | KeyInterval::P5
-            | KeyInterval::m6
-            | KeyInterval::m7
+    pub const MINOR: EnumSet<NonUnisonSimpleInterval> = enum_set!(
+        NonUnisonSimpleInterval::M2
+            | NonUnisonSimpleInterval::m3
+            | NonUnisonSimpleInterval::P4
+            | NonUnisonSimpleInterval::P5
+            | NonUnisonSimpleInterval::m6
+            | NonUnisonSimpleInterval::m7
     );
 
     /// Returns the name for a collection of intervals.
     #[must_use]
-    pub fn name(intervals: EnumSet<KeyInterval>) -> &'static str {
-        if intervals == KeyInterval::MINOR {
+    pub fn collection_name(intervals: EnumSet<NonUnisonSimpleInterval>) -> &'static str {
+        if intervals == NonUnisonSimpleInterval::MINOR {
             "minor"
         } else {
             "custom"
@@ -64,7 +63,7 @@ impl KeyInterval {
     }
 }
 
-impl Display for KeyInterval {
+impl Display for NonUnisonSimpleInterval {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         #![expect(clippy::use_debug, reason = "Display = Debug here")]
         write!(f, "{self:?}")

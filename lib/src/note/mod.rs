@@ -2,24 +2,24 @@
 
 pub(crate) mod event;
 
-mod chroma;
 mod group;
 mod id;
 mod interval;
 mod key;
-mod key_interval;
+mod non_unison_simple_interval;
 mod pitch;
+mod pitch_class;
 mod sign;
 
-pub use chroma::Chroma;
 use getset::CopyGetters;
 pub use group::Group;
 pub use group::InsertionError;
 pub use id::Path;
 pub use interval::Interval;
 pub use key::Key;
-pub use key_interval::KeyInterval;
+pub use non_unison_simple_interval::NonUnisonSimpleInterval;
 pub use pitch::Pitch;
+pub use pitch_class::PitchClass;
 pub use sign::Sign;
 
 #[doc(inline)]
