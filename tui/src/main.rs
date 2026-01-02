@@ -29,7 +29,6 @@ use std::io;
 use std::io::stdout;
 use std::time::Duration;
 
-// TODO: use anyhow?
 // TODO: clean this up
 fn main() -> anyhow::Result<()> {
     // The first two arguments are for the organisation name and domain.
