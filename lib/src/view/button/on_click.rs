@@ -21,7 +21,7 @@ impl OnClick {
         }
     }
 
-    /// Creates a new function from a closure generating an [action](Action).
+    /// Creates a new function from a function generating an [action](Action).
     ///
     /// [`OnClick`] also implements [`From<Action>`] so if the action is available at call-time,
     /// [`from`](From::<Action>::from) is preferred.

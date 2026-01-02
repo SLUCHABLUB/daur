@@ -1,19 +1,39 @@
+use crate::app::Action;
 use crate::metre::OffsetMapping;
 use crate::ui::Length;
 use crate::view::Axis;
+use crate::view::OnClick;
 use crate::view::RenderArea;
 use crate::view::View;
 
 /// A ruler of musical time
 pub fn ruler(offset: Length, offset_mapping: OffsetMapping) -> View {
-    View::reactive(move |render_area| reactive_ruler(offset, &offset_mapping, render_area))
+    let view = {
+        let offset_mapping = offset_mapping.clone();
+
+        View::reactive(move |render_area| reactive_ruler(offset, &offset_mapping, render_area))
+    };
+
+    let on_click = OnClick::new(move |render_area, actions| {
+        let Some(mouse_position) = render_area.relative_mouse_position() else {
+            return;
+        };
+
+        let offset_from_ruler_start = offset + mouse_position.x;
+
+        let instant = offset_mapping.quantised_instant(offset_from_ruler_start);
+
+        actions.push(Action::MoveCursor(instant));
+    });
+
+    view.on_click(on_click)
 }
 
 fn reactive_ruler(offset: Length, offset_mapping: &OffsetMapping, render_area: RenderArea) -> View {
     let quantisation = offset_mapping.quantisation();
     let mut measures = offset_mapping.time_signature().measures();
 
-    let mut first_index: usize = 0;
+    let mut index_of_first_rule: usize = 0;
     let mut crop = offset;
 
     for measure in &mut measures {
@@ -24,20 +44,20 @@ fn reactive_ruler(offset: Length, offset_mapping: &OffsetMapping, render_area: R
         }
 
         crop -= width;
-        first_index = first_index.wrapping_add(1);
+        index_of_first_rule = index_of_first_rule.wrapping_add(1);
     }
 
     let first_measure = measures.next().unwrap_or_default();
     let first_width = first_measure.width(quantisation);
 
-    let first_index = first_index;
+    let index_of_first_rule = index_of_first_rule;
     let measures = measures;
     let crop = crop;
 
     let mut remaining = render_area.area.size.width + crop - first_width;
 
     let first_rule = View::Rule {
-        index: first_index,
+        index: index_of_first_rule,
         cells: first_measure.cell_count(quantisation),
         left_crop: crop,
         width: first_width,
@@ -46,14 +66,16 @@ fn reactive_ruler(offset: Length, offset_mapping: &OffsetMapping, render_area: R
     let mut rules = vec![first_rule];
 
     for (index, measure) in measures.clone().enumerate() {
-        let index = first_index.wrapping_add(1).wrapping_add(index);
+        let index_offset = index.wrapping_add(1);
+
+        let index = index_of_first_rule.wrapping_add(index_offset);
         let width = measure.width(quantisation);
 
         rules.push(View::Rule {
             index,
             cells: measure.cell_count(quantisation),
             left_crop: Length::ZERO,
-            width: measure.width(quantisation),
+            width,
         });
 
         remaining -= width;
