@@ -83,9 +83,12 @@ std_instead_of_core = "allow"
 missing_trait_methods = "allow"
 question_mark_used = "allow"
 
-# Miscellaneous lints.
-as_conversions = "allow" # more specific lints are recommended
-default_numeric_fallback = "allow" # has false positives
+# Lints with sub-lints that are better.
+as_conversions = "allow"
+
+# Lints with many false positives.
+default_numeric_fallback = "allow"
+unsafe_derive_deserialize = "allow"
 
 # TODO: Maybe deny these later.
 missing_docs_in_private_items = "allow"

@@ -7,6 +7,7 @@ mod edit;
 mod history;
 mod manager;
 mod renderer;
+mod serial;
 mod workspace;
 
 pub use edit::Edit;
@@ -37,6 +38,9 @@ use getset::CloneGetters;
 use getset::Getters;
 use indexmap::IndexMap;
 use non_zero::non_zero;
+use serde::Deserialize;
+use serde::Serialize;
+use serial::Serial;
 
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
@@ -49,7 +53,8 @@ const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
 // TODO: Test that this isn't `Clone` (bc. id).
 /// A musical piece consisting of multiple [tracks](Track).
 #[cfg_attr(doc, doc(hidden))]
-#[derive(Debug, Default, Getters, CloneGetters)]
+#[derive(Debug, Default, Getters, CloneGetters, Deserialize)]
+#[serde(from = "Serial")]
 pub struct Project {
     /// The name of the project.
     #[get_clone = "pub"]
@@ -102,5 +107,14 @@ impl Project {
 
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {
         &self.time_signature / &self.tempo
+    }
+}
+
+impl Serialize for Project {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Serial::from(self).serialize(serializer)
     }
 }

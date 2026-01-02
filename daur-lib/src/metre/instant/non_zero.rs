@@ -1,8 +1,10 @@
 use crate::metre::Instant;
 use crate::metre::NonZeroDuration;
+use serde::Deserialize;
+use serde::Serialize;
 
 /// An instant that is strictly after the starting point.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct NonZeroInstant {
     /// The duration since the starting point
     pub since_start: NonZeroDuration,

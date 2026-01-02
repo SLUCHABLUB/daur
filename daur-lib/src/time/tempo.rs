@@ -1,6 +1,8 @@
 use crate::time::Duration;
 use crate::time::NonZeroDuration;
 use non_zero::non_zero;
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -8,9 +10,9 @@ use std::num::NonZeroU16;
 use std::num::NonZeroU64;
 
 /// A musical tempo.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Tempo {
-    // TODO: support the psychopathy that is non-integral BPMs
+    // TODO: support the psychopathy that is non-integral BPMs (note serde)
     bpm: NonZeroU16,
 }
 

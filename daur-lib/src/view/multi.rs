@@ -5,38 +5,32 @@ use crate::sync::Cell;
 use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::View;
-use bitbag::BitBag;
-use bitbag::Flags;
+use enumset::EnumSet;
+use enumset::EnumSetType;
 use std::sync::Arc;
+use strum::VariantArray;
 
-/// A simple multi-selection view
-pub fn selector<T: Copy + Flags + ToArcStr + Send + Sync>(
-    cell: &Arc<Cell<BitBag<T>>>,
-    axis: Axis,
-) -> View
+/// A simple multi-selection view.
+pub fn selector<T>(cell: &Arc<Cell<EnumSet<T>>>, axis: Axis) -> View
 where
-    T::Repr: Send + Sync,
+    T: Copy + EnumSetType + ToArcStr + Send + Sync + VariantArray,
 {
     View::balanced_stack(
         axis,
-        T::VARIANTS.iter().map(move |(_, variant, _)| {
+        T::VARIANTS.iter().map(move |variant| {
             let name = variant.to_arc_str();
 
             let cell = Arc::clone(cell);
             View::reactive(move |_| {
-                let is_set = cell.get().is_set(*variant);
+                let is_set = cell.get().contains(*variant);
 
                 let cell = Arc::clone(&cell);
                 let on_click = OnClick::new(move |_, _| {
-                    let mut bag = cell.get();
+                    let mut set = cell.get();
 
-                    if bag.is_set(*variant) {
-                        bag.unset(*variant);
-                    } else {
-                        bag.set(*variant);
-                    }
+                    set ^= *variant;
 
-                    cell.set(bag);
+                    cell.set(set);
                 });
 
                 View::toggle(name.clone(), on_click, is_set)

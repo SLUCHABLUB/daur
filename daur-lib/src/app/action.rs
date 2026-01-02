@@ -14,7 +14,6 @@ use crate::ui::Rectangle;
 use crate::ui::Vector;
 use crate::view::context::Menu;
 use anyhow::Result;
-use derive_more::Debug;
 use serde::Deserialize;
 use std::env::current_dir;
 

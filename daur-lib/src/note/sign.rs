@@ -1,3 +1,5 @@
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -9,12 +11,17 @@ pub(super) const SHARP: char = '\u{266F}';
 pub(super) const FLAT: char = '\u{266D}';
 
 /// A flat or sharp sign.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default, VariantArray)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Hash, Debug, Default, VariantArray, Serialize, Deserialize,
+)]
+#[serde(rename_all = "snake_case")]
 pub enum Sign {
-    #[default]
     /// ♯
+    #[default]
+    #[serde(alias = "#", alias = "\u{266f}")]
     Sharp,
     /// ♭
+    #[serde(alias = "b", alias = "\u{266d}")]
     Flat,
 }
 

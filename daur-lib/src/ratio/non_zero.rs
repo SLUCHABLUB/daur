@@ -2,12 +2,14 @@ use crate::ratio::Ratio;
 use crate::ratio::util::make_coprime;
 use getset::CopyGetters;
 use non_zero::non_zero;
+use serde::Deserialize;
+use serde::Serialize;
 use std::cmp::Ordering;
 use std::num::NonZeroU64;
 use std::num::NonZeroU128;
 
 /// A non-zero [ratio](Ratio)
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize, CopyGetters)]
 pub struct NonZeroRatio {
     /// The numerator.
     #[get_copy = "pub"]

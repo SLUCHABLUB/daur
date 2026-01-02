@@ -4,11 +4,31 @@ use crate::note::Sign;
 use arcstr::ArcStr;
 use arcstr::literal;
 use const_str::concat;
+use serde::Deserialize;
+use serde::Serialize;
 use strum::VariantArray;
 
+// TODO: rename to `PitchClass`
+// TODO: use `FromStr` for `Deserialize`
 /// A [pitch class](https://en.wikipedia.org/wiki/Pitch_class).
-#[expect(clippy::min_ident_chars, reason = "Chromas are named after letters")]
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, VariantArray)]
+#[expect(
+    clippy::min_ident_chars,
+    reason = "Pitch classes are named after letters"
+)]
+#[derive(
+    Copy,
+    Clone,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Hash,
+    Debug,
+    Default,
+    VariantArray,
+    Serialize,
+    Deserialize,
+)]
 pub enum Chroma {
     #[default]
     /// A

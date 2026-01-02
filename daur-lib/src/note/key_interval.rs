@@ -1,56 +1,61 @@
-use bitbag::BitBag;
-use bitbag::Flags;
+use enumset::EnumSet;
+use enumset::EnumSetType;
+use enumset::enum_set;
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
+use strum::VariantArray;
 
-/// Intervals less than an octave and greater than a perfect unison.
+// TODO: rename to `NonUnisonSimpleInterval`
+// TODO: don't use short names?
+/// Positive intervals less than an octave and greater than a perfect unison.
 #[expect(
     non_camel_case_types,
     reason = "the (standardised?) short names for intervals require casing for distinction"
 )]
-#[derive(Flags)]
-#[repr(u16)]
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(EnumSetType, Hash, Debug, VariantArray, Serialize, Deserialize)]
+#[enumset(serialize_repr = "list")]
 pub enum KeyInterval {
     /// A minor second.
-    m2 = 1 << 0,
+    m2,
     /// A major second.
-    M2 = 1 << 1,
+    M2,
     /// A minor third.
-    m3 = 1 << 2,
+    m3,
     /// A major third.
-    M3 = 1 << 3,
+    M3,
     /// A perfect fourth.
-    P4 = 1 << 4,
+    P4,
     /// A tritone.
-    TT = 1 << 5,
+    TT,
     /// A perfect fifth.
-    P5 = 1 << 6,
+    P5,
     /// A minor sixth.
-    m6 = 1 << 7,
+    m6,
     /// A major eighth.
-    M6 = 1 << 8,
+    M6,
     /// A minor seventh.
-    m7 = 1 << 9,
+    m7,
     /// A major seventh.
-    M7 = 1 << 10,
+    M7,
 }
 
 impl KeyInterval {
     /// The intervals in the minor key.
-    pub const MINOR: BitBag<KeyInterval> = BitBag::new_unchecked(
-        KeyInterval::M2 as u16
-            | KeyInterval::m3 as u16
-            | KeyInterval::P4 as u16
-            | KeyInterval::P5 as u16
-            | KeyInterval::m6 as u16
-            | KeyInterval::m7 as u16,
+    pub const MINOR: EnumSet<KeyInterval> = enum_set!(
+        KeyInterval::M2
+            | KeyInterval::m3
+            | KeyInterval::P4
+            | KeyInterval::P5
+            | KeyInterval::m6
+            | KeyInterval::m7
     );
 
     /// Returns the name for a collection of intervals.
     #[must_use]
-    pub fn name(intervals: BitBag<KeyInterval>) -> &'static str {
+    pub fn name(intervals: EnumSet<KeyInterval>) -> &'static str {
         if intervals == KeyInterval::MINOR {
             "minor"
         } else {

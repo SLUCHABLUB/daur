@@ -4,6 +4,8 @@ use crate::metre::Instant;
 use crate::metre::Measure;
 use crate::metre::NonZeroDuration;
 use non_zero::non_zero;
+use serde::Deserialize;
+use serde::Serialize;
 use std::fmt;
 use std::fmt::Display;
 use std::fmt::Formatter;
@@ -12,7 +14,8 @@ use std::num::NonZeroU8;
 use std::num::NonZeroU64;
 
 /// A time signature.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize)]
+#[serde(from = "[NonZeroU8; 2]", into = "[NonZeroU8; 2]")]
 pub struct TimeSignature {
     /// The upper number of the time signature.
     /// The number of beats that fit in a measure.
@@ -60,6 +63,21 @@ impl Display for TimeSignature {
             "{}/{}",
             self.beats_per_measure, self.beats_per_whole_note
         )
+    }
+}
+
+impl From<[NonZeroU8; 2]> for TimeSignature {
+    fn from([beats_per_measure, beats_per_whole_note]: [NonZeroU8; 2]) -> Self {
+        TimeSignature {
+            beats_per_measure,
+            beats_per_whole_note,
+        }
+    }
+}
+
+impl From<TimeSignature> for [NonZeroU8; 2] {
+    fn from(signature: TimeSignature) -> Self {
+        [signature.beats_per_measure, signature.beats_per_whole_note]
     }
 }
 

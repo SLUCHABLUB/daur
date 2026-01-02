@@ -1,0 +1,12 @@
+name = ""
+time_signature = [4, 4]
+
+[tempo]
+bpm = 180
+
+[key]
+tonic = "A"
+sign = "sharp"
+intervals = ["M2", "m3", "P4", "P5", "m6", "m7"]
+
+[tracks]
