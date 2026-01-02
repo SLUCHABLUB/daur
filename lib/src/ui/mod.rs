@@ -57,8 +57,8 @@ pub trait UserInterface: Sync + 'static {
 
     /// Exits the DAW.
     ///
-    /// It is OK for implementations not to do anything or restart when this is run.
-    /// This may be the case if the application, for example, cannot close itself.
+    /// It is OK for implementations to not do anything or to restart when this is run.
+    /// This may be needed if the application, for example, cannot close itself.
     fn exit(&self);
 
     /// Returns the current screen size.

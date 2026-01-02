@@ -136,7 +136,10 @@ impl<Ui: UserInterface> App<Ui> {
                 )?;
             }
             Action::EnterEditMode => self.edit_mode = true,
-            Action::Exit => self.ui.exit(),
+            Action::Exit => {
+                // TODO: Check if we've saved the project.
+                self.ui.exit();
+            }
             Action::ExitEditMode => self.edit_mode = false,
             Action::ExportProject => {
                 // TODO: read the project path from the app
