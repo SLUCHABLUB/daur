@@ -9,7 +9,6 @@ use crate::note::event::Sequence;
 use crate::popup;
 use crate::sync::Cell;
 use crate::time;
-use anyhow::Result;
 use executors::Executor as _;
 use executors::crossbeam_workstealing_pool::ThreadPool;
 use executors::parker::DynParker;
@@ -79,7 +78,7 @@ impl Renderer {
         }
     }
 
-    pub(crate) fn export_when_finished(&self, to: PathBuf) -> Result<()> {
+    pub(crate) fn export_when_finished(&self, to: PathBuf) -> anyhow::Result<()> {
         match &mut *self.progress.master.lock() {
             Master::Finished(audio) => {
                 audio.export(&to)?;
@@ -100,7 +99,7 @@ impl Renderer {
         project: &Project,
         sample_rate: sample::Rate,
         ui: &'static Ui,
-    ) -> Result<()> {
+    ) -> anyhow::Result<()> {
         // Stop the threads that are rendering the old project
         self.progress.should_stop.set(true);
 
@@ -171,7 +170,7 @@ fn try_render(
     events: &Sequence,
     chain: &Chain,
     progress: &Progress,
-) -> Result<()> {
+) -> anyhow::Result<()> {
     let sample_rate = input_audio.sample_rate;
 
     // TODO: un-hardcode
@@ -224,7 +223,11 @@ fn try_render(
     Ok(())
 }
 
-fn master(tracks: Vec<Audio>, sample_rate: sample::Rate, progress: &Progress) -> Result<()> {
+fn master(
+    tracks: Vec<Audio>,
+    sample_rate: sample::Rate,
+    progress: &Progress,
+) -> anyhow::Result<()> {
     let mut audio = Audio::empty(sample_rate);
 
     for track in tracks {

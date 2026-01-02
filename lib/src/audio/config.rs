@@ -2,7 +2,6 @@ use crate::audio::Player;
 use crate::audio::sample;
 use crate::extension::OptionExt as _;
 use crate::time::Instant;
-use anyhow::Result;
 use rodio::Device;
 use rodio::DeviceTrait as _;
 use rodio::OutputStream;
@@ -39,7 +38,7 @@ struct StreamCache {
 }
 
 impl Config {
-    fn initialise_device_config(&mut self) -> Result<&mut DeviceConfig> {
+    fn initialise_device_config(&mut self) -> anyhow::Result<&mut DeviceConfig> {
         let device = self.host.default_output_device().ok_or(NoAvailableDevice)?;
 
         Ok(self.device_config.get_or_insert(DeviceConfig {
@@ -48,7 +47,7 @@ impl Config {
         }))
     }
 
-    pub(crate) fn player(&mut self) -> Result<Player> {
+    pub(crate) fn player(&mut self) -> anyhow::Result<Player> {
         let DeviceConfig {
             device,
             stream_cache: stream_config,
@@ -69,7 +68,7 @@ impl Config {
         Some(&self.device_config.as_ref()?.stream_cache.as_ref()?.player)
     }
 
-    pub(crate) fn sample_rate(&mut self) -> Result<sample::Rate> {
+    pub(crate) fn sample_rate(&mut self) -> anyhow::Result<sample::Rate> {
         Ok(self
             .initialise_device_config()?
             .device

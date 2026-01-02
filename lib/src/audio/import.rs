@@ -2,7 +2,6 @@ use crate::Audio;
 use crate::audio::Sample;
 use crate::audio::sample;
 use crate::audio::sample::ZeroRateError;
-use anyhow::Result;
 use std::ffi::OsStr;
 use std::fs::File;
 use std::io;

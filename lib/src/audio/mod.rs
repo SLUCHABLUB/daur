@@ -23,7 +23,6 @@ pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::time;
-use anyhow::Result;
 use getset::CopyGetters;
 use hound::SampleFormat;
 use hound::WavSpec;
