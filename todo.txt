@@ -1,5 +1,6 @@
 TODO: note group onion skin
 TODO: interval highlighter
+TODO: remove edit mode
 
 TODO: settings menu
       - Audio
