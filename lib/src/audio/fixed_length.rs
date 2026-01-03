@@ -7,10 +7,12 @@ use crate::metre::TimeContext;
 use crate::time;
 use crate::ui::Length;
 use crate::view::Painter;
+use serde::Deserialize;
+use serde::Serialize;
 
 // TODO: add a "reset size" context-menu item for recalculating the duration
 /// Some audio that may be cropped or extended with silence to fit a duration.
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct FixedLength {
     /// The audio.
     pub audio: Audio,

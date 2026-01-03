@@ -9,7 +9,7 @@ use crate::project::track::clip::Path;
 use crate::ui::Length;
 
 /// Returns a view of a clip's overview.
-pub(crate) fn overview(
+pub(in crate::project) fn overview(
     clip: &Clip,
     selected: bool,
     offset_mapping: OffsetMapping,

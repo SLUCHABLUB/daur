@@ -1,14 +1,15 @@
 //! Types relating to [`Group`].
 
 pub(crate) mod event;
+pub(crate) mod group;
 
-mod group;
 mod id;
 mod interval;
 mod key;
 mod non_unison_simple_interval;
 mod pitch;
 mod pitch_class;
+mod serial;
 mod sign;
 
 use getset::CopyGetters;
@@ -24,6 +25,7 @@ pub use sign::Sign;
 
 #[doc(inline)]
 pub(crate) use event::Event;
+pub(crate) use serial::Serial;
 
 use crate::Id;
 use crate::metre::NonZeroDuration;

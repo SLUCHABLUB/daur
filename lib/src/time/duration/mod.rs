@@ -4,6 +4,8 @@ mod ops;
 use crate::Ratio;
 use crate::audio::sample;
 pub use non_zero::NonZeroDuration;
+use serde::Deserialize;
+use serde::Serialize;
 use std::ops::Mul;
 use std::time;
 
@@ -11,7 +13,9 @@ use std::time;
 ///
 /// Like [`std::time::Duration`](time::Duration), it can only represent time down to nanoseconds.
 /// Furthermore, the maximum duration which is representable is only about 500 years.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize,
+)]
 pub struct Duration {
     /// The number of nanoseconds that the duration takes up.
     pub nanoseconds: u64,

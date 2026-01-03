@@ -3,11 +3,13 @@
 mod content;
 mod overview;
 mod path;
+mod serial;
 
 pub use content::Content;
 pub use path::Path;
 
-pub(crate) use overview::overview;
+pub(in crate::project) use overview::overview;
+pub(in crate::project) use serial::Serial;
 
 use crate::Id;
 use crate::audio::FixedLength;

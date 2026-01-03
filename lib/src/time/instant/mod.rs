@@ -5,10 +5,14 @@ pub use non_zero::NonZeroInstant;
 
 use crate::audio::sample;
 use crate::time::Duration;
+use serde::Deserialize;
+use serde::Serialize;
 use std::ops::Mul;
 
 /// An instant in real time.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize,
+)]
 pub struct Instant {
     /// The duration since the compositions start.
     pub since_start: Duration,

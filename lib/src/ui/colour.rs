@@ -1,6 +1,10 @@
+use serde::Deserialize;
+use serde::Serialize;
+
+// TODO: Use `typed_colours` for representation and serde.
 /// A colour.
 /// Operations on a [`Colour`] use the Oklab colour space unless specified otherwise.
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default, Serialize, Deserialize)]
 pub struct Colour {
     /// The red channel.
     red: u8,

@@ -1,3 +1,7 @@
+mod serial;
+
+pub(crate) use serial::Serial;
+
 use crate::Id;
 use crate::audio::sample;
 use crate::metre::Changing;
@@ -10,12 +14,14 @@ use crate::note::Note;
 use crate::note::Pitch;
 use crate::note::event::Sequence;
 use crate::view::Painter;
+use serde::Deserialize;
 use std::cmp::min;
 use std::collections::HashMap;
 use thiserror::Error;
 
 /// A sequence of musical notes.
-#[derive(Eq, PartialEq, Debug)]
+#[derive(Eq, PartialEq, Debug, Deserialize)]
+#[serde(from = "Serial")]
 pub struct Group {
     // TODO: use a dimap
     // INVARIANT: all notes are within `full_duration`

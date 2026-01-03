@@ -1,11 +1,13 @@
 mod non_zero;
 mod ops;
-mod serde;
+mod serial;
 mod util;
 
 pub use non_zero::NonZeroRatio;
 
 use ::non_zero::non_zero;
+use ::serde::Deserialize;
+use ::serde::Serialize;
 use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
 use std::cmp::Ordering;
@@ -20,7 +22,7 @@ use std::num::NonZeroU128;
 /// When operations would result in a non-representable value, the result is an approximation.
 // INVARIANT: `numerator` and `denominator` are co-prime
 // due to this we can derive `Eq` and `PartialEq`
-#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters, Serialize, Deserialize)]
 pub struct Ratio {
     /// The numerator.
     #[get_copy = "pub"]

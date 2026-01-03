@@ -1,10 +1,14 @@
 use crate::metre;
 use crate::metre::Duration;
+use serde::Deserialize;
+use serde::Serialize;
 use std::ops::Add;
 use std::ops::Sub;
 
 /// An instant in musical time relative to some other instant.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize,
+)]
 pub struct Instant {
     /// The duration since some defined instant.
     pub since_start: Duration,

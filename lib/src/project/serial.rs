@@ -2,6 +2,7 @@ use crate::Project;
 use crate::metre::Changing;
 use crate::metre::TimeSignature;
 use crate::note::Key;
+use crate::project::track;
 use crate::time::Tempo;
 use arcstr::ArcStr;
 use indexmap::IndexMap;
@@ -17,8 +18,7 @@ pub(super) struct Serial<'data> {
     pub time_signature: Changing<TimeSignature>,
     pub key: Changing<Key>,
 
-    // TODO: add track serial representation
-    pub tracks: IndexMap<String, ()>,
+    pub tracks: Vec<track::Serial<'data>>,
 }
 
 impl<'data> From<&'data Project> for Serial<'data> {
@@ -31,15 +31,12 @@ impl<'data> From<&'data Project> for Serial<'data> {
             tracks,
         } = project;
 
-        // TODO: convert the tracks
-        let _: &IndexMap<_, _> = tracks;
-
         Serial {
             name: Cow::Borrowed(name),
             tempo: tempo.clone(),
             time_signature: time_signature.clone(),
             key: key.clone(),
-            tracks: IndexMap::new(),
+            tracks: tracks.values().map(track::Serial::from_track).collect(),
         }
     }
 }

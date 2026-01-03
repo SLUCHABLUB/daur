@@ -2,12 +2,14 @@
 
 pub mod clip;
 mod overview;
+mod serial;
 mod settings;
 
 #[doc(inline)]
 pub use clip::Clip;
 
 pub(super) use overview::Overview;
+pub(super) use serial::Serial;
 pub(crate) use settings::settings;
 
 use crate::Audio;
@@ -20,6 +22,7 @@ use crate::metre::TimeContext;
 use crate::note::event::Sequence;
 use crate::project::DEFAULT_TRACK_TITLE;
 use arcstr::ArcStr;
+use getset::CloneGetters;
 use getset::CopyGetters;
 use getset::Getters;
 use getset::MutGetters;
@@ -47,11 +50,12 @@ pub enum ClipInsertionErrorKind {
 
 /// A musical track.
 // TODO: Test that this isn't `Clone` (bc. id).
-#[derive(Debug, Getters, MutGetters, CopyGetters)]
+#[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct Track {
     #[get_copy = "pub(super)"]
     id: Id<Track>,
     /// The name of the track.
+    #[get_clone = "pub(super)"]
     name: ArcStr,
     // TODO: use `Dimap<Instant, Id<Clip>, Clip, Bi<Btree, StdHash>, StdHash>`
     /// The clips in the track.

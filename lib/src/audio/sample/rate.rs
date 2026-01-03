@@ -2,12 +2,14 @@ use crate::Ratio;
 use crate::time::Duration;
 use crate::time::NonZeroDuration;
 use rodio::cpal;
+use serde::Deserialize;
+use serde::Serialize;
 use std::num::NonZeroU32;
 use std::num::NonZeroU64;
 use thiserror::Error;
 
 /// A sample rate.
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Rate {
     /// The number of samples that fit in one second.
     pub samples_per_second: NonZeroU32,

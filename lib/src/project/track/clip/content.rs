@@ -10,7 +10,7 @@ use crate::view::Painter;
 pub enum Content {
     /// An audio clip.
     Audio(audio::FixedLength),
-    /// A notes clip.
+    /// A [note group](note::Group).
     Notes(note::Group),
     // TODO:
     //  - linked audio file
@@ -26,7 +26,7 @@ impl Content {
         }
     }
 
-    /// Tries to resolve the content to a notes-clip.
+    /// Tries to resolve the content to an audio clip.
     #[must_use]
     pub fn as_audio(&self) -> Option<&audio::FixedLength> {
         match self {
@@ -44,7 +44,7 @@ impl Content {
         }
     }
 
-    /// Tries to resolve the content to a notes-clip.
+    /// Tries to resolve the content to a note group.
     #[must_use]
     pub fn as_notes_mut(&mut self) -> Option<&mut note::Group> {
         match self {

@@ -5,9 +5,12 @@ pub use non_zero::NonZeroDuration;
 
 use crate::ratio::Ratio;
 use serde::Deserialize;
+use serde::Serialize;
 
 /// A musical duration
-#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Deserialize)]
+#[derive(
+    Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default, Serialize, Deserialize,
+)]
 pub struct Duration {
     /// The number of whole-note durations
     pub whole_notes: Ratio,

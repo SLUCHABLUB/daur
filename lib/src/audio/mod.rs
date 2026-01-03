@@ -23,15 +23,16 @@ pub(crate) use player::Player;
 pub(crate) use source::Source;
 
 use crate::time;
-use getset::CopyGetters;
 use hound::SampleFormat;
 use hound::WavSpec;
 use hound::WavWriter;
+use serde::Deserialize;
+use serde::Serialize;
 use std::cmp::max;
 use std::path::Path;
 
 /// Some stereo 64-bit floating point audio.
-#[derive(Clone, Eq, PartialEq, Debug, CopyGetters)]
+#[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct Audio {
     /// The sample rate of the audio.
     pub sample_rate: sample::Rate,
