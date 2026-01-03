@@ -1,10 +1,10 @@
 //! A simple single-selection view
 
+use crate::View;
 use crate::string::ToArcStr;
 use crate::sync::Cell;
 use crate::view::Axis;
 use crate::view::OnClick;
-use crate::view::View;
 use arcstr::ArcStr;
 use enum_iterator::Sequence;
 use enum_iterator::all;

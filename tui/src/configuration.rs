@@ -1,4 +1,4 @@
-use crate::key::Key;
+use crate::Key;
 use anyhow::Context as _;
 use daur::app::Action;
 use directories::ProjectDirs;

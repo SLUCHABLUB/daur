@@ -1,6 +1,7 @@
 use crate::Holdable;
 use crate::Id;
 use crate::Selectable;
+use crate::View;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Changing;
@@ -16,7 +17,6 @@ use crate::select::Selection;
 use crate::ui::Length;
 use crate::view::CursorWindow;
 use crate::view::RenderArea;
-use crate::view::View;
 use crate::view::context::Menu;
 use typed_builder::TypedBuilder;
 

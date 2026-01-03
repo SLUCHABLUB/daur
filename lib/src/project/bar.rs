@@ -1,5 +1,6 @@
 use crate::Project;
 use crate::UserInterface;
+use crate::View;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Instant;
@@ -8,7 +9,6 @@ use crate::string::ToArcStr as _;
 use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::ToText as _;
-use crate::view::View;
 use arcstr::ArcStr;
 use arcstr::literal;
 

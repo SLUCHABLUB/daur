@@ -1,10 +1,10 @@
 //! A simple multi-selection view
 
+use crate::View;
 use crate::string::ToArcStr as _;
 use crate::sync::Cell;
 use crate::view::Axis;
 use crate::view::OnClick;
-use crate::view::View;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use std::fmt::Display;

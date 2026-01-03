@@ -3,6 +3,7 @@ mod serial;
 pub(crate) use serial::Serial;
 
 use crate::Id;
+use crate::Note;
 use crate::audio::sample;
 use crate::metre::Changing;
 use crate::metre::Instant;
@@ -10,7 +11,6 @@ use crate::metre::NonZeroDuration;
 use crate::metre::TimeContext;
 use crate::metre::relative;
 use crate::note::Event;
-use crate::note::Note;
 use crate::note::Pitch;
 use crate::note::event::Sequence;
 use crate::view::Painter;

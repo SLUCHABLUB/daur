@@ -1,8 +1,8 @@
+use crate::Project;
 use crate::metre::Instant;
 use crate::popup;
 use crate::project::Edit;
 use crate::project::HistoryEntry;
-use crate::project::Project;
 use crate::select::Selection;
 use anyhow::Context as _;
 use getset::Getters;

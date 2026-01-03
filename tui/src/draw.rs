@@ -1,8 +1,8 @@
+use crate::Tui;
 use crate::canvas::Context;
 use crate::convert::approximate_colour;
 use crate::convert::from_rectangle;
 use crate::convert::to_rectangle;
-use crate::tui::Tui;
 use ascii::AsciiChar;
 use ascii::AsciiStr;
 use daur::App;

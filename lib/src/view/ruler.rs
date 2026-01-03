@@ -1,10 +1,10 @@
+use crate::View;
 use crate::app::Action;
 use crate::metre::OffsetMapping;
 use crate::ui::Length;
 use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::RenderArea;
-use crate::view::View;
 
 /// A ruler of musical time
 pub fn ruler(offset: Length, offset_mapping: OffsetMapping) -> View {

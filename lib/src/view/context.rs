@@ -1,6 +1,7 @@
 //! Types pertaining to context menus.
 
 use crate::UserInterface;
+use crate::View;
 use crate::app::Action;
 use crate::popup::Specification;
 use crate::project::Edit;
@@ -9,7 +10,6 @@ use crate::ui::Rectangle;
 use crate::ui::ThemeColour;
 use crate::view::Axis;
 use crate::view::OnClick;
-use crate::view::View;
 use arcstr::ArcStr;
 use arcstr::literal;
 use mitsein::btree_map1::BTreeMap1;

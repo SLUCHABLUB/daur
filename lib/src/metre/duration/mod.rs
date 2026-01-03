@@ -3,7 +3,7 @@ mod ops;
 
 pub use non_zero::NonZeroDuration;
 
-use crate::ratio::Ratio;
+use crate::Ratio;
 use serde::Deserialize;
 use serde::Serialize;
 

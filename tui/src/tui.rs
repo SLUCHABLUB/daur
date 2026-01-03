@@ -1,4 +1,4 @@
-use crate::configuration::Configuration;
+use crate::Configuration;
 use crossterm::event::MouseButton;
 use daur::UserInterface;
 use daur::sync::Cell;

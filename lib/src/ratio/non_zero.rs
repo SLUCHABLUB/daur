@@ -1,4 +1,4 @@
-use crate::ratio::Ratio;
+use crate::Ratio;
 use crate::ratio::util::make_coprime;
 use getset::CopyGetters;
 use non_zero::non_zero;

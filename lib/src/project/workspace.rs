@@ -1,6 +1,7 @@
 use crate::Holdable;
 use crate::Project;
 use crate::UserInterface;
+use crate::View;
 use crate::app::Action;
 use crate::audio::Player;
 use crate::metre::Changing;
@@ -22,7 +23,6 @@ use crate::ui::relative;
 use crate::view::Axis;
 use crate::view::CursorWindow;
 use crate::view::OnClick;
-use crate::view::View;
 use crate::view::ruler;
 use non_zero::non_zero;
 use std::sync::Arc;

@@ -9,11 +9,13 @@ mod key;
 mod terminal;
 mod tui;
 
+pub(crate) use configuration::Configuration;
+pub(crate) use key::Key;
+pub(crate) use tui::Tui;
+
 use crate::draw::redraw;
 use crate::event::handle_events;
-use crate::key::Key;
 use crate::terminal::with_terminal;
-use crate::tui::Tui;
 use anyhow::Context as _;
 use crossterm::event::Event;
 use crossterm::event::poll;

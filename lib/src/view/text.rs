@@ -1,5 +1,5 @@
+use crate::View;
 use crate::view::Alignment;
-use crate::view::View;
 use arcstr::ArcStr;
 
 /// An extension trait for [`ArcStr`] to turn it into a [view](View).

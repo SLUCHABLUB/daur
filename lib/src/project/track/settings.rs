@@ -1,8 +1,8 @@
 use crate::Selectable;
+use crate::View;
 use crate::app::Action;
 use crate::project::Track;
 use crate::view::ToText as _;
-use crate::view::View;
 use arcstr::literal;
 
 /// Returns the track settings.
