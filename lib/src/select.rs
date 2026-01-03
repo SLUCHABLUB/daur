@@ -2,6 +2,7 @@ use crate::Id;
 use crate::note;
 use crate::project::Track;
 use crate::project::track::clip;
+use mitsein::hash_set1::HashSet1;
 use std::collections::HashSet;
 
 /// An item that can be selected.
@@ -61,8 +62,7 @@ impl Selection {
     }
 
     /// Takes all tracks out of the selection.
-    // TODO: return Option<HashSet1>
-    pub fn take_tracks(&mut self) -> Option<HashSet<Id<Track>>> {
+    pub fn take_tracks(&mut self) -> Option<HashSet1<Id<Track>>> {
         let set: HashSet<_> = self
             .items
             .drain(..)
@@ -73,13 +73,12 @@ impl Selection {
             })
             .collect();
 
-        (!set.is_empty()).then_some(set)
+        HashSet1::try_from(set).ok()
     }
 
-    // TODO: replace clips with tracks
+    // TODO: Add the parent tracks of the removed clips to the selection.
     /// Takes all clips out of the selection.
-    // TODO: return Option<HashSet1>
-    pub fn take_clips(&mut self) -> Option<HashSet<clip::Path>> {
+    pub fn take_clips(&mut self) -> Option<HashSet1<clip::Path>> {
         let mut set = HashSet::new();
 
         self.items.retain(|item| match *item {
@@ -94,13 +93,12 @@ impl Selection {
             }
         });
 
-        (!set.is_empty()).then_some(set)
+        HashSet1::try_from(set).ok()
     }
 
-    // TODO: replace notes with clips
+    // TODO: Add the parent clips of the removed notes to the selection.
     /// Takes all notes out of the selection.
-    // TODO: return Option<HashSet1>
-    pub fn take_notes(&mut self) -> Option<HashSet<note::Path>> {
+    pub fn take_notes(&mut self) -> Option<HashSet1<note::Path>> {
         let mut set = HashSet::new();
 
         self.items.retain(|item| match *item {
@@ -111,7 +109,7 @@ impl Selection {
             }
         });
 
-        (!set.is_empty()).then_some(set)
+        HashSet1::try_from(set).ok()
     }
 
     /// Returns the track selected last.

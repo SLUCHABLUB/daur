@@ -18,9 +18,9 @@ use crate::project::track::ClipInsertionErrorKind;
 use crate::project::track::clip;
 use crate::select::Selection;
 use arcstr::ArcStr;
+use mitsein::hash_set1::HashSet1;
 use mitsein::iter1::IteratorExt as _;
 use serde::Deserialize;
-use std::collections::HashSet;
 use std::ffi::OsStr;
 use std::mem::replace;
 use std::path::Path;
@@ -50,13 +50,13 @@ pub enum Edit {
     Delete,
     /// Deletes some clips.
     #[serde(skip)]
-    DeleteClips(HashSet<clip::Path>),
+    DeleteClips(HashSet1<clip::Path>),
     /// Deletes some notes.
     #[serde(skip)]
-    DeleteNotes(HashSet<note::Path>),
-    /// Deletes a track.
+    DeleteNotes(HashSet1<note::Path>),
+    /// Deletes some tracks.
     #[serde(skip)]
-    DeleteTracks(HashSet<Id<Track>>),
+    DeleteTracks(HashSet1<Id<Track>>),
     /// Imports an audio file into the selected track at the cursor.
     #[serde(skip)]
     ImportAudio {
