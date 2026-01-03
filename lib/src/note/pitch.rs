@@ -20,7 +20,7 @@ impl Pitch {
     /// The lowest pitch available in the MIDI standard: C<sub>-1</sub>.
     pub const LOWEST: Pitch = Pitch { midi_number: 0 };
 
-    /// Returns the croma of the pitch.
+    /// Returns the class of the pitch.
     #[must_use]
     pub fn class(self) -> PitchClass {
         match self.midi_number.rem_euclid(12) {
