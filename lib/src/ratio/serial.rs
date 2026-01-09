@@ -2,11 +2,12 @@ use crate::NonZeroRatio;
 use crate::Ratio;
 use anyhow::bail;
 use serde::Deserialize;
+use serde::Serialize;
 use std::num::NonZeroU64;
 
-#[derive(Copy, Clone, Deserialize)]
+#[derive(Copy, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
-enum Serial {
+pub(super) enum Serial {
     Float(f64),
     I64(i64),
     U64(u64),
@@ -22,6 +23,21 @@ macro_rules! invalid_value {
     ($value:expr) => {
         bail!("invalid value: {}, expected {EXPECTED}", $value)
     };
+}
+
+impl From<Ratio> for Serial {
+    fn from(value: Ratio) -> Self {
+        let Ratio {
+            numerator,
+            denominator,
+        } = value;
+
+        // TODO: Use `Serial::Float` if we can.
+        Serial::Map {
+            numerator,
+            denominator,
+        }
+    }
 }
 
 impl TryFrom<Serial> for Ratio {

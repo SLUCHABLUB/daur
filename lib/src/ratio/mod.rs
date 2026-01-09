@@ -6,10 +6,11 @@ mod util;
 pub use non_zero::NonZeroRatio;
 
 use ::non_zero::non_zero;
-use ::serde::Deserialize;
-use ::serde::Serialize;
 use getset::CopyGetters;
 use saturating_cast::SaturatingCast as _;
+use serde::Deserialize;
+use serde::Serialize;
+use serial::Serial;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Display;
@@ -23,6 +24,7 @@ use std::num::NonZeroU128;
 // INVARIANT: `numerator` and `denominator` are co-prime
 // due to this we can derive `Eq` and `PartialEq`
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, CopyGetters, Serialize, Deserialize)]
+#[serde(try_from = "Serial", into = "Serial")]
 pub struct Ratio {
     /// The numerator.
     #[get_copy = "pub"]

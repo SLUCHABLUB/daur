@@ -1,4 +1,5 @@
 use crate::Ratio;
+use crate::ratio::Serial;
 use crate::ratio::util::greatest_common_divisor;
 use getset::CopyGetters;
 use non_zero::non_zero;
@@ -10,6 +11,7 @@ use std::num::NonZeroU128;
 
 /// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize, CopyGetters)]
+#[serde(try_from = "Serial", into = "Ratio")]
 pub struct NonZeroRatio {
     // INVARIANT: These are coprime.
     /// The numerator.
