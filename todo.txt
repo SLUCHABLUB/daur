@@ -11,6 +11,10 @@ TODO: settings menu
 FIXME: moving cursor whilst playing
 FIXME: cropping rules
 
+TODO: Add more examples:
+      - für elise
+      - ...
+
 --- WAITING ON CRATE ---
 
 TODO: rounded add/sub/mul/div
