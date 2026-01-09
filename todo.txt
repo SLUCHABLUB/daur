@@ -8,8 +8,8 @@ TODO: settings menu
       - Input: MIDI & Keyboard Shortcuts
       - Semantics
 
-FIXME: moving cursor whilst playing
-FIXME: cropping rules
+TODO(FIXME): moving cursor whilst playing
+TODO(FIXME): cropping rules
 
 TODO: Add more examples:
       - für elise
