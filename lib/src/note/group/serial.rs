@@ -1,6 +1,7 @@
 use crate::Note;
 use crate::metre::NonZeroDuration;
 use crate::note;
+use crate::note::InsertionError;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::BTreeSet;
@@ -38,28 +39,22 @@ impl From<&note::Group> for Serial {
     }
 }
 
-impl From<Serial> for note::Group {
-    fn from(serial: Serial) -> Self {
+impl TryFrom<Serial> for note::Group {
+    type Error = InsertionError;
+
+    fn try_from(serial: Serial) -> Result<Self, Self::Error> {
         let Serial { duration, notes } = serial;
 
-        let mut note_positions = HashMap::new();
-
-        let notes = notes
-            .into_iter()
-            .map(|note| {
-                let position = (note.position, note.pitch);
-                let note = Note::from(note);
-
-                note_positions.insert(note.id(), position);
-
-                (position, note)
-            })
-            .collect();
-
-        note::Group {
-            notes,
-            note_positions,
+        let mut group = note::Group {
+            notes: HashMap::new(),
+            note_positions: HashMap::new(),
             duration,
+        };
+
+        for note in notes {
+            group.try_insert(note.position, note.pitch, Note::from(note))?;
         }
+
+        Ok(group)
     }
 }

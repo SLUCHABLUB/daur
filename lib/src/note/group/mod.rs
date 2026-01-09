@@ -21,7 +21,7 @@ use thiserror::Error;
 
 /// A sequence of musical notes.
 #[derive(Eq, PartialEq, Debug, Deserialize)]
-#[serde(from = "Serial")]
+#[serde(try_from = "Serial")]
 pub struct Group {
     // TODO: use a bimap
     // INVARIANT: all notes are within `full_duration`
