@@ -1,3 +1,7 @@
+TODO: move this to GitHub issues
+
+TODO: note selecting
+
 TODO: note group onion skin
 TODO: interval highlighter
 TODO: remove edit mode
@@ -10,6 +14,7 @@ TODO: settings menu
 
 TODO(FIXME): moving cursor whilst playing
 TODO(FIXME): cropping rules
+TODO(FIXME): workers panic:ing when dropping the app
 
 TODO: Add more examples:
       - für elise
@@ -23,14 +28,11 @@ TODO: use calm-ops
 --- LONG TIME ---
 
 TODO: keyboard input
+TODO: add nodes
 
-ENSURE: `use` paths are optimal
+TODO: test that `use` paths are optimal
 
 --- BEFORE PUBLISHING ---
 
 TODO: remove "method is private" justifications for expecting lints
-
-TODO: add nodes
-TODO: note selecting
-TODO: fix workers panic:ing when dropping the app
 TODO: check api
