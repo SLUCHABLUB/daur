@@ -30,6 +30,8 @@ TODO: use calm-ops
 TODO: keyboard input
 TODO: add nodes
 
+TODO: make a GUI frontend, maybe using tauri
+
 TODO: test that `use` paths are optimal
 
 --- BEFORE PUBLISHING ---
