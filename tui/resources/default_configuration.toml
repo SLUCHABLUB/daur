@@ -2,6 +2,7 @@
 space = "toggle_playback"
 backspace = { edit = "delete" }
 
+control_o = { open_popup = "project_opener" }
 control_s = "save"
 control_q = "exit"
 

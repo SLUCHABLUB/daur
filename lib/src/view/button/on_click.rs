@@ -30,10 +30,19 @@ impl OnClick {
     }
 
     /// Runs the function.
-    pub fn run(&self, render_area: RenderArea, receiver: &mut Actions) {
+    pub fn run(&self, render_area: RenderArea, actions: &mut Actions) {
         if let Some(function) = self.function.as_ref() {
-            function(render_area, receiver);
+            function(render_area, actions);
         }
+    }
+
+    /// Composes two [`OnClick`] functions.
+    #[must_use]
+    pub fn compose(first: OnClick, second: OnClick) -> OnClick {
+        OnClick::new(move |area, actions| {
+            first.run(area, actions);
+            second.run(area, actions);
+        })
     }
 }
 

@@ -1,6 +1,7 @@
 //! Types pertaining to [`View`].
 
 pub mod context;
+pub mod file;
 pub mod multi;
 pub mod single;
 pub mod visit;
@@ -12,7 +13,6 @@ mod button;
 mod canvas;
 mod constructors;
 mod cursor_window;
-mod file_selector;
 mod minimum_size;
 mod quotum;
 mod render_area;
@@ -24,7 +24,6 @@ pub use axis::Axis;
 pub use button::OnClick;
 pub use canvas::Context;
 pub use cursor_window::CursorWindow;
-pub use file_selector::file_selector;
 pub use quotum::Quotated;
 pub use quotum::Quotated2D;
 pub use quotum::Quotum;
@@ -43,9 +42,13 @@ use crate::ui::Vector;
 use crate::ui::relative;
 use crate::view::context::Menu;
 use arcstr::ArcStr;
+use arcstr::literal;
 use derive_more::Debug;
 use std::num::NonZeroU64;
 use std::sync::Arc;
+
+pub(crate) const CANCEL: ArcStr = literal!("cancel");
+pub(crate) const CONFIRM: ArcStr = literal!("confirm");
 
 /// A function for painting a canvas.
 pub type Painter = dyn Fn(&mut dyn Context) + Send + Sync;

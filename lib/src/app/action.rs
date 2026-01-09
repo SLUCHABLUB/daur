@@ -8,6 +8,7 @@ use crate::app::Actions;
 use crate::metre::Instant;
 use crate::popup;
 use crate::project::Edit;
+use crate::project::Manager;
 use crate::ui::Length;
 use crate::ui::Point;
 use crate::ui::Rectangle;
@@ -67,6 +68,9 @@ pub enum Action {
     },
     /// Opens a popup.
     OpenPopup(popup::Specification),
+    /// Opens a project saved to a file.
+    #[serde(skip)]
+    OpenProject(Arc<Path>),
     /// Stop playing.
     Pause,
     /// Picks up an object.
@@ -189,6 +193,10 @@ impl<Ui: UserInterface> App<Ui> {
             Action::OpenPopup(popup) => {
                 self.popup_manager.open(&popup, self.ui);
             }
+            Action::OpenProject(path) => {
+                // TODO: Check if we've got unsaved changes.
+                self.project_manager = Manager::open(path)?;
+            }
             Action::Pause => {
                 if let Some(position) = self.audio_config.pause_player() {
                     self.cursor = position / &self.project_manager.project().time_context();
@@ -204,7 +212,7 @@ impl<Ui: UserInterface> App<Ui> {
                 self.renderer.play_when_finished(from, player);
             }
             Action::Save => self.project_manager.save()?,
-            Action::SaveAs(path) => self.project_manager.save_as(&path)?,
+            Action::SaveAs(path) => self.project_manager.save_as(path)?,
             Action::Select(item) => {
                 self.selection.push(item);
             }
