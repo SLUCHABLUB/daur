@@ -1,5 +1,5 @@
 use crate::Ratio;
-use crate::ratio::util::make_coprime;
+use crate::ratio::util::greatest_common_divisor;
 use getset::CopyGetters;
 use non_zero::non_zero;
 use serde::Deserialize;
@@ -11,6 +11,7 @@ use std::num::NonZeroU128;
 /// A non-zero [ratio](Ratio)
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize, CopyGetters)]
 pub struct NonZeroRatio {
+    // INVARIANT: These are coprime.
     /// The numerator.
     #[get_copy = "pub"]
     numerator: NonZeroU64,
@@ -30,13 +31,19 @@ impl NonZeroRatio {
     const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU64::MAX);
 
     /// Creates a new ratio from a numerator and a denominator.
+    #[expect(clippy::missing_panics_doc, reason = "this wont panic")]
     #[must_use]
     pub fn new(numerator: NonZeroU64, denominator: NonZeroU64) -> NonZeroRatio {
-        // The non-zero types do not implement `num::Integer`.
-        // Therefore, a `num::rational::Ratio` thereof cannot be reduced
-        // since it requires comparison with zero.
+        #![expect(
+            clippy::integer_division,
+            clippy::unwrap_used,
+            reason = "the greatest common divisor divides both numbers"
+        )]
 
-        let [numerator, denominator] = make_coprime(numerator, denominator);
+        let greatest_common_divisor = greatest_common_divisor(numerator, denominator);
+
+        let numerator = NonZeroU64::new(numerator.get() / greatest_common_divisor).unwrap();
+        let denominator = NonZeroU64::new(denominator.get() / greatest_common_divisor).unwrap();
 
         NonZeroRatio {
             numerator,
@@ -91,14 +98,8 @@ impl NonZeroRatio {
 
     /// Calculates the ceiling of the ratio.
     #[must_use]
-    pub fn ceil(self) -> NonZeroU64 {
-        NonZeroU64::new(self.get().ceil()).unwrap_or(non_zero!(1))
-    }
-
-    /// Returns a ratio representing the ceiling of the ratio.
-    #[must_use]
-    pub fn ceiled(self) -> NonZeroRatio {
-        NonZeroRatio::integer(self.ceil())
+    pub fn ceiling(self) -> NonZeroU64 {
+        NonZeroU64::new(self.get().ceiling()).unwrap_or(non_zero!(1))
     }
 
     pub(super) fn approximate_big(

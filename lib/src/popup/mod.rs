@@ -37,7 +37,7 @@ impl Popup {
     pub(crate) fn view(&self) -> View {
         // We call `.relative_to(Point::ZERO)` since popups are positioned absolutely.
         View::Shared(Arc::clone(&self.view))
-            .quotated_2d(self.area.size)
+            .quoted_2d(self.area.size)
             .positioned(self.area.position.relative_to(Point::ZERO))
     }
 }

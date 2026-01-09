@@ -1,6 +1,6 @@
 use crate::NonZeroRatio;
 use crate::Ratio;
-use crate::ratio::util::lcm;
+use crate::ratio::util::lowest_common_multiple;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Div;
@@ -24,7 +24,7 @@ impl<R: Into<Ratio>> Add<R> for Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
-        let lcm = lcm(lhs_denominator, rhs_denominator);
+        let lcm = lowest_common_multiple(lhs_denominator, rhs_denominator);
 
         let lhs = lhs_numerator.saturating_mul(lcm.get() / lhs_denominator);
         let rhs = rhs_numerator.saturating_mul(lcm.get() / rhs_denominator);
@@ -46,7 +46,7 @@ impl<R: Into<Ratio>> Sub<R> for Ratio {
         let (lhs_numerator, lhs_denominator) = self.big_raw();
         let (rhs_numerator, rhs_denominator) = rhs.into().big_raw();
 
-        let lcm = lcm(lhs_denominator, rhs_denominator);
+        let lcm = lowest_common_multiple(lhs_denominator, rhs_denominator);
 
         let lhs = lhs_numerator.saturating_mul(lcm.get() / lhs_denominator);
         let rhs = rhs_numerator.saturating_mul(lcm.get() / rhs_denominator);

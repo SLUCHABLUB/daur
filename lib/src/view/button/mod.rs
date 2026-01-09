@@ -13,12 +13,12 @@ impl View {
         label.aligned_to(Alignment::TopLeft).on_click(on_click)
     }
 
-    /// Constructs a standard button with a border and centered text.
+    /// Constructs a standard button with a border and centred text.
     pub(crate) fn standard_button(label: ArcStr, on_click: OnClick) -> View {
         label.centred().bordered().on_click(on_click)
     }
 
-    /// Constructs a button with a (maybe thick) border and centered text.
+    /// Constructs a button with a (maybe thick) border and centred text.
     pub(crate) fn toggle(label: ArcStr, on_click: OnClick, state: bool) -> View {
         label
             .centred()

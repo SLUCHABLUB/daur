@@ -89,7 +89,7 @@ impl View {
 
     /// Positions the view in a rectangle.
     pub fn positioned(self, at: relative::Rectangle) -> View {
-        self.quotated_2d(at.size).positioned(at.position)
+        self.quoted_2d(at.size).positioned(at.position)
     }
 
     /// Offsets the view along the x-axis.

@@ -57,7 +57,7 @@ pub struct Track {
     /// The name of the track.
     #[get_clone = "pub(super)"]
     name: ArcStr,
-    // TODO: use `Dimap<Instant, Id<Clip>, Clip, Bi<Btree, StdHash>, StdHash>`
+    // TODO: use a double-key map
     /// The clips in the track.
     clip_ids: BTreeMap<Instant, Id<Clip>>,
     clip_starts: HashMap<Id<Clip>, Instant>,

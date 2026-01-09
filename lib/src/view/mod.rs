@@ -24,8 +24,8 @@ pub use axis::Axis;
 pub use button::OnClick;
 pub use canvas::Context;
 pub use cursor_window::CursorWindow;
-pub use quotum::Quotated;
-pub use quotum::Quotated2D;
+pub use quotum::Quoted;
+pub use quotum::Quoted2D;
 pub use quotum::Quotum;
 pub use quotum::Quotum2D;
 pub use render_area::RenderArea;
@@ -131,7 +131,7 @@ pub enum View {
         /// The position of the view, relative to its parent.
         position: relative::Point,
         /// The view.
-        view: Box<Quotated2D>,
+        view: Box<Quoted2D>,
     },
     /// A reactive view. It needs information about the user interface to be rendered/processed.
     Reactive(#[debug(skip)] Box<Reactive>),
@@ -171,7 +171,7 @@ pub enum View {
         /// The axis along which the elements are laid out.
         axis: Axis,
         /// The stacked views.
-        elements: Vec<Quotated>,
+        elements: Vec<Quoted>,
     },
     /// Some text.
     Text {

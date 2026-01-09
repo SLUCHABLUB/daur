@@ -96,7 +96,7 @@ impl MenuInstance {
     pub fn into_view(self) -> View {
         // We call `.relative_to(Point::ZERO)` since the context menu is positioned absolutely.
         View::Shared(self.view)
-            .quotated_2d(self.area.size)
+            .quoted_2d(self.area.size)
             .positioned(self.area.position.relative_to(Point::ZERO))
     }
 }

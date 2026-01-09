@@ -11,7 +11,7 @@ use crate::view::Axis;
 use crate::view::CANCEL;
 use crate::view::CONFIRM;
 use crate::view::OnClick;
-use crate::view::Quotated;
+use crate::view::Quoted;
 use crate::view::ToText as _;
 use std::env::current_dir;
 use std::fs::DirEntry;
@@ -34,7 +34,7 @@ where
 
     View::y_stack([
         selector(selected_file).fill_remaining(),
-        buttons.quotated_minimally(),
+        buttons.quoted_minimally(),
     ])
 }
 
@@ -80,7 +80,7 @@ fn list(selected_file: &Arc<ArcCell<Path>>) -> View {
     )
 }
 
-fn view_entry(entry: DirEntry, selected_file: Arc<ArcCell<Path>>) -> Quotated {
+fn view_entry(entry: DirEntry, selected_file: Arc<ArcCell<Path>>) -> Quoted {
     // TODO: add icon
     // TODO: add selection status
     entry
@@ -91,5 +91,5 @@ fn view_entry(entry: DirEntry, selected_file: Arc<ArcCell<Path>>) -> Quotated {
         .on_click(OnClick::new(move |_, _| {
             selected_file.set(Arc::from(entry.path()));
         }))
-        .quotated_minimally()
+        .quoted_minimally()
 }

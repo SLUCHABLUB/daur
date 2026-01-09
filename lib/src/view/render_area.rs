@@ -7,7 +7,7 @@ use crate::ui::Rectangle;
 use crate::ui::Size;
 use crate::ui::relative;
 use crate::view::Axis;
-use crate::view::Quotated;
+use crate::view::Quoted;
 use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use std::cmp::min;
@@ -61,14 +61,14 @@ impl RenderArea {
     pub(crate) fn split<Ui: UserInterface>(
         self,
         axis: Axis,
-        views: &[Quotated],
+        views: &[Quoted],
     ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_, Ui> {
         let count = views.len();
 
         // cache the sizes or None if Quotum::Remaining is used
         let sizes: Vec<Option<Length>> = views
             .iter()
-            .map(|quotated| quotated.size_parallel_to::<Ui>(axis, self))
+            .map(|quoted| quoted.size_parallel_to::<Ui>(axis, self))
             .collect();
 
         let orthogonal = self.area.size.orthogonal_to(axis);

@@ -26,7 +26,7 @@ use crate::ui::Vector;
 use crate::ui::relative;
 use crate::view::Alignment;
 use crate::view::CursorWindow;
-use crate::view::Quotated;
+use crate::view::Quoted;
 use crate::view::RenderArea;
 use crate::view::ToText as _;
 use crate::view::ruler;
@@ -85,10 +85,10 @@ impl PianoRoll {
     }
 
     pub(crate) fn y_offset<Ui: UserInterface>(self) -> Length {
-        let full_roll_heigh = self.key_width.get() * Ratio::integer(128);
+        let full_roll_height = self.key_width.get() * Ratio::integer(128);
         let workspace_height = self.content_height - Ui::RULER_HEIGHT.get();
 
-        min(self.y_offset, full_roll_heigh - workspace_height)
+        min(self.y_offset, full_roll_height - workspace_height)
     }
 
     pub(crate) fn move_by<Ui: UserInterface>(&mut self, by: Vector) {
@@ -110,9 +110,9 @@ impl PianoRoll {
         player: Option<Player>,
         held_object: Option<Holdable>,
         edit_mode: bool,
-    ) -> Quotated {
+    ) -> Quoted {
         if !self.is_open {
-            return Quotated::EMPTY;
+            return Quoted::EMPTY;
         }
 
         let clip_name = selection
@@ -138,10 +138,10 @@ impl PianoRoll {
         let title = View::TitleBar { title, highlighted };
 
         View::y_stack([
-            title.grabbable(Self::handle_grabber).quotated_minimally(),
+            title.grabbable(Self::handle_grabber).quoted_minimally(),
             content.fill_remaining(),
         ])
-        .quotated(self.content_height + title_height)
+        .quoted(self.content_height + title_height)
     }
 
     #[expect(clippy::too_many_arguments, reason = "the method is private")]
@@ -186,7 +186,7 @@ impl PianoRoll {
             .fill_remaining()
             .x_positioned(self.piano_depth.get());
 
-        View::y_stack([ruler.quotated(Ui::RULER_HEIGHT), workspace.fill_remaining()])
+        View::y_stack([ruler.quoted(Ui::RULER_HEIGHT), workspace.fill_remaining()])
             .scrollable(Action::MovePianoRoll)
     }
 
@@ -268,7 +268,7 @@ impl PianoRoll {
                 edit_mode,
                 key,
             )
-            .quotated(lowest_row_height);
+            .quoted(lowest_row_height);
 
         let highest_row = self
             .row(
@@ -298,7 +298,7 @@ impl PianoRoll {
                     edit_mode,
                     key,
                 )
-                .quotated(self.key_width),
+                .quoted(self.key_width),
             );
         }
 
@@ -367,7 +367,7 @@ impl PianoRoll {
 
                     let width = end - start;
 
-                    Self::note(clip_colour).quotated(width).x_positioned(start)
+                    Self::note(clip_colour).quoted(width).x_positioned(start)
                 }),
             )
             .collect(),
@@ -397,7 +397,7 @@ impl PianoRoll {
         let overview = view.grabbable(grabber).object_accepting(dropper);
 
         View::x_stack([
-            self.piano_key(pitch, key).quotated(self.piano_depth),
+            self.piano_key(pitch, key).quoted(self.piano_depth),
             overview.fill_remaining(),
         ])
     }
@@ -426,7 +426,7 @@ impl PianoRoll {
 
         let bottom = View::Layers(vec![View::Solid(ThemeColour::WhiteKey), text]);
 
-        View::x_stack([top.quotated(self.black_key_depth), bottom.fill_remaining()])
+        View::x_stack([top.quoted(self.black_key_depth), bottom.fill_remaining()])
     }
 
     fn handle_grabber(render_area: RenderArea) -> Option<Holdable> {
@@ -477,9 +477,7 @@ impl PianoRoll {
                 y: y_offset,
             };
 
-            Self::note(clip_colour)
-                .quotated_2d(size)
-                .positioned(position)
+            Self::note(clip_colour).quoted_2d(size).positioned(position)
         })
     }
 }

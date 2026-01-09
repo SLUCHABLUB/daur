@@ -97,12 +97,12 @@ pub(crate) fn workspace<Ui: UserInterface>(
     ]);
 
     let track_area = View::x_stack([
-        settings_column.quotated(ui_settings.track_settings_width),
+        settings_column.quoted(ui_settings.track_settings_width),
         overview_column.fill_remaining(),
     ]);
 
     View::y_stack([
-        ruler_row.quotated(Ui::RULER_HEIGHT),
+        ruler_row.quoted(Ui::RULER_HEIGHT),
         track_area.fill_remaining(),
     ])
 }
@@ -137,7 +137,7 @@ fn held_object_view(
                 let size = Size { width, height };
 
                 View::Shared(Arc::clone(&overview))
-                    .quotated_2d(size)
+                    .quoted_2d(size)
                     .positioned(position)
             })
         }

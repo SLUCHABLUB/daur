@@ -26,7 +26,7 @@ pub(crate) struct Renderer {
     ///
     /// This executor type is used due to this recommendation in the `executors` crate's readme:
     ///
-    /// > If you don't know what hardware your code is going to run on, use the crossbeam_workstealing_pool
+    /// > If you don't know what hardware your code is going to run on, use the [`crossbeam_workstealing_pool`](executors::crossbeam_workstealing_pool)
     thread_pool: ThreadPool<DynParker>,
     popups: Arc<popup::Manager>,
     /// Data that is shared across the workers in the tread pool.

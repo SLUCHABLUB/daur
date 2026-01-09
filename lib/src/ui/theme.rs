@@ -61,9 +61,9 @@ pub enum ThemeColour {
     /// The colour of the white keys on the piano.
     WhiteKey,
 
-    /// The main colour of the pianoroll's background.
+    /// The main colour of the piano roll's background.
     PianoRollBackground,
-    /// The colour used for every other pitch-row in the pianoroll's background.
+    /// The colour used for every other pitch-row in the piano roll's background.
     AlternatePianoRollBackground,
 
     /// A custom colour.

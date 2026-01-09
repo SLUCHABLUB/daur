@@ -41,10 +41,10 @@ impl Measure {
     }
 
     pub(crate) fn cell_count(self, quantisation: Quantisation) -> NonZeroU64 {
-        (self.duration() / quantisation.cell_duration).ceil()
+        (self.duration() / quantisation.cell_duration).ceiling()
     }
 
     pub(crate) fn width(self, quantisation: Quantisation) -> Length {
-        quantisation.cell_width.get() * (self.duration() / quantisation.cell_duration).ceil()
+        quantisation.cell_width.get() * (self.duration() / quantisation.cell_duration).ceiling()
     }
 }

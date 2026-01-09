@@ -73,7 +73,7 @@ impl Overview<'_, '_> {
                         self.track.id,
                     );
 
-                    overview.quotated(clip_width).x_positioned(clip_offset)
+                    overview.quoted(clip_width).x_positioned(clip_offset)
                 })
                 .collect(),
         );

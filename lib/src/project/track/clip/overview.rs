@@ -24,7 +24,7 @@ pub(in crate::project) fn overview(
             highlighted: selected,
         }
         .grabbable(move |_| Some(Holdable::Clip(path)))
-        .quotated_minimally(),
+        .quoted_minimally(),
         View::canvas(
             clip.colour,
             clip.content.overview_painter(offset_mapping, crop_start),

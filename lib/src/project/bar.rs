@@ -116,7 +116,7 @@ pub(crate) fn bar<Ui: UserInterface>(
 
     View::x_stack([
         left_side.fill_remaining(),
-        playback_button.quotated(Ui::PLAYBACK_BUTTON_WIDTH),
+        playback_button.quoted(Ui::PLAYBACK_BUTTON_WIDTH),
         right_side.fill_remaining(),
     ])
     .bordered_with_title_and_thickness(project.name.clone(), true)

@@ -1,9 +1,9 @@
-mod quotated;
-mod quotated_2d;
+mod quoted;
+mod quoted_2d;
 mod quotum_2d;
 
-pub use quotated::Quotated;
-pub use quotated_2d::Quotated2D;
+pub use quoted::Quoted;
+pub use quoted_2d::Quoted2D;
 pub use quotum_2d::Quotum2D;
 
 use crate::ui::Length;

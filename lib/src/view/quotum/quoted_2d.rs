@@ -10,16 +10,16 @@ use std::cell::LazyCell;
 /// A [view](View) with a two-dimensional [quotum](Quotum2D).
 #[must_use = "the inner View must be used"]
 #[derive(Debug)]
-pub struct Quotated2D {
+pub struct Quoted2D {
     /// The [quotum](Quotum2D) of the view.
     pub quotum: Quotum2D,
-    /// The quotated [view](View).
+    /// The quoted [view](View).
     pub view: View,
 }
 
-impl Quotated2D {
+impl Quoted2D {
     /// An [empty view](View::Empty) with a zero quotum.
-    pub const EMPTY: Quotated2D = View::Empty.quotated_2d(Size::ZERO);
+    pub const EMPTY: Quoted2D = View::Empty.quoted_2d(Size::ZERO);
 
     pub(crate) fn calculate_size<Ui: UserInterface>(
         &self,
@@ -53,22 +53,22 @@ impl Quotated2D {
 
 impl View {
     /// Adds a [quotum](Quotum2D) to the view.
-    pub const fn with_2d_quotum(self, quotum: Quotum2D) -> Quotated2D {
-        Quotated2D { quotum, view: self }
+    pub const fn with_2d_quotum(self, quotum: Quotum2D) -> Quoted2D {
+        Quoted2D { quotum, view: self }
     }
 
     /// Makes the view fill the remaining space.
-    pub fn fill_remaining_2d(self) -> Quotated2D {
+    pub fn fill_remaining_2d(self) -> Quoted2D {
         self.with_2d_quotum(Quotum2D::REMAINING)
     }
 
     /// Makes the view take up the specified [amount of space](Size).
-    pub const fn quotated_2d(self, size: Size) -> Quotated2D {
+    pub const fn quoted_2d(self, size: Size) -> Quoted2D {
         self.with_2d_quotum(size.quotum())
     }
 
     /// Adds a quotum to the view using [`minimum_size`](View::minimum_size).
-    pub fn quotated_minimally_2d(self) -> Quotated2D {
+    pub fn quoted_minimally_2d(self) -> Quoted2D {
         self.with_2d_quotum(Quotum2D::MINIMUM)
     }
 }

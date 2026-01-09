@@ -13,7 +13,7 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
             app.edit_mode,
             app.piano_roll.is_open(),
         )
-        .quotated(app.ui_settings.project_bar_height),
+        .quoted(app.ui_settings.project_bar_height),
         workspace::<Ui>(
             app.project_manager.project(),
             &app.selection,

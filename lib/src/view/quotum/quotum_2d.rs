@@ -1,6 +1,6 @@
 use crate::view::Quotum;
 
-/// A rwo dimensional [quotum](Quotum).
+/// A two dimensional [quotum](Quotum).
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub struct Quotum2D {
     /// The [quotum](Quotum) along the x-axis.

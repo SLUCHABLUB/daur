@@ -23,7 +23,7 @@ use thiserror::Error;
 #[derive(Eq, PartialEq, Debug, Deserialize)]
 #[serde(from = "Serial")]
 pub struct Group {
-    // TODO: use a dimap
+    // TODO: use a bimap
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
     /// The notes in the group.
