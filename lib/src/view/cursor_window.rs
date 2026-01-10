@@ -7,8 +7,8 @@ use crate::metre::OffsetMapping;
 use crate::metre::TimeContext;
 use crate::ui::Length;
 use crate::view::OnClick;
+use bon::Builder;
 use derive_more::Debug;
-use typed_builder::TypedBuilder;
 
 //       |---o---|
 //
@@ -26,9 +26,10 @@ use typed_builder::TypedBuilder;
 // w: CursorWindow::window_offset
 
 /// A window with a musical cursor.
-#[derive(Clone, Debug, TypedBuilder)]
-#[builder(builder_type(vis = "pub(crate)"))]
+#[derive(Clone, Debug, Builder)]
 pub struct CursorWindow {
+    // The setter needs to be `pub(crate)` since `Player` is only `pub(crate)`.
+    #[builder(setters(vis = "pub(crate)"))]
     #[debug(skip)]
     player: Option<Player>,
     cursor: Instant,

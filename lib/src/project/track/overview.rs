@@ -18,9 +18,9 @@ use crate::ui::Length;
 use crate::view::CursorWindow;
 use crate::view::RenderArea;
 use crate::view::context::Menu;
-use typed_builder::TypedBuilder;
+use bon::Builder;
 
-#[derive(TypedBuilder)]
+#[derive(Builder)]
 pub(in crate::project) struct Overview<'track, 'selection> {
     track: &'track Track,
     selection: &'selection Selection,
@@ -94,7 +94,7 @@ impl Overview<'_, '_> {
             CursorWindow::builder()
                 .cursor(self.cursor)
                 .offset_mapping(self.offset_mapping)
-                .player(self.player)
+                .maybe_player(self.player)
                 .time_context(self.time_context)
                 .window_offset(self.negative_overview_offset)
                 .build()

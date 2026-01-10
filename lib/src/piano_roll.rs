@@ -32,6 +32,7 @@ use crate::view::ToText as _;
 use crate::view::ruler;
 use arcstr::ArcStr;
 use arcstr::literal;
+use bon::bon;
 use getset::CopyGetters;
 use getset::Setters;
 use itertools::chain;
@@ -68,6 +69,7 @@ pub struct PianoRoll {
     black_key_depth: NonZeroLength,
 }
 
+#[bon]
 impl PianoRoll {
     pub(crate) fn new_in<Ui: UserInterface>() -> PianoRoll {
         let a3_offset = Ui::KEY_WIDTH.get() * Ratio::integer(57);
@@ -123,15 +125,16 @@ impl PianoRoll {
         let highlighted = clip_name.is_some();
         let title = clip_name.unwrap_or(PIANO_ROLL);
 
-        let content = self.content::<Ui>(
-            selection,
-            project,
-            quantisation,
-            player,
-            cursor,
-            held_object,
-            edit_mode,
-        );
+        let content = self
+            .content::<Ui>()
+            .cursor(cursor)
+            .project(project)
+            .quantisation(quantisation)
+            .selection(selection)
+            .maybe_player(player)
+            .maybe_held_object(held_object)
+            .edit_mode(edit_mode)
+            .call();
 
         let title_height = Ui::string_height(&title) + Ui::TITLE_PADDING * Ratio::integer(2);
 
@@ -144,7 +147,7 @@ impl PianoRoll {
         .quoted(self.content_height + title_height)
     }
 
-    #[expect(clippy::too_many_arguments, reason = "the method is private")]
+    #[builder]
     fn content<Ui: UserInterface>(
         self,
         selection: &Selection,
@@ -217,7 +220,7 @@ impl PianoRoll {
         let cursor_window = CursorWindow::builder()
             .cursor(cursor)
             .offset_mapping(offset_mapping)
-            .player(player)
+            .maybe_player(player)
             .time_context(time_context)
             .window_offset(self.negative_x_offset)
             .build()
@@ -259,27 +262,27 @@ impl PianoRoll {
             + Interval::SEMITONE;
 
         let lowest_row = self
-            .row(
-                clip_start,
-                notes,
-                clip_colour,
-                lowest_visible_pitch,
-                offset_mapping.clone(),
-                edit_mode,
-                key,
-            )
+            .row()
+            .clip_colour(clip_colour)
+            .clip_start(clip_start)
+            .edit_mode(edit_mode)
+            .key(key)
+            .notes(notes)
+            .offset_mapping(offset_mapping.clone())
+            .pitch(lowest_visible_pitch)
+            .call()
             .quoted(lowest_row_height);
 
         let highest_row = self
-            .row(
-                clip_start,
-                notes,
-                clip_colour,
-                highest_visible_pitch,
-                offset_mapping.clone(),
-                edit_mode,
-                key,
-            )
+            .row()
+            .clip_colour(clip_colour)
+            .clip_start(clip_start)
+            .edit_mode(edit_mode)
+            .key(key)
+            .notes(notes)
+            .offset_mapping(offset_mapping.clone())
+            .pitch(highest_visible_pitch)
+            .call()
             .fill_remaining();
 
         let mut rows = vec![highest_row];
@@ -289,16 +292,16 @@ impl PianoRoll {
             let pitch = lowest_visible_pitch + interval;
 
             rows.push(
-                self.row(
-                    clip_start,
-                    notes,
-                    clip_colour,
-                    pitch,
-                    offset_mapping.clone(),
-                    edit_mode,
-                    key,
-                )
-                .quoted(self.key_width),
+                self.row()
+                    .clip_colour(clip_colour)
+                    .clip_start(clip_start)
+                    .edit_mode(edit_mode)
+                    .key(key)
+                    .notes(notes)
+                    .offset_mapping(offset_mapping.clone())
+                    .pitch(pitch)
+                    .call()
+                    .quoted(self.key_width),
             );
         }
 
@@ -308,7 +311,7 @@ impl PianoRoll {
     }
 
     /// Return the view for a row in the piano roll.
-    #[expect(clippy::too_many_arguments, reason = "the method is private")]
+    #[builder]
     fn row(
         self,
         clip_start: Instant,

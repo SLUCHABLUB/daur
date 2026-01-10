@@ -59,8 +59,8 @@ pub(crate) fn workspace<Ui: UserInterface>(
                 .time_context(time_context.clone())
                 .negative_overview_offset(ui_settings.negative_overview_offset)
                 .cursor(cursor)
-                .player(player.cloned())
-                .held_clip(held_clip)
+                .maybe_player(player.cloned())
+                .maybe_held_clip(held_clip)
                 .build()
                 .view(),
         );
@@ -166,7 +166,7 @@ fn empty_track_overview(
     CursorWindow::builder()
         .cursor(cursor)
         .offset_mapping(offset_mapping)
-        .player(player)
+        .maybe_player(player)
         .time_context(time_context)
         .window_offset(negative_overview_offset)
         .build()
