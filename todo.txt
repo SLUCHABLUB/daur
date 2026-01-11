@@ -1,6 +1,6 @@
 TODO: move this to GitHub issues
 
-TODO: note selecting
+TODO: give feedback for note selection
 
 TODO: note group onion skin
 TODO: interval highlighter

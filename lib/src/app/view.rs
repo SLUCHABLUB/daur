@@ -24,15 +24,16 @@ pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
             app.held_object,
         )
         .fill_remaining(),
-        app.piano_roll.view::<Ui>(
-            &app.selection,
-            app.project_manager.project(),
-            app.quantisation,
-            app.cursor(),
-            app.audio_config.try_player().cloned(),
-            app.held_object,
-            app.edit_mode,
-        ),
+        app.piano_roll
+            .view::<Ui>()
+            .selection(&app.selection)
+            .project(app.project_manager.project())
+            .quantisation(app.quantisation)
+            .cursor(app.cursor())
+            .maybe_player(app.audio_config.try_player().cloned())
+            .maybe_held_object(app.held_object)
+            .edit_mode(app.edit_mode)
+            .call(),
     ]);
 
     let mut layers = vec![background];

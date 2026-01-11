@@ -1,6 +1,8 @@
 use crate::Holdable;
+use crate::Id;
 use crate::Project;
 use crate::Ratio;
+use crate::Selectable;
 use crate::UserInterface;
 use crate::View;
 use crate::app::Action;
@@ -11,11 +13,14 @@ use crate::metre::NonZeroDuration;
 use crate::metre::OffsetMapping;
 use crate::metre::Quantisation;
 use crate::metre::TimeContext;
+use crate::note;
 use crate::note::Group;
 use crate::note::Interval;
 use crate::note::Key;
 use crate::note::Pitch;
 use crate::project::Edit;
+use crate::project::Track;
+use crate::project::track::Clip;
 use crate::select::Selection;
 use crate::ui::Colour;
 use crate::ui::Length;
@@ -100,9 +105,8 @@ impl PianoRoll {
         self.y_offset = self.y_offset::<Ui>();
     }
 
-    // TODO: merge some settings into "temporary settings"
     /// Returns the view for the piano roll.
-    #[expect(clippy::too_many_arguments, reason = "see TODO")]
+    #[builder]
     pub(crate) fn view<Ui: UserInterface>(
         self,
         selection: &Selection,
@@ -158,8 +162,11 @@ impl PianoRoll {
         held_object: Option<Holdable>,
         edit_mode: bool,
     ) -> View {
-        let Some((clip_start, clip)) = selection.top_clip().and_then(|clip| project.clip(clip))
-        else {
+        let Some(clip_path) = selection.top_clip() else {
+            return NO_CLIP_SELECTED.centred();
+        };
+
+        let Some((clip_start, clip)) = project.clip(clip_path) else {
             return NO_CLIP_SELECTED.centred();
         };
 
@@ -172,18 +179,20 @@ impl PianoRoll {
         // The piano roll has a fixed lower pitch.
         // Resizing it will thus cause the bottom to be fixed.
         // Since the top is the thing being moved, this seems intuitive.
-        let workspace = self.workspace::<Ui>(
-            clip_start,
-            notes,
-            clip.colour(),
-            offset_mapping.clone(),
-            project.time_context(),
-            player,
-            cursor,
-            held_object,
-            edit_mode,
-            project.key(),
-        );
+        let workspace = self
+            .workspace::<Ui>()
+            .track(clip_path.track)
+            .clip_start(clip_start)
+            .clip(clip)
+            .notes(notes)
+            .offset_mapping(offset_mapping.clone())
+            .time_context(project.time_context())
+            .maybe_player(player)
+            .cursor(cursor)
+            .maybe_held_object(held_object)
+            .edit_mode(edit_mode)
+            .key(project.key())
+            .call();
 
         let ruler = ruler(self.negative_x_offset, offset_mapping)
             .fill_remaining()
@@ -193,12 +202,13 @@ impl PianoRoll {
             .scrollable(Action::MovePianoRoll)
     }
 
-    #[expect(clippy::too_many_arguments, reason = "the method is internal")]
+    #[builder]
     fn workspace<Ui: UserInterface>(
         self,
+        track: Id<Track>,
         clip_start: Instant,
+        clip: &Clip,
         notes: &Group,
-        clip_colour: Colour,
         offset_mapping: OffsetMapping,
         time_context: Changing<TimeContext>,
         player: Option<Player>,
@@ -207,16 +217,18 @@ impl PianoRoll {
         edit_mode: bool,
         key: &Changing<Key>,
     ) -> View {
-        let roll = self.roll::<Ui>(
-            clip_start,
-            notes,
-            clip_colour,
-            &offset_mapping,
-            edit_mode,
-            key,
-        );
+        let roll = self
+            .roll::<Ui>()
+            .track(track)
+            .clip_start(clip_start)
+            .clip(clip)
+            .notes(notes)
+            .offset_mapping(&offset_mapping)
+            .edit_mode(edit_mode)
+            .key(key)
+            .call();
 
-        let held_object = self.held_object(held_object, clip_colour, &offset_mapping);
+        let held_object = self.held_object(held_object, clip.colour(), &offset_mapping);
         let cursor_window = CursorWindow::builder()
             .cursor(cursor)
             .offset_mapping(offset_mapping)
@@ -232,11 +244,13 @@ impl PianoRoll {
         View::Layers(vec![roll, overlay])
     }
 
+    #[builder]
     fn roll<Ui: UserInterface>(
         self,
+        track: Id<Track>,
         clip_start: Instant,
+        clip: &Clip,
         notes: &Group,
-        clip_colour: Colour,
         offset_mapping: &OffsetMapping,
         edit_mode: bool,
         key: &Changing<Key>,
@@ -263,8 +277,9 @@ impl PianoRoll {
 
         let lowest_row = self
             .row()
-            .clip_colour(clip_colour)
+            .track(track)
             .clip_start(clip_start)
+            .clip(clip)
             .edit_mode(edit_mode)
             .key(key)
             .notes(notes)
@@ -275,8 +290,9 @@ impl PianoRoll {
 
         let highest_row = self
             .row()
-            .clip_colour(clip_colour)
+            .track(track)
             .clip_start(clip_start)
+            .clip(clip)
             .edit_mode(edit_mode)
             .key(key)
             .notes(notes)
@@ -293,8 +309,9 @@ impl PianoRoll {
 
             rows.push(
                 self.row()
-                    .clip_colour(clip_colour)
+                    .track(track)
                     .clip_start(clip_start)
+                    .clip(clip)
                     .edit_mode(edit_mode)
                     .key(key)
                     .notes(notes)
@@ -314,9 +331,10 @@ impl PianoRoll {
     #[builder]
     fn row(
         self,
+        track: Id<Track>,
         clip_start: Instant,
+        clip: &Clip,
         notes: &Group,
-        clip_colour: Colour,
         pitch: Pitch,
         offset_mapping: OffsetMapping,
         edit_mode: bool,
@@ -370,7 +388,12 @@ impl PianoRoll {
 
                     let width = end - start;
 
-                    Self::note(clip_colour).quoted(width).x_positioned(start)
+                    let path = note::Path::new(track, clip.id(), note.id());
+
+                    Self::note_visual(clip.colour())
+                        .selectable(Selectable::Note(path))
+                        .quoted(width)
+                        .x_positioned(start)
                 }),
             )
             .collect(),
@@ -405,7 +428,7 @@ impl PianoRoll {
         ])
     }
 
-    fn note(colour: Colour) -> View {
+    fn note_visual(colour: Colour) -> View {
         View::Solid(ThemeColour::Custom(colour))
     }
 
@@ -480,7 +503,9 @@ impl PianoRoll {
                 y: y_offset,
             };
 
-            Self::note(clip_colour).quoted_2d(size).positioned(position)
+            Self::note_visual(clip_colour)
+                .quoted_2d(size)
+                .positioned(position)
         })
     }
 }
