@@ -76,38 +76,40 @@ impl Selection {
         HashSet1::try_from(set).ok()
     }
 
-    // TODO: Add the parent tracks of the removed clips to the selection.
     /// Takes all clips out of the selection.
     pub fn take_clips(&mut self) -> Option<HashSet1<clip::Path>> {
         let mut set = HashSet::new();
 
-        self.items.retain(|item| match *item {
-            Selectable::Track(_) => true,
-            Selectable::Clip(clip) => {
-                set.insert(clip);
-                false
+        for item in &mut self.items {
+            match *item {
+                Selectable::Track(_) => (),
+                Selectable::Clip(clip) => {
+                    set.insert(clip);
+                    *item = Selectable::Track(clip.track);
+                }
+                Selectable::Note(note) => {
+                    set.insert(note.clip);
+                    *item = Selectable::Track(note.clip.track);
+                }
             }
-            Selectable::Note(note) => {
-                set.insert(note.clip);
-                false
-            }
-        });
+        }
 
         HashSet1::try_from(set).ok()
     }
 
-    // TODO: Add the parent clips of the removed notes to the selection.
     /// Takes all notes out of the selection.
     pub fn take_notes(&mut self) -> Option<HashSet1<note::Path>> {
         let mut set = HashSet::new();
 
-        self.items.retain(|item| match *item {
-            Selectable::Track(_) | Selectable::Clip(_) => true,
-            Selectable::Note(note) => {
-                set.insert(note);
-                false
+        for item in &mut self.items {
+            match *item {
+                Selectable::Track(_) | Selectable::Clip(_) => (),
+                Selectable::Note(note) => {
+                    set.insert(note);
+                    *item = Selectable::Clip(note.clip);
+                }
             }
-        });
+        }
 
         HashSet1::try_from(set).ok()
     }
