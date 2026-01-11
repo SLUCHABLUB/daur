@@ -36,5 +36,4 @@ TODO: test that `use` paths are optimal
 
 --- BEFORE PUBLISHING ---
 
-TODO: remove "method is private" justifications for expecting lints
 TODO: check api
