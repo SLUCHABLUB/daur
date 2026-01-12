@@ -74,6 +74,7 @@ pub struct PianoRoll {
     black_key_depth: NonZeroLength,
 }
 
+// TODO: Sort builder parameter & arguments.
 #[bon]
 impl PianoRoll {
     pub(crate) fn new_in<Ui: UserInterface>() -> PianoRoll {
