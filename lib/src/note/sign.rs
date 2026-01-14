@@ -1,3 +1,5 @@
+//! Items pertaining to [`Sign`].
+
 use enum_iterator::Sequence;
 use serde::Deserialize;
 use serde::Serialize;
@@ -7,7 +9,9 @@ use std::fmt::Formatter;
 use std::fmt::Write as _;
 use std::ops::Not;
 
+/// The sharp sign.
 pub(super) const SHARP: char = '\u{266F}';
+/// The flat sign.
 pub(super) const FLAT: char = '\u{266D}';
 
 /// A flat or sharp sign.

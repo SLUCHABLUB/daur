@@ -1,3 +1,5 @@
+//! Items pertaining to [`PitchClass`].
+
 use crate::note::FLAT;
 use crate::note::SHARP;
 use crate::note::Sign;
@@ -99,6 +101,7 @@ impl PitchClass {
         }
     }
 
+    /// The name of the pitch class using sharp signs.
     fn sharp_name(self) -> ArcStr {
         match self {
             PitchClass::A => literal!("A"),
@@ -116,6 +119,7 @@ impl PitchClass {
         }
     }
 
+    /// The name of the pitch class using flat signs.
     fn flat_name(self) -> ArcStr {
         match self {
             PitchClass::A => literal!("A"),

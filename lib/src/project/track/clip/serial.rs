@@ -1,3 +1,5 @@
+//! Items pertaining to [`Serial`].
+
 use crate::audio;
 use crate::metre::Instant;
 use crate::note;
@@ -8,17 +10,23 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// The serial representation of [`Clip`].
 #[derive(Serialize, Deserialize)]
 pub(in crate::project) struct Serial<'data> {
+    /// The name.
     pub name: Cow<'data, str>,
+    /// The position.
     pub position: Instant,
 
+    /// The colour.
     pub colour: Colour,
 
+    /// The content.
     pub content: SerialContent<'data>,
 }
 
 impl<'data> Serial<'data> {
+    /// Constructs a new serial representation from a clip and position.
     pub(crate) fn from_clip(position: Instant, clip: &'data Clip) -> Self {
         let Clip {
             id: _,
@@ -36,10 +44,13 @@ impl<'data> Serial<'data> {
     }
 }
 
+/// The serial representation of [`Content`].
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub(in crate::project) enum SerialContent<'data> {
+    /// An audio clip.
     Audio(Cow<'data, audio::FixedLength>),
+    /// An note group.
     Notes(note::group::Serial),
 }
 

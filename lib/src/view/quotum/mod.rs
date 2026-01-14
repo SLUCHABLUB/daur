@@ -1,3 +1,5 @@
+//! Items pertaining to [`Quotum`].
+
 mod quoted;
 mod quoted_2d;
 mod quotum_2d;

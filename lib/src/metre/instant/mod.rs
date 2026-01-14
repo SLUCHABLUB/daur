@@ -1,3 +1,5 @@
+//! Items pertaining to [`Instant`].
+
 mod non_zero;
 mod ops;
 
@@ -23,6 +25,7 @@ impl Instant {
         since_start: Duration::ZERO,
     };
 
+    /// Returns this instant relative to another instant.
     pub(crate) fn relative_to(self, other: Instant) -> relative::Instant {
         relative::Instant {
             since_start: self - other,

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Instant`].
+
 mod non_zero;
 mod ops;
 

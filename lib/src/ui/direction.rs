@@ -1,3 +1,5 @@
+//! Items pertaining to [`Direction`].
+
 use crate::ui::Length;
 use crate::ui::Offset;
 use crate::ui::Vector;

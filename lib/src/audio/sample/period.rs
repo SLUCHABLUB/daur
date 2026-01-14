@@ -1,3 +1,5 @@
+//! Items pertaining to [`Period`].
+
 use crate::audio::sample::Duration;
 use crate::audio::sample::Instant;
 use std::ops::Range;

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Serial`].
+
 use crate::Note;
 use crate::metre::NonZeroDuration;
 use crate::note;
@@ -16,9 +18,12 @@ impl Serialize for note::Group {
     }
 }
 
+/// The serial representation of a [note group](note::Group).
 #[derive(Serialize, Deserialize)]
 pub(crate) struct Serial {
+    /// The duration.
     pub duration: NonZeroDuration,
+    /// The notes.
     pub notes: BTreeSet<note::Serial>,
 }
 

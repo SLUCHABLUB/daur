@@ -1,3 +1,5 @@
+//! Items pertaining to [`Scroller`].
+
 use crate::Holdable;
 use crate::Selectable;
 use crate::app::Action;
@@ -21,13 +23,14 @@ use std::num::NonZeroU64;
 pub struct Scroller<'actions> {
     /// The position of the mouse when the view was scrolled.
     position: Point,
+    /// The action queue to add actions to.
     actions: &'actions mut Actions,
     /// The offset by which the scrolled view(s) should be moved.
     offset: Vector,
 }
 
 impl<'actions> Scroller<'actions> {
-    /// Constructs a new scroller that scrolls (moves) views at a position by an offset.  
+    /// Constructs a new scroller that scrolls (moves) views at a position by an offset.
     pub fn new(position: Point, offset: Vector, actions: &'actions mut Actions) -> Self {
         Scroller {
             position,

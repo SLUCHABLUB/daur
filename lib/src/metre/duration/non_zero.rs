@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroDuration`].
+
 use crate::NonZeroRatio;
 use crate::metre::Duration;
 use serde::Deserialize;

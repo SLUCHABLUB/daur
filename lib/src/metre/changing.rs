@@ -1,3 +1,5 @@
+//! Items pertaining to [`Changing`].
+
 use crate::metre::Instant;
 use crate::metre::NonZeroInstant;
 use serde::Deserialize;
@@ -41,12 +43,17 @@ impl<T> From<T> for Changing<T> {
     }
 }
 
+/// The serial representation of [`Changing`].
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 enum Serial<T> {
+    /// A single value.
     Constant(T),
+    /// A starting value and timeline of changes.
     Changing {
+        /// The starting value.
         start: T,
+        /// The timeline of changes to the value.
         changes: BTreeMap<NonZeroInstant, T>,
     },
 }

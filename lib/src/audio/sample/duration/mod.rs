@@ -1,3 +1,5 @@
+//! Items pertaining to [`Duration`].
+
 use crate::Ratio;
 use crate::audio::sample;
 use crate::time;

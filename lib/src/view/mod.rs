@@ -47,7 +47,9 @@ use derive_more::Debug;
 use std::num::NonZeroU64;
 use std::sync::Arc;
 
+/// The label for buttons that cancel a process.
 pub(crate) const CANCEL: ArcStr = literal!("cancel");
+/// The label for buttons that confirm actions.
 pub(crate) const CONFIRM: ArcStr = literal!("confirm");
 
 /// A function for painting a canvas.

@@ -1,3 +1,5 @@
+//! Items pertaining to [text](View::Text).
+
 use crate::View;
 use crate::view::Alignment;
 use arcstr::ArcStr;

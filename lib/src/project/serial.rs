@@ -1,3 +1,5 @@
+//! Items pertaining to [`Serial`].
+
 use crate::Project;
 use crate::metre::Changing;
 use crate::metre::TimeSignature;
@@ -10,14 +12,20 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// The serial representation of a [project](Project).
 #[derive(Serialize, Deserialize)]
 pub(super) struct Serial<'data> {
+    /// The name.
     pub name: Cow<'data, str>,
 
+    /// The tempo.
     pub tempo: Changing<Tempo>,
+    /// The time signature.
     pub time_signature: Changing<TimeSignature>,
+    /// The key.
     pub key: Changing<Key>,
 
+    /// The tracks.
     pub tracks: Vec<track::Serial<'data>>,
 }
 
@@ -36,7 +44,7 @@ impl<'data> From<&'data Project> for Serial<'data> {
             tempo: tempo.clone(),
             time_signature: time_signature.clone(),
             key: key.clone(),
-            tracks: tracks.values().map(track::Serial::from_track).collect(),
+            tracks: tracks.values().map(track::Serial::from).collect(),
         }
     }
 }

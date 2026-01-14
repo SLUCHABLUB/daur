@@ -1,3 +1,5 @@
+//! Items pertaining to [`Axis`].
+
 use crate::ui::Offset;
 use crate::ui::Vector;
 use std::ops::Mul;

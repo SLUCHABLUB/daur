@@ -1,3 +1,5 @@
+//! Items pertaining to [`Key`].
+
 use crate::note::NonUnisonSimpleInterval;
 use crate::note::PitchClass;
 use crate::note::Sign;

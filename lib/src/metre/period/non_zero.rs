@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroPeriod`].
+
 use crate::metre::Instant;
 use crate::metre::NonZeroDuration;
 use crate::metre::Period;

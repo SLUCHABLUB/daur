@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Duration`].
+
 use crate::NonZeroRatio;
 use crate::Ratio;
 use crate::time::Duration;

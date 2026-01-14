@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Offset`].
+
 use crate::NonZeroRatio;
 use crate::Ratio;
 use crate::ui::Offset;

@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonUnisonSimpleInterval`].
+
 use enum_iterator::Sequence;
 use enumset::EnumSet;
 use enumset::EnumSetType;

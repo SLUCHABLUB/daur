@@ -1,3 +1,5 @@
+//! Items pertaining to [`Quotum2D`].
+
 use crate::view::Quotum;
 
 /// A two dimensional [quotum](Quotum).

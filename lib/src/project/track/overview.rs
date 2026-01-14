@@ -1,3 +1,5 @@
+//! Items pertaining to [`Overview`].
+
 use crate::Holdable;
 use crate::Id;
 use crate::Selectable;
@@ -18,97 +20,60 @@ use crate::ui::Length;
 use crate::view::CursorWindow;
 use crate::view::RenderArea;
 use crate::view::context::Menu;
-use bon::Builder;
+use bon::builder;
 
-#[derive(Builder)]
-pub(in crate::project) struct Overview<'track, 'selection> {
-    track: &'track Track,
-    selection: &'selection Selection,
+/// Returns the overview of a track (the horizontally scrollable section of clip overviews).
+#[builder]
+pub fn overview(
+    track: &Track,
+    selection: &Selection,
     offset_mapping: OffsetMapping,
     time_context: Changing<TimeContext>,
     negative_overview_offset: Length,
     cursor: Instant,
     player: Option<Player>,
     held_clip: Option<Id<Clip>>,
-}
+) -> View {
+    let clips = View::Layers(
+        track
+            .clips
+            .values()
+            .map(|clip| {
+                if held_clip.is_some_and(|id| id == clip.id()) {
+                    return View::Empty;
+                }
 
-impl Overview<'_, '_> {
-    pub fn view(self) -> View {
-        let clips = View::Layers(
-            self.track
-                .clips
-                .values()
-                .map(|clip| {
-                    if self.held_clip.is_some_and(|id| id == clip.id()) {
-                        return View::Empty;
-                    }
+                let clip_start = track
+                    .clip_starts
+                    .get(&clip.id())
+                    .copied()
+                    .unwrap_or_default();
+                let absolute_clip_offset = offset_mapping.offset(clip_start);
 
-                    let clip_start = self
-                        .track
-                        .clip_starts
-                        .get(&clip.id())
-                        .copied()
-                        .unwrap_or_default();
-                    let absolute_clip_offset = self.offset_mapping.offset(clip_start);
+                let start_crop = negative_overview_offset - absolute_clip_offset;
 
-                    let start_crop = self.negative_overview_offset - absolute_clip_offset;
+                let clip_offset = absolute_clip_offset - negative_overview_offset;
 
-                    let clip_offset = absolute_clip_offset - self.negative_overview_offset;
+                let clip_end = clip_start + clip.duration().get();
+                let clip_end_offset = offset_mapping.offset(clip_end) - negative_overview_offset;
 
-                    let clip_end = clip_start + clip.duration().get();
-                    let clip_end_offset =
-                        self.offset_mapping.offset(clip_end) - self.negative_overview_offset;
+                let selected = selection.contains_clip(Path::new(track.id, clip.id()));
 
-                    let selected = self
-                        .selection
-                        .contains_clip(Path::new(self.track.id, clip.id()));
+                let clip_width = clip_end_offset - clip_offset;
 
-                    let clip_width = clip_end_offset - clip_offset;
+                let overview =
+                    clip::overview(clip, selected, offset_mapping.clone(), start_crop, track.id);
 
-                    let overview = clip::overview(
-                        clip,
-                        selected,
-                        self.offset_mapping.clone(),
-                        start_crop,
-                        self.track.id,
-                    );
-
-                    overview.quoted(clip_width).x_positioned(clip_offset)
-                })
-                .collect(),
-        );
-
-        let background = View::Empty
-            .contextual(Menu::track_overview())
-            .grabbable(|render_area| {
-                Some(Holdable::SelectionBox {
-                    start: render_area.mouse_position,
-                })
+                overview.quoted(clip_width).x_positioned(clip_offset)
             })
-            .object_accepting(self.object_acceptor())
-            .selectable(Selectable::Track(self.track.id));
+            .collect(),
+    );
 
-        View::Layers(vec![
-            background,
-            clips,
-            CursorWindow::builder()
-                .cursor(self.cursor)
-                .offset_mapping(self.offset_mapping)
-                .maybe_player(self.player)
-                .time_context(self.time_context)
-                .window_offset(self.negative_overview_offset)
-                .build()
-                .view(),
-        ])
-        .scrollable(Action::MoveOverview)
-    }
+    let object_acceptor = {
+        let offset_mapping = offset_mapping.clone();
+        let track = track.id;
 
-    fn object_acceptor(&self) -> impl Fn(Holdable, RenderArea) -> Option<Action> + 'static {
-        let offset_mapping = self.offset_mapping.clone();
-        let negative_overview_offset = self.negative_overview_offset;
-        let track = self.track.id;
-
-        move |holdable, render_area| {
+        move |holdable, render_area: RenderArea| {
             let Holdable::Clip(clip) = holdable else {
                 return None;
             };
@@ -123,5 +88,29 @@ impl Overview<'_, '_> {
                 position,
             }))
         }
-    }
+    };
+
+    let background = View::Empty
+        .contextual(Menu::track_overview())
+        .grabbable(|render_area| {
+            Some(Holdable::SelectionBox {
+                start: render_area.mouse_position,
+            })
+        })
+        .object_accepting(object_acceptor)
+        .selectable(Selectable::Track(track.id));
+
+    View::Layers(vec![
+        background,
+        clips,
+        CursorWindow::builder()
+            .cursor(cursor)
+            .offset_mapping(offset_mapping)
+            .maybe_player(player)
+            .time_context(time_context)
+            .window_offset(negative_overview_offset)
+            .build()
+            .view(),
+    ])
+    .scrollable(Action::MoveOverview)
 }

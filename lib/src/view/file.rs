@@ -60,6 +60,10 @@ pub fn selector(selected_file: Arc<ArcCell<Path>>) -> View {
     })
 }
 
+/// Constructs a file-list view.
+///
+/// If the selected file is a directory, this directory's files are used.
+/// Otherwise, the parent of said file is.
 fn list(selected_file: &Arc<ArcCell<Path>>) -> View {
     let path = selected_file.get();
 
@@ -73,6 +77,7 @@ fn list(selected_file: &Arc<ArcCell<Path>>) -> View {
         return View::Empty;
     };
 
+    // TODO: Should we collect rather than filter out errors?
     View::y_stack(
         directory
             .filter_map(Result::ok)
@@ -80,6 +85,7 @@ fn list(selected_file: &Arc<ArcCell<Path>>) -> View {
     )
 }
 
+/// Constructs a view of a [directory entry](DirEntry).
 fn view_entry(entry: DirEntry, selected_file: Arc<ArcCell<Path>>) -> Quoted {
     // TODO: add icon
     // TODO: add selection status

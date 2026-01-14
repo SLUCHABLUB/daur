@@ -1,3 +1,5 @@
+//! Items pertaining to [`Ratio`].
+
 mod non_zero;
 mod ops;
 mod serial;
@@ -47,7 +49,9 @@ impl Ratio {
     /// 1
     pub const ONE: Ratio = Ratio::integer(1);
 
+    /// The minimum non-zero ratio.
     const EPSILON: Ratio = Ratio::reciprocal_of(NonZeroU64::MAX);
+    /// The maximum ratio.
     const MAX: Ratio = Ratio::integer(u64::MAX);
 
     /// Creates a new ratio from a numerator and denominator.
@@ -205,6 +209,7 @@ impl Ratio {
         self.round().try_into().unwrap_or(usize::MAX)
     }
 
+    /// Approximates a ratio between two 128-bit numbers.
     pub(crate) fn approximate_big(numerator: u128, denominator: NonZeroU128) -> Ratio {
         let Some(numerator) = NonZeroU128::new(numerator) else {
             return Ratio::ZERO;

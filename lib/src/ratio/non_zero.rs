@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroRatio`].
+
 use crate::Ratio;
 use crate::ratio::Serial;
 use crate::ratio::util::greatest_common_divisor;
@@ -29,7 +31,9 @@ impl NonZeroRatio {
     /// 1
     pub const ONE: NonZeroRatio = NonZeroRatio::integer(non_zero!(1));
 
+    /// The minimum non-zero ratio.
     const MIN: NonZeroRatio = NonZeroRatio::reciprocal_of(NonZeroU64::MAX);
+    /// The maximum non-zero ratio.
     const MAX: NonZeroRatio = NonZeroRatio::integer(NonZeroU64::MAX);
 
     /// Creates a new ratio from a numerator and a denominator.
@@ -104,6 +108,7 @@ impl NonZeroRatio {
         NonZeroU64::new(self.get().ceiling()).unwrap_or(non_zero!(1))
     }
 
+    /// Approximates a ratio between two 128-bit numbers.
     pub(super) fn approximate_big(
         mut numerator: NonZeroU128,
         mut denominator: NonZeroU128,

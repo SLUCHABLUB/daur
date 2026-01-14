@@ -1,3 +1,5 @@
+//! Items pertaining to buttons.
+
 mod on_click;
 
 pub use on_click::OnClick;

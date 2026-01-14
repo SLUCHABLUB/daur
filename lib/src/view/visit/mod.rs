@@ -200,6 +200,7 @@ impl View {
     }
 }
 
+/// Calculates the area of the inner view given the area of a border view.
 fn inner_area<Ui: UserInterface>(mut render_area: RenderArea) -> RenderArea {
     render_area.area.position.x += Ui::BORDER_THICKNESS;
     render_area.area.position.y += Ui::BORDER_THICKNESS;

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Instance`].
+
 use crate::Audio;
 use crate::Id;
 use crate::Note;
@@ -11,14 +13,22 @@ use crate::note::Pitch;
 use crate::note::event::Subsequence;
 use std::collections::HashMap;
 
+/// An instance of a node chain.
 pub(crate) struct Instance {
+    /// The sample rate at which audio is to be processed.
     sample_rate: sample::Rate,
+    /// How far along audio has been processed.
     position: sample::Instant,
 
+    /// The currently pressed keys.
     keys: HashMap<Id<Note>, Pitch>,
 }
 
 impl Instance {
+    /// Constructs a new instance.
+    ///
+    /// At the moment this instance is hardcoded to produce a sine wave superposition from the pressed keys
+    /// and to pass audio through unchanged.
     pub(super) fn new(sample_rate: sample::Rate) -> Instance {
         Instance {
             sample_rate,
@@ -27,13 +37,14 @@ impl Instance {
         }
     }
 
+    /// Process a slice of a clip.
     pub(crate) fn process(
         &mut self,
         duration: Duration,
         input_audio: Subsection,
         events: Subsequence,
     ) -> ProcessResult {
-        // TODO: pass to a plugin instance
+        // TODO: pass to a plugin instance (& remember to fix docs)
 
         let mut output_audio = Audio::with_capacity(input_audio.sample_rate, duration);
 

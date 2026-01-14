@@ -1,9 +1,12 @@
+//! File for the [`view`] function.
+
 use crate::App;
 use crate::UserInterface;
 use crate::View;
 use crate::project::bar;
 use crate::project::workspace;
 
+/// Constructs a [view](View) of the [app](App).
 pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
     let background = View::y_stack([
         bar::<Ui>(

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Period`].
+
 mod non_zero;
 
 pub use non_zero::NonZeroPeriod;
@@ -48,6 +50,7 @@ impl Period {
         )
     }
 
+    /// Converts the period to a range of instants.
     fn range(self) -> Range<Instant> {
         Range {
             start: self.start,

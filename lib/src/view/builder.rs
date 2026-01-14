@@ -1,3 +1,5 @@
+//! Implementations of builder methods for [`View`].
+
 use crate::Holdable;
 use crate::Selectable;
 use crate::View;

@@ -18,8 +18,11 @@ use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::sync::Arc;
 
+/// The label of the button to add a new note group.
 const ADD_NOTES: ArcStr = literal!("add notes");
+/// The label of the button to import an audio clip from a file.
 const IMPORT_AUDIO: ArcStr = literal!("import audio");
+/// The button to toggle the pianoroll.
 const TOGGLE_PIANO_ROLL: ArcStr = literal!("toggle piano roll");
 
 /// A context (right-click) menu specification.

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Alignment`].
+
 /// How something should be aligned
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum Alignment {

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Period`].
+
 use crate::metre;
 use crate::metre::Changing;
 use crate::metre::TimeContext;

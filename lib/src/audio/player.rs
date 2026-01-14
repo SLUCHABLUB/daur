@@ -1,3 +1,5 @@
+//! Items pertaining to [`Player`].
+
 use crate::Audio;
 use crate::audio::Source;
 use crate::time::Duration;
@@ -6,13 +8,18 @@ use derive_more::Debug;
 use rodio::Sink;
 use std::sync::Arc;
 
+/// An audio player.
+///
+/// It holds a handle to an output stream, connected to an audio output device.
 #[derive(Clone, Debug)]
 pub(crate) struct Player {
+    /// The underlying audio sink.
     #[debug(skip)]
     sink: Arc<Sink>,
 }
 
 impl Player {
+    /// Returns whether audio is currently playing.
     pub(crate) fn is_playing(&self) -> bool {
         !self.sink.is_paused() && !self.sink.empty()
     }
@@ -24,12 +31,14 @@ impl Player {
         })
     }
 
+    /// Pauses the audio player.
     pub(crate) fn pause(&self) -> Option<Instant> {
         let position = self.position();
         self.sink.clear();
         position
     }
 
+    /// Plays the given audio starting at the given position.
     pub(crate) fn play(&self, audio: Audio, from: Instant) {
         self.sink.clear();
         self.sink.append(Source::new(audio));

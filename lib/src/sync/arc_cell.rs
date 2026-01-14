@@ -1,3 +1,5 @@
+//! Items pertaining to [`ArcCell`].
+
 use parking_lot::Mutex;
 use std::fmt;
 use std::fmt::Debug;
@@ -6,6 +8,7 @@ use std::sync::Arc;
 
 /// A cell containing an [atomically reference counted](Arc) value.
 pub struct ArcCell<T: ?Sized> {
+    /// The underlying lock.
     lock: Mutex<Arc<T>>,
 }
 

@@ -26,7 +26,11 @@ use thiserror::Error;
 #[repr(transparent)]
 #[serde(try_from = "f32", into = "f32")]
 pub struct Sample {
-    // INVARIANT: this is on the interval [-1, 1].
+    /// The numeric value of the sample.
+    ///
+    /// # Invariants
+    ///
+    /// This is on the interval [-1, 1] (and not NaN).
     value: f32,
 }
 

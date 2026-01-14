@@ -1,3 +1,5 @@
+//! Items pertaining to [`Tempo`].
+
 use crate::time::Duration;
 use crate::time::NonZeroDuration;
 use non_zero::non_zero;
@@ -13,6 +15,7 @@ use std::num::NonZeroU64;
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct Tempo {
     // TODO: support the psychopathy that is non-integral BPMs (note serde)
+    /// The number of beats per minute.
     bpm: NonZeroU16,
 }
 

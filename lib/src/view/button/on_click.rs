@@ -1,14 +1,18 @@
+//! Items pertaining to [`OnClick`].
+
 use crate::app::Action;
 use crate::app::Actions;
 use crate::project;
 use crate::view::RenderArea;
 use derive_more::Debug;
 
+/// The internal function type of [`OnClick`].
 type OnClickFunction = dyn Fn(RenderArea, &mut Actions) + Send + Sync;
 
 /// A function to run when a button is (left) clicked.
 #[derive(Default, Debug)]
 pub struct OnClick {
+    /// The internal function.
     #[debug(skip)]
     function: Option<Box<OnClickFunction>>,
 }

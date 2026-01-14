@@ -1,3 +1,5 @@
+//! Items pertaining [`WindowSide`].
+
 use crate::ui::Point;
 use crate::ui::Rectangle;
 use crate::ui::Size;
@@ -25,6 +27,7 @@ pub enum WindowSide {
 }
 
 impl WindowSide {
+    /// Resizes the given rectangle by setting the edge or point represented by `self` to `point`.
     pub(crate) fn resize(self, rectangle: Rectangle, point: Point) -> Rectangle {
         let original_top_left = rectangle.position;
         let original_bottom_right = rectangle.bottom_right();

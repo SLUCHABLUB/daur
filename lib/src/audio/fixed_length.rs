@@ -1,3 +1,5 @@
+//! Items pertaining to [`FixedLength`].
+
 use crate::Audio;
 use crate::metre::Changing;
 use crate::metre::Instant;
@@ -11,7 +13,10 @@ use serde::Deserialize;
 use serde::Serialize;
 
 // TODO: add a "reset size" context-menu item for recalculating the duration
-/// Some audio that may be cropped or extended with silence to fit a duration.
+/// An audio clip of a fixed [metric duration](crate::metre::Duration).
+///
+/// In the underlying audio does not match the duration in a given [context](TimeContext),
+/// it is appropriate to crop it or extend it with silence.
 #[derive(Clone, Eq, PartialEq, Debug, Serialize, Deserialize)]
 pub struct FixedLength {
     /// The audio.
@@ -21,6 +26,12 @@ pub struct FixedLength {
 }
 
 impl FixedLength {
+    /// Converts an [audio clip](Audio) into an [fixed-length audio clip](FixedLength)
+    /// using a certain [context](TimeContext).
+    ///
+    /// The context is allowed to change with respect to time
+    /// which is why a [`Changing<TimeContext>`] and an [`Instant`] needs to be provided
+    /// as opposed to only a [`TimeContext`].
     #[must_use]
     pub(crate) fn from_audio(
         audio: Audio,

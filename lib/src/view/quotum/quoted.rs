@@ -1,3 +1,5 @@
+//! Items pertaining to [`Quoted`].
+
 use crate::UserInterface;
 use crate::View;
 use crate::ui::Length;
@@ -21,6 +23,9 @@ impl Quoted {
     /// An [empty view](View::Empty) with a zero quotum.
     pub const EMPTY: Quoted = View::Empty.with_quotum(Length::ZERO.quotum());
 
+    /// Calculates the size of the view parallell to a given axis.
+    ///
+    /// If the quoted size is infinite, [`None`] is returned.
     pub(crate) fn size_parallel_to<Ui: UserInterface>(
         &self,
         axis: Axis,

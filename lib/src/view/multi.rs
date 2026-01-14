@@ -1,4 +1,4 @@
-//! A simple multi-selection view
+//! Container module for [`selector`].
 
 use crate::View;
 use crate::string::ToArcStr as _;

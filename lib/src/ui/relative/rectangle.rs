@@ -1,3 +1,5 @@
+//! Items pertaining to [`Rectangle`].
+
 use crate::ui::Length;
 use crate::ui::Size;
 use crate::ui::relative;
@@ -14,6 +16,7 @@ pub struct Rectangle {
 }
 
 impl Rectangle {
+    /// Returns the smallest rectangle containing both points.
     #[must_use]
     pub(crate) fn containing_both(first: relative::Point, second: relative::Point) -> Rectangle {
         let position = relative::Point {

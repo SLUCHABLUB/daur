@@ -1,7 +1,10 @@
+//! Items pertaining to [`Settings`].
+
 use crate::UserInterface;
 use crate::ui::Length;
 use crate::ui::NonZeroLength;
 
+/// Volatile settings for the user interface.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) struct Settings {
     /// The height of the project bar.
@@ -13,6 +16,7 @@ pub(crate) struct Settings {
 }
 
 impl Settings {
+    /// Returns the default settings for a given ui.
     pub fn default_in<Ui: UserInterface>() -> Settings {
         Settings {
             project_bar_height: Ui::PROJECT_BAR_HEIGHT,

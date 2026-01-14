@@ -1,3 +1,5 @@
+//! Items pertaining to [`Subsection`].
+
 use crate::audio::Sample;
 use crate::audio::sample;
 use crate::audio::sample::Duration;

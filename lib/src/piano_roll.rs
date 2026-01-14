@@ -1,3 +1,5 @@
+//! Items pertaining to the [piano roll](PianoRoll).
+
 use crate::Holdable;
 use crate::Id;
 use crate::Project;
@@ -46,17 +48,22 @@ use std::cmp::max;
 use std::cmp::min;
 use std::iter::once;
 
+/// The title of the piano roll pane.
 const PIANO_ROLL: ArcStr = literal!("piano roll");
+/// The error message shown if no clip is selected.
 const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 // TODO: add audio clip "editing"
+/// The error message shown if an audio clip is selected.
 const AUDIO_CLIP_SELECTED: ArcStr = literal!("cannot edit audio clips (yet)");
 
-/// Settings for the piano roll.
+/// Volatile settings for the piano roll.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Setters, CopyGetters)]
 pub struct PianoRoll {
     /// How far to the left the piano roll is moved.
     negative_x_offset: Length,
     /// How far down the piano roll is moved.
+    ///
+    /// With this set to zero, the bottom key is C<sub>-1</sub>.
     y_offset: Length,
     /// The height of the piano roll content (excluding the title).
     #[set = "pub(crate)"]
@@ -77,7 +84,8 @@ pub struct PianoRoll {
 // TODO: Sort builder parameter & arguments.
 #[bon]
 impl PianoRoll {
-    pub(crate) fn new_in<Ui: UserInterface>() -> PianoRoll {
+    /// Returns the default piano roll settings for a given ui.
+    pub(crate) fn default_in<Ui: UserInterface>() -> PianoRoll {
         let a3_offset = Ui::KEY_WIDTH.get() * Ratio::integer(57);
         let three_octaves = Ui::KEY_WIDTH.get() * Ratio::integer(3 * 12) + Ui::RULER_HEIGHT.get();
 
@@ -92,18 +100,20 @@ impl PianoRoll {
         }
     }
 
-    pub(crate) fn y_offset<Ui: UserInterface>(self) -> Length {
+    /// Returns [`self.y_offset`] but clamped such that the piano roll is not scrolled past the top key.
+    fn clamped_y_offset<Ui: UserInterface>(self) -> Length {
         let full_roll_height = self.key_width.get() * Ratio::integer(128);
         let workspace_height = self.content_height - Ui::RULER_HEIGHT.get();
 
         min(self.y_offset, full_roll_height - workspace_height)
     }
 
+    /// Moves the piano roll by an offset.
     pub(crate) fn move_by<Ui: UserInterface>(&mut self, by: Vector) {
         self.negative_x_offset -= by.x;
         self.y_offset += by.y;
 
-        self.y_offset = self.y_offset::<Ui>();
+        self.y_offset = self.clamped_y_offset::<Ui>();
     }
 
     /// Returns the view for the piano roll.
@@ -256,7 +266,7 @@ impl PianoRoll {
         edit_mode: bool,
         key: &Changing<Key>,
     ) -> View {
-        let y_offset = self.y_offset::<Ui>();
+        let y_offset = self.clamped_y_offset::<Ui>();
 
         let lowest_visible_pitch = Pitch::LOWEST
             + Interval::from_semitones((y_offset / self.key_width).floor().saturating_cast());
@@ -456,12 +466,14 @@ impl PianoRoll {
         View::x_stack([top.quoted(self.black_key_depth), bottom.fill_remaining()])
     }
 
+    /// Returns the [holdable object](Holdable) representing the handle (top edge) of the piano roll.
     fn handle_grabber(render_area: RenderArea) -> Option<Holdable> {
         let y = render_area.relative_mouse_position()?.y;
 
         Some(Holdable::PianoRollHandle { y })
     }
 
+    /// Returns the view for the object held inside the piano roll.
     fn held_object(
         self,
         held_object: Option<Holdable>,

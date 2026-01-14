@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Vector`].
+
 use crate::NonZeroRatio;
 use crate::Ratio;
 use crate::ui::Vector;

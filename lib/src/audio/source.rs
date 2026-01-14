@@ -1,3 +1,5 @@
+//! Items pertaining to [`Source`].
+
 use crate::Audio;
 use crate::audio::InterleavedSamples;
 use crate::audio::Sample;
@@ -9,11 +11,14 @@ use std::time::Duration;
 #[derive(Clone, Debug)]
 #[must_use = "`Source` is an iterator"]
 pub struct Source {
+    /// The cached [`std::time::Duration`].
     total_duration: Duration,
+    /// The samples.
     samples: InterleavedSamples<'static>,
 }
 
 impl Source {
+    /// Constructs a new source from an audio clip.
     pub(super) fn new(audio: Audio) -> Source {
         Source {
             total_duration: audio.real_duration().into(),

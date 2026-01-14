@@ -1,3 +1,5 @@
+//! Items pertaining to [`Event`].
+
 mod sequence;
 mod subsequence;
 
@@ -8,8 +10,16 @@ use crate::Id;
 use crate::Note;
 use crate::note::Pitch;
 
+/// A note event (similar to MIDI).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) enum Event {
-    NoteOn { id: Id<Note>, pitch: Pitch },
+    /// Turns a note on.
+    NoteOn {
+        /// The id of the note to turn on.
+        id: Id<Note>,
+        /// The pitch of the note.
+        pitch: Pitch,
+    },
+    /// Turns a note off.
     NoteOff(Id<Note>),
 }

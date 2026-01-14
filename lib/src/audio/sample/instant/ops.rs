@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Instant`].
+
 use crate::audio::sample::Duration;
 use crate::audio::sample::Instant;
 use std::ops::Add;

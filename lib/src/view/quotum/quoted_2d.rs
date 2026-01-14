@@ -1,3 +1,5 @@
+//! Items pertaining to [`Quoted2D`].
+
 use crate::UserInterface;
 use crate::View;
 use crate::ui::Size;
@@ -21,6 +23,7 @@ impl Quoted2D {
     /// An [empty view](View::Empty) with a zero quotum.
     pub const EMPTY: Quoted2D = View::Empty.quoted_2d(Size::ZERO);
 
+    /// Calculates the [size](Size) of the view.
     pub(crate) fn calculate_size<Ui: UserInterface>(
         &self,
         maximum: Size,

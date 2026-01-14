@@ -1,3 +1,5 @@
+//! Items pertaining to [`Size`].
+
 use crate::ui::Length;
 use crate::view::Axis;
 use crate::view::Quotum2D;

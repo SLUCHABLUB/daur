@@ -1,3 +1,5 @@
+//! Items pertaining to [`Grabber`].
+
 use crate::Holdable;
 use crate::Selectable;
 use crate::app::Action;
@@ -19,7 +21,9 @@ use std::num::NonZeroU64;
 /// A visitor that grabs objects.
 #[derive(Debug)]
 pub struct Grabber<'actions> {
+    /// The action queue to add actions to.
     actions: &'actions mut Actions,
+    /// The position at which the view is to be grabbed.
     position: Point,
 }
 

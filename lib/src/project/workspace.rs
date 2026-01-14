@@ -1,3 +1,5 @@
+//! File for the [`workspace`] function.
+
 use crate::Holdable;
 use crate::Project;
 use crate::UserInterface;
@@ -12,8 +14,8 @@ use crate::metre::TimeContext;
 use crate::project;
 use crate::project::ADD_TRACK_DESCRIPTION;
 use crate::project::ADD_TRACK_LABEL;
-use crate::project::track::Overview;
 use crate::project::track::clip;
+use crate::project::track::overview;
 use crate::project::track::settings;
 use crate::select::Selection;
 use crate::ui;
@@ -27,6 +29,9 @@ use crate::view::ruler;
 use non_zero::non_zero;
 use std::sync::Arc;
 
+/// The project workspace.
+///
+/// This includes the [track area](track_area) and the [ruler](Ruler) above it.
 pub(crate) fn workspace<Ui: UserInterface>(
     project: &Project,
     selection: &Selection,
@@ -36,10 +41,45 @@ pub(crate) fn workspace<Ui: UserInterface>(
     player: Option<&Player>,
     held_object: Option<Holdable>,
 ) -> View {
+    let offset_mapping = OffsetMapping::new(project.time_signature.clone(), quantisation);
+
+    let ruler = ruler(ui_settings.negative_overview_offset, offset_mapping.clone());
+    let ruler_row = ruler
+        .scrollable(Action::MoveOverview)
+        .fill_remaining()
+        .x_positioned(ui_settings.track_settings_width.get());
+
+    let track_area = track_area(
+        project,
+        selection,
+        ui_settings,
+        offset_mapping,
+        cursor,
+        player,
+        held_object,
+    );
+
+    View::y_stack([
+        ruler_row.quoted(Ui::RULER_HEIGHT),
+        track_area.fill_remaining(),
+    ])
+}
+
+/// Returns a view for the track area.
+///
+/// This includes the track overview and the track settings.
+fn track_area(
+    project: &Project,
+    selection: &Selection,
+    ui_settings: ui::Settings,
+    offset_mapping: OffsetMapping,
+    cursor: Instant,
+    player: Option<&Player>,
+    held_object: Option<Holdable>,
+) -> View {
     let mut track_settings = Vec::new();
     let mut track_overviews = Vec::new();
 
-    let offset_mapping = OffsetMapping::new(project.time_signature.clone(), quantisation);
     let time_context = project.time_context();
 
     let held_clip = match held_object {
@@ -52,7 +92,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
 
         track_settings.push(settings(track, selected));
         track_overviews.push(
-            Overview::builder()
+            overview()
                 .track(track)
                 .selection(selection)
                 .offset_mapping(offset_mapping.clone())
@@ -61,8 +101,7 @@ pub(crate) fn workspace<Ui: UserInterface>(
                 .cursor(cursor)
                 .maybe_player(player.cloned())
                 .maybe_held_clip(held_clip)
-                .build()
-                .view(),
+                .call(),
         );
     }
 
@@ -82,49 +121,38 @@ pub(crate) fn workspace<Ui: UserInterface>(
         player.cloned(),
     ));
 
-    let ruler = ruler(ui_settings.negative_overview_offset, offset_mapping);
-    let ruler_row = ruler
-        .scrollable(Action::MoveOverview)
-        .fill_remaining()
-        .x_positioned(ui_settings.track_settings_width.get());
-
     let settings_column = View::balanced_stack(Axis::Y, track_settings);
     let overview_column = View::balanced_stack(Axis::Y, track_overviews);
 
     let overview_column = View::Layers(vec![
         overview_column,
-        held_object_view(held_object, project, quantisation).unwrap_or(View::Empty),
+        held_object_view(held_object, project, offset_mapping).unwrap_or(View::Empty),
     ]);
 
-    let track_area = View::x_stack([
+    View::x_stack([
         settings_column.quoted(ui_settings.track_settings_width),
         overview_column.fill_remaining(),
-    ]);
-
-    View::y_stack([
-        ruler_row.quoted(Ui::RULER_HEIGHT),
-        track_area.fill_remaining(),
     ])
 }
 
+/// Return the view for the held object in the track workspace.
 fn held_object_view(
     held_object: Option<Holdable>,
     project: &Project,
-    quantisation: Quantisation,
+    offset_mapping: OffsetMapping,
 ) -> Option<View> {
     Some(match held_object? {
         Holdable::Clip(path) => {
             let (clip_start, clip) = project.clip(path)?;
-            let mapping = OffsetMapping::new(project.time_signature().clone(), quantisation);
 
-            let clip_offset = mapping.offset(clip_start);
+            let clip_offset = offset_mapping.offset(clip_start);
 
             let clip_end = clip_start + clip.duration().get();
-            let clip_end_offset = mapping.offset(clip_end);
+            let clip_end_offset = offset_mapping.offset(clip_end);
 
             let width = clip_end_offset - clip_offset;
 
-            let overview = clip::overview(clip, true, mapping, Length::ZERO, path.track);
+            let overview = clip::overview(clip, true, offset_mapping, Length::ZERO, path.track);
 
             let overview = Arc::new(overview);
 
@@ -156,6 +184,7 @@ fn held_object_view(
     })
 }
 
+/// Return a view for an empty track overview.
 fn empty_track_overview(
     offset_mapping: OffsetMapping,
     time_context: Changing<TimeContext>,

@@ -1,3 +1,5 @@
+//! Items pertaining to [`TimeContext`].
+
 use crate::metre;
 use crate::metre::Changing;
 use crate::metre::TimeSignature;

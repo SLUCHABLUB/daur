@@ -1,3 +1,5 @@
+//! Items pertaining to [`Pitch`].
+
 use crate::note::Interval;
 use crate::note::PitchClass;
 use crate::note::Sign;
@@ -13,6 +15,11 @@ use std::ops::Sub;
 /// A pitch / frequency within the MIDI range.
 pub struct Pitch {
     // INVARIANT: this is non-negative
+    /// The MIDI number.
+    ///
+    /// # Invariants
+    ///
+    /// This is non-negative. MIDI numbers are 7-bit unsigned numbers.
     midi_number: i8,
 }
 
@@ -41,6 +48,7 @@ impl Pitch {
         }
     }
 
+    /// The number (according to scientific pitch notation) of the octave in which the pitch is is.
     fn octave_number(self) -> i8 {
         self.midi_number.div_floor(&12).saturating_sub(1)
     }
@@ -51,6 +59,7 @@ impl Pitch {
         format!("{}{}", self.class().name(sign), self.octave_number())
     }
 
+    /// Returns the frequency (per Hertz) that the pitch represents.
     pub(crate) fn frequency(self) -> f32 {
         440.0 * 2_f32.powf((f32::from(self.midi_number) - 69.0) / 12.0)
     }

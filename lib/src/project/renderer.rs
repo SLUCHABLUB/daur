@@ -1,3 +1,5 @@
+//! Items pertaining to [`Renderer`].
+
 use crate::Audio;
 use crate::Project;
 use crate::UserInterface;
@@ -21,6 +23,7 @@ use std::mem::take;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+/// An object that renders a project.
 pub(crate) struct Renderer {
     /// The thread pool.
     ///
@@ -28,31 +31,46 @@ pub(crate) struct Renderer {
     ///
     /// > If you don't know what hardware your code is going to run on, use the [`crossbeam_workstealing_pool`](executors::crossbeam_workstealing_pool)
     thread_pool: ThreadPool<DynParker>,
+    /// A handle to the popup manager, used to display potential errors.
     popups: Arc<popup::Manager>,
     /// Data that is shared across the workers in the tread pool.
     progress: Arc<Progress>,
 }
 
+/// The rendering progress of a project.
 struct Progress {
+    /// Whether the workers should stop rendering.
     should_stop: Cell<bool>,
+    /// The tracks that have not yet been mastered.
     unmastered_tracks: Mutex<Vec<Audio>>,
+    /// The mastered track.
     master: Mutex<Master>,
 }
 
+/// Where and when to start playing the render.
 struct Play {
+    /// Where in the render to start playback.
     from: time::Instant,
+    /// The audio player in which to start playback.
     player: Player,
 }
 
+/// The state of the master.
 enum Master {
+    /// Rendering is finished.
     Finished(Audio),
+    /// Rendering is not yet finished.
+    /// But there may be things to do when it is.
     OnFinish {
+        /// Where and when to start playing the render if it is set.
         should_play: Option<Play>,
+        /// Where to export the render if it is set.
         should_export: Option<PathBuf>,
     },
 }
 
 impl Renderer {
+    /// Constructs a new empty renderer.
     pub(crate) fn new(popups: Arc<popup::Manager>) -> Self {
         Renderer {
             thread_pool: ThreadPool::default(),
@@ -67,6 +85,7 @@ impl Renderer {
         }
     }
 
+    /// Play the rendered audio from the given position in the given player when rendering is finished.
     pub(crate) fn play_when_finished(&self, from: time::Instant, player: Player) {
         match &mut *self.progress.master.lock() {
             Master::Finished(audio) => {
@@ -78,6 +97,7 @@ impl Renderer {
         }
     }
 
+    /// Exports the project to a file when rendering is finished.
     pub(crate) fn export_when_finished(&self, to: PathBuf) -> anyhow::Result<()> {
         match &mut *self.progress.master.lock() {
             Master::Finished(audio) => {
@@ -94,6 +114,7 @@ impl Renderer {
 
 impl Renderer {
     // TODO: the audio up to the point of the change may be reused
+    /// Restarts the rendering with the given project.
     pub(crate) fn restart<Ui: UserInterface>(
         &mut self,
         project: &Project,
@@ -132,7 +153,7 @@ impl Renderer {
         let time_context = project.time_context();
 
         for track in project.tracks.values() {
-            let audio = track.audio_sum(&time_context, sample_rate);
+            let audio = track.audio_superposition(&time_context, sample_rate);
             let events = track.events(&time_context, sample_rate);
 
             // TODO: take from the track
@@ -141,8 +162,10 @@ impl Renderer {
             let progress = Arc::clone(&self.progress);
             let popups = Arc::clone(&self.popups);
 
-            self.thread_pool
-                .execute(move || render(&audio, &events, &chain, &progress, &popups, ui));
+            self.thread_pool.execute(move || {
+                try_render(&audio, &events, &chain, &progress)
+                    .unwrap_or_else(|error| popups.open(&error.into(), ui));
+            });
         }
 
         if project.tracks.is_empty() {
@@ -153,18 +176,7 @@ impl Renderer {
     }
 }
 
-fn render<Ui: UserInterface>(
-    input_audio: &Audio,
-    events: &Sequence,
-    chain: &Chain,
-    progress: &Progress,
-    popups: &popup::Manager,
-    ui: &Ui,
-) {
-    try_render(input_audio, events, chain, progress)
-        .unwrap_or_else(|error| popups.open(&error.into(), ui));
-}
-
+/// Tries to render a track.
 fn try_render(
     input_audio: &Audio,
     events: &Sequence,
@@ -223,6 +235,7 @@ fn try_render(
     Ok(())
 }
 
+/// Tries to master a project.
 fn master(
     tracks: Vec<Audio>,
     sample_rate: sample::Rate,

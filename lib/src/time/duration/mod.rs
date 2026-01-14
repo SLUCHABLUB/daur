@@ -1,3 +1,5 @@
+//! Items pertaining to [`Duration`].
+
 mod non_zero;
 mod ops;
 

@@ -28,36 +28,42 @@ use getset::CopyGetters;
 use getset::Getters;
 use getset::MutGetters;
 
+/// The default colour for audio clips.
 const DEFAULT_AUDIO_COLOUR: Colour = Colour::LIME;
 
+/// The default name for note-group clips.
 const DEFAULT_NOTES_NAME: ArcStr = literal!("some notes");
+/// The default colour for note-group clips.
 const DEFAULT_NOTES_COLOUR: Colour = Colour::MAGENTA;
 
 /// A part of a [track](super::Track).
 // TODO: Test that this isn't `Clone` (bc. id).
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters, MutGetters)]
 pub struct Clip {
+    /// The id.
     #[get_copy = "pub(crate)"]
     id: Id<Clip>,
-    /// The name of the clip.
+    /// The name.
     #[get_clone = "pub"]
     name: ArcStr,
 
-    /// The colour of the clip.
+    /// The colour.
     #[get_copy = "pub"]
     colour: Colour,
 
-    /// The content of the clip.
+    /// The content.
     #[get = "pub(crate)"]
     content: Content,
 }
 
 impl Clip {
     // TODO: derive
+    /// Returns a mutable reference to the content.
     pub(in crate::project) fn content_mut(&mut self) -> &mut Content {
         &mut self.content
     }
 
+    /// Constructs a new clip with a generated id.
     fn new(name: ArcStr, colour: Colour, content: Content) -> Clip {
         Clip {
             id: Id::generate(),
@@ -67,11 +73,13 @@ impl Clip {
         }
     }
 
+    /// Constructs a new audio clip.
     #[must_use]
     pub(crate) fn from_audio(name: ArcStr, audio: FixedLength) -> Clip {
         Clip::new(name, DEFAULT_AUDIO_COLOUR, Content::Audio(audio))
     }
 
+    /// Constructs an empty note-group clip.
     #[must_use]
     pub(crate) fn empty_notes(duration: NonZeroDuration) -> Clip {
         Clip::new(
@@ -81,10 +89,12 @@ impl Clip {
         )
     }
 
+    /// Returns the duration of the clip.
     pub(crate) fn duration(&self) -> NonZeroDuration {
         self.content.duration()
     }
 
+    /// Returns the [events](crate::note::Event) in the clip.
     pub(super) fn events(
         &self,
         clip_start: Instant,

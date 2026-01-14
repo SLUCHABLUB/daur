@@ -1,3 +1,5 @@
+//! Items pertaining to [`RenderArea`].
+
 use crate::Ratio;
 use crate::UserInterface;
 use crate::ui::Length;

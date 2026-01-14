@@ -1,3 +1,5 @@
+//! Items pertaining to [`Action`].
+
 use crate::App;
 use crate::Holdable;
 use crate::Id;
@@ -19,6 +21,7 @@ use std::env::current_dir;
 use std::path::Path;
 use std::sync::Arc;
 
+/// The default file name for the filed produced by [`Action::Export`].
 const DEFAULT_EXPORT_FILE_NAME: &str = "render";
 
 /// An action to take on the app
@@ -106,7 +109,7 @@ impl<Ui: UserInterface> App<Ui> {
     pub fn take_actions(&mut self, actions: Actions) {
         let should_rerender = !actions.is_empty();
 
-        for action in actions.into_vec() {
+        for action in actions.into_iter() {
             self.take(action);
         }
 
@@ -115,12 +118,14 @@ impl<Ui: UserInterface> App<Ui> {
         }
     }
 
+    /// Take an [action](Action), if an error occurs, a popup is opened.
     fn take(&mut self, action: Action) {
         if let Err(popup) = self.try_take(action) {
             self.popup_manager.open(&popup, self.ui);
         }
     }
 
+    /// Try to take an [action](Action).
     #[remain::check]
     fn try_take(&mut self, action: Action) -> Result<(), popup::Specification> {
         #[sorted]
@@ -232,6 +237,9 @@ impl<Ui: UserInterface> App<Ui> {
         Ok(())
     }
 
+    /// Moves the currently held object to the provided position.
+    ///
+    /// If no object is held, nothing happens.
     fn move_held_object(&mut self, to: Point) {
         let Some(object) = self.held_object else {
             return;

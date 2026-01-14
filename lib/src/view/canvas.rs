@@ -1,3 +1,5 @@
+//! Items pertaining to [canvases](View::Canvas).
+
 use crate::ui::Colour;
 use crate::ui::Length;
 use crate::ui::Point;

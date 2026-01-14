@@ -1,3 +1,5 @@
+//! Items pertaining to [`Sequence`].
+
 use crate::audio::sample::Instant;
 use crate::audio::sample::Period;
 use crate::note::Event;
@@ -9,24 +11,31 @@ use std::collections::btree_map::Entry;
 /// A sequence of events sorted by their timestamp.
 #[derive(Clone, Debug, Default)]
 pub struct Sequence {
+    /// The events in the sequence.
     events: BTreeMap<Instant, Vec1<Event>>,
 }
 
 impl Sequence {
+    /// Constructs a new empty [sequence](Sequence).
     pub const fn new() -> Sequence {
         Sequence {
             events: BTreeMap::new(),
         }
     }
 
+    /// Returns a [subsequence](Subsequence) of the sequence.
     pub(crate) fn subsequence(&self, period: Period) -> Subsequence<'_> {
         Subsequence::new(self, period)
     }
 
+    // TODO: Replace this with `impl Index`.
+    // TODO: Why does this return a slice?
+    /// Returns all events that fall on a given instant.
     pub(crate) fn get(&self, timestamp: Instant) -> &[Event] {
         self.events.get(&timestamp).map_or(&[], Vec1::as_ref)
     }
 
+    /// Inserts a event into the sequence.
     pub(crate) fn insert(&mut self, timestamp: Instant, event: Event) {
         match self.events.entry(timestamp) {
             Entry::Vacant(entry) => {
@@ -36,12 +45,14 @@ impl Sequence {
         }
     }
 
-    pub(crate) fn into_iterator(self) -> impl Iterator<Item = (Instant, Event)> {
+    /// Returns an iterator over the events in the sequence and their positions.
+    pub(crate) fn into_iter(self) -> impl Iterator<Item = (Instant, Event)> {
         self.events
             .into_iter()
             .flat_map(|(timestamp, events)| events.into_iter().map(move |event| (timestamp, event)))
     }
 
+    /// Returns the timestamp of the last event in the sequence.
     pub(crate) fn last_timestamp(&self) -> Option<Instant> {
         self.events.keys().next_back().copied()
     }

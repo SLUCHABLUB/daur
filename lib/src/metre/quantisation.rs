@@ -1,3 +1,5 @@
+//! Items pertaining to [`Quantisation`].
+
 use crate::metre::NonZeroDuration;
 use crate::ui::NonZeroLength;
 

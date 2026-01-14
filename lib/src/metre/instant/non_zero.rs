@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroInstant`].
+
 use crate::metre::Instant;
 use crate::metre::NonZeroDuration;
 use serde::Deserialize;

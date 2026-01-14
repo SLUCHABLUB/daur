@@ -1,3 +1,5 @@
+//! Items pertaining to [`Length`].
+
 mod non_zero;
 mod ops;
 

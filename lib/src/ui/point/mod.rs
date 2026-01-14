@@ -1,3 +1,5 @@
+//! Items pertaining to [`Point`].
+
 mod ops;
 
 use crate::ui::Length;
@@ -19,6 +21,7 @@ impl Point {
         y: Length::ZERO,
     };
 
+    /// Return this point relative to another point.
     #[must_use]
     pub(crate) fn relative_to(self, other: Point) -> relative::Point {
         relative::Point {

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Instant`].
+
 mod ops;
 
 use crate::audio::sample::Duration;

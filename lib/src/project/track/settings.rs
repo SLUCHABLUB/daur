@@ -1,3 +1,5 @@
+//! File for the [`settings`] function.
+
 use crate::Selectable;
 use crate::View;
 use crate::app::Action;

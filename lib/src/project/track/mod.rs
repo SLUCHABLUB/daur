@@ -8,7 +8,7 @@ mod settings;
 #[doc(inline)]
 pub use clip::Clip;
 
-pub(super) use overview::Overview;
+pub(super) use overview::overview;
 pub(super) use serial::Serial;
 pub(crate) use settings::settings;
 
@@ -20,7 +20,7 @@ use crate::metre::Duration;
 use crate::metre::Instant;
 use crate::metre::TimeContext;
 use crate::note::event::Sequence;
-use crate::project::DEFAULT_TRACK_TITLE;
+use crate::project::DEFAULT_TRACK_NAME;
 use arcstr::ArcStr;
 use getset::CloneGetters;
 use getset::CopyGetters;
@@ -52,15 +52,19 @@ pub enum ClipInsertionErrorKind {
 // TODO: Test that this isn't `Clone` (bc. id).
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
 pub struct Track {
+    /// The id.
     #[get_copy = "pub(super)"]
     id: Id<Track>,
-    /// The name of the track.
+    /// The name.
     #[get_clone = "pub(super)"]
     name: ArcStr,
+
     // TODO: use a double-key map
-    /// The clips in the track.
+    /// A map from clip positions to clip ids.
     clip_ids: BTreeMap<Instant, Id<Clip>>,
+    /// A map from clip ids to clip positions.
     clip_starts: HashMap<Id<Clip>, Instant>,
+    /// A map from clip ids to clips.
     clips: HashMap<Id<Clip>, Clip>,
 }
 
@@ -70,7 +74,7 @@ impl Track {
     pub(crate) fn new() -> Track {
         Track {
             id: Id::generate(),
-            name: DEFAULT_TRACK_TITLE,
+            name: DEFAULT_TRACK_NAME,
             clip_ids: BTreeMap::new(),
             clip_starts: HashMap::new(),
             clips: HashMap::new(),
@@ -93,6 +97,7 @@ impl Track {
         Some((*start, clip))
     }
 
+    /// Removes a clip from the track.
     pub(super) fn remove_clip(&mut self, id: Id<Clip>) -> Option<(Instant, Clip)> {
         let start = self.clip_starts.remove(&id)?;
         self.clip_ids.remove(&start);
@@ -101,6 +106,7 @@ impl Track {
         Some((start, clip))
     }
 
+    /// Removes a clip from the track.
     fn minimum_duration(&self) -> Duration {
         let Some((start, clip_id)) = self.clip_ids.last_key_value() else {
             return Duration::ZERO;
@@ -113,7 +119,8 @@ impl Track {
         (*start + clip.duration().get()).since_start
     }
 
-    pub(crate) fn audio_sum(
+    /// Returns the superposition of all audio clips.
+    pub(crate) fn audio_superposition(
         &self,
         time_context: &Changing<TimeContext>,
         sample_rate: sample::Rate,
@@ -143,6 +150,7 @@ impl Track {
         audio
     }
 
+    /// Returns all events in the track.
     pub(crate) fn events(
         &self,
         time_context: &Changing<TimeContext>,
@@ -151,13 +159,15 @@ impl Track {
         self.clip_ids
             .iter()
             .filter_map(|(start, clip_id)| Some((start, self.clips.get(clip_id)?)))
-            .flat_map(|(start, clip)| {
-                clip.events(*start, time_context, sample_rate)
-                    .into_iterator()
-            })
+            .flat_map(|(start, clip)| clip.events(*start, time_context, sample_rate).into_iter())
             .collect()
     }
 
+    /// Tries to insert a clip at the given position.
+    ///
+    /// # Errors
+    ///
+    /// If there already exists a clip at the exact position, an error will be returned.
     pub(super) fn try_insert_clip(
         &mut self,
         position: Instant,

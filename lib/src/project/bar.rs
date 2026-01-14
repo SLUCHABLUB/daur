@@ -1,3 +1,5 @@
+//! File for the [`bar`] function.
+
 use crate::Project;
 use crate::UserInterface;
 use crate::View;
@@ -23,11 +25,17 @@ const PLAY: ArcStr = literal!(" \u{25B6} ");
 /// "BLACK CIRCLE FOR RECORD"
 const RECORD: ArcStr = literal!(" \u{23FA} ");
 
+/// The label for the button to activate edit mode.
 const EDIT: ArcStr = literal!("edit mode");
+/// The label for the button to export the track.
 const EXPORT: ArcStr = literal!("export");
+/// The label for the button to activate looping.
 const LOOP: ArcStr = literal!("loop");
+/// The label for the button to open the piano roll.
 const PIANO: ArcStr = literal!("piano roll");
+/// The label for the button to open the plugins pane.
 const PLUGINS: ArcStr = literal!("plugins");
+/// The label for the button to open the settings.
 const SETTINGS: ArcStr = literal!("settings");
 
 /// The bar att the top of the window.

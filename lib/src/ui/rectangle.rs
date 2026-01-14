@@ -1,3 +1,5 @@
+//! Items pertaining to [`Rectangle`].
+
 use crate::ui::Length;
 use crate::ui::Point;
 use crate::ui::Size;
@@ -39,6 +41,7 @@ impl Rectangle {
         }
     }
 
+    /// Returns the smallest rectangle containing both points.
     #[must_use]
     pub(crate) fn containing_both(first: Point, second: Point) -> Rectangle {
         let position = Point {
@@ -60,6 +63,7 @@ impl Rectangle {
         }
     }
 
+    /// Constructs a new rectangle from a top-left and bottom-right point.
     #[must_use]
     fn from_points(position: Point, bottom_right: Point) -> Option<Rectangle> {
         if bottom_right.x < position.x || bottom_right.y < position.y {

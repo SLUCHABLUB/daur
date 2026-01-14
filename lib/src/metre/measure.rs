@@ -1,3 +1,5 @@
+//! Items pertaining to [`Measure`].
+
 use crate::metre::Changing;
 use crate::metre::Instant;
 use crate::metre::NonZeroDuration;
@@ -32,6 +34,7 @@ impl Measure {
         }
     }
 
+    /// Returns the next measure.
     pub(crate) fn next(self, time_signature: &Changing<TimeSignature>) -> Measure {
         let start = self.period().get().end();
         Measure {
@@ -40,10 +43,12 @@ impl Measure {
         }
     }
 
+    /// The number of cells to divide the measure into.
     pub(crate) fn cell_count(self, quantisation: Quantisation) -> NonZeroU64 {
         (self.duration() / quantisation.cell_duration).ceiling()
     }
 
+    /// The width of the measure.
     pub(crate) fn width(self, quantisation: Quantisation) -> Length {
         quantisation.cell_width.get() * (self.duration() / quantisation.cell_duration).ceiling()
     }

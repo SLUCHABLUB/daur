@@ -1,3 +1,5 @@
+//! Items pertaining to [`Theme`].
+
 use crate::ui::Colour;
 
 /// A colour theme.

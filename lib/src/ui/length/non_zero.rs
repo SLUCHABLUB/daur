@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroLength`].
+
 use crate::ui::Length;
 use std::num::NonZeroU16;
 

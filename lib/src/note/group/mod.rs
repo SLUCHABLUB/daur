@@ -1,3 +1,5 @@
+//! Items pertaining to [`Group`].
+
 mod serial;
 
 pub(crate) use serial::Serial;
@@ -26,8 +28,9 @@ pub struct Group {
     // TODO: use a bimap
     // INVARIANT: all notes are within `full_duration`
     // INVARIANT: notes are non-overlapping
-    /// The notes in the group.
+    /// A map from note positions to notes.
     notes: HashMap<(relative::Instant, Pitch), Note>,
+    /// A map from note ids to note positions.
     note_positions: HashMap<Id<Note>, (relative::Instant, Pitch)>,
     /// The duration of the whole note group.
     duration: NonZeroDuration,
@@ -115,6 +118,7 @@ impl Group {
         Ok(())
     }
 
+    /// Remove a note from the group.
     pub(crate) fn remove(&mut self, note: Id<Note>) -> Option<(relative::Instant, Pitch, Note)> {
         let position = self.note_positions.remove(&note)?;
         let note = self.notes.remove(&position)?;
@@ -123,6 +127,7 @@ impl Group {
         Some((instant, pitch, note))
     }
 
+    /// Returns an iterator over all notes with a given pitch.
     pub(crate) fn with_pitch(
         &self,
         pitch: Pitch,
@@ -134,12 +139,14 @@ impl Group {
             })
     }
 
+    /// Returns a [painter](Painter) that can paint a clip overview.
     pub(crate) fn overview_painter(&self) -> Box<Painter> {
         // TODO: draw the notes
         let _: &Group = self;
         Box::new(|_| ())
     }
 
+    /// Turns the note group into a sequence of [note events](crate::note::Event).
     pub(crate) fn to_events(
         &self,
         start: Instant,

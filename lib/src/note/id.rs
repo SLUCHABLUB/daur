@@ -1,3 +1,5 @@
+//! Items pertaining to [`Path`].
+
 use crate::Id;
 use crate::Note;
 use crate::project::Track;

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Content`].
+
 use crate::audio;
 use crate::metre::NonZeroDuration;
 use crate::metre::OffsetMapping;
@@ -19,6 +21,7 @@ pub enum Content {
 }
 
 impl Content {
+    /// Returns the duration of the content.
     pub(crate) fn duration(&self) -> NonZeroDuration {
         match self {
             Content::Audio(audio) => audio.duration,
@@ -53,6 +56,7 @@ impl Content {
         }
     }
 
+    /// Returns a [painter](Painter) that can paint the clip overview.
     pub(super) fn overview_painter(
         &self,
         offset_mapping: OffsetMapping,

@@ -1,3 +1,5 @@
+//! Items pertaining to [`TimeSignature`].
+
 use crate::NonZeroRatio;
 use crate::metre::Changing;
 use crate::metre::Instant;
@@ -82,6 +84,7 @@ impl From<TimeSignature> for [NonZeroU8; 2] {
 }
 
 impl Changing<TimeSignature> {
+    /// Returns the first measure.
     pub(crate) fn first_measure(&self) -> Measure {
         Measure {
             start: Instant::START,
@@ -89,6 +92,7 @@ impl Changing<TimeSignature> {
         }
     }
 
+    /// Returns an iterator over all measures.
     pub(crate) fn measures(&self) -> impl Iterator<Item = Measure> + Clone + use<'_> {
         let mut start = Instant::START;
 

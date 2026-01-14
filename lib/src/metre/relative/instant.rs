@@ -1,3 +1,5 @@
+//! Items pertaining to [`Instant`].
+
 use crate::metre;
 use crate::metre::Duration;
 use serde::Deserialize;

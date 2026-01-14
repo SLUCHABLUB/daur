@@ -1,3 +1,5 @@
+//! Items pertaining to importing [`Audio`].
+
 use crate::Audio;
 use crate::audio::Sample;
 use crate::audio::sample;
@@ -39,11 +41,13 @@ pub enum ImportError {
 }
 
 impl Audio {
+    /// Tries to read an [audio clip](Audio) from a file.
     pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio, ImportError> {
         read_from_file(file.as_ref())
     }
 }
 
+/// Tries to read an [audio clip](Audio) from a file.
 fn read_from_file(file: &Path) -> Result<Audio, ImportError> {
     let extension = file.extension().and_then(OsStr::to_str);
 

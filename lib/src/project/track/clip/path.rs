@@ -1,3 +1,5 @@
+//! Items pertaining to [`Path`].
+
 use crate::Id;
 use crate::project::Track;
 use crate::project::track::Clip;

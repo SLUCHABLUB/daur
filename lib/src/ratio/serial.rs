@@ -1,3 +1,5 @@
+//! Items pertaining to [`Serial`].
+
 use crate::NonZeroRatio;
 use crate::Ratio;
 use anyhow::bail;
@@ -5,16 +7,29 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::num::NonZeroU64;
 
+/// The serial representation of a [ratio](Ratio).
 #[derive(Copy, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
 pub(super) enum Serial {
+    /// A floating point number.
     Float(f64),
+    /// An integer.
     I64(i64),
+    /// A natural number.
     U64(u64),
+
+    // These are here since serde by default does not try to derserialise a `u64` or `i64`
+    // from a `u128` or `i128` even if it is in range (as of writing).
+    /// A big (according to serde) integer.
     I128(i128),
+    /// A big (according to serde) natural number.
     U128(u128),
+
+    /// A map with "numerator" and "denominator" keys.
     Map {
+        /// The numerator.
         numerator: u64,
+        /// The denominator.
         denominator: NonZeroU64,
     },
 }

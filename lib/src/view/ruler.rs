@@ -1,3 +1,5 @@
+//! Items pertaining to [rulers](View::Rule).
+
 use crate::View;
 use crate::app::Action;
 use crate::metre::OffsetMapping;
@@ -6,7 +8,7 @@ use crate::view::Axis;
 use crate::view::OnClick;
 use crate::view::RenderArea;
 
-/// A ruler of musical time
+/// A clickable, automatically resizing [ruler](View::Rule).
 pub fn ruler(offset: Length, offset_mapping: OffsetMapping) -> View {
     let view = {
         let offset_mapping = offset_mapping.clone();
@@ -29,6 +31,7 @@ pub fn ruler(offset: Length, offset_mapping: OffsetMapping) -> View {
     view.on_click(on_click)
 }
 
+/// A [ruler](View::Rule) filling an [area](RenderArea).
 fn reactive_ruler(offset: Length, offset_mapping: &OffsetMapping, render_area: RenderArea) -> View {
     let quantisation = offset_mapping.quantisation();
     let mut measures = offset_mapping.time_signature().measures();

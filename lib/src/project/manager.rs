@@ -1,3 +1,5 @@
+//! Items pertaining to [`Manager`].
+
 use crate::Project;
 use crate::metre::Instant;
 use crate::popup;
@@ -19,13 +21,16 @@ pub struct Manager {
     project: Project,
 
     // TODO: undoing
+    /// The history of edits.
     history: Vec<HistoryEntry>,
 
     // TODO: Add a format field.
+    /// Where to save the project to.
     save_location: Option<Arc<Path>>,
 }
 
 impl Manager {
+    /// Perform an edit (updating the history).
     pub(crate) fn edit(
         &mut self,
         action: Edit,
@@ -38,6 +43,7 @@ impl Manager {
         Ok(())
     }
 
+    /// Read a project from a file.
     pub(crate) fn open(path: Arc<Path>) -> anyhow::Result<Manager> {
         let content =
             read_to_string(&path).with_context(|| format!("reading from {}", path.display()))?;
@@ -52,6 +58,7 @@ impl Manager {
         })
     }
 
+    /// Save the project to the last save location.
     pub(crate) fn save(&mut self) -> Result<(), popup::Specification> {
         let path = self
             .save_location
@@ -63,6 +70,7 @@ impl Manager {
         Ok(())
     }
 
+    /// Save the project to a given save location.
     pub(crate) fn save_as(&mut self, mut path: Arc<Path>) -> anyhow::Result<()> {
         let string = toml::to_string(&self.project)?;
 

@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroInstant`].
+
 use crate::time::Instant;
 use crate::time::NonZeroDuration;
 

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Id`].
+
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
@@ -9,7 +11,9 @@ use std::sync::atomic::Ordering;
 
 /// An identifier.
 pub struct Id<T> {
+    /// The internal number.
     number: u32,
+    /// Phantom data for the type.
     _type: PhantomData<T>,
 }
 

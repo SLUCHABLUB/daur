@@ -21,14 +21,8 @@ missing_debug_implementations = "deny"
 missing_docs = "deny"
 missing_unsafe_on_extern = "deny"
 non_ascii_idents = "deny"
-# TODO: add when it gets stabilised
-# non_exhaustive_omitted_patterns = "deny"
 redundant_imports = "deny"
 redundant_lifetimes = "deny"
-# TODO: add when it gets stabilised
-# supertrait_item_shadowing_definition = "deny"
-# TODO: add when it gets stabilised
-# supertrait_item_shadowing_usage = "deny"
 trivial_casts = "deny"
 trivial_numeric_casts = "deny"
 unit_bindings = "deny"
@@ -41,6 +35,11 @@ unused_import_braces = "deny"
 unused_lifetimes = "deny"
 unused_macro_rules = "deny"
 unused_qualifications = "deny"
+
+# TODO: Add these when they get stabilised.
+# non_exhaustive_omitted_patterns = "deny"
+# supertrait_item_shadowing_definition = "deny"
+# supertrait_item_shadowing_usage = "deny"
 
 [workspace.lints.clippy]
 all = { level = "deny", priority = -1 }
@@ -92,6 +91,5 @@ default_numeric_fallback = "allow"
 unsafe_derive_deserialize = "allow"
 
 # TODO: Maybe deny these later.
-missing_docs_in_private_items = "allow"
 missing_inline_in_public_items = "allow"
 multiple_inherent_impl = "allow"

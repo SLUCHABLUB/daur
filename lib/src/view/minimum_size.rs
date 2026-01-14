@@ -1,3 +1,5 @@
+//! File for the [`minimum_size`] function.
+
 use crate::Ratio;
 use crate::UserInterface;
 use crate::View;

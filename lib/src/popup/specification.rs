@@ -1,3 +1,5 @@
+//! Items pertaining to [`Specification`].
+
 use crate::Holdable;
 use crate::Id;
 use crate::Popup;
@@ -33,6 +35,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 use std::sync::LazyLock;
 
+/// The label for buttons that acknowledge a message.
 const ACKNOWLEDGE: ArcStr = literal!("ok");
 
 // TODO: keyboard navigation of popups
@@ -78,7 +81,8 @@ impl Specification {
         }
     }
 
-    pub(crate) fn generate_id(&self) -> Id<Popup> {
+    /// Generate and id for a popup following the specification.
+    pub(super) fn generate_id(&self) -> Id<Popup> {
         static AUDIO_FILE_IMPORTER: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
         static KEY_SELECTOR: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
         static SAVE_LOCATION_PICKER: LazyLock<Id<Popup>> = LazyLock::new(Id::generate);
@@ -213,6 +217,7 @@ impl Specification {
         .on_click(OnClick::from(Action::CloseContextMenu))
     }
 
+    /// Create a popup from the specification.
     pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Popup>, ui: &Ui) -> Popup {
         let ui_size = ui.size();
 

@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Ratio`].
+
 use crate::NonZeroRatio;
 use crate::Ratio;
 use crate::ratio::util::lowest_common_multiple;

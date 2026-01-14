@@ -1,3 +1,6 @@
+//! Implementations of factory functions for [`View`].
+// TODO: Rename the module to `factory` or the like.
+
 use crate::View;
 use crate::ui::Colour;
 use crate::view::Axis;

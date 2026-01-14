@@ -1,3 +1,5 @@
+//! Items pertaining to [`Offset`].
+
 mod ops;
 
 use crate::ui::Length;
@@ -7,6 +9,7 @@ use saturating_cast::SaturatingCast as _;
 /// A signed [length](Length).
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Offset {
+    /// The number of pixels to offset by.
     pixels: i32,
 }
 

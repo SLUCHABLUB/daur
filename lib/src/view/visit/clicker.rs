@@ -1,3 +1,5 @@
+//! Items pertaining to [`Clicker`].
+
 use crate::Holdable;
 use crate::Selectable;
 use crate::app::Action;
@@ -21,10 +23,19 @@ use std::num::NonZeroU64;
 /// A visitor for clicking a view.
 #[derive(Debug)]
 pub struct Clicker<'actions> {
+    /// The position at which to click.
     position: Point,
+    /// The action queue to add actions to.
     actions: &'actions mut Actions,
+    /// Whether the click is using the right mouse button.
     right_click: bool,
+    /// Whether the click has been captured by a view.
+    ///
+    /// If it has been, no more views should be clicked.
     captured: bool,
+    /// Whether to clear the selection when clicking a selectable view.
+    ///
+    /// This should normally be [`true`] unless `SHIFT` is held.
     clear_selection: bool,
 }
 
@@ -59,6 +70,10 @@ impl<'actions> Clicker<'actions> {
         }
     }
 
+    /// Whether the area should be clicked.
+    ///
+    /// This will return [`false`] if the click is captured
+    /// or if the area does not contain the clicked position.
     fn should_click(&self, area: Rectangle) -> bool {
         !self.captured && area.contains(self.position)
     }

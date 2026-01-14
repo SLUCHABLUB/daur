@@ -42,10 +42,14 @@ use serde::Deserialize;
 use serde::Serialize;
 use serial::Serial;
 
+/// The label for the button to add new tracks.
 const ADD_TRACK_LABEL: ArcStr = literal!("+");
+/// The description for the button to add new tracks.
 const ADD_TRACK_DESCRIPTION: ArcStr = literal!("add track");
-const DEFAULT_TRACK_TITLE: ArcStr = literal!("a track");
+/// The default name for tracks.
+const DEFAULT_TRACK_NAME: ArcStr = literal!("a track");
 
+/// The default duration for empty note groups.
 const DEFAULT_NOTES_DURATION: NonZeroDuration = NonZeroDuration {
     whole_notes: NonZeroRatio::integer(non_zero!(4)),
 };
@@ -104,6 +108,7 @@ impl Project {
         self.track_mut(path.track)?.remove_clip(path.clip)
     }
 
+    /// Returns the [time context](TimeContext).
     pub(crate) fn time_context(&self) -> Changing<TimeContext> {
         &self.time_signature / &self.tempo
     }

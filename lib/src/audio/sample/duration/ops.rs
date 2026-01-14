@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Duration`].
+
 use crate::audio::sample::Duration;
 use std::ops::Add;
 use std::ops::AddAssign;

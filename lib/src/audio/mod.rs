@@ -62,6 +62,7 @@ impl Audio {
         }
     }
 
+    /// Extend the audio clip with silence to fit *at least* the given duration.
     pub(crate) fn extend_to(&mut self, duration: sample::Duration) {
         for channel in &mut self.channels {
             if channel.len() < duration.samples {
@@ -70,6 +71,7 @@ impl Audio {
         }
     }
 
+    /// Remove silence at the end of the clip.
     pub(crate) fn truncate_silence(&mut self, minimum_duration: sample::Duration) {
         for channel in &mut self.channels {
             let Some(extra) = channel
@@ -100,10 +102,12 @@ impl Audio {
         self.duration() / self.sample_rate
     }
 
+    /// Superposes another audio clip onto this audio clip.
     pub(crate) fn superpose(&mut self, other: &Audio) {
         self.superpose_with_offset(other, sample::Duration::ZERO);
     }
 
+    /// Superposes another audio clip (offset by an offset) onto this audio clip.
     pub(crate) fn superpose_with_offset(&mut self, other: &Audio, offset: sample::Duration) {
         let other = other.resample(self.sample_rate);
 
@@ -163,6 +167,7 @@ impl Audio {
         [&mut left[instant.index()], &mut right[instant.index()]]
     }
 
+    /// Exports the clip to a file at the given path.
     pub(crate) fn export(&self, to: &Path) -> Result<(), hound::Error> {
         let spec = WavSpec {
             channels: 2,

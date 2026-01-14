@@ -1,5 +1,8 @@
+//! Items pertaining to [`ProcessResult`].
+
 use crate::Audio;
 
+/// The result of processing a slice of a clip.
 #[must_use]
 pub struct ProcessResult {
     /// The output audio.

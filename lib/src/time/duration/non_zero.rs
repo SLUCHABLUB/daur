@@ -1,3 +1,5 @@
+//! Items pertaining to [`NonZeroDuration`].
+
 use crate::time::Duration;
 use std::num::NonZeroU64;
 

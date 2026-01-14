@@ -1,3 +1,5 @@
+//! Items pertaining to [strings](ArcStr).
+
 use arcstr::ArcStr;
 use std::fmt::Display;
 

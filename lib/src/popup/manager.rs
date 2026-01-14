@@ -1,3 +1,5 @@
+//! Items pertaining to [`Manager`].
+
 use crate::Id;
 use crate::Popup;
 use crate::UserInterface;
@@ -11,6 +13,7 @@ use parking_lot::Mutex;
 /// This is required to handle errors in audio rendering.
 #[derive(Debug, Default)]
 pub(crate) struct Manager {
+    /// A locked map from popup ids to open popups.
     popups: Mutex<IndexMap<Id<Popup>, Popup>>,
 }
 
@@ -21,6 +24,9 @@ impl Manager {
         Manager::default()
     }
 
+    /// Returns an iterator over all popups.
+    ///
+    /// Note that the internal lock will not be held by the returned iterator.
     pub(crate) fn popups(&self) -> impl Iterator<Item = Popup> {
         self.popups.lock().clone().into_values()
     }
@@ -31,6 +37,9 @@ impl Manager {
         drop(popup);
     }
 
+    /// Apply a transforming function to the rectangle that a popup occupies.
+    ///
+    /// This is used to resize and move popups.
     pub fn transform_popup<F>(&self, id: Id<Popup>, transformer: F)
     where
         F: FnOnce(Rectangle) -> Rectangle,

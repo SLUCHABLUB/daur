@@ -1,3 +1,5 @@
+//! Items pertaining to [`Rate`].
+
 use crate::Ratio;
 use crate::time::Duration;
 use crate::time::NonZeroDuration;

@@ -1,3 +1,5 @@
+//! Types pertaining to selection.
+
 use crate::Id;
 use crate::note;
 use crate::project::Track;
@@ -19,6 +21,7 @@ pub enum Selectable {
 /// A selection stack.
 #[derive(Clone, Debug, Default)]
 pub struct Selection {
+    /// The underlying stack.
     items: Vec<Selectable>,
 }
 

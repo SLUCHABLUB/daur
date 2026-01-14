@@ -1,3 +1,5 @@
+//! Items pertaining to [`Vector`].
+
 mod ops;
 
 use crate::ui::Offset;

@@ -1,3 +1,5 @@
+//! Items pertaining to [`Dropper`].
+
 use crate::Holdable;
 use crate::Selectable;
 use crate::app::Action;
@@ -20,8 +22,11 @@ use std::num::NonZeroU64;
 /// A [visitor](Visitor) for dropping an [object](Holdable).
 #[derive(Debug)]
 pub struct Dropper<'actions> {
+    /// The action queue to add actions to.
     actions: &'actions mut Actions,
+    /// The object to be dropped.
     object: Holdable,
+    /// The position at which to drop the object.
     position: Point,
 }
 

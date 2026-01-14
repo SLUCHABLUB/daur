@@ -1,3 +1,5 @@
+//! Items pertaining to [`Point`].
+
 use crate::ui;
 use crate::ui::Length;
 use std::ops::Add;

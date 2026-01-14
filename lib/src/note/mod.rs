@@ -38,6 +38,7 @@ use sign::SHARP;
 #[derive(Eq, PartialEq, Debug, CopyGetters)]
 #[expect(missing_copy_implementations, reason = "`Id`s should be unique")]
 pub struct Note {
+    /// The id.
     #[get_copy = "pub(crate)"]
     id: Id<Note>,
     /// The duration of the note.
@@ -47,6 +48,7 @@ pub struct Note {
 }
 
 impl Note {
+    /// Constructs a new note.
     pub(crate) fn new(duration: NonZeroDuration) -> Note {
         Note {
             id: Id::generate(),

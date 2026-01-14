@@ -1,3 +1,5 @@
+//! Items pertaining to `InterleavedSamples`.
+
 use crate::Audio;
 use crate::audio::Sample;
 use crate::audio::sample;
@@ -6,12 +8,17 @@ use crate::audio::sample::Instant;
 use std::borrow::Cow;
 use std::iter::FusedIterator;
 
-/// An iterator over samples in an [`Audio`] samples in interleaved format.
+/// An iterator over samples in an [audio clipp](Audio) in interleaved format.
+///
+/// The first sample returned is from the left channel.
 #[derive(Clone, Eq, PartialEq, Debug)]
 #[must_use]
 pub struct InterleavedSamples<'audio> {
+    /// The audio being iterated over.
     audio: Cow<'audio, Audio>,
+    /// How far in the audio the iterator has iterated.
     position: Instant,
+    /// Whether the next sample to return should be from the right channel.
     right_channel: bool,
 }
 
@@ -22,6 +29,7 @@ impl InterleavedSamples<'_> {
         self.audio.sample_rate
     }
 
+    /// Skip forward in the audio by a given amount of time.
     pub(super) fn skip_forward(&mut self, duration: Duration) {
         self.position += duration;
     }

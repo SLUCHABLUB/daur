@@ -1,4 +1,4 @@
-//! Types pertaining to [`App`].
+//! Items pertaining to [`App`].
 
 mod action;
 mod actions;
@@ -35,6 +35,7 @@ pub struct App<Ui: UserInterface> {
     /// The user interface used by the app.
     #[get_copy = "pub"]
     ui: &'static Ui,
+    /// Settings for the user interface.
     ui_settings: ui::Settings,
 
     /// The view of the app.
@@ -44,21 +45,26 @@ pub struct App<Ui: UserInterface> {
     #[get = "pub"]
     view: View,
 
+    /// The project manager (tracks history).
     project_manager: project::Manager,
+    /// The project renderer.
     #[debug(skip)]
     renderer: project::Renderer,
 
+    /// The audio configuration (volatile audio settings).
     #[debug(skip)]
     audio_config: Config,
-    /// The colour theme.
+    /// The selected colour theme.
     #[get_copy = "pub"]
     theme: Theme,
 
+    /// The currently open context menu.
     #[get_clone = "pub(crate)"]
     context_menu: Option<MenuInstance>,
     /// The currently held object.
     #[get_copy = "pub"]
     held_object: Option<Holdable>,
+    /// The popup manage (allows synchronised opening of popups).
     popup_manager: Arc<popup::Manager>,
 
     /// The position of the musical cursor.
@@ -66,6 +72,7 @@ pub struct App<Ui: UserInterface> {
     /// If audio is playing, this may not reflect the actual position,
     /// but the position of the cursor at the time when audio playback started.
     cursor: Instant,
+    /// The selection (what clips, tracks, notes, &c. are selected).
     selection: Selection,
     /// The settings quantisation.
     quantisation: Quantisation,
@@ -109,7 +116,7 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_duration: NonZeroDuration::QUARTER,
                 cell_width: Ui::CELL_WIDTH,
             },
-            piano_roll: PianoRoll::new_in::<Ui>(),
+            piano_roll: PianoRoll::default_in::<Ui>(),
         };
 
         app.rerender();
@@ -126,6 +133,7 @@ impl<Ui: UserInterface> App<Ui> {
         }
     }
 
+    /// Rerenders the cached view.
     fn rerender(&mut self) {
         self.view = view(self);
     }

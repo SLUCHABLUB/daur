@@ -1,3 +1,5 @@
+//! Items pertaining to [`OffsetMapping`].
+
 use crate::Ratio;
 use crate::metre::Changing;
 use crate::metre::Instant;
@@ -12,14 +14,17 @@ use std::convert::identity;
 #[derive(Clone, Eq, PartialEq, Hash, Debug, Getters, CopyGetters)]
 pub struct OffsetMapping {
     // TODO: remove getter
+    /// The time signature.
     #[get = "pub(crate)"]
     time_signature: Changing<TimeSignature>,
     // TODO: remove getter
+    /// The quantisation.
     #[get_copy = "pub(crate)"]
     quantisation: Quantisation,
 }
 
 impl OffsetMapping {
+    /// Constructs a new mapping.
     pub(crate) fn new(
         time_signature: Changing<TimeSignature>,
         quantisation: Quantisation,
@@ -42,6 +47,7 @@ impl OffsetMapping {
         self.instant_with_cell_count_rounding(offset, Ratio::rounded_half_down)
     }
 
+    /// Maps an offset to an instant using a provided function for rounding.
     fn instant_with_cell_count_rounding(
         &self,
         offset: Length,

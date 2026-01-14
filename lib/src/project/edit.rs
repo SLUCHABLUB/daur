@@ -1,3 +1,5 @@
+//! Items pertaining to [`Edit`].
+
 use crate::Audio;
 use crate::Id;
 use crate::Note;
@@ -114,26 +116,29 @@ pub enum Error {
 }
 
 impl Project {
+    /// Returns a mutable reference to the last selected track.
     fn selected_track(&mut self, selection: &Selection) -> Result<&mut Track, Error> {
         self.track_mut(selection.top_track().ok_or(Error::NoTrackSelected)?)
             .ok_or(Error::NoTrackSelected)
     }
 
+    /// Returns a mutable reference to the last selected clip.
     fn selected_clip(&mut self, selection: &Selection) -> Result<(Instant, &mut Clip), Error> {
         self.clip_mut(selection.top_clip().ok_or(Error::NoClipSelected)?)
             .ok_or(Error::NoClipSelected)
     }
 
+    /// Performs an edit on the project.
     #[expect(clippy::too_many_lines, reason = "`Edit` is a large enum")]
     #[remain::check]
     pub(crate) fn edit(
         &mut self,
-        action: Edit,
+        edit: Edit,
         cursor: Instant,
         selection: &mut Selection,
     ) -> Result<HistoryEntry, Error> {
         #[sorted]
-        match action {
+        match edit {
             Edit::AddNote {
                 position,
                 pitch,

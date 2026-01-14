@@ -1,3 +1,5 @@
+//! Implementation of methods to resample [`Audio`].
+
 use crate::Audio;
 use crate::audio::Sample;
 use crate::audio::sample;
@@ -25,6 +27,7 @@ impl Audio {
         }
     }
 
+    /// Tries to resample the audio to the given sample rate.
     fn try_resample(&self, sample_rate: sample::Rate) -> anyhow::Result<Audio> {
         const ALL_CHANNELS_ENABLED: Option<&[bool]> = None;
         const CHANNEL_COUNT: usize = 2;

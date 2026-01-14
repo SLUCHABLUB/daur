@@ -1,17 +1,22 @@
+//! Items pertaining to [`Serial`].
+
 use crate::project::Track;
 use crate::project::track::clip;
 use serde::Deserialize;
 use serde::Serialize;
 use std::borrow::Cow;
 
+/// The serial representation of a [track](Track).
 #[derive(Serialize, Deserialize)]
 pub(in crate::project) struct Serial<'data> {
+    /// The name.
     pub name: Cow<'data, str>,
+    /// The clips.
     pub clips: Vec<clip::Serial<'data>>,
 }
 
-impl<'data> Serial<'data> {
-    pub(crate) fn from_track(track: &'data Track) -> Self {
+impl<'data> From<&'data Track> for Serial<'data> {
+    fn from(track: &'data Track) -> Self {
         let Track {
             id: _,
             name,

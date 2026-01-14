@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Point`].
+
 use crate::ui::Point;
 use crate::ui::Vector;
 use std::ops::Add;

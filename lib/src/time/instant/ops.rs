@@ -1,3 +1,5 @@
+//! Implementations of mathematical operations on [`Instant`].
+
 use crate::time::Duration;
 use crate::time::Instant;
 use std::ops::Add;

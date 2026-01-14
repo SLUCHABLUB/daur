@@ -1,3 +1,5 @@
+//! Items pertaining to [`Colour`].
+
 use serde::Deserialize;
 use serde::Serialize;
 
