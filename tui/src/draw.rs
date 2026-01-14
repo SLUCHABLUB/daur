@@ -1,3 +1,5 @@
+//! Items pertaining to drawing the UI.
+
 use crate::Tui;
 use crate::canvas::Context;
 use crate::convert::approximate_colour;
@@ -47,6 +49,7 @@ use std::iter::repeat_n;
 use std::num::NonZeroU64;
 use std::num::NonZeroUsize;
 
+/// Redraws the UI.
 pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::Result<()> {
     terminal
         .draw(|frame| {
@@ -68,8 +71,11 @@ pub(crate) fn redraw(app: &mut App<Tui>, terminal: &mut DefaultTerminal) -> io::
         .map(|_| ())
 }
 
+/// A [visitor](Visitor) implementation for [ratatui].
 struct Renderer<'buffer> {
+    /// The text-buffer.
     buffer: &'buffer mut Buffer,
+    /// The UI theme.
     theme: Theme,
 }
 
@@ -98,7 +104,7 @@ impl Visitor for Renderer<'_> {
             .x_bounds([0.0, width])
             .y_bounds([0.0, height])
             .paint(|context| {
-                painter(&mut Context::new(context, size));
+                painter(&mut Context { context, size });
             })
             .render(area, self.buffer);
     }

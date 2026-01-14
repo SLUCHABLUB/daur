@@ -1,3 +1,5 @@
+//! Functions for handling [events](Event).
+
 use crate::Key;
 use crate::Tui;
 use crate::convert::to_point;
@@ -25,6 +27,7 @@ use daur::view::visit::Scroller;
 use ratatui::layout::Position;
 use ratatui::layout::Size;
 
+/// Processes a sequence of [terminal events](Event).
 pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
     let mut actions = Actions::new();
 
@@ -35,7 +38,8 @@ pub(crate) fn handle_events(events: &[Event], app: &mut App<Tui>) {
     app.take_actions(actions);
 }
 
-pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Actions) {
+/// Processes a [terminal events](Event).
+fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Actions) {
     match *event {
         Event::FocusGained | Event::FocusLost | Event::Paste(_) => (),
         Event::Key(event) => handle_key_event(event, app.ui(), actions),
@@ -47,6 +51,7 @@ pub fn handle_event(event: &Event, app: &mut App<Tui>, actions: &mut Actions) {
     }
 }
 
+/// Processes a [terminal keyboard events](KeyEvent).
 fn handle_key_event(event: KeyEvent, ui: &Tui, actions: &mut Actions) {
     if event.kind != KeyEventKind::Press {
         return;
@@ -59,6 +64,7 @@ fn handle_key_event(event: KeyEvent, ui: &Tui, actions: &mut Actions) {
     }
 }
 
+/// Processes a [terminal mouse events](MouseEvent).
 fn handle_mouse_event(
     MouseEvent {
         kind,
@@ -139,6 +145,10 @@ fn handle_mouse_event(
     }
 }
 
+/// Scrolls the hovered view in a direction.
+///
+/// The direction is *not* the direction in which the view is to be moved.
+/// It is actually the opposite, which done to use the [same naming as crossterm](MouseEventKind).
 fn scroll(direction: Direction, ui: &Tui, view: &View, actions: &mut Actions) {
     let offset = -direction * Length::PIXEL;
 

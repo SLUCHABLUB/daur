@@ -1,3 +1,5 @@
+//! Items pertaining to [keys](Key).
+
 use crossterm::event::KeyCode;
 use crossterm::event::KeyEvent;
 use crossterm::event::KeyModifiers;
@@ -8,9 +10,12 @@ use serde::de::Error;
 use std::borrow::Cow;
 use std::str::FromStr as _;
 
+/// A key and modifier combination.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub(crate) struct Key {
+    /// The modifiers.
     modifiers: KeyModifiers,
+    /// The key.
     code: KeyCode,
 }
 

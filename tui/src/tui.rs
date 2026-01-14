@@ -1,3 +1,5 @@
+//! Items pertaining to [`Tui`].
+
 use crate::Configuration;
 use crossterm::event::MouseButton;
 use daur::UserInterface;
@@ -12,22 +14,32 @@ use non_zero::non_zero;
 use saturating_cast::SaturatingCast as _;
 use unicode_width::UnicodeWidthStr;
 
+/// A [user interface](UserInterface) implementation for the terminal.
 pub(crate) struct Tui {
+    /// The settings.
     pub configuration: Configuration,
 
+    /// Whether the user has requested to exit the app.
     pub should_exit: Cell<bool>,
     // TODO: update
+    /// Whether the UI should be redrawn.
     pub should_redraw: bool,
 
+    /// The (last known) position os the mouse cursor.
     pub mouse_position: Cell<Point>,
+    /// The area in which the UI is to be drawn.
     pub area: Cell<Rectangle>,
 
+    /// Whether the mouse has moved while held down.
     pub mouse_movement_since_mouse_down: Cell<bool>,
-    // Some terminals do not send the mouse button on release.
+    /// The last mouse button that was pressed.
+    ///
+    /// This is needed since some terminals do not send this with release events.
     pub last_mouse_button_down: Cell<MouseButton>,
 }
 
 impl Tui {
+    /// Constructs a new user interface.
     pub(crate) fn new(directories: &ProjectDirs) -> anyhow::Result<Tui> {
         Ok(Tui {
             configuration: Configuration::read_from_file(directories)?,

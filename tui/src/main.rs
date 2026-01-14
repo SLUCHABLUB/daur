@@ -1,4 +1,4 @@
-//! A simple terminal ui implementation of `daur`.
+//! A simple terminal ui implementation of [`daur`].
 
 mod canvas;
 mod configuration;

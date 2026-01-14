@@ -1,3 +1,5 @@
+//! Items pertaining to [`Context`].
+
 use crate::convert::approximate_colour;
 use daur::ui::Colour;
 use daur::ui::Point;
@@ -7,15 +9,12 @@ use daur::view;
 use ratatui::widgets::canvas;
 use ratatui::widgets::canvas::Points;
 
+/// A wrapper of [ratatui's canvas context](canvas::Context) to implement [daur's canvas context](view::Context).
 pub(crate) struct Context<'reference, 'context> {
-    context: &'reference mut canvas::Context<'context>,
-    size: Size,
-}
-
-impl<'reference, 'context> Context<'reference, 'context> {
-    pub(crate) fn new(context: &'reference mut canvas::Context<'context>, size: Size) -> Self {
-        Context { context, size }
-    }
+    /// The underlying ratatui context.
+    pub context: &'reference mut canvas::Context<'context>,
+    /// The size of the canvas.
+    pub size: Size,
 }
 
 impl view::Context for Context<'_, '_> {
