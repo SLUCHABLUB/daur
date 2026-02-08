@@ -4,7 +4,7 @@ use crate::audio::sample;
 use crate::note::Event;
 use crate::note::event::Sequence;
 
-/// A sub[sequence](Sequence) of [events](super::Event)
+/// A sub[sequence](Sequence) of [events](super::Event).
 #[derive(Copy, Clone, Debug)]
 pub struct Subsequence<'events> {
     /// The super-sequence.

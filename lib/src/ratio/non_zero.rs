@@ -11,7 +11,7 @@ use std::cmp::Ordering;
 use std::num::NonZeroU64;
 use std::num::NonZeroU128;
 
-/// A non-zero [ratio](Ratio)
+/// A non-zero [ratio](Ratio).
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Serialize, Deserialize, CopyGetters)]
 #[serde(try_from = "Serial", into = "Ratio")]
 pub struct NonZeroRatio {
@@ -25,10 +25,10 @@ pub struct NonZeroRatio {
 }
 
 impl NonZeroRatio {
-    /// 1 / 4
+    /// 1 / 4.
     pub const QUARTER: NonZeroRatio = NonZeroRatio::reciprocal_of(non_zero!(4));
 
-    /// 1
+    /// 1.
     pub const ONE: NonZeroRatio = NonZeroRatio::integer(non_zero!(1));
 
     /// The minimum non-zero ratio.

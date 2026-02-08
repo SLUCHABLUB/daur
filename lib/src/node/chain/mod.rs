@@ -5,7 +5,7 @@ mod instance;
 use crate::audio::sample;
 pub(crate) use instance::Instance;
 
-/// A chain of Nodes
+/// A chain of Nodes.
 pub(crate) struct Chain {
     // TODO: add a Dag<Node, NodeConnection>
     /// The nodes in the chain.

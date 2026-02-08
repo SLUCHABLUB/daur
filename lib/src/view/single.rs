@@ -11,7 +11,7 @@ use enum_iterator::all;
 use std::fmt::Display;
 use std::sync::Arc;
 
-/// A simple single-selection view
+/// A simple single-selection view.
 pub fn selector<T>(cell: &Arc<Cell<T>>, axis: Axis) -> View
 where
     T: Copy + PartialEq + Display + Sequence + Send + Sync + 'static,

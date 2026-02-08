@@ -24,7 +24,7 @@ pub struct Duration {
 }
 
 impl Duration {
-    /// 0
+    /// 0.
     pub const ZERO: Duration = Duration { nanoseconds: 0 };
 
     /// One nanosecond.

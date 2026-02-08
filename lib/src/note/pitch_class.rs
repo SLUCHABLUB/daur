@@ -32,29 +32,29 @@ use serde::Serialize;
 )]
 pub enum PitchClass {
     #[default]
-    /// A
+    /// A.
     A,
-    /// A♯ / B♭
+    /// A♯ / B♭.
     Bb,
-    /// B
+    /// B.
     B,
-    /// C
+    /// C.
     C,
-    /// C♯ / D♭
+    /// C♯ / D♭.
     Db,
-    /// D
+    /// D.
     D,
-    /// D♯ / E♭
+    /// D♯ / E♭.
     Eb,
-    /// E
+    /// E.
     E,
-    /// F
+    /// F.
     F,
-    /// F♯ / G♭
+    /// F♯ / G♭.
     Gb,
-    /// G
+    /// G.
     G,
-    /// G♯ / A♭
+    /// G♯ / A♭.
     Ab,
 }
 

@@ -35,7 +35,7 @@ pub struct Sample {
 }
 
 impl Sample {
-    /// 0
+    /// 0.
     pub const ZERO: Sample = Sample { value: 0.0 };
 
     /// Constructs a new sample from a float.

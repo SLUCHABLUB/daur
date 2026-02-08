@@ -8,7 +8,7 @@ use serde::Serialize;
 /// A non-zero duration.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Serialize, Deserialize)]
 pub struct NonZeroDuration {
-    /// The number of whole-note durations
+    /// The number of whole-note durations.
     pub whole_notes: NonZeroRatio,
 }
 

@@ -16,13 +16,13 @@ use arcstr::literal;
 
 // TODO: add a symbol view instead of using chars
 // there is sadly no "single" variant
-/// "BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR"
+/// "BLACK LEFT-POINTING DOUBLE TRIANGLE WITH VERTICAL BAR".
 const BACK: ArcStr = literal!(" \u{23EE} ");
-/// "DOUBLE VERTICAL BAR"
+/// "DOUBLE VERTICAL BAR".
 const PAUSE: ArcStr = literal!(" \u{23F8} ");
-/// "BLACK RIGHT-POINTING TRIANGLE"
+/// "BLACK RIGHT-POINTING TRIANGLE".
 const PLAY: ArcStr = literal!(" \u{25B6} ");
-/// "BLACK CIRCLE FOR RECORD"
+/// "BLACK CIRCLE FOR RECORD".
 const RECORD: ArcStr = literal!(" \u{23FA} ");
 
 /// The label for the button to activate edit mode.

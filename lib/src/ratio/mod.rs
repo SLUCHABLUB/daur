@@ -37,16 +37,16 @@ pub struct Ratio {
 }
 
 impl Ratio {
-    /// 0
+    /// 0.
     pub const ZERO: Ratio = Ratio::integer(0);
 
-    /// 1 / 2
+    /// 1 / 2.
     pub const HALF: Ratio = Ratio::reciprocal_of(non_zero!(2));
 
-    /// 1 / 4
+    /// 1 / 4.
     pub const QUARTER: Ratio = Ratio::reciprocal_of(non_zero!(4));
 
-    /// 1
+    /// 1.
     pub const ONE: Ratio = Ratio::integer(1);
 
     /// The minimum non-zero ratio.
@@ -96,7 +96,7 @@ impl Ratio {
         }
     }
 
-    /// Calculates the floor of the ratio
+    /// Calculates the floor of the ratio.
     #[must_use]
     pub fn floor(self) -> u64 {
         #![expect(clippy::integer_division, reason = "we want the floor")]
@@ -219,7 +219,7 @@ impl Ratio {
     }
 
     /// Due to using lcm (multiplication) in addition to addition in addition (in extension),
-    /// we need to use u128 as opposed to u64 for the result
+    /// we need to use u128 as opposed to u64 for the result.
     fn big_raw(self) -> (u128, NonZeroU128) {
         (
             u128::from(self.numerator),

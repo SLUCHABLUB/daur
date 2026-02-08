@@ -1,4 +1,4 @@
-//! Items pertaining to [`Holdable`]
+//! Items pertaining to [`Holdable`].
 
 mod window_size;
 

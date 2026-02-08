@@ -4,17 +4,17 @@ use crate::ui::Length;
 use crate::view::Axis;
 use crate::view::Quotum2D;
 
-/// The size of something on the screen
+/// The size of something on the screen.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct Size {
-    /// The width of the thing
+    /// The width of the thing.
     pub width: Length,
-    /// The height of the thing
+    /// The height of the thing.
     pub height: Length,
 }
 
 impl Size {
-    /// 0 by 0
+    /// 0 by 0.
     pub const ZERO: Size = Size {
         width: Length::ZERO,
         height: Length::ZERO,

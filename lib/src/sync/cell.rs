@@ -41,7 +41,7 @@ impl<T: Copy> Cell<T> {
 }
 
 impl<T: Default> Cell<T> {
-    /// Takes the value out of the cell leaving [`Default::default()`] in its place
+    /// Takes the value out of the cell leaving [`Default::default()`] in its place.
     #[must_use]
     pub fn take(&self) -> T {
         self.inner.take()

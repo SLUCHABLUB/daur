@@ -31,7 +31,7 @@ impl Offset {
         }
     }
 
-    /// 0
+    /// 0.
     pub const ZERO: Offset = Offset { pixels: 0 };
 
     /// One pixel.

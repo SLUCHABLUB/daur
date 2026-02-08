@@ -7,7 +7,7 @@ pub use non_zero::NonZeroLength;
 
 use crate::view::Quotum;
 
-/// An orthogonal distance between two points
+/// An orthogonal distance between two points.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug, Default)]
 pub struct Length {
     /// The number of pixels that fit in the length.
@@ -15,7 +15,7 @@ pub struct Length {
 }
 
 impl Length {
-    /// 0
+    /// 0.
     pub const ZERO: Length = Length { pixels: 0 };
 
     /// The length of a single pixel.

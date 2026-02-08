@@ -34,6 +34,7 @@ pub(super) enum Serial {
     },
 }
 
+/// Utility macro for returning with an error.
 macro_rules! invalid_value {
     ($value:expr) => {
         bail!("invalid value: {}, expected {EXPECTED}", $value)

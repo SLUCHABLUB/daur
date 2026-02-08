@@ -5,29 +5,29 @@ mod ops;
 use crate::ui::Offset;
 use crate::ui::Point;
 
-/// A vector
+/// A vector.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub struct Vector {
-    /// The x coordinate of the vector
+    /// The x coordinate of the vector.
     pub x: Offset,
-    /// The x coordinate of the vector
+    /// The x coordinate of the vector.
     pub y: Offset,
 }
 
 impl Vector {
-    /// (0, 0)
+    /// (0, 0).
     pub const ZERO: Vector = Vector {
         x: Offset::ZERO,
         y: Offset::ZERO,
     };
 
-    /// Construct a new vector with y = 0
+    /// Construct a new vector with y = 0.
     #[must_use]
     pub const fn from_x(x: Offset) -> Vector {
         Vector { x, y: Offset::ZERO }
     }
 
-    /// Construct a new vector with x = 0
+    /// Construct a new vector with x = 0.
     #[must_use]
     pub const fn from_y(y: Offset) -> Vector {
         Vector { x: Offset::ZERO, y }

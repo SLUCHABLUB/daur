@@ -10,8 +10,8 @@ use crate::ui::NonZeroLength;
 /// the number of cells will be rounded upwards.
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub struct Quantisation {
-    /// The duration of a full grid cell
+    /// The duration of a full grid cell.
     pub cell_duration: NonZeroDuration,
-    /// The width of a grid cell
+    /// The width of a grid cell.
     pub cell_width: NonZeroLength,
 }

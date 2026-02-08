@@ -85,7 +85,7 @@ pub struct App<Ui: UserInterface> {
 }
 
 impl<Ui: UserInterface> App<Ui> {
-    /// Creates a new instance
+    /// Creates a new instance.
     #[must_use]
     pub fn new(ui: &'static Ui) -> Self {
         let popup_manager = Arc::new(popup::Manager::new());

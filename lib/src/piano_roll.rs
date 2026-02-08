@@ -439,6 +439,7 @@ impl PianoRoll {
         ])
     }
 
+    /// Return a purely visual [view](View) of a note.
     fn note_visual(colour: Colour) -> View {
         View::Solid(ThemeColour::Custom(colour))
     }

@@ -21,9 +21,9 @@ struct NoAvailableOutputDevice;
 /// An audio output configuration.
 #[derive(Default)]
 pub(crate) struct Config {
-    /// The audio host
+    /// The audio host.
     host: Host,
-    /// The device configuration
+    /// The device configuration.
     device_config: Option<DeviceConfig>,
 }
 

@@ -18,11 +18,11 @@ pub(super) const FLAT: char = '\u{266D}';
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Default, Sequence, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Sign {
-    /// ♯
+    /// ♯.
     #[default]
     #[serde(alias = "#", alias = "\u{266f}")]
     Sharp,
-    /// ♭
+    /// ♭.
     #[serde(alias = "b", alias = "\u{266d}")]
     Flat,
 }

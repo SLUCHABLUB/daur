@@ -64,7 +64,7 @@ pub struct Project {
     name: ArcStr,
 
     // TODO: continuous change
-    /// The tempo of the project
+    /// The tempo of the project.
     tempo: Changing<Tempo>,
     /// The time signature of the project.
     #[get = "pub(crate)"]

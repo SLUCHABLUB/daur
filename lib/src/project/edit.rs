@@ -80,6 +80,7 @@ pub enum Edit {
     SetKey(Key),
 }
 
+/// A error when trying to perform an [edit](Edit).
 #[derive(Debug, Error)]
 #[remain::sorted]
 pub enum Error {

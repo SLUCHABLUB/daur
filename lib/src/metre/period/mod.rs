@@ -41,7 +41,7 @@ impl Period {
     }
 
     /// Returns the intersection between the two periods.
-    /// If the periods do not intersect, [`None`] is returned
+    /// If the periods do not intersect, [`None`] is returned.
     #[must_use]
     pub fn intersection(first: Period, second: Period) -> Option<Period> {
         Period::from_endpoints(
@@ -58,7 +58,7 @@ impl Period {
         }
     }
 
-    /// Whether the period contains the specified instant
+    /// Whether the period contains the specified instant.
     #[must_use]
     pub fn contains(self, instant: Instant) -> bool {
         self.range().contains(&instant)

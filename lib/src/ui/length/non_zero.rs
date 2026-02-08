@@ -3,7 +3,7 @@
 use crate::ui::Length;
 use std::num::NonZeroU16;
 
-/// A non-zero orthogonal distance between two points
+/// A non-zero orthogonal distance between two points.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Debug)]
 #[repr(transparent)]
 pub struct NonZeroLength {

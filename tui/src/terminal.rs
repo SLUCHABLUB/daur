@@ -15,7 +15,7 @@ use std::panic::resume_unwind;
 /// Runs a function with the terminal initialised.
 ///
 /// This will make sure that the terminal is cleaned up after running the function
-/// (including if it panics) (but not if an [IO error](std::io::Error) occurs during cleanup)
+/// (including if it panics) (but not if an [IO error](std::io::Error) occurs during cleanup).
 pub(crate) fn with_terminal<F>(f: F) -> anyhow::Result<()>
 where
     F: FnOnce(DefaultTerminal) -> anyhow::Result<()>,
