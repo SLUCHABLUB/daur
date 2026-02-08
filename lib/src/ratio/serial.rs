@@ -18,7 +18,7 @@ pub(super) enum Serial {
     /// A natural number.
     U64(u64),
 
-    // These are here since serde by default does not try to derserialise a `u64` or `i64`
+    // These are here since serde by default does not try to deserialise a `u64` or `i64`
     // from a `u128` or `i128` even if it is in range (as of writing).
     /// A big (according to serde) integer.
     I128(i128),
