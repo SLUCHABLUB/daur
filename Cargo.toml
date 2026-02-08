@@ -6,7 +6,7 @@ members = ["lib", "tui"]
 authors = ["SLUCHABLUB"]
 edition = "2024"
 repository = "https://github.com/SLUCHABLUB/daur"
-license = "GPL-3"
+license = "AGPL-3.0-or-later"
 
 [workspace.lints.rust]
 unstable_name_collisions = "allow" # if the code breaks, it is an easy fix
