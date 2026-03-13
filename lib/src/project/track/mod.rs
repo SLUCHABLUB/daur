@@ -56,7 +56,7 @@ pub struct Track {
     #[get_copy = "pub(super)"]
     id: Id<Track>,
     /// The name.
-    #[get_clone = "pub(super)"]
+    #[get_clone = "pub(crate)"]
     name: ArcStr,
 
     // TODO: use a double-key map

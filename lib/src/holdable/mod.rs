@@ -24,11 +24,6 @@ pub enum Holdable {
         /// Where the note should start.
         start: Instant,
     },
-    /// The title bar of the piano roll.
-    PianoRollHandle {
-        /// How far down, on the handle, it was grabbed.
-        y: Length,
-    },
     /// A popup, to move it.
     Popup {
         /// The id of the popup.
@@ -47,5 +42,10 @@ pub enum Holdable {
     SelectionBox {
         /// The point where the selection started.
         start: Point,
+    },
+    /// The title bar of the piano roll.
+    WorkspaceHandle {
+        /// How far down, on the handle, it was grabbed.
+        y: Length,
     },
 }

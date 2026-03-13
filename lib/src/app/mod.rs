@@ -1,15 +1,16 @@
 //! Items pertaining to [`App`].
 
+pub mod workspace;
+
 mod action;
 mod actions;
 mod view;
 
 pub use action::Action;
 pub use actions::Actions;
-use std::sync::Arc;
+pub use workspace::Workspace;
 
 use crate::Holdable;
-use crate::PianoRoll;
 use crate::UserInterface;
 use crate::View;
 use crate::app::view::view;
@@ -28,6 +29,7 @@ use getset::CloneGetters;
 use getset::CopyGetters;
 use getset::Getters;
 use getset::MutGetters;
+use std::sync::Arc;
 
 /// A running instance of the DAW.
 #[derive(Debug, Getters, MutGetters, CopyGetters, CloneGetters)]
@@ -79,9 +81,9 @@ pub struct App<Ui: UserInterface> {
 
     /// Whether _edit mode_ is enabled.
     edit_mode: bool,
-    /// The settings regarding the piano roll.
-    #[get_mut = "pub(crate)"]
-    piano_roll: PianoRoll,
+
+    /// The currently open workspace, if any.
+    workspace: workspace::Settings,
 }
 
 impl<Ui: UserInterface> App<Ui> {
@@ -116,7 +118,8 @@ impl<Ui: UserInterface> App<Ui> {
                 cell_duration: NonZeroDuration::QUARTER,
                 cell_width: Ui::CELL_WIDTH,
             },
-            piano_roll: PianoRoll::default_in::<Ui>(),
+
+            workspace: workspace::Settings::default_in::<Ui>(),
         };
 
         app.rerender();

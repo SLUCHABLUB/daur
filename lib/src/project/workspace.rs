@@ -170,7 +170,7 @@ fn held_object_view(
             })
         }
         Holdable::NoteCreation { .. }
-        | Holdable::PianoRollHandle { .. }
+        | Holdable::WorkspaceHandle { .. }
         | Holdable::Popup { .. }
         | Holdable::PopupSide { .. } => return None,
         Holdable::SelectionBox { start } => View::reactive(move |render_area| {

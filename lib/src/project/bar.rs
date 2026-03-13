@@ -4,6 +4,7 @@ use crate::Project;
 use crate::UserInterface;
 use crate::View;
 use crate::app::Action;
+use crate::app::Workspace;
 use crate::audio::Player;
 use crate::metre::Instant;
 use crate::popup::Specification;
@@ -44,16 +45,17 @@ pub(crate) fn bar<Ui: UserInterface>(
     cursor: Instant,
     player: Option<Player>,
     edit_mode: bool,
-    piano_roll_open: bool,
+    is_piano_roll_open: bool,
 ) -> View {
     // --- BUTTONS ---
 
     // TODO: add functionality
     let plugins_button = View::standard_button(PLUGINS, OnClick::default());
+    // TODO: Is this button needed?
     let piano_roll_button = View::toggle(
         PIANO,
-        OnClick::from(Action::TogglePianoRoll),
-        piano_roll_open,
+        OnClick::from(Action::ToggleWorkspace(Workspace::PianoRoll)),
+        is_piano_roll_open,
     );
     let edit_mode_button = View::toggle(EDIT, OnClick::from(Action::ToggleEditMode), edit_mode);
 

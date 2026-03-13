@@ -3,6 +3,7 @@
 use crate::UserInterface;
 use crate::View;
 use crate::app::Action;
+use crate::app::Workspace;
 use crate::popup::Specification;
 use crate::project::Edit;
 use crate::ui::Point;
@@ -43,7 +44,10 @@ impl Menu {
                     IMPORT_AUDIO,
                     Action::OpenPopup(Specification::AudioImporter),
                 ),
-                (TOGGLE_PIANO_ROLL, Action::TogglePianoRoll),
+                (
+                    TOGGLE_PIANO_ROLL,
+                    Action::ToggleWorkspace(Workspace::PianoRoll),
+                ),
             ]),
         }
     }

@@ -33,7 +33,6 @@ use crate::ui::Vector;
 use crate::ui::relative;
 use crate::view::Alignment;
 use crate::view::CursorWindow;
-use crate::view::Quoted;
 use crate::view::RenderArea;
 use crate::view::ToText as _;
 use crate::view::ruler;
@@ -57,7 +56,7 @@ const NO_CLIP_SELECTED: ArcStr = literal!("please select a clip to edit");
 const AUDIO_CLIP_SELECTED: ArcStr = literal!("cannot edit audio clips (yet)");
 
 /// Volatile settings for the piano roll.
-#[derive(Copy, Clone, Eq, PartialEq, Debug, Setters, CopyGetters)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug, Setters, CopyGetters)]
 pub struct PianoRoll {
     /// How far to the left the piano roll is moved.
     negative_x_offset: Length,
@@ -65,13 +64,6 @@ pub struct PianoRoll {
     ///
     /// With this set to zero, the bottom key is C<sub>-1</sub>.
     y_offset: Length,
-    /// The height of the piano roll content (excluding the title).
-    #[set = "pub(crate)"]
-    content_height: Length,
-    /// Whether the piano roll is open.
-    #[set = "pub(crate)"]
-    #[get_copy = "pub(crate)"]
-    is_open: bool,
 
     /// The width of piano key.
     key_width: NonZeroLength,
@@ -87,13 +79,10 @@ impl PianoRoll {
     /// Returns the default piano roll settings for a given ui.
     pub(crate) fn default_in<Ui: UserInterface>() -> PianoRoll {
         let a3_offset = Ui::KEY_WIDTH.get() * Ratio::integer(57);
-        let three_octaves = Ui::KEY_WIDTH.get() * Ratio::integer(3 * 12) + Ui::RULER_HEIGHT.get();
 
         PianoRoll {
             negative_x_offset: Length::ZERO,
             y_offset: a3_offset,
-            content_height: three_octaves,
-            is_open: false,
             key_width: Ui::KEY_WIDTH,
             piano_depth: Ui::PIANO_DEPTH,
             black_key_depth: Ui::BLACK_KEY_DEPTH,
@@ -101,37 +90,23 @@ impl PianoRoll {
     }
 
     /// Returns [`self.y_offset`] but clamped such that the piano roll is not scrolled past the top key.
-    fn clamped_y_offset<Ui: UserInterface>(self) -> Length {
+    fn clamped_y_offset<Ui: UserInterface>(self, content_height: Length) -> Length {
         let full_roll_height = self.key_width.get() * Ratio::integer(128);
-        let workspace_height = self.content_height - Ui::RULER_HEIGHT.get();
+        let workspace_height = content_height - Ui::RULER_HEIGHT.get();
 
         min(self.y_offset, full_roll_height - workspace_height)
     }
 
-    /// Moves the piano roll by an offset.
-    pub(crate) fn move_by<Ui: UserInterface>(&mut self, by: Vector) {
+    /// Moves the piano roll by an offset whilst clamped to a certain height.
+    pub(super) fn move_by_in<Ui: UserInterface>(&mut self, by: Vector, content_height: Length) {
         self.negative_x_offset -= by.x;
         self.y_offset += by.y;
 
-        self.y_offset = self.clamped_y_offset::<Ui>();
+        self.y_offset = self.clamped_y_offset::<Ui>(content_height);
     }
 
-    /// Returns the view for the piano roll.
-    #[builder]
-    pub(crate) fn view<Ui: UserInterface>(
-        self,
-        selection: &Selection,
-        project: &Project,
-        quantisation: Quantisation,
-        cursor: Instant,
-        player: Option<Player>,
-        held_object: Option<Holdable>,
-        edit_mode: bool,
-    ) -> Quoted {
-        if !self.is_open {
-            return Quoted::EMPTY;
-        }
-
+    /// Return the title of the workspace and whether it should be highlighted.
+    pub(super) fn title_and_highlight(project: &Project, selection: &Selection) -> (ArcStr, bool) {
         let clip_name = selection
             .top_clip()
             .and_then(|id| project.clip(id))
@@ -140,30 +115,12 @@ impl PianoRoll {
         let highlighted = clip_name.is_some();
         let title = clip_name.unwrap_or(PIANO_ROLL);
 
-        let content = self
-            .content::<Ui>()
-            .cursor(cursor)
-            .project(project)
-            .quantisation(quantisation)
-            .selection(selection)
-            .maybe_player(player)
-            .maybe_held_object(held_object)
-            .edit_mode(edit_mode)
-            .call();
-
-        let title_height = Ui::string_height(&title) + Ui::TITLE_PADDING * Ratio::integer(2);
-
-        let title = View::TitleBar { title, highlighted };
-
-        View::y_stack([
-            title.grabbable(Self::handle_grabber).quoted_minimally(),
-            content.fill_remaining(),
-        ])
-        .quoted(self.content_height + title_height)
+        (title, highlighted)
     }
 
+    /// Returns a view the content of the pianoroll.
     #[builder]
-    fn content<Ui: UserInterface>(
+    pub(super) fn content<Ui: UserInterface>(
         self,
         selection: &Selection,
         project: &Project,
@@ -172,6 +129,7 @@ impl PianoRoll {
         cursor: Instant,
         held_object: Option<Holdable>,
         edit_mode: bool,
+        content_height: Length,
     ) -> View {
         let Some(clip_path) = selection.top_clip() else {
             return NO_CLIP_SELECTED.centred();
@@ -191,7 +149,7 @@ impl PianoRoll {
         // Resizing it will thus cause the bottom to be fixed.
         // Since the top is the thing being moved, this seems intuitive.
         let workspace = self
-            .workspace::<Ui>()
+            .note_area::<Ui>()
             .track(clip_path.track)
             .clip_start(clip_start)
             .clip(clip)
@@ -203,6 +161,7 @@ impl PianoRoll {
             .maybe_held_object(held_object)
             .edit_mode(edit_mode)
             .key(project.key())
+            .content_height(content_height)
             .call();
 
         let ruler = ruler(self.negative_x_offset, offset_mapping)
@@ -213,8 +172,10 @@ impl PianoRoll {
             .scrollable(Action::MovePianoRoll)
     }
 
+    /// The part of the piano role where notes can be placed and moved.
+    /// This includes held notes.
     #[builder]
-    fn workspace<Ui: UserInterface>(
+    fn note_area<Ui: UserInterface>(
         self,
         track: Id<Track>,
         clip_start: Instant,
@@ -226,6 +187,7 @@ impl PianoRoll {
         cursor: Instant,
         held_object: Option<Holdable>,
         edit_mode: bool,
+        content_height: Length,
         key: &Changing<Key>,
     ) -> View {
         let roll = self
@@ -237,6 +199,7 @@ impl PianoRoll {
             .offset_mapping(&offset_mapping)
             .edit_mode(edit_mode)
             .key(key)
+            .content_height(content_height)
             .call();
 
         let held_object = self.held_object(held_object, clip.colour(), &offset_mapping);
@@ -255,6 +218,7 @@ impl PianoRoll {
         View::Layers(vec![roll, overlay])
     }
 
+    /// The part of the piano role where notes can be placed and moved excluding held objects.
     #[builder]
     fn roll<Ui: UserInterface>(
         self,
@@ -265,8 +229,9 @@ impl PianoRoll {
         offset_mapping: &OffsetMapping,
         edit_mode: bool,
         key: &Changing<Key>,
+        content_height: Length,
     ) -> View {
-        let y_offset = self.clamped_y_offset::<Ui>();
+        let y_offset = self.clamped_y_offset::<Ui>(content_height);
 
         let lowest_visible_pitch = Pitch::LOWEST
             + Interval::from_semitones((y_offset / self.key_width).floor().saturating_cast());
@@ -278,7 +243,7 @@ impl PianoRoll {
             lowest_row_height
         };
 
-        let remaining_space = self.content_height - Ui::RULER_HEIGHT.get() - lowest_row_height;
+        let remaining_space = content_height - Ui::RULER_HEIGHT.get() - lowest_row_height;
 
         let number_of_full_keys = (remaining_space / self.key_width).floor();
 
@@ -467,13 +432,6 @@ impl PianoRoll {
         View::x_stack([top.quoted(self.black_key_depth), bottom.fill_remaining()])
     }
 
-    /// Returns the [holdable object](Holdable) representing the handle (top edge) of the piano roll.
-    fn handle_grabber(render_area: RenderArea) -> Option<Holdable> {
-        let y = render_area.relative_mouse_position()?.y;
-
-        Some(Holdable::PianoRollHandle { y })
-    }
-
     /// Returns the view for the object held inside the piano roll.
     fn held_object(
         self,
@@ -488,9 +446,9 @@ impl PianoRoll {
         let start = match held_object {
             Holdable::NoteCreation { start } => start,
             Holdable::Clip(_)
-            | Holdable::PianoRollHandle { .. }
             | Holdable::Popup { .. }
             | Holdable::PopupSide { .. }
+            | Holdable::WorkspaceHandle { .. }
             | Holdable::SelectionBox { .. } => {
                 return View::Empty;
             }

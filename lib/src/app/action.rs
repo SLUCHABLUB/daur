@@ -7,6 +7,7 @@ use crate::Popup;
 use crate::Selectable;
 use crate::UserInterface;
 use crate::app::Actions;
+use crate::app::workspace::Workspace;
 use crate::metre::Instant;
 use crate::popup;
 use crate::project::Edit;
@@ -91,10 +92,13 @@ pub enum Action {
     Select(Selectable),
     /// Toggles _edit mode_.
     ToggleEditMode,
-    /// Sets the piano roll's height to half of the screen height.
-    TogglePianoRoll,
     /// Toggles whether the app is playing.
     TogglePlayback,
+    /// Toggles a specific workspace.
+    /// If the specified workspace is already open, it gets closed.
+    /// If no workspace is open, or another workspace is open,
+    /// the specified workspace gets opened.
+    ToggleWorkspace(Workspace),
     // TODO: add scripting
 }
 
@@ -190,7 +194,7 @@ impl<Ui: UserInterface> App<Ui> {
                 // TODO: scroll tracks vertically
             }
             Action::MovePianoRoll(by) => {
-                self.piano_roll.move_by::<Ui>(by);
+                self.workspace.move_by::<Ui>(by);
             }
             Action::OpenContextMenu { menu, position } => {
                 self.context_menu = Some(menu.instantiate::<Ui>(position, self.ui()));
@@ -222,15 +226,16 @@ impl<Ui: UserInterface> App<Ui> {
                 self.selection.push(item);
             }
             Action::ToggleEditMode => self.edit_mode = !self.edit_mode,
-            Action::TogglePianoRoll => {
-                self.piano_roll.set_is_open(!self.piano_roll.is_open());
-            }
             Action::TogglePlayback => {
                 if self.audio_config.is_player_playing() {
                     self.take(Action::Pause);
                 } else {
                     self.take(Action::Play);
                 }
+            }
+            Action::ToggleWorkspace(workspace) => {
+                self.workspace.currently_open =
+                    (self.workspace.currently_open != Some(workspace)).then_some(workspace);
             }
         }
 
@@ -246,10 +251,6 @@ impl<Ui: UserInterface> App<Ui> {
         };
 
         match object {
-            Holdable::PianoRollHandle { y } => {
-                self.piano_roll
-                    .set_content_height(self.ui.size().height - to.y + y - Length::PIXEL);
-            }
             Holdable::Popup { id, point } => {
                 self.popup_manager.transform_popup(id, |area| Rectangle {
                     position: to - point,
@@ -259,6 +260,9 @@ impl<Ui: UserInterface> App<Ui> {
             Holdable::PopupSide { popup, side } => self
                 .popup_manager
                 .transform_popup(popup, |area| side.resize(area, to)),
+            Holdable::WorkspaceHandle { y } => {
+                self.workspace.content_height = self.ui.size().height - to.y + y - Length::PIXEL;
+            }
             // These are processed when they are dropped.
             Holdable::Clip(_) | Holdable::NoteCreation { .. } | Holdable::SelectionBox { .. } => (),
         }

@@ -15,13 +15,11 @@ pub mod view;
 mod extension;
 mod id;
 mod node;
-mod piano_roll;
 mod ratio;
 mod select;
 mod string;
 
 pub use id::Id;
-pub use piano_roll::PianoRoll;
 pub use ratio::NonZeroRatio;
 pub use ratio::Ratio;
 pub use select::Selectable;
