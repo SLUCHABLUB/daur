@@ -98,7 +98,10 @@ impl Specification {
     }
 
     /// Returns the popups [view](View) with a border and title.
-    fn view<Ui: UserInterface>(&self, id: Id<Popup>) -> View {
+    fn view<Ui>(&self, id: Id<Popup>) -> View
+    where
+        Ui: UserInterface,
+    {
         let grab_edge = move |render_area: RenderArea| {
             let mouse_position = render_area.relative_mouse_position()?;
 
@@ -218,7 +221,10 @@ impl Specification {
     }
 
     /// Create a popup from the specification.
-    pub(crate) fn instantiate<Ui: UserInterface>(&self, id: Id<Popup>, ui: &Ui) -> Popup {
+    pub(crate) fn instantiate<Ui>(&self, id: Id<Popup>, ui: &Ui) -> Popup
+    where
+        Ui: UserInterface,
+    {
         let ui_size = ui.size();
 
         let view = Arc::new(self.view::<Ui>(id));

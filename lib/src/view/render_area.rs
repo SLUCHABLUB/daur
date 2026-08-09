@@ -60,11 +60,14 @@ impl RenderArea {
 
     /// Splits the area.
     #[must_use]
-    pub(crate) fn split<Ui: UserInterface>(
+    pub(crate) fn split<Ui>(
         self,
         axis: Axis,
         views: &[Quoted],
-    ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_, Ui> {
+    ) -> impl DoubleEndedIterator<Item = Rectangle> + use<'_, Ui>
+    where
+        Ui: UserInterface,
+    {
         let count = views.len();
 
         // cache the sizes or None if Quotum::Remaining is used

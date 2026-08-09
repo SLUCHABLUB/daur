@@ -119,7 +119,10 @@ impl<'de> Deserialize<'de> for Key {
             })
         }
 
-        fn invalid_key<E: Error>(key: &str) -> E {
+        fn invalid_key<E>(key: &str) -> E
+        where
+            E: Error,
+        {
             Error::custom(format!("invalid key: `{key}`"))
         }
 

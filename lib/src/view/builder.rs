@@ -66,10 +66,10 @@ impl View {
     }
 
     /// Adds a grabbable object to the view.
-    pub fn grabbable<F: Fn(RenderArea) -> Option<Holdable> + Send + Sync + 'static>(
-        self,
-        generator: F,
-    ) -> View {
+    pub fn grabbable<F>(self, generator: F) -> View
+    where
+        F: Fn(RenderArea) -> Option<Holdable> + Send + Sync + 'static,
+    {
         View::Grabbable {
             object: Box::new(generator),
             view: Box::new(self),
@@ -77,12 +77,10 @@ impl View {
     }
 
     /// Adds a function that accepts droppable objects to the view.
-    pub fn object_accepting<
+    pub fn object_accepting<F>(self, dropper: F) -> View
+    where
         F: Fn(Holdable, RenderArea) -> Option<Action> + Send + Sync + 'static,
-    >(
-        self,
-        dropper: F,
-    ) -> View {
+    {
         View::ObjectAcceptor {
             drop: Box::new(dropper),
             view: Box::new(self),

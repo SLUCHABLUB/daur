@@ -17,7 +17,10 @@ pub(crate) struct Settings {
 
 impl Settings {
     /// Returns the default settings for a given ui.
-    pub fn default_in<Ui: UserInterface>() -> Settings {
+    pub fn default_in<Ui>() -> Settings
+    where
+        Ui: UserInterface,
+    {
         Settings {
             project_bar_height: Ui::PROJECT_BAR_HEIGHT,
             track_settings_width: Ui::TRACK_SETTINGS_WITH,

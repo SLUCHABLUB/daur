@@ -46,7 +46,10 @@ impl<T> PartialEq for Id<T> {
 }
 
 impl<T> Hash for Id<T> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
+    fn hash<H>(&self, state: &mut H)
+    where
+        H: Hasher,
+    {
         self.number.hash(state);
     }
 }

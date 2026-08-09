@@ -59,7 +59,10 @@ impl Sequence {
 }
 
 impl Extend<(Instant, Event)> for Sequence {
-    fn extend<T: IntoIterator<Item = (Instant, Event)>>(&mut self, iter: T) {
+    fn extend<T>(&mut self, iter: T)
+    where
+        T: IntoIterator<Item = (Instant, Event)>,
+    {
         for (timestamp, event) in iter {
             self.insert(timestamp, event);
         }
@@ -67,7 +70,10 @@ impl Extend<(Instant, Event)> for Sequence {
 }
 
 impl FromIterator<(Instant, Event)> for Sequence {
-    fn from_iter<T: IntoIterator<Item = (Instant, Event)>>(iter: T) -> Self {
+    fn from_iter<T>(iter: T) -> Self
+    where
+        T: IntoIterator<Item = (Instant, Event)>,
+    {
         let mut events = Sequence::default();
 
         events.extend(iter);

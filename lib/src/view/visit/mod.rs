@@ -92,11 +92,11 @@ pub trait Visitor {
 impl View {
     /// Accepts a view visitor.
     #[remain::check]
-    pub fn accept<Ui: UserInterface, V: Visitor + ?Sized>(
-        &self,
-        visitor: &mut V,
-        render_area: RenderArea,
-    ) {
+    pub fn accept<Ui, V>(&self, visitor: &mut V, render_area: RenderArea)
+    where
+        Ui: UserInterface,
+        V: Visitor + ?Sized,
+    {
         #[sorted]
         match self {
             View::Bordered { title, thick, view } => {
@@ -201,7 +201,10 @@ impl View {
 }
 
 /// Calculates the area of the inner view given the area of a border view.
-fn inner_area<Ui: UserInterface>(mut render_area: RenderArea) -> RenderArea {
+fn inner_area<Ui>(mut render_area: RenderArea) -> RenderArea
+where
+    Ui: UserInterface,
+{
     render_area.area.position.x += Ui::BORDER_THICKNESS;
     render_area.area.position.y += Ui::BORDER_THICKNESS;
     render_area.area.size.width -= Ui::BORDER_THICKNESS * Ratio::integer(2);

@@ -35,7 +35,10 @@ pub struct Settings {
 #[bon]
 impl Settings {
     /// Returns the default workspace settings for a given ui.
-    pub(crate) fn default_in<Ui: UserInterface>() -> Settings {
+    pub(crate) fn default_in<Ui>() -> Settings
+    where
+        Ui: UserInterface,
+    {
         // The height of 3 octaves in the piano roll.
         let three_octaves = Ui::KEY_WIDTH.get() * Ratio::integer(3 * 12) + Ui::RULER_HEIGHT.get();
 
@@ -49,7 +52,7 @@ impl Settings {
 
     /// The full view of the workspace that the settings configure.
     #[builder]
-    pub(crate) fn view<Ui: UserInterface>(
+    pub(crate) fn view<Ui>(
         &self,
         cursor: Instant,
         edit_mode: bool,
@@ -58,7 +61,10 @@ impl Settings {
         project: &Project,
         quantisation: Quantisation,
         selection: &Selection,
-    ) -> Quoted {
+    ) -> Quoted
+    where
+        Ui: UserInterface,
+    {
         let Some(currently_open) = self.currently_open else {
             return Quoted::EMPTY;
         };
@@ -93,7 +99,10 @@ impl Settings {
     }
 
     /// Moves the workspace.
-    pub(crate) fn move_by<Ui: UserInterface>(&mut self, by: Vector) {
+    pub(crate) fn move_by<Ui>(&mut self, by: Vector)
+    where
+        Ui: UserInterface,
+    {
         match self.currently_open {
             Some(Workspace::PianoRoll) => self.piano_roll.move_by_in::<Ui>(by, self.content_height),
             Some(Workspace::Plugins) => self.plugins.move_by(by),

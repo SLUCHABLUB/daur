@@ -115,11 +115,11 @@ impl Renderer {
 impl Renderer {
     // TODO: the audio up to the point of the change may be reused
     /// Restarts the rendering with the given project.
-    pub(crate) fn restart<Ui: UserInterface>(
+    pub(crate) fn restart(
         &mut self,
         project: &Project,
         sample_rate: sample::Rate,
-        ui: &'static Ui,
+        ui: &'static impl UserInterface,
     ) -> anyhow::Result<()> {
         // Stop the threads that are rendering the old project
         self.progress.should_stop.set(true);

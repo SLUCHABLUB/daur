@@ -24,11 +24,10 @@ impl Quoted2D {
     pub const EMPTY: Quoted2D = View::Empty.quoted_2d(Size::ZERO);
 
     /// Calculates the [size](Size) of the view.
-    pub(crate) fn calculate_size<Ui: UserInterface>(
-        &self,
-        maximum: Size,
-        render_area: RenderArea,
-    ) -> Size {
+    pub(crate) fn calculate_size<Ui>(&self, maximum: Size, render_area: RenderArea) -> Size
+    where
+        Ui: UserInterface,
+    {
         let minimum = LazyCell::new(|| self.view.minimum_size::<Ui>(render_area));
 
         Size {

@@ -53,6 +53,7 @@ impl Configuration {
 }
 
 #[cfg(test)]
+#[expect(clippy::inline_modules, reason = "false positive")]
 mod test {
     use super::*;
 

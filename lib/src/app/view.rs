@@ -8,7 +8,10 @@ use crate::project::bar;
 use crate::project::workspace;
 
 /// Constructs a [view](View) of the [app](App).
-pub(super) fn view<Ui: UserInterface>(app: &App<Ui>) -> View {
+pub(super) fn view<Ui>(app: &App<Ui>) -> View
+where
+    Ui: UserInterface,
+{
     let background = View::y_stack([
         bar::<Ui>(
             app.project_manager.project(),

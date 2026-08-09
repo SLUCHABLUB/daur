@@ -77,7 +77,10 @@ pub struct PianoRoll {
 #[bon]
 impl PianoRoll {
     /// Returns the default piano roll settings for a given ui.
-    pub(crate) fn default_in<Ui: UserInterface>() -> PianoRoll {
+    pub(crate) fn default_in<Ui>() -> PianoRoll
+    where
+        Ui: UserInterface,
+    {
         let a3_offset = Ui::KEY_WIDTH.get() * Ratio::integer(57);
 
         PianoRoll {
@@ -90,7 +93,10 @@ impl PianoRoll {
     }
 
     /// Returns [`self.y_offset`] but clamped such that the piano roll is not scrolled past the top key.
-    fn clamped_y_offset<Ui: UserInterface>(self, content_height: Length) -> Length {
+    fn clamped_y_offset<Ui>(self, content_height: Length) -> Length
+    where
+        Ui: UserInterface,
+    {
         let full_roll_height = self.key_width.get() * Ratio::integer(128);
         let workspace_height = content_height - Ui::RULER_HEIGHT.get();
 
@@ -98,7 +104,10 @@ impl PianoRoll {
     }
 
     /// Moves the piano roll by an offset whilst clamped to a certain height.
-    pub(super) fn move_by_in<Ui: UserInterface>(&mut self, by: Vector, content_height: Length) {
+    pub(super) fn move_by_in<Ui>(&mut self, by: Vector, content_height: Length)
+    where
+        Ui: UserInterface,
+    {
         self.negative_x_offset -= by.x;
         self.y_offset += by.y;
 
@@ -120,7 +129,7 @@ impl PianoRoll {
 
     /// Returns a view the content of the pianoroll.
     #[builder]
-    pub(super) fn content<Ui: UserInterface>(
+    pub(super) fn content<Ui>(
         self,
         selection: &Selection,
         project: &Project,
@@ -130,7 +139,10 @@ impl PianoRoll {
         held_object: Option<Holdable>,
         edit_mode: bool,
         content_height: Length,
-    ) -> View {
+    ) -> View
+    where
+        Ui: UserInterface,
+    {
         let Some(clip_path) = selection.top_clip() else {
             return NO_CLIP_SELECTED.centred();
         };
@@ -175,7 +187,7 @@ impl PianoRoll {
     /// The part of the piano role where notes can be placed and moved.
     /// This includes held notes.
     #[builder]
-    fn note_area<Ui: UserInterface>(
+    fn note_area<Ui>(
         self,
         track: Id<Track>,
         clip_start: Instant,
@@ -189,7 +201,10 @@ impl PianoRoll {
         edit_mode: bool,
         content_height: Length,
         key: &Changing<Key>,
-    ) -> View {
+    ) -> View
+    where
+        Ui: UserInterface,
+    {
         let roll = self
             .roll::<Ui>()
             .track(track)
@@ -220,7 +235,7 @@ impl PianoRoll {
 
     /// The part of the piano role where notes can be placed and moved excluding held objects.
     #[builder]
-    fn roll<Ui: UserInterface>(
+    fn roll<Ui>(
         self,
         track: Id<Track>,
         clip_start: Instant,
@@ -230,7 +245,10 @@ impl PianoRoll {
         edit_mode: bool,
         key: &Changing<Key>,
         content_height: Length,
-    ) -> View {
+    ) -> View
+    where
+        Ui: UserInterface,
+    {
         let y_offset = self.clamped_y_offset::<Ui>(content_height);
 
         let lowest_visible_pitch = Pitch::LOWEST

@@ -56,7 +56,10 @@ impl Manager {
 
 impl Manager {
     /// Opens a new [popup](Popup).
-    pub fn open<Ui: UserInterface>(&self, specification: &Specification, ui: &Ui) {
+    pub fn open<Ui>(&self, specification: &Specification, ui: &Ui)
+    where
+        Ui: UserInterface,
+    {
         let id = specification.generate_id();
 
         self.popups

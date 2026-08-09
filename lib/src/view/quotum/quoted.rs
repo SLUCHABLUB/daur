@@ -26,11 +26,10 @@ impl Quoted {
     /// Calculates the size of the view parallell to a given axis.
     ///
     /// If the quoted size is infinite, [`None`] is returned.
-    pub(crate) fn size_parallel_to<Ui: UserInterface>(
-        &self,
-        axis: Axis,
-        render_area: RenderArea,
-    ) -> Option<Length> {
+    pub(crate) fn size_parallel_to<Ui>(&self, axis: Axis, render_area: RenderArea) -> Option<Length>
+    where
+        Ui: UserInterface,
+    {
         match self.quotum {
             Quotum::Remaining => None,
             Quotum::Exact(length) => Some(length),
@@ -65,7 +64,10 @@ impl View {
     }
 
     /// Makes the view take up the specified [amount of space](Length).
-    pub fn quoted<L: Into<Length>>(self, size: L) -> Quoted {
+    pub fn quoted<L>(self, size: L) -> Quoted
+    where
+        L: Into<Length>,
+    {
         self.with_quotum(size.into().quotum())
     }
 

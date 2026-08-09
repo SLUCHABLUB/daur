@@ -32,7 +32,7 @@ use std::sync::Arc;
 /// The project workspace.
 ///
 /// This includes the [track area](track_area) and the [ruler](Ruler) above it.
-pub(crate) fn workspace<Ui: UserInterface>(
+pub(crate) fn workspace<Ui>(
     project: &Project,
     selection: &Selection,
     ui_settings: ui::Settings,
@@ -40,7 +40,10 @@ pub(crate) fn workspace<Ui: UserInterface>(
     cursor: Instant,
     player: Option<&Player>,
     held_object: Option<Holdable>,
-) -> View {
+) -> View
+where
+    Ui: UserInterface,
+{
     let offset_mapping = OffsetMapping::new(project.time_signature.clone(), quantisation);
 
     let ruler = ruler(ui_settings.negative_overview_offset, offset_mapping.clone());

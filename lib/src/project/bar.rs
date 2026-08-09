@@ -40,13 +40,16 @@ const PLUGINS: ArcStr = literal!("plugins");
 const SETTINGS: ArcStr = literal!("settings");
 
 /// The bar att the top of the window.
-pub(crate) fn bar<Ui: UserInterface>(
+pub(crate) fn bar<Ui>(
     project: &Project,
     cursor: Instant,
     player: Option<Player>,
     edit_mode: bool,
     is_piano_roll_open: bool,
-) -> View {
+) -> View
+where
+    Ui: UserInterface,
+{
     // --- BUTTONS ---
 
     // TODO: add functionality

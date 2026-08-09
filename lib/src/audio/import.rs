@@ -42,7 +42,10 @@ pub enum ImportError {
 
 impl Audio {
     /// Tries to read an [audio clip](Audio) from a file.
-    pub(crate) fn read_from_file<P: AsRef<Path>>(file: P) -> Result<Audio, ImportError> {
+    pub(crate) fn read_from_file<P>(file: P) -> Result<Audio, ImportError>
+    where
+        P: AsRef<Path>,
+    {
         read_from_file(file.as_ref())
     }
 }

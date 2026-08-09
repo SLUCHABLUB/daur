@@ -12,7 +12,10 @@ use std::cmp::max;
 impl View {
     /// Returns the minimum size required to fit the entire view.
     #[must_use]
-    pub fn minimum_size<Ui: UserInterface>(&self, render_area: RenderArea) -> Size {
+    pub fn minimum_size<Ui>(&self, render_area: RenderArea) -> Size
+    where
+        Ui: UserInterface,
+    {
         minimum_size::<Ui>(self, render_area)
     }
 }
@@ -20,7 +23,10 @@ impl View {
 /// See [`View::minimum_size`].
 /// Used to minimise indentation.
 #[remain::check]
-fn minimum_size<Ui: UserInterface>(view: &View, render_area: RenderArea) -> Size {
+fn minimum_size<Ui>(view: &View, render_area: RenderArea) -> Size
+where
+    Ui: UserInterface,
+{
     #[sorted]
     match view {
         View::Bordered { view, .. } => {
