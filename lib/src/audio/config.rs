@@ -5,10 +5,9 @@ use crate::audio::sample;
 use crate::extension::OptionExt as _;
 use crate::time::Instant;
 use rodio::Device;
+use rodio::DeviceSinkBuilder;
 use rodio::DeviceTrait as _;
-use rodio::OutputStream;
-use rodio::OutputStreamBuilder;
-use rodio::Sink;
+use rodio::MixerDeviceSink;
 use rodio::cpal::Host;
 use rodio::cpal::traits::HostTrait as _;
 use thiserror::Error;
@@ -31,18 +30,18 @@ pub(crate) struct Config {
 struct DeviceConfig {
     /// The output device.
     device: Device,
-    /// A cache of the output stream.
-    stream_cache: Option<StreamCache>,
+    /// A player for the selected device.
+    player_guard: Option<PlayerGuard>,
 }
 
-/// An audio stream cache.
-struct StreamCache {
-    /// The output stream to which audio is written.
+/// An audio sink and player.
+struct PlayerGuard {
+    /// The sink to which audio is written.
     ///
-    /// This is not written to directly, but via a [sink](`Sink`).
-    #[expect(unused, reason = "if this is dropped, the sink will stop working")]
-    stream: OutputStream,
-    /// An audio player linked to the output stream.
+    /// This is not written to directly, but via a [player](`Player`).
+    #[expect(unused, reason = "if this is dropped, the player will stop working")]
+    sink: MixerDeviceSink,
+    /// An audio player linked to the sink.
     player: Player,
 }
 
@@ -60,7 +59,7 @@ impl Config {
 
         Ok(self.device_config.get_or_insert(DeviceConfig {
             device,
-            stream_cache: None,
+            player_guard: None,
         }))
     }
 
@@ -72,23 +71,23 @@ impl Config {
     pub(crate) fn player(&mut self) -> anyhow::Result<Player> {
         let DeviceConfig {
             device,
-            stream_cache: stream_config,
+            player_guard: stream_config,
         } = self.initialise_device_config()?;
 
         stream_config
             .get_or_try_insert_with(|| {
-                let stream = OutputStreamBuilder::from_device(device.clone())?.open_stream()?;
-                let sink = Sink::connect_new(stream.mixer());
-                let player = Player::from(sink);
+                let sink = DeviceSinkBuilder::from_device(device.clone())?.open_stream()?;
+                let player = rodio::Player::connect_new(sink.mixer());
+                let player = Player::from(player);
 
-                Ok(StreamCache { stream, player })
+                Ok(PlayerGuard { sink, player })
             })
             .map(|config| config.player.clone())
     }
 
     /// Returns the saved audio player, or `None` if none is saved.
     pub(crate) fn try_player(&self) -> Option<&Player> {
-        Some(&self.device_config.as_ref()?.stream_cache.as_ref()?.player)
+        Some(&self.device_config.as_ref()?.player_guard.as_ref()?.player)
     }
 
     /// Returns the preferred sample rate of the audio device.

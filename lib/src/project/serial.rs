@@ -73,6 +73,7 @@ impl<'data> From<Serial<'data>> for Project {
 }
 
 #[cfg(test)]
+#[expect(clippy::inline_modules, reason = "false positive")]
 mod test {
     use super::*;
 

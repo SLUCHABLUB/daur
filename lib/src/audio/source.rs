@@ -4,7 +4,10 @@ use crate::Audio;
 use crate::audio::InterleavedSamples;
 use crate::audio::Sample;
 use crate::time;
+use non_zero::non_zero;
 use rodio::source::SeekError;
+use std::num::NonZeroU16;
+use std::num::NonZeroU32;
 use std::time::Duration;
 
 /// An [audio source](rodio::Source) for an [audio](Audio).
@@ -40,12 +43,12 @@ impl rodio::Source for Source {
         None
     }
 
-    fn channels(&self) -> u16 {
-        2
+    fn channels(&self) -> NonZeroU16 {
+        non_zero!(2)
     }
 
-    fn sample_rate(&self) -> u32 {
-        self.samples.rate().samples_per_second.get()
+    fn sample_rate(&self) -> NonZeroU32 {
+        self.samples.rate().samples_per_second
     }
 
     fn total_duration(&self) -> Option<Duration> {

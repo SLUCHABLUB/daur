@@ -3,7 +3,6 @@
 use crate::Ratio;
 use crate::time::Duration;
 use crate::time::NonZeroDuration;
-use rodio::cpal;
 use serde::Deserialize;
 use serde::Serialize;
 use std::num::NonZeroU32;
@@ -43,14 +42,6 @@ impl Rate {
 #[derive(Copy, Clone, Debug, Error)]
 #[error("sample rates cannot be zero")]
 pub struct ZeroRateError;
-
-impl TryFrom<cpal::SampleRate> for Rate {
-    type Error = ZeroRateError;
-
-    fn try_from(cpal::SampleRate(sample_rate): cpal::SampleRate) -> Result<Rate, ZeroRateError> {
-        Rate::try_from(sample_rate)
-    }
-}
 
 impl TryFrom<u32> for Rate {
     type Error = ZeroRateError;
